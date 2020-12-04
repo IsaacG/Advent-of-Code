@@ -17,8 +17,7 @@ def prod_of_pair(pair_sum: int, data: Set[int]) -> int:
 def main():
   datafile = pathlib.Path(sys.argv[1])
   data = set(int(i) for i in datafile.read_text().split())
-  part_one = prod_of_pair(2020, data)
-  print(f'Part one: {part_one}')
+  print(prod_of_pair(2020, data))
 
   for n in data:
     subset = list(data)
@@ -26,7 +25,7 @@ def main():
     prod = prod_of_pair(2020 - n, subset)
     if prod:
       prod *= n
-      print(f'Part two: {prod}')
+      print(prod)
       break
     
   
