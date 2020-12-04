@@ -5,7 +5,10 @@ import sys
 from typing import List
 
 
-def load_data() -> List[str]:
+def load_data(sep='\n') -> List[str]:
   datafile = pathlib.Path(sys.argv[1])
-  return datafile.read_text().split('\n')[:-1]
+  data = datafile.read_text().split(sep)
+  if data[-1] == "":
+    del data[-1]
+  return data
 
