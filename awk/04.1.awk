@@ -1,0 +1,1 @@
+ awk 'BEGIN{cnt=0; RS="\n\n"} {g=0; for (i=1; i<=NF; i++) {sub(/:.*/, "", $i); d[$i]=NR;} if (d["byr"] == NR && d["iyr"] == NR && d["eyr"] == NR && d["hgt"] == NR && d["hcl"] == NR && d["ecl"] == NR && d["pid"] == NR) {cnt++; print NR}} END{print cnt}' data/04.txt
