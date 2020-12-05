@@ -7,4 +7,4 @@ while read -r day one two; do
   else
     echo "$day [$one != ${ans[0]}] || [$two != ${ans[1]}]"
   fi
-done < answers
+done < data/solutions
