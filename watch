@@ -1,0 +1,4 @@
+#!/bin/bash
+
+printf -v n '%02d' "$2"
+while inotifywait -qe close_write py/$n.py || : ; do date; "$1" "$2"; done
