@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if (( $# != 1 )); then
+  echo 'Bad usage'
+  exit 1
+fi
+printf -vnum '%02d' "$1"
+cp py/tmpl.py "py/$num.py"
+wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="data/$num.txt" "https://adventofcode.com/2020/day/$1/input"
