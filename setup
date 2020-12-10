@@ -5,5 +5,10 @@ if (( $# != 1 )); then
   exit 1
 fi
 printf -vnum '%02d' "$1"
-cp py/tmpl.py "py/$num.py"
-wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="data/$num.txt" "https://adventofcode.com/2020/day/$1/input"
+
+if [[ ! -f "py/$num.py" ]]; then
+  sed "s/NN/$num/" py/tmpl.py > "py/$num.py"
+  ./codeblocks.py "$1" >> "py/$num.py"
+fi
+
+[[ ! -f "data/$num.txt" ]] && wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="data/$num.txt" "https://adventofcode.com/2020/day/$1/input"
