@@ -1,13 +1,11 @@
 #!/bin/python
 
+import aoc
 import collections
 import functools
 import math
 import re
-import sys
-import time
-import util
-from typing import List, Dict
+from typing import Any, Callable, Dict, List
 
 SAMPLE = ["""\
 1
@@ -15,28 +13,23 @@ SAMPLE = ["""\
 """]
 
 
-TESTS = (
-  util.TestCase(inputs=SAMPLE[0], part=1, want=0),
-)
+class DayNN(aoc.Challenge):
 
-def part1(lines: List[str]) -> int:
-  return 0
+  TRANSFORM = int
+  DEBUG = True
 
+  TESTS = (
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
+  )
 
-def part2(lines: List[str]) -> int:
-  return 0
+  def part1(self, lines: List[str]) -> int:
+    return 0
 
-
-CONFIG = {
-  'tranform': str,
-  'debug': True,
-  'funcs': {1: part1, 2: part2},
-  'tests': TESTS,
-  'sep': '\n',
-}
+  def part2(self, lines: List[str]) -> int:
+    return 0
 
 
 if __name__ == '__main__':
-  util.run_day(CONFIG)
+  DayNN().run()
 
 # vim:ts=2:sw=2:expandtab
