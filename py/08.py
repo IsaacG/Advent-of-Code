@@ -1,13 +1,14 @@
 #!/bin/python
 
 import collections
-from util import load_data
+import util
 import re
+import sys
 import time
 from typing import List, Dict
 
 
-SAMPLE1 = """\
+SAMPLE = ["""\
 nop +0
 acc +1
 jmp +4
@@ -17,9 +18,7 @@ acc -99
 acc +1
 jmp -4
 acc +6
-"""
-
-SAMPLE2 = """\
+""", """\
 nop +0
 acc +1
 jmp +4
@@ -29,14 +28,12 @@ acc -99
 acc +1
 jmp -4
 acc +6
-"""
+"""]
 
-TEST_DATA = {
-  'input1': SAMPLE1,
-  'input2': SAMPLE2,
-  'want1': 5,
-  'want2': 8,
-}
+TESTS = (
+  util.TestCase(inputs=SAMPLE[0], part=1, want=5),
+  util.TestCase(inputs=SAMPLE[1], part=2, want=8),
+)
 
 
 def compute(lines: List[str]) -> int:
@@ -96,34 +93,28 @@ def part2(lines: List[str]) -> int:
     lines[i] = line
 
 
-def get_func(i):
-  if i == 1:
-    return part1
-  elif i == 2:
-    return part2
-  else:
-    raise ValueError(f'Bad part {i}')
+CONFIG = {
+  'debug': False,
+  'funcs': {1: part1, 2: part2},
+  'tranform': str,
+  'tests': TESTS,
+  'sep': '\n',
+}
 
 
-def test():
-  """Assert solution works."""
-  for i in (1, 2):
-    if TEST_DATA[f'input{i}'].strip() and TEST_DATA[f'want{i}']:
-      sample_text = TEST_DATA[f'input{i}']
-      sample_data = load_data(text=sample_text)
-      func = get_func(i)
-      want = TEST_DATA[f'want{i}']
-      got = func(sample_data)
-      assert want == got, f'part{i}: want({want}) != got({got})'
+# ######################################### #
+# Fixed code. Probably do not need to edit. #
 
+debug = lambda x: util.debug(CONFIG, x)
 
 def main():
-  test()
-  data = load_data()
-  for i in (1, 2):
-    if TEST_DATA[f'input{i}'].strip():
-      func = get_func(i)
-      print(func(data))
+  """Run the tests then the problems."""
+  util.run_tests(CONFIG)
+
+  data = util.load_data(sys.argv[1], config=CONFIG)
+  for i, func in enumerate((part1, part2)):
+    debug(f"Running part {i + 1}:")
+    print(func(data))
 
 
 if __name__ == '__main__':

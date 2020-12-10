@@ -9,8 +9,6 @@ import time
 import util
 from typing import List, Dict, Callable, Any
 
-TestCase = util.TestCase
-
 
 SAMPLE = ["""\
 16
@@ -60,9 +58,9 @@ SAMPLE = ["""\
 ]
 
 TESTS = (
-  TestCase(inputs=SAMPLE[0], part=1, want=35),
-  TestCase(inputs=SAMPLE[1], part=1, want=220),
-  TestCase(inputs=SAMPLE[1], part=2, want=19208),
+  util.TestCase(inputs=SAMPLE[0], part=1, want=35),
+  util.TestCase(inputs=SAMPLE[1], part=1, want=220),
+  util.TestCase(inputs=SAMPLE[1], part=2, want=19208),
 )
 
 

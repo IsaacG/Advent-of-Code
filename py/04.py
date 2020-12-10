@@ -1,7 +1,10 @@
 #!/bin/python
 
+import sys
 import util
 import re
+
+from typing import List
 
 REQUIRED_FIELDS = {
   'byr',
@@ -25,10 +28,13 @@ PID_RE = re.compile('^[0-9]{9}$')
 EYE_CLRS = {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'}
 
 
-def valid1(record) -> bool:
-  """Check the record has all the required fields."""
+def valid1(record):
   fields = {f.split(':', 1)[0] for f in record.split()}
   return fields >= REQUIRED_FIELDS
+
+def part1(lines: List[str]) -> int:
+  """Check the record has all the required fields."""
+  return len([1 for i in lines if valid1(i)])
 
 
 def range_check(s: str, mn: int, mx: int) -> bool:
@@ -78,10 +84,32 @@ def valid2(record) -> bool:
   return True
 
 
+def part2(lines: List[str]) -> int:
+  return len([1 for i in lines if valid2(i)])
+
+
+CONFIG = {
+  'debug': False,
+  'funcs': {1: part1, 2: part2},
+  'tranform': str,
+  'tests': (),
+  'sep': '\n\n',
+}
+
+
+# ######################################### #
+# Fixed code. Probably do not need to edit. #
+
+debug = lambda x: util.debug(CONFIG, x)
+
 def main():
-  records = util.load_data('\n\n')
-  print(len([1 for i in records if valid1(i)]))
-  print(len([1 for i in records if valid2(i)]))
+  """Run the tests then the problems."""
+  util.run_tests(CONFIG)
+
+  data = util.load_data(sys.argv[1], config=CONFIG)
+  for i, func in enumerate((part1, part2)):
+    debug(f"Running part {i + 1}:")
+    print(func(data))
 
 
 if __name__ == '__main__':

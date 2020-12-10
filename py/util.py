@@ -29,7 +29,10 @@ def run_tests(config):
   for i, case in enumerate(config['tests']):
     debug(config, f"Running test {i + 1} (part{case.part})")
     data = load_data(case.inputs, config)
-    got = config['funcs'][case.part](data)
+    args = []
+    if 'test_args' in config:
+      args = config['test_args']
+    got = config['funcs'][case.part](data, *args)
     if case.want == got:
       debug(config, f"PASSED!")
     else:

@@ -3,7 +3,8 @@
 import pathlib
 import re
 import sys
-from typing import Tuple
+import util
+from typing import List, Tuple
 
 
 RE = re.compile('^([0-9]+)-([0-9]+) (.): (.*)$')
@@ -27,11 +28,36 @@ def valid_b(line: str) -> bool:
    return mn <= match <= mx
 
 
+def part1(lines: List[str]) -> int:
+  return len([1 for line in lines if valid_a(line)])
+
+
+def part2(lines: List[str]) -> int:
+  return len([1 for line in lines if valid_b(line)])
+
+
+CONFIG = {
+  'debug': False,
+  'funcs': {1: part1, 2: part2},
+  'tranform': str,
+  'tests': (),
+  'sep': '\n',
+}
+
+
+# ######################################### #
+# Fixed code. Probably do not need to edit. #
+
+debug = lambda x: util.debug(CONFIG, x)
+
 def main():
-  datafile = pathlib.Path(sys.argv[1])
-  data = datafile.read_text().split('\n')[:-1]
-  print(len([1 for line in data if valid_a(line)]))
-  print(len([1 for line in data if valid_b(line)]))
+  """Run the tests then the problems."""
+  util.run_tests(CONFIG)
+
+  data = util.load_data(sys.argv[1], config=CONFIG)
+  for i, func in enumerate((part1, part2)):
+    debug(f"Running part {i + 1}:")
+    print(func(data))
 
 
 if __name__ == '__main__':

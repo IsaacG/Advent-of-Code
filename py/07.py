@@ -3,20 +3,38 @@
 import collections
 import util
 import re
+import sys
 from typing import List, Dict
 Rules = Dict[str, Dict[str, int]]
+
+SAMPLE = ["""\
+light red bags contain 1 bright white bag, 2 muted yellow bags.
+dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+bright white bags contain 1 shiny gold bag.
+muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+faded blue bags contain no other bags.
+dotted black bags contain no other bags.
+""", """\
+shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.
+"""]
+
 
 RE_CONTENTS = re.compile('^([0-9]*) (.*) bags?')
 TARGET = 'shiny gold'
 
-
-def test():
-  """Assert solution works."""
-  rules = parse_rules(SAMPLE1.split("\n")[:-1])
-  assert 4 == part1(rules)
-
-  rules = parse_rules(SAMPLE2.split("\n")[:-1])
-  assert 126 == part2(rules), part2(rules)
+TESTS = (
+  util.TestCase(inputs=SAMPLE[0], part=1, want=4),
+  util.TestCase(inputs=SAMPLE[1], part=2, want=126),
+)
 
 
 def parse_rules(data: List[str]) -> Rules:
@@ -37,8 +55,9 @@ def parse_rules(data: List[str]) -> Rules:
   return rules
 
 
-def part1(rules: Rules) -> int:
+def part1(data: List[str]) -> int:
   """How many colors can contain shiny gold bags?"""
+  rules = parse_rules(data)
   expanded = collections.defaultdict(set)
   for o, i in rules.items():
     if not i:
@@ -54,11 +73,12 @@ def part1(rules: Rules) -> int:
   return len([i for i in expanded.values() if TARGET in i])
 
 
-def part2(rules: Rules) -> int:
+def part2(data: List[str]) -> int:
   """How many bags are inside a shiny gold bag?
 
   Dynamic programming!
   """
+  rules = parse_rules(data)
   cache = {}
   def num_inside(color):
     """How many bags do we have, starting at `color`?"""
@@ -70,35 +90,28 @@ def part2(rules: Rules) -> int:
   return num_inside(TARGET)
 
 
+CONFIG = {
+  'debug': False,
+  'funcs': {1: part1, 2: part2},
+  'tranform': str,
+  'tests': TESTS,
+  'sep': '\n',
+}
+
+
+# ######################################### #
+# Fixed code. Probably do not need to edit. #
+
+debug = lambda x: util.debug(CONFIG, x)
+
 def main():
-  test()
-  data = util.load_data("\n")
-  rules = parse_rules(data)
-  print(part1(rules))
-  print(part2(rules))
+  """Run the tests then the problems."""
+  util.run_tests(CONFIG)
 
-
-SAMPLE1 = """\
-light red bags contain 1 bright white bag, 2 muted yellow bags.
-dark orange bags contain 3 bright white bags, 4 muted yellow bags.
-bright white bags contain 1 shiny gold bag.
-muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
-shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-faded blue bags contain no other bags.
-dotted black bags contain no other bags.
-"""
-
-SAMPLE2 = """\
-shiny gold bags contain 2 dark red bags.
-dark red bags contain 2 dark orange bags.
-dark orange bags contain 2 dark yellow bags.
-dark yellow bags contain 2 dark green bags.
-dark green bags contain 2 dark blue bags.
-dark blue bags contain 2 dark violet bags.
-dark violet bags contain no other bags.
-"""
+  data = util.load_data(sys.argv[1], config=CONFIG)
+  for i, func in enumerate((part1, part2)):
+    debug(f"Running part {i + 1}:")
+    print(func(data))
 
 
 if __name__ == '__main__':
