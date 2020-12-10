@@ -3,6 +3,7 @@
 import dataclasses
 import os
 import pathlib
+import sys
 
 from typing import Any, Callable, Dict, List, Optional
 
@@ -29,9 +30,7 @@ def run_tests(config):
   for i, case in enumerate(config['tests']):
     debug(config, f"Running test {i + 1} (part{case.part})")
     data = load_data(case.inputs, config)
-    args = []
-    if 'test_args' in config:
-      args = config['test_args']
+    args = config.get('test_args', [])
     got = config['funcs'][case.part](data, *args)
     if case.want == got:
       debug(config, f"PASSED!")
@@ -44,3 +43,14 @@ def debug(config, s):
   """Maybe print a message."""
   if config['debug']:
     print(s)
+
+
+def run_day(config):
+  """Run the tests then the problems."""
+  run_tests(config)
+
+  data = load_data(sys.argv[1], config=config)
+  args = config.get('run_args', [])
+  for i, func in config['funcs'].items():
+    debug(config, f"Running part {i + 1}:")
+    print(func(data, *args))

@@ -79,6 +79,7 @@ CONFIG = {
   'tests': TESTS,
   'sep': '\n',
   'test_args': [5],
+  'run_args': [25],
 }
 
 
