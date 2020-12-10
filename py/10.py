@@ -68,31 +68,44 @@ class Day10(aoc.Challenge):
   )
 
   def part1(self, lines: List[str]) -> int:
-    nums = sorted([0] + lines)
-    diffs = [nums[i+1] - nums[i] for i in range(len(nums) - 1)] + [3]
+    """Count the 1-steps and 3-steps."""
+    # Sort the plugs.
+    nums = sorted(lines)
+    # Add the source and dest, 0 and max+3.
+    nums.insert(0, 0)
+    nums.append(max(nums) + 3)
+    # Compute the size of each step.
+    diffs = [nums[i+1] - nums[i] for i in range(len(nums) - 1)]
+    # Count and multiply.
     c = collections.Counter(diffs)
     return c[1] * c[3]
 
   def part2(self, lines: List[str]) -> int:
-    nums = sorted([0] + lines + [max(lines) + 3])
+    """Count all possible paths from 0 to dest."""
+    nums = [0] + sorted(lines) + [max(lines) + 3]
 
     @functools.cache
-    def get(i):
-      if i >= len(nums):
-        return 0
+    def possible_paths_from(i):
+      """Compute all possible paths from node i to the end.
+
+      Paths from N-1 to N = 1.
+      Paths from M to N = sum(
+          all paths from v to N
+          for all valid next-nodes v
+      ).
+      Valid next-nodes are any nodes within 3 of M.
+
+      Dynamic programming ahead. Cache result.
+      """
       if i == len(nums) - 1:
         return 1
-      valid = []
-      for j in (1, 2, 3):
-        k = i + j
-        try:
-          if nums[k] - nums[i] <= 3:
-            valid.append(k)
-        except IndexError:
-          pass
-      return sum(get(v) for v in valid)
+      valid = [
+        j for j in range(i + 1, min(i + 4, len(nums)))
+        if nums[j] - nums[i] <= 3
+      ]
+      return sum(possible_paths_from(v) for v in valid)
 
-    return get(0)
+    return possible_paths_from(0)
 
 
 if __name__ == '__main__':
