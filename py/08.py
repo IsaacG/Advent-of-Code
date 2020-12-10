@@ -1,7 +1,7 @@
 #!/bin/python
 
 import collections
-import util
+import aoc
 import re
 import sys
 import time
@@ -30,79 +30,71 @@ jmp -4
 acc +6
 """]
 
-TESTS = (
-  util.TestCase(inputs=SAMPLE[0], part=1, want=5),
-  util.TestCase(inputs=SAMPLE[1], part=2, want=8),
-)
 
+class Day08(aoc.Challenge):
 
-def compute(lines: List[str]) -> int:
-  """Run the code, returning the accumulator and if the end was hit."""
-  # Accumulator
-  acc = 0
-  # Instruction pointer. The next instruction to execute.
-  ptr = 0
-  # Track which instructions were previously executed for loop detection.
-  seen = set()
-  # max value for the ptr, ie the end of the instructions.
-  max_ptr = len(lines) - 1
+  DEBUG = False
+  TESTS = (
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
+    aoc.TestCase(inputs=SAMPLE[1], part=2, want=8),
+  )
 
-  while True:
-    seen.add(ptr)
-    op, val = lines[ptr].split()
-    val = int(val)
-    if op == 'nop':
-      ptr += 1
-    elif op == 'jmp':
-      ptr += val
-    elif op == 'acc':
-      ptr += 1
-      acc += val
-    else:
-      raise ValueError(f'Invalid op {op}')
+  def compute(self, lines: List[str]) -> int:
+    """Run the code, returning the accumulator and if the end was hit."""
+    # Accumulator
+    acc = 0
+    # Instruction pointer. The next instruction to execute.
+    ptr = 0
+    # Track which instructions were previously executed for loop detection.
+    seen = set()
+    # max value for the ptr, ie the end of the instructions.
+    max_ptr = len(lines) - 1
 
-    # Got to the end.
-    if ptr > max_ptr:
-      return acc, True
-    # Loop detection.
-    if ptr in seen:
-      return acc, False
+    while True:
+      seen.add(ptr)
+      op, val = lines[ptr].split()
+      val = int(val)
+      if op == 'nop':
+        ptr += 1
+      elif op == 'jmp':
+        ptr += val
+      elif op == 'acc':
+        ptr += 1
+        acc += val
+      else:
+        raise ValueError(f'Invalid op {op}')
 
+      # Got to the end.
+      if ptr > max_ptr:
+        return acc, True
+      # Loop detection.
+      if ptr in seen:
+        return acc, False
 
-def part1(lines: List[str]) -> int:
-  """Run the code until a loop is detected."""
-  acc, end = compute(lines)
-  assert end == False
-  return acc
+  def part1(self, lines: List[str]) -> int:
+    """Run the code until a loop is detected."""
+    acc, end = self.compute(lines)
+    assert end == False
+    return acc
 
-
-def part2(lines: List[str]) -> int:
-  """Swap jmp<>nop until the code can run to the end."""
-  for i in range(len(lines)):
-    op, val = lines[i].split()
-    line = lines[i]
-    if op == 'acc':
-      continue
-    if op == 'nop':
-      lines[i] = f'jmp {val}'
-    elif op == 'jmp':
-      lines[i] = f'nop {val}'
-    acc, end = compute(lines)
-    if end:
-      return acc
-    lines[i] = line
-
-
-CONFIG = {
-  'debug': False,
-  'funcs': {1: part1, 2: part2},
-  'tranform': str,
-  'tests': TESTS,
-  'sep': '\n',
-}
+  def part2(self, lines: List[str]) -> int:
+    """Swap jmp<>nop until the code can run to the end."""
+    for i in range(len(lines)):
+      op, val = lines[i].split()
+      line = lines[i]
+      if op == 'acc':
+        continue
+      if op == 'nop':
+        lines[i] = f'jmp {val}'
+      elif op == 'jmp':
+        lines[i] = f'nop {val}'
+      acc, end = self.compute(lines)
+      if end:
+        return acc
+      lines[i] = line
 
 
 if __name__ == '__main__':
-  util.run_day(CONFIG)
+  Day08().run()
 
 # vim:ts=2:sw=2:expandtab

@@ -65,5 +65,5 @@ class Challenge:
 
     data = self.load_data(sys.argv[1])
     for i, func in self.FUNCS.items():
-      self.debug(f"Running part {i + 1}:")
+      self.debug(f"Running part {i}:")
       print(func(data, *self.RUN_ARGS))

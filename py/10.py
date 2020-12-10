@@ -95,8 +95,6 @@ class Day10(aoc.Challenge):
     return get(0)
 
 
-
-
 if __name__ == '__main__':
   Day10().run()
 
