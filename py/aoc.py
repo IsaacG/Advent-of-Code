@@ -4,6 +4,7 @@ import dataclasses
 import os
 import pathlib
 import sys
+import time
 
 from typing import Any, Callable, Dict, List, Optional
 
@@ -47,11 +48,9 @@ class Challenge:
     for i, case in enumerate(self.TESTS):
       self.debug(f"Running test {i + 1} (part{case.part})")
       data = self.load_data(case.inputs)
-      got = self.FUNCS[case.part](data, *self.TEST_ARGS)
-      if case.want == got:
-        self.debug(f"PASSED!")
-      else:
-        print(f'FAILED! want({case.want}) != got({got})')
+      got = self.FUNCS[case.part](data, *self.TEST_ARGS, testing=True)
+      assert case.want == got, f'FAILED! want({case.want}) != got({got})'
+      self.debug(f"PASSED!")
     self.debug('=====')
 
   def debug(self, s):
@@ -66,4 +65,14 @@ class Challenge:
     data = self.load_data(sys.argv[1])
     for i, func in self.FUNCS.items():
       self.debug(f"Running part {i}:")
-      print(func(data, *self.RUN_ARGS))
+      print(func(data, *self.RUN_ARGS, testing=False))
+
+  def time(self, count=1000):
+    data = self.load_data(sys.argv[1])
+    for part, func in self.FUNCS.items():
+      start = time.clock_gettime(time.CLOCK_MONOTONIC)
+      for i in range(count):
+        func(data, *self.RUN_ARGS)
+      end = time.clock_gettime(time.CLOCK_MONOTONIC)
+      avg = 1000 * (end - start) / count
+      print(f"Part {part}: {avg:.4f} ms")
