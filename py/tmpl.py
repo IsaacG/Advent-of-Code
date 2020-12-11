@@ -15,6 +15,7 @@ SAMPLE = ["""\
 
 class DayNN(aoc.Challenge):
 
+  DAY = NN
   TRANSFORM = int
   DEBUG = True
 

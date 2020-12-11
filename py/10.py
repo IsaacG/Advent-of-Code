@@ -58,6 +58,7 @@ SAMPLE = ["""\
 
 class Day10(aoc.Challenge):
 
+  DAY = 10
   TRANSFORM = int
   DEBUG = False
 

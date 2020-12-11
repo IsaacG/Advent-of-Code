@@ -1,260 +1,137 @@
 #!/bin/python
 
 import aoc
+import data
+import itertools
 from typing import List
 
-S1 = ["""\
-L.LL.LL.LL
-LLLLLLL.LL
-L.L.L..L..
-LLLL.LL.LL
-L.LL.LL.LL
-L.LLLLL.LL
-..L.L.....
-LLLLLLLLLL
-L.LLLLLL.L
-L.LLLLL.LL
-""", """\
-#.##.##.##
-#######.##
-#.#.#..#..
-####.##.##
-#.##.##.##
-#.#####.##
-..#.#.....
-##########
-#.######.#
-#.#####.##
-""", """\
-#.LL.L#.##
-#LLLLLL.L#
-L.L.L..L..
-#LLL.LL.L#
-#.LL.LL.LL
-#.LLLL#.##
-..L.L.....
-#LLLLLLLL#
-#.LLLLLL.L
-#.#LLLL.##
-""", """\
-#.##.L#.##
-#L###LL.L#
-L.#.#..#..
-#L##.##.L#
-#.##.LL.LL
-#.###L#.##
-..#.#.....
-#L######L#
-#.LL###L.L
-#.#L###.##
-""", """\
-#.#L.L#.##
-#LLL#LL.L#
-L.L.L..#..
-#LLL.##.L#
-#.LL.LL.LL
-#.LL#L#.##
-..L.L.....
-#L#LLLL#L#
-#.LLLLLL.L
-#.#L#L#.##
-""", """\
-#.#L.L#.##
-#LLL#LL.L#
-L.#.L..#..
-#L##.##.L#
-#.#L.LL.LL
-#.#L#L#.##
-..L.L.....
-#L#L##L#L#
-#.LLLLLL.L
-#.#L#L#.##
-"""]
+S1 = data.D11S1
+S2 = data.D11S2
 
-S2 = ["""\
-L.LL.LL.LL
-LLLLLLL.LL
-L.L.L..L..
-LLLL.LL.LL
-L.LL.LL.LL
-L.LLLLL.LL
-..L.L.....
-LLLLLLLLLL
-L.LLLLLL.L
-L.LLLLL.LL
-""", """\
-#.##.##.##
-#######.##
-#.#.#..#..
-####.##.##
-#.##.##.##
-#.#####.##
-..#.#.....
-##########
-#.######.#
-#.#####.##
-""", """\
-#.LL.LL.L#
-#LLLLLL.LL
-L.L.L..L..
-LLLL.LL.LL
-L.LL.LL.LL
-L.LLLLL.LL
-..L.L.....
-LLLLLLLLL#
-#.LLLLLL.L
-#.LLLLL.L#
-""", """\
-#.L#.##.L#
-#L#####.LL
-L.#.#..#..
-##L#.##.##
-#.##.#L.##
-#.#####.#L
-..#.#.....
-LLL####LL#
-#.L#####.L
-#.L####.L#
-""", """\
-#.L#.L#.L#
-#LLLLLL.LL
-L.L.L..#..
-##LL.LL.L#
-L.LL.LL.L#
-#.LLLLL.LL
-..L.L.....
-LLLLLLLLL#
-#.LLLLL#.L
-#.L#LL#.L#
-""", """\
-#.L#.L#.L#
-#LLLLLL.LL
-L.L.L..#..
-##L#.#L.L#
-L.L#.#L.L#
-#.L####.LL
-..#.#.....
-LLL###LLL#
-#.LLLLL#.L
-#.L#LL#.L#
-""", """\
-#.L#.L#.L#
-#LLLLLL.LL
-L.L.L..#..
-##L#.#L.L#
-L.L#.LL.L#
-#.LLLL#.LL
-..#.L.....
-LLL###LLL#
-#.LLLLL#.L
-#.L#LL#.L#
-"""]
+
+DIRECTIONS = [
+  (i, j) for i, j in itertools.product((-1, 0, 1), (-1, 0, 1))
+  if (i, j) != (0, 0)
+]
 
 
 class Seating:
+  """Ferry Seating Area a.k.a. Conway's Game of Life."""
 
   def __init__(self, block: List[str]):
+    """Build the board from a list of strings."""
     self.board = [[c for c in line] for line in block]
+    self.next = [[' ' for c in line] for line in block]
     self.y_max = len(self.board)
     self.x_max = len(self.board[0])
+    self.stable = False
 
   def __eq__(self, other):
+    """Board equality."""
     return type(self) == type(other) and self.board == other.board
 
   @classmethod
-  def from_str(cls, s):
+  def from_str(cls, s: str) -> "Seating":
+    """Seating from `str`."""
     return cls(s.strip().split('\n'))
 
-  def people_count(self):
-    return sum(1 for row in self.board for i in row if i == '#')
+  def people_count(self) -> int:
+    """Total number of people in the seating area."""
+    return sum(self.occupied(y, x) for y in range(self.y_max) for x in range(self.x_max))
 
-  def valid(self, y, x):
+  def valid(self, y: int, x: int) -> bool:
+    """Return if [y,x] are valid coordinates."""
     return (0 <= y < self.y_max) and (0 <= x < self.x_max)
 
-  def occupied(self, y, x):
-    if self.valid(y, x) and self.board[y][x] == '#':
-      return 1
+  def occupied(self, y: int, x: int) -> bool:
+    """Return if a spot is occupied."""
+    return self.valid(y, x) and self.board[y][x] == '#'
 
-  def surrounding(self, y, x):
+  def empty(self, y: int, x: int) -> bool:
+    """Return if a spot is an empty seat."""
+    return self.valid(y, x) and self.board[y][x] == 'L'
+
+  def floor(self, y: int, x: int) -> bool:
+    """Return if a spot is the floor."""
+    return self.valid(y, x) and self.board[y][x] == '.'
+
+  def surrounding(self, y: int, x: int) -> int:
+    """Count the number of occupied seats immediately surround this one."""
+    return sum(
+      self.occupied(y + i, x + j)
+      for i, j in DIRECTIONS
+    )
+
+  def visible(self, y: int, x: int) -> int:
+    """Count the number of occupied seats visible from one."""
     c = 0
-    for i in (-1, 0, 1):
-      for j in (-1, 0, 1):
-        if i == 0 and j == 0:
-          continue
-        if self.occupied(y + i, x + j):
+    for i, j in DIRECTIONS:
+      c_x = x + i
+      c_y = y + j
+      while self.valid(c_y, c_x):
+        if self.occupied(c_y, c_x):
           c += 1
+        if self.occupied(c_y, c_x) or self.empty(c_y, c_x):
+          break
+        c_x += i
+        c_y += j
     return c
 
-  def visible(self, y, x):
-    c = 0
-    for i in (-1, 0, 1):
-      for j in (-1, 0, 1):
-        if i == 0 and j == 0:
-          continue
-        c_x = x + i
-        c_y = y + j
-        while self.valid(c_y, c_x):
-          if self.occupied(c_y, c_x):
-            c += 1
-            break
-          if self.board[c_y][c_x] == 'L':
-            break
-          c_x += i
-          c_y += j
-    return c
-
-  def next_board(self, part):
-    threshold = {1: 4, 2: 5}[part]
-    counting = {1: self.surrounding, 2: self.visible}[part]
-    n = []
+  def calc_next(self, threshold, counting):
+    """Compute the seating area after one iteration."""
     for y in range(self.y_max):
-      row = ''
       for x in range(self.x_max):
-        if self.board[y][x] == '.':
-          row += '.'
+        if self.floor(y, x):
+          self.next[y][x] = '.'
           continue
         count = counting(y, x)
-        if self.board[y][x] == 'L' and count == 0:
-          row += '#'
+        if self.empty(y, x) and count == 0:
+          self.next[y][x] = '#'
         elif self.occupied(y, x) and count >= threshold:
-          row += 'L'
+          self.next[y][x] = 'L'
         else:
-          row += self.board[y][x]
-      n.append(row)
-    return type(self)(n)
+          self.next[y][x] = self.board[y][x]
+    if self.board == self.next:
+      self.stable = True
+    self.board, self.next = self.next, self.board
 
   
 class Day11(aoc.Challenge):
 
+  DAY = 11
   TRANSFORM = str
-  DEBUG = True
+  DEBUG = False
 
   TESTS = (
     aoc.TestCase(inputs=S1[0], part=1, want=37),
     aoc.TestCase(inputs=S2[0], part=2, want=26),
   )
 
-  def algo(self, lines: List[str], testing: bool, part: int) -> int:
-    if testing:
-      test_data = {1: S1, 2: S2}[part]
-      board = Seating(lines)
-      for i in range(len(S1)):
-        assert board == Seating.from_str(test_data[i])
-        board = board.next_board(part=part)
+  def pre_run(self):
+    """Walk through the examples, frame by frame, and validate."""
+    self.debug('Validate frames.')
+    board = Seating.from_str(S1[0])
+    for i in range(len(S1)):
+      assert board == Seating.from_str(S1[i])
+      board.calc_next(4, board.surrounding)
 
-    board = None
-    new_board = Seating(lines)
-    while new_board != board:
-      board = new_board
-      new_board = board.next_board(part=part)
+    board = Seating.from_str(S2[0])
+    for i in range(len(S2)):
+      assert board == Seating.from_str(S2[i])
+      board.calc_next(5, board.visible)
 
+  def solution(self, board: Seating, threshold: int, counting) -> int:
+    while not board.stable:
+      board.calc_next(threshold, counting)
     return board.people_count()
     
-  def part1(self, lines: List[str], testing: bool = False) -> int:
-    return self.algo(lines, testing, 1)
+  def part1(self, lines: List[str]) -> int:
+    board = Seating(lines)
+    return self.solution(board, 4, board.surrounding)
 
-  def part2(self, lines: List[str], testing: bool = False) -> int:
-    return self.algo(lines, testing, 2)
+  def part2(self, lines: List[str]) -> int:
+    board = Seating(lines)
+    return self.solution(board, 5, board.visible)
 
 
 if __name__ == '__main__':

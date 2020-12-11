@@ -33,6 +33,7 @@ acc +6
 
 class Day08(aoc.Challenge):
 
+  DAY = 8
   DEBUG = False
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
