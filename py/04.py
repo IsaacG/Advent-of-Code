@@ -1,7 +1,7 @@
 #!/bin/python
 
 import sys
-import util
+import aoc
 import re
 
 from typing import List
@@ -31,11 +31,6 @@ EYE_CLRS = {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'}
 def valid1(record):
   fields = {f.split(':', 1)[0] for f in record.split()}
   return fields >= REQUIRED_FIELDS
-
-def part1(lines: List[str]) -> int:
-  """Check the record has all the required fields."""
-  return len([1 for i in lines if valid1(i)])
-
 
 def range_check(s: str, mn: int, mx: int) -> bool:
   """Check a numeric str in in a range."""
@@ -84,20 +79,20 @@ def valid2(record) -> bool:
   return True
 
 
-def part2(lines: List[str]) -> int:
-  return len([1 for i in lines if valid2(i)])
+class Day04(aoc.Challenge):
 
+  SEP = '\n\n'
+  TESTS = []
 
-CONFIG = {
-  'debug': False,
-  'funcs': {1: part1, 2: part2},
-  'tranform': str,
-  'tests': (),
-  'sep': '\n\n',
-}
+  def part1(self, lines: List[str]) -> int:
+    """Check the record has all the required fields."""
+    return len([1 for i in lines if valid1(i)])
+
+  def part2(self, lines: List[str]) -> int:
+    return len([1 for i in lines if valid2(i)])
 
 
 if __name__ == '__main__':
-  util.run_day(CONFIG)
+  Day04().run()
 
 # vim:ts=2:sw=2:expandtab

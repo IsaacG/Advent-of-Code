@@ -1,9 +1,8 @@
-#!/bin/python
 
+
+import aoc
 import collections
-import util
 import re
-import sys
 from typing import List, Dict
 Rules = Dict[str, Dict[str, int]]
 
@@ -31,11 +30,6 @@ dark violet bags contain no other bags.
 RE_CONTENTS = re.compile('^([0-9]*) (.*) bags?')
 TARGET = 'shiny gold'
 
-TESTS = (
-  util.TestCase(inputs=SAMPLE[0], part=1, want=4),
-  util.TestCase(inputs=SAMPLE[1], part=2, want=126),
-)
-
 
 def parse_rules(data: List[str]) -> Rules:
   """Parse the input data into structured data."""
@@ -55,51 +49,50 @@ def parse_rules(data: List[str]) -> Rules:
   return rules
 
 
-def part1(data: List[str]) -> int:
-  """How many colors can contain shiny gold bags?"""
-  rules = parse_rules(data)
-  expanded = collections.defaultdict(set)
-  for o, i in rules.items():
-    if not i:
-      continue
-    queued = set(i.keys())
-    while queued:
-      j = queued.pop()
-      if not j:
+class Day07(aoc.Challenge):
+
+  TESTS = (
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
+    aoc.TestCase(inputs=SAMPLE[1], part=2, want=126),
+  )
+
+
+  def part1(self, data: List[str]) -> int:
+    """How many colors can contain shiny gold bags?"""
+    rules = parse_rules(data)
+    expanded = collections.defaultdict(set)
+    for o, i in rules.items():
+      if not i:
         continue
-      expanded[o].add(j)
-      if rules[j]:
-        queued.update(rules[j])
-  return len([i for i in expanded.values() if TARGET in i])
+      queued = set(i.keys())
+      while queued:
+        j = queued.pop()
+        if not j:
+          continue
+        expanded[o].add(j)
+        if rules[j]:
+          queued.update(rules[j])
+    return len([i for i in expanded.values() if TARGET in i])
 
 
-def part2(data: List[str]) -> int:
-  """How many bags are inside a shiny gold bag?
+  def part2(self, data: List[str]) -> int:
+    """How many bags are inside a shiny gold bag?
 
-  Dynamic programming!
-  """
-  rules = parse_rules(data)
-  cache = {}
-  def num_inside(color):
-    """How many bags do we have, starting at `color`?"""
-    if color not in cache:
-      # For each item inside this bag, sum the count (k) * [ 1 (for the bag self) + contends ]
-      cache[color] = sum(k * (1 + num_inside(j)) for  j, k in rules[color].items())
-    return cache[color]
+    Dynamic programming!
+    """
+    rules = parse_rules(data)
+    cache = {}
+    def num_inside(color):
+      """How many bags do we have, starting at `color`?"""
+      if color not in cache:
+        # For each item inside this bag, sum the count (k) * [ 1 (for the bag self) + contends ]
+        cache[color] = sum(k * (1 + num_inside(j)) for  j, k in rules[color].items())
+      return cache[color]
 
-  return num_inside(TARGET)
-
-
-CONFIG = {
-  'debug': False,
-  'funcs': {1: part1, 2: part2},
-  'tranform': str,
-  'tests': TESTS,
-  'sep': '\n',
-}
+    return num_inside(TARGET)
 
 
 if __name__ == '__main__':
-  util.run_day(CONFIG)
+  Day07().run()
 
 # vim:ts=2:sw=2:expandtab

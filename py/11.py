@@ -98,9 +98,7 @@ class Seating:
   
 class Day11(aoc.Challenge):
 
-  DAY = 11
   TRANSFORM = str
-  DEBUG = False
 
   TESTS = (
     aoc.TestCase(inputs=S1[0], part=1, want=37),

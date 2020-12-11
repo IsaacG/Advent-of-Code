@@ -58,9 +58,7 @@ SAMPLE = ["""\
 
 class Day10(aoc.Challenge):
 
-  DAY = 10
   TRANSFORM = int
-  DEBUG = False
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=35),

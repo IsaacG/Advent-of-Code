@@ -21,13 +21,19 @@ class Challenge:
   SEP = '\n'
   TRANSFORM = str
   TESTS = ()
-  DEBUG = True
+  DEBUG = False
   TEST_ARGS = []
   RUN_ARGS = []
 
   def __init__(self):
     self.FUNCS = {1: self.part1, 2: self.part2}
     super().__init__()
+
+  @property
+  def day(self):
+    n = type(self).__name__
+    assert n.startswith('Day')
+    return int(n[3:])
 
   def part1(self, lines: List[str]) -> int:
     raise NotImplemented

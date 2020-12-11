@@ -35,8 +35,6 @@ SAMPLE = """\
 
 class Day09(aoc.Challenge):
 
-  DAY = 9
-  DEBUG = False
   TRANSFORM = int
   TEST_ARGS = [5]
   RUN_ARGS = [25]
