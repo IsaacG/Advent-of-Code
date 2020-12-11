@@ -13,10 +13,9 @@ def main():
   cookie = cookie_file.read_text().split()[1]
   resp = requests.get(f'https://adventofcode.com/2020/day/{day}', headers={'cookie': cookie})
   et = etree.HTML(resp.content)
-  print('=========')
-  for c in et.xpath('//pre/code/text()'):
-    print(c.strip())
-    print('=========')
+  print('SAMPLE = ["""\n')
+  print('""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')))
+  print('"""]')
 
 
 if __name__ == '__main__':
