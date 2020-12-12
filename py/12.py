@@ -29,51 +29,41 @@ class Day12(aoc.Challenge):
 
   def part1(self, lines: List[str]) -> int:
     pos = 0 + 0j
-    f = 0
-    dE, dN, dW, dS = 0, 90, 180, 270
+    direction = 0
     mod = {
       'E': 1, 'N': 1j, 'W': -1, 'S': -1j,
         0: 1,  90: 1j, 180: -1, 270: -1j,
     }
     for l in lines:
-      i, n = l[0], int(l[1:])
-      if i in 'NEWS':
-        pos += n * mod[i]
-      if i in "LR":
+      instruction, num = l[0], int(l[1:])
+      if instruction in 'NEWS':
+        pos += num * mod[instruction]
+      if instruction in "LR":
         # R90 == L270
-        if i == "R":
-          n = 360 - n
+        if instruction == "R":
+          num = 360 - num
         # R360 == R0, R(360+n) == R(n)
-        f = (f + n) % 360
-      if i == "F":
-        pos += n * mod[f]
+        direction = (direction + num) % 360
+      if instruction == "F":
+        pos += num * mod[direction]
     return int(abs(pos.imag) + abs(pos.real))
 
   def part2(self, lines: List[str]) -> int:
-    x = 0
-    y = 0
-    f = 0
-    wx = 10
-    wy = 1
+    ship = 0 + 0j
+    waypoint = 10 + 1j
+    mod = {'E': 1, 'N': 1j, 'W': -1, 'S': -1j}
     for l in lines:
-      i, n = l[0], int(l[1:])
-      if i == "E":
-        wx += n
-      if i == "W":
-        wx -= n
-      if i == "N":
-        wy += n
-      if i == "S":
-        wy -= n
-      if i in "LR":
-        if i == "R":
-          n = 360 - n
-        for _ in range(0, n, 90):
-          wx, wy = -wy, wx
-      if i == "F":
-        x += n * wx
-        y += n * wy
-    return abs(x) + abs(y)
+      instruction, num = l[0], int(l[1:])
+      if instruction in 'NEWS':
+        waypoint += num * mod[instruction]
+      if instruction in "LR":
+        if instruction == "R":
+          num = 360 - num
+        for _ in range(0, num, 90):
+          waypoint *= 1j
+      if instruction == "F":
+        ship += num * waypoint
+    return int(abs(ship.imag) + abs(ship.real))
 
 
 if __name__ == '__main__':
