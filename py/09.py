@@ -1,13 +1,10 @@
 #!/bin/python
+"""Day 9."""
+
+import itertools
+from typing import List
 
 import aoc
-import collections
-import itertools
-import re
-import sys
-import time
-from typing import List, Dict
-
 
 SAMPLE = """\
 35
@@ -34,6 +31,7 @@ SAMPLE = """\
 
 
 class Day09(aoc.Challenge):
+  """Day 9."""
 
   TRANSFORM = int
   TEST_ARGS = [5]

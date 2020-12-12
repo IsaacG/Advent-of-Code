@@ -1,4 +1,5 @@
 #!/bin/python
+"""Advent of Code framework."""
 
 import dataclasses
 import os
@@ -6,17 +7,19 @@ import pathlib
 import sys
 import time
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import List
 
 
 @dataclasses.dataclass
 class TestCase:
+  """Test out a solution with a known input/want."""
   inputs: str
   want: int
   part: int
 
 
 class Challenge:
+  """Daily Challenge."""
 
   SEP = '\n'
   TRANSFORM = str
@@ -26,22 +29,26 @@ class Challenge:
   RUN_ARGS = []
 
   def __init__(self):
-    self.FUNCS = {1: self.part1, 2: self.part2}
+    self.funcs = {1: self.part1, 2: self.part2}
     super().__init__()
 
   @property
   def day(self):
-    n = type(self).__name__
-    assert n.startswith('Day')
-    return int(n[3:])
+    """Return the day of this class."""
+    name = type(self).__name__
+    assert name.startswith('Day')
+    return int(name[3:])
 
   def part1(self, lines: List[str]) -> int:
-    raise NotImplemented
+    """Solve part 1."""
+    raise NotImplementedError
 
   def part2(self, lines: List[str]) -> int:
-    raise NotImplemented
+    """Solve part 2."""
+    raise NotImplementedError
 
   def load_data(self, src: str) -> List[str]:
+    """Load exercise data."""
     if os.path.exists(src):
       text = pathlib.Path(src).read_text()
     else:
@@ -52,21 +59,20 @@ class Challenge:
   def run_tests(self):
     """Run the tests."""
     for i, case in enumerate(self.TESTS):
-      self.debug(f"Running test {i + 1} (part{case.part})")
+      self.debug(f'Running test {i + 1} (part{case.part})')
       data = self.load_data(case.inputs)
-      got = self.FUNCS[case.part](data, *self.TEST_ARGS)
+      got = self.funcs[case.part](data, *self.TEST_ARGS)
       assert case.want == got, f'FAILED! want({case.want}) != got({got})'
-      self.debug(f"PASSED!")
+      self.debug('PASSED!')
     self.debug('=====')
 
-  def debug(self, s):
+  def debug(self, msg):
     """Maybe print a message."""
     if self.DEBUG:
-      print(s)
+      print(msg)
 
   def pre_run(self):
     """Hook to run things prior to tests and actual."""
-    pass
 
   def run(self):
     """Run the tests then the problems."""
@@ -74,13 +80,14 @@ class Challenge:
     self.run_tests()
 
     data = self.load_data(sys.argv[1])
-    for i, func in self.FUNCS.items():
-      self.debug(f"Running part {i}:")
+    for i, func in self.funcs.items():
+      self.debug(f'Running part {i}:')
       print(func(data, *self.RUN_ARGS))
 
   def time(self, count=None):
+    """Benchmark the solution."""
     data = self.load_data(sys.argv[1])
-    for part, func in self.FUNCS.items():
+    for part, func in self.funcs.items():
       if count is None:
         # if self.DAY in (11,):
         # Really slow days. Do not run in a loop.
@@ -95,13 +102,14 @@ class Challenge:
         _count = count
 
       start = time.clock_gettime(time.CLOCK_MONOTONIC)
-      for i in range(_count):
+      for _ in range(_count):
         func(data, *self.RUN_ARGS)
       end = time.clock_gettime(time.CLOCK_MONOTONIC)
       avg = (end - start) / _count
       if avg < 5:
         avg *= 1000
-        print(f"Part {part}: {avg:.4f} ms")
+        print(f'Part {part}: {avg:.4f} ms')
       else:
-        print(f"Part {part}: {avg:.4f} s")
+        print(f'Part {part}: {avg:.4f} s')
 
+# vim:ts=2:sw=2:expandtab

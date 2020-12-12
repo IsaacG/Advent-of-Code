@@ -1,9 +1,11 @@
 #!/bin/python
+"""Day 11. Ferry Seating Area a.k.a. Conway's Game of Life."""
+
+import itertools
+from typing import List
 
 import aoc
 import data
-import itertools
-from typing import List
 
 S1 = data.D11S1
 S2 = data.D11S2
@@ -16,7 +18,7 @@ DIRECTIONS = [
 
 
 class Seating:
-  """Ferry Seating Area a.k.a. Conway's Game of Life."""
+  """Manage the seating area."""
 
   def __init__(self, block: List[str]):
     """Build the board from a list of strings."""
@@ -28,12 +30,12 @@ class Seating:
 
   def __eq__(self, other):
     """Board equality."""
-    return type(self) == type(other) and self.board == other.board
+    return isinstance(other, type(self)) and self.board == other.board
 
   @classmethod
-  def from_str(cls, s: str) -> "Seating":
+  def from_str(cls, layout: str) -> "Seating":
     """Seating from `str`."""
-    return cls(s.strip().split('\n'))
+    return cls(layout.strip().split('\n'))
 
   def people_count(self) -> int:
     """Total number of people in the seating area."""
@@ -64,18 +66,18 @@ class Seating:
 
   def visible(self, y: int, x: int) -> int:
     """Count the number of occupied seats visible from one."""
-    c = 0
+    count = 0
     for i, j in DIRECTIONS:
       c_x = x + i
       c_y = y + j
       while self.valid(c_y, c_x):
         if self.occupied(c_y, c_x):
-          c += 1
+          count += 1
         if self.occupied(c_y, c_x) or self.empty(c_y, c_x):
           break
         c_x += i
         c_y += j
-    return c
+    return count
 
   def calc_next(self, threshold, counting):
     """Compute the seating area after one iteration."""
@@ -95,8 +97,9 @@ class Seating:
       self.stable = True
     self.board, self.next = self.next, self.board
 
-  
+
 class Day11(aoc.Challenge):
+  """Solve Day 11."""
 
   TRANSFORM = str
 
@@ -109,20 +112,21 @@ class Day11(aoc.Challenge):
     """Walk through the examples, frame by frame, and validate."""
     self.debug('Validate frames.')
     board = Seating.from_str(S1[0])
-    for i in range(len(S1)):
-      assert board == Seating.from_str(S1[i])
+    for want in S1:
+      assert board == Seating.from_str(want)
       board.calc_next(4, board.surrounding)
 
     board = Seating.from_str(S2[0])
-    for i in range(len(S2)):
-      assert board == Seating.from_str(S2[i])
+    for want in S2:
+      assert board == Seating.from_str(want)
       board.calc_next(5, board.visible)
 
   def solution(self, board: Seating, threshold: int, counting) -> int:
+    """Solve for a board."""
     while not board.stable:
       board.calc_next(threshold, counting)
     return board.people_count()
-    
+
   def part1(self, lines: List[str]) -> int:
     board = Seating(lines)
     return self.solution(board, 4, board.surrounding)

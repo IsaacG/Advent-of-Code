@@ -1,11 +1,11 @@
 #!/bin/python
+"Day 10. Power adapters."""
 
-import aoc
 import collections
 import functools
-import math
-import re
-from typing import Any, Callable, Dict, List
+from typing import List
+
+import aoc
 
 
 SAMPLE = ["""\
@@ -57,6 +57,7 @@ SAMPLE = ["""\
 
 
 class Day10(aoc.Challenge):
+  """Solution to Day 10."""
 
   TRANSFORM = int
 
@@ -76,8 +77,8 @@ class Day10(aoc.Challenge):
     # Compute the size of each step.
     diffs = [nums[i+1] - nums[i] for i in range(len(nums) - 1)]
     # Count and multiply.
-    c = collections.Counter(diffs)
-    return c[1] * c[3]
+    counts = collections.Counter(diffs)
+    return counts[1] * counts[3]
 
   def part2(self, lines: List[str]) -> int:
     """Count all possible paths from 0 to dest."""
