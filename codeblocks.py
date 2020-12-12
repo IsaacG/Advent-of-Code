@@ -13,8 +13,8 @@ def main():
   cookie = cookie_file.read_text().split()[1]
   resp = requests.get(f'https://adventofcode.com/2020/day/{day}', headers={'cookie': cookie})
   et = etree.HTML(resp.content)
-  print('SAMPLE = ["""\n')
-  print('""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')))
+  print('SAMPLE = ["""\\')
+  print('\n""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')))
   print('"""]')
 
 
