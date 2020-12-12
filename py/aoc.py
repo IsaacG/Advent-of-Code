@@ -90,7 +90,7 @@ class Challenge:
         start = time.clock_gettime(time.CLOCK_MONOTONIC)
         func(data, *self.RUN_ARGS)
         end = time.clock_gettime(time.CLOCK_MONOTONIC)
-        _count = max(1, int(10 / (end - start)))
+        _count = min(10000, max(1, int(10 / (end - start))))
       else:
         _count = count
 
