@@ -47,43 +47,36 @@ class Day12(aoc.Challenge):
   # Modifier to map EWNS or degrees to a complex rotation.
   MOD = {
     'E': 1, 'N': 1j, 'W': -1, 'S': -1j,
-      0: 1,  90: 1j, 180: -1, 270: -1j,
   }
 
   def manhattan_dist(self, num: complex) -> int:
     """Manhattan distance of a complex number."""
     return int(abs(num.real) + abs(num.imag))
 
-  def part1(self, lines: List[str]) -> int:
-    """Track the ship's position."""
-    ship = 0 + 0j
-    heading = 0
-    for instruction, num in lines:
-      if instruction in 'NEWS':
-        ship += num * self.MOD[instruction]
-      if instruction in 'LR':
-        if instruction == 'R':
-          num = 360 - num
-        heading = (heading + num) % 360
-      if instruction == 'F':
-        ship += num * self.MOD[heading]
-    return self.manhattan_dist(ship)
-
-  def part2(self, lines: List[str]) -> int:
+  def solve(self, lines: List[str], waypoint: complex, part: int) -> int:
     """Track the ship's position - with a magical waypoint."""
     ship = 0 + 0j
-    waypoint = 10 + 1j
     for instruction, num in lines:
       if instruction in 'NEWS':
-        waypoint += num * self.MOD[instruction]
+        change = num * self.MOD[instruction]
+        if part == 1:
+          ship += change
+        else:
+          waypoint += change
       if instruction in 'LR':
         if instruction == 'R':
           num = 360 - num
-        for _ in range(0, num, 90):
-          waypoint *= 1j
+        num /= 90
+        waypoint *= 1j ** num
       if instruction == 'F':
         ship += num * waypoint
     return self.manhattan_dist(ship)
+
+  def part1(self, lines: List[str]) -> int:
+    return self.solve(lines, 1, 1)
+
+  def part2(self, lines: List[str]) -> int:
+    return self.solve(lines, (10+1j), 2)
 
 
 if __name__ == '__main__':
