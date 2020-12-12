@@ -28,20 +28,17 @@ class Day12(aoc.Challenge):
   )
 
   def part1(self, lines: List[str]) -> int:
-    x = 0
-    y = 0
+    pos = 0 + 0j
     f = 0
     dE, dN, dW, dS = 0, 90, 180, 270
+    mod = {
+      'E': 1, 'N': 1j, 'W': -1, 'S': -1j,
+        0: 1,  90: 1j, 180: -1, 270: -1j,
+    }
     for l in lines:
       i, n = l[0], int(l[1:])
-      if i == "E":
-        x += n
-      if i == "W":
-        x -= n
-      if i == "N":
-        y += n
-      if i == "S":
-        y -= n
+      if i in 'NEWS':
+        pos += n * mod[i]
       if i in "LR":
         # R90 == L270
         if i == "R":
@@ -49,15 +46,8 @@ class Day12(aoc.Challenge):
         # R360 == R0, R(360+n) == R(n)
         f = (f + n) % 360
       if i == "F":
-        if f == dE:
-          x += n
-        if f == dN:
-          y += n
-        if f == dW:
-          x -= n
-        if f == dS:
-          y -= n
-    return abs(x) + abs(y)
+        pos += n * mod[f]
+    return int(abs(pos.imag) + abs(pos.real))
 
   def part2(self, lines: List[str]) -> int:
     x = 0
