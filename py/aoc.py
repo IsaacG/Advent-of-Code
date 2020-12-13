@@ -7,7 +7,15 @@ import pathlib
 import sys
 import time
 
-from typing import List
+from typing import Iterable, List
+
+
+def mult(nums: Iterable[int]) -> int:
+  """Product of all values. Like sum() but with multiplication."""
+  p = 1
+  for n in nums:
+    p *= n
+  return p
 
 
 @dataclasses.dataclass
