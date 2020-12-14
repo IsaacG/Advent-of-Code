@@ -1,11 +1,9 @@
 #!/bin/python
+"""Day 14. Write data to memory?"""
 
 import aoc
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List
+from typing import Callable, List
+
 
 SAMPLE = ["""\
 mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
@@ -21,9 +19,13 @@ mem[26] = 1
 
 
 class Day14(aoc.Challenge):
+  """Solve Day 14.
 
-  TRANSFORM = str
-  DEBUG = True
+  Both parts do similar read, track mask, apply write.
+  They only differ in how a "write" is applied.
+  """
+
+  TRANSFORM = lambda _, x: x.split(' = ')
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=165),
@@ -31,71 +33,52 @@ class Day14(aoc.Challenge):
   )
 
   def part1(self, lines: List[str]) -> int:
-    mem = {}
-    mask = 0
-    for line in lines:
-      op, _, val = line.split()
-      if op == 'mask':
-        mask = val
-      else:
-        addr = op[4:-1]
-        mem[int(addr)] = self.masked(mask, int(val))
-    return sum(mem.values())
-
-  def masked(self, m, v):
-    m0 = int(m.replace('X', '0'), 2)
-    m1 = int(m.replace('X', '1'), 2)
-    u = v
-    u = u | m0
-    u = u & m1
-    return u
-
+    return self.solve(lines, self.write1)
 
   def part2(self, lines: List[str]) -> int:
-    mem = {}
-    mask = 0
-    for line in lines:
-      op, _, val = line.split()
+    return self.solve(lines, self.write2)
+
+  def solve(self, lines: List[str], mem_writer: Callable[[str, int, int], None]) -> int:
+    """Read input. Track mask. Apply writes with the mem_writer."""
+    self.mem = {}
+    mask = None
+    for (op, val) in lines:
       if op == 'mask':
         mask = val
       else:
-        addr = int(op[4:-1])
-        val = int(val)
-        print(val)
-        for e in self.expand(mask, addr):
-          print(e)
-          mem[e] = val
-        print('===')
+        mem_writer(mask, int(op[4:-1]), int(val))
+    return sum(self.mem.values())
 
-    return sum(mem.values())
+  def write1(self, mask: str, address: int, value: int):
+    """Use the mask to modify the value then write it to memory.
 
-  def expand(self, mask, addr):
-    addr = f'{addr:036b}'
-    # print(mask)
-    # print(addr)
-    out = ''
-    for a, b in zip(mask, addr):
-      if a == '0':
-        out += b
-      if a == '1':
-        out += '1'
-      if a == 'X':
-        out += 'X'
-    # print(out)
+    Replace X=>0 then do a bool-OR to apply 1's
+    Replace X=>0 then do a bool-OR to apply 1's
+    """
+    m0 = int(mask.replace('X', '0'), 2)
+    m1 = int(mask.replace('X', '1'), 2)
+    self.mem[address] = (value | m0) & m1
 
-    expanded = []
-    l = sum(True for i in out if i == 'X')
-    # print('Count:', l)
-    for i in range(2**l):
-      add2 = list(out)
-      aply = format(i, ('0%db' % l))
-      # print(aply)
-      # print("".join(add2))
-      for char in aply:
-        add2[add2.index('X')] = char
-      expanded.append(int("".join(add2), 2))
-    return expanded
-    
+  def write2(self, mask: str, address: int, value: int):
+    """Use the mask to generate multiple addresses to write the value to."""
+    # 36-bit binary string of the address.
+    address = f'{address:036b}'
+
+    # Pass through address on mask=0, otherwise apply mask value.
+    masked_addr = [b if a == '0' else a for a, b in zip(mask, address)]
+
+    # If there are 3 X's, we need to write to 2^3 addresses, i.e.
+    # there are 2^3 possible sunstitutes for those X's.
+    # For each possible substitute for the X's,
+    # make a binary string and replace the X's with the 0|1.
+    count = sum(True for i in masked_addr if i == 'X')
+    for i in range(2**count):
+      # count-length binary string. 0 => 000 => [0, 0, 0]
+      substitute = list(format(i, ('0%db' % count)))
+      # Rebuild the address, replacing 'X' with a char from substitute.
+      final_addr = [substitute.pop(0) if a == 'X' else a for a in masked_addr]
+      final_addr = int("".join(final_addr), 2)
+      self.mem[final_addr] = value
 
 
 if __name__ == '__main__':
