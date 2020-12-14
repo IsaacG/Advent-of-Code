@@ -1,4 +1,5 @@
 #!/bin/bash
 
 printf -v n '%02d' "$1"
-python "./py/${n}.py" "data/${n}.txt"
+shift
+python "./py/${n}.py" "$@" "data/${n}.txt"

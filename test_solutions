@@ -2,7 +2,7 @@
 
 while read -r day one two; do
   (( $# )) && (( $1 != day )) && continue
-  ans=( $(./run "$day") )
+  ans=( $(./run "$day" -r) )
   if [[ "$one" = "${ans[0]}" && "$two" = "${ans[1]}" ]]; then
     echo "Day $day is good."
   else

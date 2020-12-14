@@ -84,13 +84,30 @@ class Challenge:
 
   def run(self):
     """Run the tests then the problems."""
+    run_solution = True
+    run_timer = False
+
+    if sys.argv[1].startswith('-'):
+      mode = sys.argv.pop(1)
+      if mode == '-r':
+        run_solution, run_timer = True, False
+      elif mode == '-t':
+        run_solution, run_timer = False, True
+      elif mode == '-b':
+        run_solution, run_timer = True, True
+      else:
+        raise ValueError(f'Bad arg {mode}')
+
     self.pre_run()
     self.run_tests()
 
-    data = self.load_data(sys.argv[1])
-    for i, func in self.funcs.items():
-      self.debug(f'Running part {i}:')
-      print(func(data, *self.RUN_ARGS))
+    if run_solution:
+      data = self.load_data(sys.argv[1])
+      for i, func in self.funcs.items():
+        self.debug(f'Running part {i}:')
+        print(func(data, *self.RUN_ARGS))
+    if run_timer:
+      self.time()
 
   def time(self, count=None):
     """Benchmark the solution."""
