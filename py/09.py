@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/pypy3
 """Day 9."""
 
 import itertools

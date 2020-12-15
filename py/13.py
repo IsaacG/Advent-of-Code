@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/pypy3
 """Day 13. Bus terminal departure schedules."""
 
 import aoc

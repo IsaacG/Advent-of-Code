@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/pypy3
 """Day 14. Write data to memory?"""
 
 import aoc
