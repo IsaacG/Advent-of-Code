@@ -7,7 +7,7 @@ import pathlib
 import sys
 import time
 
-from typing import Iterable, List
+from typing import Callable, Iterable, List
 
 
 def mult(nums: Iterable[int]) -> int:
@@ -35,6 +35,7 @@ class Challenge:
   DEBUG = False
   TEST_ARGS = []
   RUN_ARGS = []
+  SLOW = False, False
 
   def __init__(self):
     self.funcs = {1: self.part1, 2: self.part2}
@@ -91,6 +92,8 @@ class Challenge:
       mode = sys.argv.pop(1)
       if mode == '-r':
         run_solution, run_timer = True, False
+      elif mode == '-v':
+        run_solution, run_timer = False, False
       elif mode == '-t':
         run_solution, run_timer = False, True
       elif mode == '-b':
@@ -109,32 +112,34 @@ class Challenge:
     if run_timer:
       self.time()
 
-  def time(self, count=None):
+  def time_func(self, count: int, func: Callable) -> float:
+    start = time.clock_gettime(time.CLOCK_MONOTONIC)
+    for _ in range(count):
+      func()
+    end = time.clock_gettime(time.CLOCK_MONOTONIC)
+    return end - start
+
+  def time(self, count: int = None):
     """Benchmark the solution."""
     data = self.load_data(sys.argv[1])
-    for part, func in self.funcs.items():
-      if count is None:
-        # if self.DAY in (11,):
-        # Really slow days. Do not run in a loop.
-        #  _count = 1
-        # else:
-          # Time once to get count, aiming for 10s runtime.
-        start = time.clock_gettime(time.CLOCK_MONOTONIC)
-        func(data, *self.RUN_ARGS)
-        end = time.clock_gettime(time.CLOCK_MONOTONIC)
-        _count = min(10000, max(1, int(10 / (end - start))))
-      else:
-        _count = count
+    times = []
 
-      start = time.clock_gettime(time.CLOCK_MONOTONIC)
-      for _ in range(_count):
-        func(data, *self.RUN_ARGS)
-      end = time.clock_gettime(time.CLOCK_MONOTONIC)
-      avg = (end - start) / _count
-      if avg < 5:
-        avg *= 1000
-        print(f'Part {part}: {avg:.4f} ms')
+    for part, func in self.funcs.items():
+      r = lambda: func(data, *self.RUN_ARGS)
+
+      if count:
+        _count = count
+      elif self.SLOW[part - 1]:
+        _count = 1
       else:
-        print(f'Part {part}: {avg:.4f} s')
+        t = self.time_func(1, r)
+        _count = min(5000, max(1, int(10 / t)))
+
+      t = self.time_func(_count, r)
+      avg = 1000 * t / _count
+      times.append(f'{avg:.4f}')
+
+    print(f'{self.day}: ' + '/'.join(times) + ' ms')
+
 
 # vim:ts=2:sw=2:expandtab
