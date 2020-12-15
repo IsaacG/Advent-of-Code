@@ -2,4 +2,4 @@
 
 printf -v n '%02d' "$1"
 shift
-python "./py/${n}.py" "$@" "data/${n}.txt"
+"./py/${n}.py" "$@" "data/${n}.txt"

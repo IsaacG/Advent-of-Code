@@ -1,4 +1,4 @@
-
+#!/bin/python
 
 import aoc
 import collections
