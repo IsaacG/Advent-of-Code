@@ -1,3 +1,0 @@
-#!/bin/bash
-
-while inotifywait -qe close_write py/ || : ; do date; "$@"; done
