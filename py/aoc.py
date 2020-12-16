@@ -139,7 +139,7 @@ class Challenge:
 
       t = self.time_func(_count, r)
       avg = 1000 * t / _count
-      times.append(f'{avg:.4f}')
+      times.append(f'{avg:.3f}')
 
     print(f'{self.day}: ' + '/'.join(times) + ' ms')
 
