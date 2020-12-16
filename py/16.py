@@ -1,4 +1,5 @@
 #!/bin/pypy3
+"""Train tickets."""
 
 import aoc
 import collections
@@ -7,6 +8,8 @@ import math
 import re
 from typing import Any, Callable, Dict, List
 
+# Fudge the second sample to include departure rows
+# so it would be valid input to part2.
 SAMPLE = ["""\
 class: 1-3 or 5-7
 row: 6-11 or 33-44
@@ -21,8 +24,8 @@ nearby tickets:
 55,2,20
 38,6,12
 ""","""
-class: 0-1 or 4-19
-row: 0-5 or 8-19
+departure class: 0-1 or 4-19
+departure row: 0-5 or 8-19
 seat: 0-13 or 16-19
 
 your ticket:
@@ -36,103 +39,121 @@ nearby tickets:
 
 
 class Day16(aoc.Challenge):
+  """Day 16. Train tickets.
+
+  TODO: Split parsing and running for benchmarking purposes.
+  """
 
   TRANSFORM = str
   SEP = '\n\n'
 
   TESTS = (
-    # aoc.TestCase(inputs=SAMPLE[0], part=1, want=71),
-    aoc.TestCase(inputs=SAMPLE[1], part=2, want=71),
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=71),
+    aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
   )
 
   def part1(self, chunks: List[str]) -> int:
-    rules, yours, near = chunks
-    r2 = []
-    for line in rules.split('\n'):
-       l = line.split(': ')[1]
-       r2.append(tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or ')))
-    rules = r2
-    r2 = []
-    for line in near.split('\n')[1:]:
-      r2.append([int(i) for i in line.split(',')])
-    near = r2
+    rules, your_ticket, nearby_tickets = chunks
 
-    bad = 0
-    for nums in near:
-      bad_val = None
-      for num in nums:
-        good = False
-        for rule in rules:
-          for p in rule:
-            if p[0] <= num <= p[1]:
-              good = True
-              break
-        if not good:
-          bad_val = num
-          break
-      if bad_val is not None:
-        bad += bad_val
-    return bad
+    rule_by_name = {}
+    for line in rules.split('\n'):
+       name, l = line.split(': ')
+       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or '))
+    # CSV data, one row (after the header).
+    your_ticket = [int(i) for i in your_ticket.split('\n')[1].split(',')]
+    # CSV data. Split in "\n" for a record, split record on "," for values.
+    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets.split('\n')[1:]]
+
+    # Find bad fields.
+    # Bad fields are values that do not meet any rule.
+    bad_values = [
+      # Find all numbers on all tickets
+      number for ticket in nearby_tickets for number in ticket
+      if not any(
+        # Where number does not satify any part of any rule.
+        rule_part[0] <= number <= rule_part[1] for rule in rule_by_name.values() for rule_part in rule
+      )
+    ]
+    return sum(bad_values)
 
 
   def part2(self, chunks: List[str]) -> int:
-    rules, yours, near = chunks
-    r2 = []
-    rule_names = {}
+    # Input got three sections, separated by a blank line.
+    rules, your_ticket, nearby_tickets = chunks
+
+    # name: 1-3 or 5-6
+    # split line on :  => name, rest
+    # split rest on " or " => list
+    # split list on -  => rule(low, high)
+    rule_by_name = {}
     for line in rules.split('\n'):
        name, l = line.split(': ')
-       r2.append(tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or ')))
-       rule_names[name] = tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or '))
-    rules = r2
-    r2 = []
-    for line in near.split('\n')[1:]:
-      r2.append([int(i) for i in line.split(',')])
-    near = r2
+       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or '))
+    # CSV data, one row (after the header).
+    your_ticket = [int(i) for i in your_ticket.split('\n')[1].split(',')]
+    # CSV data. Split in "\n" for a record, split record on "," for values.
+    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets.split('\n')[1:]]
 
+    # Find good tickets.
+    # Good tickets mean all values pass any part of any rules.
+    nearby_tickets = [
+      ticket
+      for ticket in nearby_tickets
+      if all(  # All numbers on the ticket
+        any(   # pass any of the rules
+          any( # by matching any part of the rule
+            rule_part[0] <= number <= rule_part[1] for rule_part in rule
+          )
+          for rule in rule_by_name.values()
+        )
+        for number in ticket
+      )
+    ]
+    # Construct a list of values in each column/field. Transpose the ticket info.
+    col_values = [{ticket[n] for ticket in nearby_tickets} for n in range(len(nearby_tickets[0]))]
 
-    good_tickets = []
+    # Fill out your ticket, mapping field name to value.
+    completed_ticket = {}
 
-    bad = 0
-    for nums in near:
-      bad_val = None
-      for num in nums:
-        good = False
-        for rule in rule_names.values():
-          for p in rule:
-            if p[0] <= num <= p[1]:
-              good = True
-              break
-        if not good:
-          bad_val = num
-          break
-      if bad_val is not None:
-        bad += bad_val
-      if bad_val is None:
-        good_tickets.append(nums)
+    # Map each rule name to the columns that satisfy that rule.
+    candidate_cols_for_rule = {
+      rule_name: {
+        c for c in range(len(rule_by_name))
+        if all(  # All the column values pass
+          any(   # any of the parts of the rule.
+            rule_part[0] <= number <= rule_part[1] for rule_part in rule
+          )
+          for number in col_values[c]
+        )
+      }
+      for rule_name, rule in rule_by_name.items()
+    }
 
-    your_ticket = {}
-    yours = [int(i) for i in yours.strip().split('\n')[1].split(',')]
-    near = good_tickets
-    # near.append(yours)
-    rules = set(rule_names.keys())
-    cols = set(range(len(rules)))
-    while rules:
-      rule_column = None
-      for name in rules:
-        valid_columns = []
-        for col in cols:
-          vals = [n[col] for n in near]
-          if all(any(p[0] <= v <= p[1] for p in rule_names[name]) for v in vals):
-            valid_columns.append(col)
-        if len(valid_columns) == 1:
-          break
-      if len(valid_columns) == 1:
-        your_ticket[name] = yours[valid_columns[0]]
-        rules.remove(name)
-        cols.remove(valid_columns[0])
-        valid_columns = []
-    return aoc.mult(v for k, v in your_ticket.items() if k.startswith('departure'))
+    # Match all rules to a column count until all rules are used up.
+    while candidate_cols_for_rule:
+      # Get the rule that can only be satisfied by one column.
+      rule_with_one_candidate = [
+        rule_name
+        for rule_name, candidates in candidate_cols_for_rule.items()
+        if len(candidates) == 1
+      ]
+      # It had better exist!
+      assert len(rule_with_one_candidate) == 1
+      rule_name = rule_with_one_candidate[0]
 
+      # Get the column ID and drop the rule.
+      column = candidate_cols_for_rule[rule_name].pop()
+      del candidate_cols_for_rule[rule_name]
+
+      # Update our ticket with the rule name and value.
+      completed_ticket[rule_name] = your_ticket[column]
+
+      # Drop the column we just used from the candidates. It's no longer available.
+      for candidates in candidate_cols_for_rule.values():
+        candidates.remove(column)
+
+    # Multiply all the fields that start with "departure".
+    return aoc.mult(v for k, v in completed_ticket.items() if k.startswith('departure'))
 
 
 if __name__ == '__main__':
