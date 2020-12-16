@@ -35,7 +35,7 @@ class Challenge:
   DEBUG = False
   TEST_ARGS = []
   RUN_ARGS = []
-  SLOW = False, False
+  TIMER_ITERATIONS = (None, None)
 
   def __init__(self):
     self.funcs = {1: self.part1, 2: self.part2}
@@ -56,6 +56,10 @@ class Challenge:
     """Solve part 2."""
     raise NotImplementedError
 
+  def parse(self, x):
+    """Optional parser to parse data to send to the parts."""
+    return x
+
   def load_data(self, src: str) -> List[str]:
     """Load exercise data."""
     if os.path.exists(src):
@@ -70,6 +74,7 @@ class Challenge:
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       data = self.load_data(case.inputs)
+      data = self.parse(data)
       got = self.funcs[case.part](data, *self.TEST_ARGS)
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
@@ -108,6 +113,7 @@ class Challenge:
 
     if run_solution:
       data = self.load_data(sys.argv[1])
+      data = self.parse(data)
       for i, func in self.funcs.items():
         self.debug(f'Running part {i}:')
         print(func(data, *self.RUN_ARGS))
@@ -119,29 +125,30 @@ class Challenge:
     for _ in range(count):
       func()
     end = time.clock_gettime(time.CLOCK_MONOTONIC)
-    return end - start
+    return 1000 * (end - start) / count
 
   def time(self, count: int = None):
     """Benchmark the solution."""
     data = self.load_data(sys.argv[1])
     times = []
+    times.append(self.time_func(10000, lambda: self.parse(data)))
+    data = self.parse(data)
 
     for part, func in self.funcs.items():
       r = lambda: func(data, *self.RUN_ARGS)
 
       if count:
         _count = count
-      elif self.SLOW[part - 1]:
-        _count = 1
+      elif self.TIMER_ITERATIONS[part - 1]:
+        _count = self.TIMER_ITERATIONS[part - 1]
       else:
-        t = self.time_func(1, r)
-        _count = min(5000, max(1, int(10 / t)))
+        t = self.time_func(5, r) / 1000
+        _count = min(10000, max(1, int(25 / t)))
 
       t = self.time_func(_count, r)
-      avg = 1000 * t / _count
-      times.append(f'{avg:.3f}')
+      times.append(t)
 
-    print(f'{self.day}: ' + '/'.join(times) + ' ms')
+    print(f'{self.day}: ' + '/'.join(f'{t:.3f}' for t in times) + ' ms')
 
 
 # vim:ts=2:sw=2:expandtab

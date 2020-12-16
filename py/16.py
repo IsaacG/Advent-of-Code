@@ -39,20 +39,19 @@ nearby tickets:
 
 
 class Day16(aoc.Challenge):
-  """Day 16. Train tickets.
-
-  TODO: Split parsing and running for benchmarking purposes.
-  """
+  """Day 16. Train tickets."""
 
   TRANSFORM = str
   SEP = '\n\n'
+  TIMER_ITERATIONS = (1000, 1000)
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=71),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
   )
 
-  def part1(self, chunks: List[str]) -> int:
+  def parse(self, chunks: List[str]):
+    """Parse the input."""
     rules, your_ticket, nearby_tickets = chunks
 
     rule_by_name = {}
@@ -64,7 +63,11 @@ class Day16(aoc.Challenge):
     # CSV data. Split in "\n" for a record, split record on "," for values.
     nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets.split('\n')[1:]]
 
-    # Find bad fields.
+    return rule_by_name, your_ticket, nearby_tickets
+
+  def part1(self, data) -> int:
+    """Find bad fields."""
+    rule_by_name, your_ticket, nearby_tickets = data
     # Bad fields are values that do not meet any rule.
     bad_values = [
       # Find all numbers on all tickets
@@ -77,23 +80,8 @@ class Day16(aoc.Challenge):
     return sum(bad_values)
 
 
-  def part2(self, chunks: List[str]) -> int:
-    # Input got three sections, separated by a blank line.
-    rules, your_ticket, nearby_tickets = chunks
-
-    # name: 1-3 or 5-6
-    # split line on :  => name, rest
-    # split rest on " or " => list
-    # split list on -  => rule(low, high)
-    rule_by_name = {}
-    for line in rules.split('\n'):
-       name, l = line.split(': ')
-       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or '))
-    # CSV data, one row (after the header).
-    your_ticket = [int(i) for i in your_ticket.split('\n')[1].split(',')]
-    # CSV data. Split in "\n" for a record, split record on "," for values.
-    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets.split('\n')[1:]]
-
+  def part2(self, data) -> int:
+    rule_by_name, your_ticket, nearby_tickets = data
     # Find good tickets.
     # Good tickets mean all values pass any part of any rules.
     nearby_tickets = [

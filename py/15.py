@@ -13,7 +13,7 @@ class Day15(aoc.Challenge):
   """Solve for the n'th value in a Van Eck sequence."""
 
   TRANSFORM = lambda _, s: [int(i) for i in s.split(',')]
-  SLOW = True, True
+  TIMER_ITERATIONS = (10000, 10)
 
   TESTS = (
     aoc.TestCase(inputs='0,3,6', part=1, want=436),

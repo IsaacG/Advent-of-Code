@@ -31,24 +31,6 @@ RE_CONTENTS = re.compile('^([0-9]*) (.*) bags?')
 TARGET = 'shiny gold'
 
 
-def parse_rules(data: List[str]) -> Rules:
-  """Parse the input data into structured data."""
-  rules = {}
-  for line in data:
-    # (red) bags contain (2 purple bags, 3 yellow bags.)
-    outer, contains = line.split(' bags contain ')
-    rules[outer] = {}
-    # (red) bags contain (no other bags.)
-    if contains == 'no other bags.':
-      continue
-    # (2 purple bags), (3 yellow bags.)
-    for c in contains.split(', '):
-      m = RE_CONTENTS.search(c)
-      # rules['red'] = {'purple': 2, 'yellow': 3}
-      rules[outer][m.group(2)] = int(m.group(1))
-  return rules
-
-
 class Day07(aoc.Challenge):
 
   TESTS = (
@@ -56,10 +38,25 @@ class Day07(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=126),
   )
 
+  def parse(self, data: List[str]) -> Rules:
+    """Parse the input data into structured data."""
+    rules = {}
+    for line in data:
+      # (red) bags contain (2 purple bags, 3 yellow bags.)
+      outer, contains = line.split(' bags contain ')
+      rules[outer] = {}
+      # (red) bags contain (no other bags.)
+      if contains == 'no other bags.':
+        continue
+      # (2 purple bags), (3 yellow bags.)
+      for c in contains.split(', '):
+        m = RE_CONTENTS.search(c)
+        # rules['red'] = {'purple': 2, 'yellow': 3}
+        rules[outer][m.group(2)] = int(m.group(1))
+    return rules
 
-  def part1(self, data: List[str]) -> int:
+  def part1(self, rules: Rules) -> int:
     """How many colors can contain shiny gold bags?"""
-    rules = parse_rules(data)
     expanded = collections.defaultdict(set)
     for o, i in rules.items():
       if not i:
@@ -75,12 +72,11 @@ class Day07(aoc.Challenge):
     return len([i for i in expanded.values() if TARGET in i])
 
 
-  def part2(self, data: List[str]) -> int:
+  def part2(self, rules: Rules) -> int:
     """How many bags are inside a shiny gold bag?
 
     Dynamic programming!
     """
-    rules = parse_rules(data)
     cache = {}
     def num_inside(color):
       """How many bags do we have, starting at `color`?"""

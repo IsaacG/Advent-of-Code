@@ -22,26 +22,25 @@ class Day02(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=2, want=1),
   )
 
-  def parse(self, line: str) -> Tuple[int, int, str, str]:
-     r = RE.match(line)
-     mn, mx, char, passwd = r.groups()
-     return int(mn), int(mx), char, passwd
+  def parse(self, lines: List[str]) -> Tuple[int, int, str, str]:
+    data = []
+    for line in lines:
+      r = RE.match(line)
+      mn, mx, char, passwd = r.groups()
+      data.append((int(mn), int(mx), char, passwd))
+    return data
 
-  def valid_a(self, line: str) -> bool:
-     mn, mx, char, passwd = self.parse(line)
-     match = len([1 for i in passwd if i == char])
-     return mn <= match <= mx
+  def part1(self, data) -> int:
+    return len([
+      True for (mn, mx, char, passwd) in data
+      if mn <= len([1 for i in passwd if i == char]) <= mx
+    ])
 
-  def valid_b(self, line: str) -> bool:
-     mn, mx, char, passwd = self.parse(line)
-     return (passwd[mn - 1] == char) ^ (passwd[mx - 1] == char)
-     return mn <= match <= mx
-
-  def part1(self, lines: List[str]) -> int:
-    return len([1 for line in lines if self.valid_a(line)])
-
-  def part2(self, lines: List[str]) -> int:
-    return len([1 for line in lines if self.valid_b(line)])
+  def part2(self, data) -> int:
+    return len([
+      True for (mn, mx, char, passwd) in data
+      if (passwd[mn - 1] == char) ^ (passwd[mx - 1] == char)
+    ])
 
 
 if __name__ == '__main__':

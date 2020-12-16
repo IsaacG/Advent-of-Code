@@ -1,4 +1,8 @@
 #!/bin/python3
+"""Run AoC code in various flavors.
+
+TODO: Add a timeout flag.
+"""
 
 import click
 import datetime
@@ -78,7 +82,7 @@ class Runner:
       days = self.days
     days = [f"{i:02d}" for i in days]
 
-    for f in self.base.glob('py/[0-9][0-9].py'):
+    for f in sorted(self.base.glob('py/[0-9][0-9].py')):
       if days and f.stem not in days:
         continue
       data = (self.base / 'data' / f.stem).with_suffix('.txt')
@@ -114,9 +118,18 @@ class Runner:
 
   def _run_with_flag(self, flag: str, day=None):
     for (f, d) in self.get_days(day):
+      # cmd = ['timeout', '2', f, flag, d]
       cmd = [f, flag, d]
-      subprocess.run(cmd)
+      try:
+        p = subprocess.run(cmd)
+      except Exception as e:
+        print(e)
+        break
+      if p.returncode == 124:
+        print('TIMEOUT!')
 
 
 if __name__ == '__main__':
   cli()
+
+# vim:ts=2:sw=2:expandtab

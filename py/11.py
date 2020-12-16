@@ -102,7 +102,7 @@ class Day11(aoc.Challenge):
   """Solve Day 11."""
 
   TRANSFORM = str
-  SLOW = False, True
+  TIMER_ITERATIONS = (50, 10)
 
   TESTS = (
     aoc.TestCase(inputs=S1[0], part=1, want=37),
