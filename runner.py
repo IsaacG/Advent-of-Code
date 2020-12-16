@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import click
+import datetime
 import inotify_simple
 import pathlib
 import subprocess
@@ -61,8 +62,13 @@ class Runner:
     while e := inotify.read():
       if not e[0].name.endswith('.py'):
         continue
+      n = pathlib.Path(e[0].name).stem
+      if not n.isnumeric():
+        continue
       day = int(pathlib.Path(e[0].name).stem)
+      print(datetime.datetime.now().strftime('%H:%M:%S'))
       func(day)
+      print('Done.')
 
   def get_days(self, day=None):
     """Generate the filenames of the py code and matching data.txt"""
@@ -96,7 +102,7 @@ class Runner:
       f = (self.base / 'py' / f'{day:02d}').with_suffix('.py')
       d = (self.base / 'data' / f'{day:02d}').with_suffix('.txt')
       cmd = [f, d]
-      p = subprocess.run(cmd, check=True, text=True, capture_output=True)
+      p = subprocess.run(cmd, text=True, capture_output=True)
       got1, got2 = p.stdout.strip().split()
       assert want1 == got1
       assert want2 == got2
@@ -109,7 +115,7 @@ class Runner:
   def _run_with_flag(self, flag: str, day=None):
     for (f, d) in self.get_days(day):
       cmd = [f, flag, d]
-      subprocess.run(cmd, check=True)
+      subprocess.run(cmd)
 
 
 if __name__ == '__main__':

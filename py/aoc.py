@@ -71,7 +71,9 @@ class Challenge:
       self.debug(f'Running test {i + 1} (part{case.part})')
       data = self.load_data(case.inputs)
       got = self.funcs[case.part](data, *self.TEST_ARGS)
-      assert case.want == got, f'FAILED! want({case.want}) != got({got})'
+      if case.want != got:
+        print(f'FAILED! {case.part}: want({case.want}) != got({got})')
+        break
       self.debug('PASSED!')
     self.debug('=====')
 
