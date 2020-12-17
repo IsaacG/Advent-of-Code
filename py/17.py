@@ -5,7 +5,7 @@ import collections
 import functools
 import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 SAMPLE = ["""\
 .#.
@@ -17,33 +17,27 @@ ACTIVE = '#'
 INACTIVE = '.'
 
 
-class SeatingB:
+class GameOfLifeB:
   """Manage the seating area."""
 
-  def __init__(self, block: List[str]):
+  def __init__(self, dimensions: int, block: List[str]):
     """Build the board from a list of strings."""
-    offset = 6
-    self.board = {}
-    self.next = {}
+    self.dimensions = dimensions
+    self.board = set()
     z = 0
     w = 0
     for y, row in enumerate(block):
       for x, val in enumerate(row):
-        self.board[(w,z,y,x)] = val
-        self.next[(w,z,y,x)] = INACTIVE
+        if val == ACTIVE:
+          self.board.add((w,z,y,x))
 
-  @classmethod
-  def from_str(cls, layout: str) -> "Seating":
-    """Seating from `str`."""
-    return cls(layout.strip().split('\n'))
-
-  def people_count(self) -> int:
+  def live_count(self) -> int:
     """Total number of people in the seating area."""
-    return sum(x == ACTIVE for x in self.board.values())
+    return len(self.board)
 
   def active(self, w, z, y, x) -> bool:
     """Return if a spot is active."""
-    return (w,z,y,x) in self.board and self.board[(w,z,y,x)] == ACTIVE
+    return (w,z,y,x) in self.board
 
   def surrounding(self, w, z, y, x) -> int:
     """Count the number of active seats immediately surround this one."""
@@ -59,14 +53,15 @@ class SeatingB:
 
   def calc_next(self):
     """Compute the seating area after one iteration."""
-    x_min = min(x for (w,z,y,x) in self.board.keys())
-    x_max = max(x for (w,z,y,x) in self.board.keys())
-    y_min = min(y for (w,z,y,x) in self.board.keys())
-    y_max = max(y for (w,z,y,x) in self.board.keys())
-    z_min = min(z for (w,z,y,x) in self.board.keys())
-    z_max = max(z for (w,z,y,x) in self.board.keys())
-    w_min = min(w for (w,z,y,x) in self.board.keys())
-    w_max = max(w for (w,z,y,x) in self.board.keys())
+    next = set()
+    x_min = min(x for (w,z,y,x) in self.board)
+    x_max = max(x for (w,z,y,x) in self.board)
+    y_min = min(y for (w,z,y,x) in self.board)
+    y_max = max(y for (w,z,y,x) in self.board)
+    z_min = min(z for (w,z,y,x) in self.board)
+    z_max = max(z for (w,z,y,x) in self.board)
+    w_min = min(w for (w,z,y,x) in self.board)
+    w_max = max(w for (w,z,y,x) in self.board)
     for w in range(w_min - 1, w_max + 2):
       for z in range(z_min - 1, z_max + 2):
         for y in range(y_min - 1, y_max + 2):
@@ -74,18 +69,14 @@ class SeatingB:
             count = self.surrounding(w, z, y, x)
             if self.active(w, z, y, x):
               if count in (2,3):
-                self.next[(w, z,y,x)] = ACTIVE
-              else:
-                self.next[(w, z,y,x)] = INACTIVE
+                next.add((w, z,y,x))
             else:
               if count == 3:
-                self.next[(w, z,y,x)] = ACTIVE
-              else:
-                self.next[(w, z,y,x)] = INACTIVE
-    self.board, self.next = self.next, self.board
+                next.add((w, z,y,x))
+    self.board  = next
 
 
-class Seating:
+class GameOfLife:
   """Manage the seating area."""
 
   def __init__(self, block: List[str]):
@@ -114,12 +105,7 @@ class Seating:
           line += self.board[(z,y,x)]
         print(line)
 
-  @classmethod
-  def from_str(cls, layout: str) -> "Seating":
-    """Seating from `str`."""
-    return cls(layout.strip().split('\n'))
-
-  def people_count(self) -> int:
+  def live_count(self) -> int:
     """Total number of people in the seating area."""
     return sum(x == ACTIVE for x in self.board.values())
 
@@ -164,7 +150,7 @@ class Seating:
               self.next[(z,y,x)] = ACTIVE
             else:
               self.next[(z,y,x)] = INACTIVE
-    self.board, self.next = self.next, self.board
+    self.board, self.next = self.next, {}
 
 
 class Day17(aoc.Challenge):
@@ -173,140 +159,24 @@ class Day17(aoc.Challenge):
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=112),
+    aoc.TestCase(inputs=SAMPLE[0], part=2, want=848),
   )
 
   def part1(self, lines: List[str]) -> int:
-    board = Seating(lines)
-    for _ in range(6):
+    board = GameOfLife(lines)
+    for i in range(6):
       board.calc_next()
-    return board.people_count()
+    return board.live_count()
 
   def part2(self, lines: List[str]) -> int:
-    board = SeatingB(lines)
+    board = GameOfLifeB(4, lines)
     for _ in range(6):
       board.calc_next()
-    return board.people_count()
+    return board.live_count()
 
 
 
 if __name__ == '__main__':
   Day17().run()
 
-# vim:ts=2:sw=2:expandtab
-AMPLE = ["""\
-.#.
-..#
-###
-""","""\
-Before any cycles:
-
-z=0
-.#.
-..#
-###
-
-
-After 1 cycle:
-
-z=-1
-#..
-..#
-.#.
-
-z=0
-#.#
-.##
-.#.
-
-z=1
-#..
-..#
-.#.
-
-
-After 2 cycles:
-
-z=-2
-.....
-.....
-..#..
-.....
-.....
-
-z=-1
-..#..
-.#..#
-....#
-.#...
-.....
-
-z=0
-##...
-##...
-#....
-....#
-.###.
-
-z=1
-..#..
-.#..#
-....#
-.#...
-.....
-
-z=2
-.....
-.....
-..#..
-.....
-.....
-
-
-After 3 cycles:
-
-z=-2
-.......
-.......
-..##...
-..###..
-.......
-.......
-.......
-
-z=-1
-..#....
-...#...
-#......
-.....##
-.#...#.
-..#.#..
-...#...
-
-z=0
-...#...
-.......
-#......
-.......
-.....##
-.##.#..
-...#...
-
-z=1
-..#....
-...#...
-#......
-.....##
-.#...#.
-..#.#..
-...#...
-
-z=2
-.......
-.......
-..##...
-..###..
-.......
-.......
-.......
-"""]
 # vim:ts=2:sw=2:expandtab
