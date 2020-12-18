@@ -56,6 +56,9 @@ class Challenge:
     """Solve part 2."""
     raise NotImplementedError
 
+  def sum_map(self, lines: List[str], func: Callable[[str], int]) -> int:
+    return sum(func(l) for l in lines)
+
   def preparse_input(self, x):
     """Optional parser to parse data to send to the parts."""
     return x

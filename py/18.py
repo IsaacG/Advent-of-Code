@@ -3,6 +3,8 @@
 
 Initial messy code: 0.177/6.108/4.791 ms
 I could reverse the tokens to make life easier but that feels like cheating.
+Part 1, non-parameterized conds test: 3.313 ms
+With the tree parser: 0.178/4.177/4.783 ms
 """
 
 import aoc
@@ -10,7 +12,7 @@ import collections
 import functools
 import math
 import re
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union, Optional
 
 
 class Node:
@@ -31,6 +33,7 @@ class Node:
   def compute(self) -> int:
     if self.op is None:
       return int(self.a)
+    # Moving these for a map kills runtime.
     elif self.op == '*':
       return self.a.compute() * self.b.compute()
     elif self.op == '+':
@@ -38,7 +41,7 @@ class Node:
 
   def __str__(self):
     if self.op is None:
-      return f'({self.a})'
+      return self.a
     else:
       return f'({self.a} {self.op} {self.b})'
 
@@ -63,119 +66,55 @@ class Day18(aoc.Challenge):
     """Drop whitespace."""
     return [l.replace(" ", "") for l in x]
 
-  def two(self, line):
-    if re.match(r'^[0-9]+$', line):
-      return int(line)
-
-    if '(' in line:
-      start = 0
-      while line[start] != '(':
-        start += 1
-      i = start
-      count = 1
-      while count:
-        i += 1
-        if line[i] == ')':
-          count -= 1
-        if line[i] == '(':
-          count += 1
-      left, p, right = line[:start], line[start+1:i], line[i+1:]
-      line = left + str(self.two(p)) + right
-      return self.two(line)
-    
-    if '*' in line:
-      i = len(line) - 1
-      while line[i] != '*':
-        i -= 1
-      return self.two(line[:i]) * self.two(line[i+1:])
-    if '+' in line:
-      i = len(line) - 1
-      while line[i] != '+':
-        i -= 1
-      return self.two(line[:i]) + self.two(line[i+1:])
-
-
-
-
-  def one(self, line):
-    if line.isnumeric():
-      return int(line)
-
-    i = len(line) - 1
-    if line[i] == ")":
-      count = 1
-      i -= 1
-      while count:
-        if line[i] == "(":
-          count -= 1
-        if line[i] == ")":
-          count += 1
-        i -= 1
-      if i == -1:
-        left, right = "", line[1:-1]
-      else:
-        left, right = line[0:i], line[i+2:-1]
-      if not left:
-        return self.one(right)
-      else:
-        if line[i] == '+':
-          return self.one(left) + self.one(right)
-        if line[i] == '*':
-          return self.one(left) * self.one(right)
-    else:
-      if line.isnumeric():
-        return int(line)
-      else:
-        m = re.search('^(.*)([+*])([0-9]*)$', line)
-        assert m
-        left, op, right = m.groups()
-        left, right = self.one(left), self.one(right)
-        if op == "+":
-          res = left + right
-        if op == '*':
-          res = left * right
-        return res
-
-
-
-    
   def part1(self, lines: List[str]) -> int:
-    return sum(self.make_tree(self.tokenize(line)).compute() for line in lines)
+    """Treat + and * equally."""
+    conds = [lambda x: x in '+*']
+    return self.sum_map(lines, lambda x: self.solve(x, conds))
 
   def part2(self, lines: List[str]) -> int:
-    return sum(self.two(line) for line in lines)
+    """Split on * first making it lower precendent than +."""
+    conds = [lambda x: x == '*', lambda x: x == '+']
+    return self.sum_map(lines, lambda x: self.solve(x, conds))
 
-  def testing(self):
-    line = '12+34*(45+34)'
-    print(f"Input: {line}")
-    tokens = self.tokenize(line)
+  def solve(self, tokens: List[str], f: List[Callable[[str], bool]]) -> int:
+    """Tokenize, create tree and math the tree."""
+    return self.make_tree(self.tokenize(tokens), f).compute()
 
-  def make_tree(self, tokens: List[str]):
-    """Build a tree, weird ordering"""
-    if len(tokens) == 1:
-      return Node(tokens[0])
+  def get_split_for(self, tokens: List[str], conds: List[Callable[[str], bool]]) -> int:
+    """Return the split-point, respecting (x) as one block."""
+    for cond in conds:
+      i = len(tokens) - 1
+      depth = 0
+      while i >= 0:
+        if depth == 0 and cond(tokens[i]):
+          return i
+        if tokens[i] == ')':
+          depth += 1
+        elif tokens[i] == '(':
+          depth -= 1
+        i -= 1
+    return None
 
-    # Find the right-most operator and split on that. Treat parens as a block.
-    i = len(tokens) - 1
-    depth = 0
-    while i >= 0:
-      if depth == 0 and tokens[i] in '+*':
-        left = self.make_tree(tokens[:i])
-        op = tokens[i]
-        right = self.make_tree(tokens[i+1:])
+  def make_tree(self, tokens: List[str], conds: List[Callable[[str], bool]]):
+    """Build a tree, arbitrary ordering based on the conds."""
+    def _go(tkns):
+      if len(tkns) == 1:
+        return Node(tkns[0])
+      # Find the right-most operator and split on that. Treat parens as a block.
+      i = self.get_split_for(tkns, conds)
+      if i is None:
+        # Ran out of tokens. Must be "(exp)".
+        assert tkns[0] == '(' and tkns[-1] == ')'
+        return _go(tkns[1:-1])
+      else:
+        left = _go(tkns[:i])
+        op = tkns[i]
+        right = _go(tkns[i+1:])
         return Node(left, op, right)
-      if tokens[i] == ')':
-        depth += 1
-      elif tokens[i] == '(':
-        depth -= 1
-      i -= 1
-    else:
-      # Ran out of tokens. Must be "(exp)".
-      assert tokens[0] == '(' and tokens[-1] == ')'
-      return self.make_tree(tokens[1:-1])
-
+    return _go(tokens)
 
   def tokenize(self, line: str) -> List[str]:
+    """Tokenize the input into strings of nums/+/*/()."""
     tokens = []
     i = 0
     ll = len(line)
@@ -195,6 +134,5 @@ class Day18(aoc.Challenge):
 
 if __name__ == '__main__':
   Day18().run()
-  # Day18().testing()
 
 # vim:ts=2:sw=2:expandtab
