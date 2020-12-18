@@ -18,6 +18,11 @@ def mult(nums: Iterable[int]) -> int:
   return p
 
 
+def sum_map(lines: List[str], func: Callable[[str], int]) -> int:
+  """sum_map(lines, func)"""
+  return sum(func(l) for l in lines)
+
+
 @dataclasses.dataclass
 class TestCase:
   """Test out a solution with a known input/want."""
@@ -55,9 +60,6 @@ class Challenge:
   def part2(self, lines: List[str]) -> int:
     """Solve part 2."""
     raise NotImplementedError
-
-  def sum_map(self, lines: List[str], func: Callable[[str], int]) -> int:
-    return sum(func(l) for l in lines)
 
   def preparse_input(self, x):
     """Optional parser to parse data to send to the parts."""
