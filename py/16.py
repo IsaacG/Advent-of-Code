@@ -50,7 +50,7 @@ class Day16(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
   )
 
-  def parse(self, chunks: List[str]):
+  def preparse_input(self, chunks: List[str]):
     """Parse the input."""
     rules, your_ticket, nearby_tickets = chunks
 

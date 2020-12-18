@@ -22,7 +22,7 @@ class Day02(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=2, want=1),
   )
 
-  def parse(self, lines: List[str]) -> Tuple[int, int, str, str]:
+  def preparse_input(self, lines: List[str]) -> Tuple[int, int, str, str]:
     data = []
     for line in lines:
       r = RE.match(line)

@@ -28,6 +28,9 @@ class DayNN(aoc.Challenge):
   def part2(self, lines: List[str]) -> int:
     return 0
 
+  def preparse_input(self, x):
+    return x
+
 
 if __name__ == '__main__':
   DayNN().run()

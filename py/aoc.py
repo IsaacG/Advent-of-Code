@@ -56,7 +56,7 @@ class Challenge:
     """Solve part 2."""
     raise NotImplementedError
 
-  def parse(self, x):
+  def preparse_input(self, x):
     """Optional parser to parse data to send to the parts."""
     return x
 
@@ -74,7 +74,7 @@ class Challenge:
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       data = self.load_data(case.inputs)
-      data = self.parse(data)
+      data = self.preparse_input(data)
       got = self.funcs[case.part](data, *self.TEST_ARGS)
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
@@ -113,7 +113,7 @@ class Challenge:
 
     if run_solution:
       data = self.load_data(sys.argv[1])
-      data = self.parse(data)
+      data = self.preparse_input(data)
       for i, func in self.funcs.items():
         self.debug(f'Running part {i}:')
         print(func(data, *self.RUN_ARGS))
@@ -131,8 +131,8 @@ class Challenge:
     """Benchmark the solution."""
     data = self.load_data(sys.argv[1])
     times = []
-    times.append(self.time_func(10000, lambda: self.parse(data)))
-    data = self.parse(data)
+    times.append(self.time_func(10000, lambda: self.preparse_input(data)))
+    data = self.preparse_input(data)
 
     for part, func in self.funcs.items():
       r = lambda: func(data, *self.RUN_ARGS)

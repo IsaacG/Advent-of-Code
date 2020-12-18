@@ -38,7 +38,7 @@ class Day07(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=126),
   )
 
-  def parse(self, data: List[str]) -> Rules:
+  def preparse_input(self, data: List[str]) -> Rules:
     """Parse the input data into structured data."""
     rules = {}
     for line in data:
