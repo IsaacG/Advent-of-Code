@@ -117,9 +117,9 @@ class Challenge:
     self.run_tests()
 
     if run_solution:
-      data = self.load_data(sys.argv[1])
-      data = self.preparse_input(data)
       for i, func in self.funcs.items():
+        data = self.load_data(sys.argv[1])
+        data = self.preparse_input(data)
         self.debug(f'Running part {i}:')
         print(func(data, *self.RUN_ARGS))
     if run_timer:

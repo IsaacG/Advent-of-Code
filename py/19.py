@@ -1,75 +1,14 @@
 #!/bin/pypy3
+"""Day 19. Regex building."""
 
 import aoc
-import collections
-import functools
-import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Dict, List, Tuple
 
-SAMPLE = ["""\
-0: 4 1 5
-1: 2 3 | 3 2
-2: 4 4 | 5 5
-3: 4 5 | 5 4
-4: "a"
-5: "b"
+import data
 
-ababbb
-bababa
-abbbab
-aaabbb
-aaaabbb
-""","""
-42: 9 14 | 10 1
-9: 14 27 | 1 26
-10: 23 14 | 28 1
-1: "a"
-11: 42 31
-5: 1 14 | 15 1
-19: 14 1 | 14 14
-12: 24 14 | 19 1
-16: 15 1 | 14 14
-31: 14 17 | 1 13
-6: 14 14 | 1 14
-2: 1 24 | 14 4
-0: 8 11
-13: 14 3 | 1 12
-15: 1 | 14
-17: 14 2 | 1 7
-23: 25 1 | 22 14
-28: 16 1
-4: 1 1
-20: 14 14 | 1 15
-3: 5 14 | 16 1
-27: 1 6 | 14 18
-14: "b"
-21: 14 1 | 1 14
-25: 1 1 | 1 14
-22: 14 14
-8: 42
-26: 14 22 | 1 20
-18: 15 15
-7: 14 5 | 1 21
-24: 14 1
-
-abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
-bbabbbbaabaabba
-babbbbaabbbbbabbbbbbaabaaabaaa
-aaabbbbbbaaaabaababaabababbabaaabbababababaaa
-bbbbbbbaaaabbbbaaabbabaaa
-bbbababbbbaaaaaaaabbababaaababaabab
-ababaaaaaabaaab
-ababaaaaabbbaba
-baabbaaaabbaaaababbaababb
-abbbbabbbbaaaababbbbbbaaaababb
-aaaaabbaabaaaaababaa
-aaaabbaaaabbaaa
-aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
-babaaabbbaaabaababbaabababaaab
-aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba
-"""]
-
+SAMPLE = data.D19
+TEXT_RE = re.compile(r'"(.*)"')
 
 class Day19(aoc.Challenge):
 
@@ -77,89 +16,96 @@ class Day19(aoc.Challenge):
   SEP = '\n\n'
 
   TESTS = (
-    # aoc.TestCase(inputs=SAMPLE[0], part=1, want=2),
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=2),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=12),
   )
 
-  def part2(self, lines: List[str]) -> int:
-    rules = set(lines[0].split('\n'))
-    rules.remove('8: 42')
-    rules.remove('11: 42 31')
-    rules.add('8: 42 | 42 8')
-    rules.add('11: 42 31 | 42 11 31')
-    rd = {}
-    while len(rules) > 3:
-      l = len(rules)
-      new_matches = set()
-
-      for i in rules:
-        n, v = i.split(": ")
-        if v[0] == '"' and v[2] == '"':
-          rd[n] = v[1]
-          new_matches.add(i)
-        elif all(rn in rd for part in v.split(' | ') for rn in part.split(" ")):
+  def generate_regexes(self, raw_rules: Dict[int, str]) -> Dict[int, str]:
+    """Resolve the input data to a set of regexps."""
+    regexps = {}
+    # Resolve rules until all done.
+    while raw_rules:
+      old_len = len(raw_rules)
+      for rule_num, rule_txt in list(raw_rules.items()):
+        # 1: "a"
+        m = TEXT_RE.fullmatch(rule_txt)
+        if m:
+          regexps[rule_num] = m.group(1)
+          del raw_rules[rule_num]
+        # Check if all rule components have already been resolved.
+        elif all(int(num) in regexps for part in rule_txt.split(' | ') for num in part.split(" ")):
           composed = []
-          c = ""
-          for  part in v.split(' | '):
-            composed.append("".join(rd[rn] for rn in part.split(" ")))
-          rd[n] = '(?:' + '|'.join(composed) + ')'
-          new_matches.add(i)
-      rules = rules - new_matches
-      assert len(rules) != l, rules
+          # 1: 2 3 | 4 5
+          # Split on "|" and solve each part, rejoining with "|".
+          # i.e. generate 23|45 with each number resolved to their rule.
+          for part in rule_txt.split(' | '):
+            composed.append("".join(regexps[int(num)] for num in part.split(" ")))
+          regexps[rule_num] = '(?:' + '|'.join(composed) + ')'
+          del raw_rules[rule_num]
+      # Assert we're making progress, i.e. not in an infinite loop
+      assert len(raw_rules) != old_len
+    return {k: re.compile(v) for k, v in regexps.items()}
 
-    ext = '^(%s{2,})(%s+)$' % (rd['42'], rd['31'])
-
-    matchs = [
-      inp
-      for inp in set(lines[1].split('\n'))
-      if any(re.match('^%s$' % i, inp) for i in rd.values())
-    ]
-    ec = 0
-    for inp in set(lines[1].split('\n')):
-      if inp in matchs:
-        continue
-      m = re.match(ext, inp)
-      if m:
-        c1 = len(m.group(1)) / len(rd['42'])
-        c2 = len(m.group(2)) / len(rd['31'])
-        if c1 > c2:
-          ec += 1
-    return len(matchs) + ec
-        
-
-  def part1(self, lines: List[str]) -> int:
-    rules = set(lines[0].split('\n'))
-    rd = {}
-    while rules:
-      l = len(rules)
-      new_matches = set()
-
-      for i in rules:
-        n, v = i.split(": ")
-        if v[0] == '"' and v[2] == '"':
-          rd[n] = v[1]
-          new_matches.add(i)
-        elif all(rn in rd for part in v.split(' | ') for rn in part.split(" ")):
-          composed = []
-          c = ""
-          for  part in v.split(' | '):
-            composed.append("".join(rd[rn] for rn in part.split(" ")))
-          rd[n] = '(' + '|'.join(composed) + ')'
-          new_matches.add(i)
-      rules = rules - new_matches
-      assert len(rules) != l, l
+  def part2(self, data: Tuple[List[str], List[str]]) -> int:
+    """Find the num of lines that match the regex-like rules.
     
+    However, handle circular rules. Relevant rules:
+    0: 8 11
+    8: 42 | 42 8
+    11: 42 31 | 42 11 31
+
+    Note:
+      r8  == r42+
+      r11 == r42{n}r31{m}, n == m
+      r0  == r42+r42{n}r31{n}
+          == r42{n}r31{m}, n > m
+      Manually generate a rule, (r42+)(r31+) and check if match_count(r42) > match_count(r31).
+    """
+    raw_rules, inputs = data 
+    # Drop these rules. We well hand-craft them.
+    for i in (0, 8, 11):
+      if i in raw_rules:
+        del raw_rules[i]
+    regexps = self.generate_regexes(raw_rules)
+
+    r42 = regexps[42]
+    r31 = regexps[31]
+    r0 = re.compile(r'(%s{2,})(%s+)' % (r42.pattern, r31.pattern))
+    regexps = regexps.values()
+
+    matches = sum(
+      True
+      for inp in inputs
+      if any(i.fullmatch(inp) for i in regexps)
+    )
+    # r0 needs to match r42{n}r31{m} where n>m
+    r0_matches = 0
+    for inp in inputs:
+      # Prevent double counting? Not needed for this input.
+      # If needed, we could skip prior-matching.
+      m = r0.fullmatch(inp)
+      if m:
+        c1 = len(re.findall(r42, m.group(1)))
+        c2 = len(re.findall(r31, m.group(2)))
+        if c1 > c2:
+          r0_matches += 1
+    return matches + r0_matches
+
+  def part1(self, data: Tuple[List[str], List[str]]) -> int:
+    """Find the num of lines that match the regex-like rules."""
+    raw_rules, inputs = data 
+    # Map input to regexps.
+    regexps = self.generate_regexes(raw_rules).values()
+    # Count the lines that match.
     return sum(
       True
-      for inp in set(lines[1].split('\n'))
-      if any(re.match('^%s$' % i, inp) for i in rd.values())
+      for inp in inputs
+      if any(i.fullmatch(inp) for i in regexps)
     )
 
-    
-
-
   def preparse_input(self, x):
-    return x
+    """Parse the two input blocks."""
+    return {int(l.split(': ')[0]): l.split(': ')[1] for l in x[0].split('\n')}, x[1].split('\n')
 
 
 if __name__ == '__main__':
