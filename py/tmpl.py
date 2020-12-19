@@ -17,6 +17,7 @@ class DayNN(aoc.Challenge):
 
   TRANSFORM = str
   DEBUG = True
+  SEP = '\n'
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
