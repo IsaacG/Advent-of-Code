@@ -23,6 +23,7 @@ class Day19(aoc.Challenge):
   def generate_regexes(self, raw_rules: Dict[int, str]) -> Dict[int, str]:
     """Resolve the input data to a set of regexps."""
     regexps = {}
+    raw_rules = dict(raw_rules)
     # Resolve rules until all done.
     while raw_rules:
       old_len = len(raw_rules)
