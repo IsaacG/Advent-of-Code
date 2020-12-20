@@ -172,29 +172,32 @@ class Day20(aoc.Challenge):
     """Turn input into a set of Tiles stitched together."""
     tiles = {t.num: t for t in [Tile(b) for b in blocks]}
 
-    # Maintain a list of Tiles that have been "placed" and are now fixed
-    # vs Tiles that need to be matched up, oriented and placed.
-    unplaced_nums = list(tiles.keys())
-    placed_nums = [unplaced_nums.pop()]
-    tiles[placed_nums[0]].oriented = True
+    # Use idea by leftylink to build a map of Edge => Tile.
+    # Use that map to quickly find adjacent Tiles to connect.
+    edge_to_tile = collections.defaultdict(list)
+    for tile in tiles.values():
+      for e in tile.all_edges():
+        edge_to_tile[''.join(e)].append(tile)
 
-    while unplaced_nums:
-      progress = False
-      for unplaced_tile_num in list(unplaced_nums):
-        assert unplaced_tile_num not in placed_nums
-        found_match = False
-        for placed_tile_num in placed_nums:
-          # For all unplaced tiles, try matching with all placed tiles.
-          unplaced_tile = tiles[unplaced_tile_num]
-          placed_tile = tiles[placed_tile_num]
-          if unplaced_tile.is_neighbor(placed_tile):
-            placed_tile.pair(unplaced_tile)
-            found_match = True
-        if found_match:
-          unplaced_nums.remove(unplaced_tile_num)
-          placed_nums.append(unplaced_tile_num)
-          progress = True
-      assert progress, unplaced_nums
+    # Maintain a queue of discovered Tiles to place, seeded with an arbitrary Tile.
+    to_process = set([list(tiles.values()).pop()])
+    # Already placed Tiles that should not be re-queued.
+    already_processed = set()
+
+    while to_process:
+      tile = to_process.pop()
+      already_processed.add(tile)
+      # For all edges, find, pair and process neighbors.
+      for edge in tile.edges():
+        edge = ''.join(edge)
+        # No neighbors. This edge is at the edge of the image.
+        if len(edge_to_tile[edge]) == 1:
+          continue
+        other = [i for i in edge_to_tile[edge] if i != tile][0]
+        tile.pair(other)
+        if other not in already_processed:
+          to_process.add(other)
+
     return tiles
 
   def find_corner(self, tiles: Dict[int, 'Tile'], dirs: List[Side]) -> int:
