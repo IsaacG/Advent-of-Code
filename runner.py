@@ -107,10 +107,17 @@ class Runner:
       d = (self.base / 'data' / f'{day:02d}').with_suffix('.txt')
       cmd = [f, d]
       p = subprocess.run(cmd, text=True, capture_output=True)
-      got1, got2 = p.stdout.strip().split()
-      assert want1 == got1
-      assert want2 == got2
-      print(f'Day {day:02d}: PASS')
+      output = p.stdout.strip()
+      if len(output.split()) != 2:
+        print(f'Day {day:02d}: FAILED')
+        print('> ', output)
+        continue
+      got1, got2 = output.split()
+      if want1 == got1 and want2 == got2:
+        print(f'Day {day:02d}: PASS')
+      else:
+        print(f'Day {day:02d}: FAILED')
+        print(f'1: want[{want1}] got[{got1}]. 2: want[{want2}] got[{got2}].')
 
   def run_with_flag(self, flag: str):
     """Run the .py file with a flag and data."""
