@@ -227,12 +227,12 @@ class Tile:
 
     self.neighbors[matching_side] = other
     other.neighbors[pairings[matching_side]] = self
-    print(f'Pair {self.num} side {SIDE_NAMES[matching_side]} to {other.num} {SIDE_NAMES[pairings[matching_side]]} on o.side {others_side}')
-    print(f'Matching {matching_side} to {others_side}')
+    # print(f'Pair {self.num} side {SIDE_NAMES[matching_side]} to {other.num} {SIDE_NAMES[pairings[matching_side]]} on o.side {others_side}')
+    # print(f'Matching {matching_side} to {others_side}')
     rot_map = {
       0: {
         1: (0,0),
-        3: (1,0),
+        3: (1,1),
         0: (2,1),
         2: (3,0),
       },
@@ -259,32 +259,20 @@ class Tile:
     if other.locked:
       return
     other.locked = True
-
-    # Rotate as needed
-    flip = False
-    o_edges = other.edges[:4]
-    for i, r in enumerate(rotations):
-      rotated_edges = [o_edges[n] for n in r]
-      if rotated_edges[pairings[matching_side]] == matching_edge:
-        rot_times = i
-        break
-      if rotated_edges[pairings[matching_side]] == "".join(reversed(matching_edge)):
-        rot_times = i
-        flip = True
-        break
-    else:
-      assert False
-    print(f'Rot {rot_times}')
-    for i in range(rot_times):
+    rot, flip = rot_map[matching_side][others_side % 4]
+    for i in range(rot):
       other.rot90()
+    if (flip ^ (others_side > 3)):
+      if matching_side in (TOP, BOTTOM):
+        other.h_flip()
+      else:
+        other.v_flip()
 
-    # Flip other?
-    if flip and matching_side in (TOP, BOTTOM):
-      print('V_FLIP')
-      other.tile_rows = list(reversed(other.tile_rows))
-    if flip and matching_side in (LEFT, RIGHT):
-      print('H_FLIP')
-      other.tile_rows = ["".join(reversed(i)) for i in other.tile_rows]
+  def h_flip(self):
+    self.tile_rows = ["".join(reversed(i)) for i in self.tile_rows]
+
+  def v_flip(self):
+    self.tile_rows = list(reversed(self.tile_rows))
 
   def trimmed_row(self, row):
     return self.tile_rows[row + 1][1:-1]
@@ -311,7 +299,7 @@ class Day20(aoc.Challenge):
     tiles = [Tile(b) for b in blocks]
     tiles_by_num = {t.num: t for t in tiles}
     unmatched = list(tiles_by_num.keys())
-    print(unmatched)
+    # print(unmatched)
     unmatched.remove(1951)
     matched = [1951]
     tiles_by_num[matched[0]].locked = True
@@ -350,15 +338,15 @@ class Day20(aoc.Challenge):
 
       row_cursor = row_left
       while row_cursor:
-        print(row_cursor.num, end=' ')
+        # print(row_cursor.num, end=' ')
         row_cursor = row_cursor.neighbors.get(RIGHT, None)
-      print('')
+      # print('')
       for i in range(10):
         row_cursor = row_left
         while row_cursor:
-          print(row_cursor.tile_rows[i], end=' ')
+          # print(row_cursor.tile_rows[i], end=' ')
           row_cursor = row_cursor.neighbors.get(RIGHT, None)
-        print('')
+        # print('')
 
       for i in range(tile_rows):
         subrow += 1
@@ -379,40 +367,40 @@ class Day20(aoc.Challenge):
         row_left = row_left.neighbors[BOTTOM]
       else:
         row_left = None
-      print()
-    return 0
-    return "\n".join(final_image).strip()
-    for i, (g, w) in enumerate(zip(final_image, SAMPLE[1].strip().split('\n'))):
-      if g != w:
-        print(f'Fail line {i} got({g}) want({w})')
-    return
+      # print()
+    if len(tiles) == 9:  # unit test
+      assert "\n".join(final_image).strip() == SAMPLE[1].strip()
 
 
     # Count monsters in the image
     count = 0
-    for _ in range(2):
-      for i in range(4):
-        for origin_y in range(len(final_image) - len(MONSTER) + 1):
-          for origin_x in range(len(final_image[0]) - len(MONSTER[0]) + 1):
+    found_at = set()
+    monster = list(MONSTER)
+    for j in range(4):
+      for i in range(2):
+        for origin_y in range(len(final_image) - len(monster) + 1):
+          for origin_x in range(len(final_image[0]) - len(monster[0]) + 1):
             found = True
-            for y in range(len(MONSTER)):
-              for x in range(len(MONSTER[0])):
-                if MONSTER[y][x] == '#' and final_image[y + origin_y][x + origin_x] != '#':
+            for y in range(len(monster)):
+              for x in range(len(monster[0])):
+                if monster[y][x] == '#' and final_image[y + origin_y][x + origin_x] != '#':
                   found = False
             if found:
-              print(f'Found monster at rot{i} ({origin_y},{origin_x})')
-              print('\n'.join(final_image))
+              print(f'Found monster at rot{i} flips{j} ({origin_y},{origin_x})')
+              found_at.add(f'{i}.{j}')
               count += 1
-              for y in range(len(MONSTER)):
-                for x in range(len(MONSTER[0])):
-                  if MONSTER[y][x] == '#':
+              for y in range(len(monster)):
+                for x in range(len(monster[0])):
+                  if monster[y][x] == '#':
                     l = list(final_image[y + origin_y])
                     l[x + origin_x] = '0'
-                    # final_image[y + origin_y] = "".join(l)
-        final_image = rot90(final_image)
-
-      final_image = list(reversed(final_image))
+                    final_image[y + origin_y] = "".join(l)
+        if count: break
+        monster = list(reversed(monster))
+      if count: break
+      monster = rot90(monster)
     print(f'Monster count: {count}')
+    assert len(found_at) == 1
 
     return sum(True for line in final_image for char in line if char == '#')
 
