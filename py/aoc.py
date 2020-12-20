@@ -44,6 +44,7 @@ class Challenge:
 
   def __init__(self):
     self.funcs = {1: self.part1, 2: self.part2}
+    self.testing = False
     super().__init__()
 
   @property
@@ -76,6 +77,7 @@ class Challenge:
 
   def run_tests(self):
     """Run the tests."""
+    self.testing = True
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       data = self.load_data(case.inputs)
@@ -86,6 +88,7 @@ class Challenge:
         break
       self.debug('PASSED!')
     self.debug('=====')
+    self.testing = False
 
   def debug(self, msg):
     """Maybe print a message."""
