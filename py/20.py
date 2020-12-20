@@ -1,433 +1,304 @@
 #!/bin/pypy3
+"""Day 20. Process satellite images."""
 
 import aoc
 import collections
 import copy
+import enum
 import functools
+import itertools
 import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
+import data
 
-SAMPLE = ["""\
-Tile 2311:
-..##.#..#.
-##..#.....
-#...##..#.
-####.#...#
-##.##.###.
-##...#.###
-.#.#.#..##
-..#....#..
-###...#.#.
-..###..###
+# An image row/column/edge is a list of chars. An image is a list of these.
+Row = List[str]
+Image = List[Row]
 
-Tile 1951:
-#.##...##.
-#.####...#
-.....#..##
-#...######
-.##.#....#
-.###.#####
-###.##.##.
-.###....#.
-..#.#..#.#
-#...##.#..
+SAMPLE = data.D20
+MONSTER = data.D20_MONSTER
 
-Tile 1171:
-####...##.
-#..##.#..#
-##.#..#.#.
-.###.####.
-..###.####
-.##....##.
-.#...####.
-#.##.####.
-####..#...
-.....##...
 
-Tile 1427:
-###.##.#..
-.#..#.##..
-.#.##.#..#
-#.#.#.##.#
-....#...##
-...##..##.
-...#.#####
-.#.####.#.
-..#..###.#
-..##.#..#.
+class Side(enum.IntEnum):
+  """A tile side."""
+  TOP = 0
+  RIGHT = 1
+  BOTTOM = 2
+  LEFT = 3
 
-Tile 1489:
-##.#.#....
-..##...#..
-.##..##...
-..#...#...
-#####...#.
-#..#.#.#.#
-...#.#.#..
-##.#...##.
-..##.##.##
-###.##.#..
+  def neighbor(self: 'Side') -> 'Side':
+    """Return the neighboring Side of a connected Tile.
 
-Tile 2473:
-#....####.
-#..#.##...
-#.##..#...
-######.#.#
-.#...#.#.#
-.#########
-.###.#..#.
-########.#
-##...##.#.
-..###.#.#.
+    Map TOP <=> BOTTOM, RIGHT <=> LEFT.
+    """
+    return Side((4 + self.value - 2) % 4)
 
-Tile 2971:
-..#.#....#
-#...###...
-#.#.###...
-##.##..#..
-.#####..##
-.#..####.#
-#..#.#..#.
-..####.###
-..#.#.###.
-...#.#.#.#
 
-Tile 2729:
-...#.#.#.#
-####.#....
-..#.#.....
-....#..#.#
-.##..##.#.
-.#.####...
-####.#.#..
-##.####...
-##..#.##..
-#.##...##.
+def rot90(rows: Image) -> Image:
+  """Rotate an Image by 90 degrees.
 
-Tile 3079:
-#.#.#####.
-.#..######
-..#.......
-######....
-####.#..#.
-.#...#.##.
-#.#####.##
-..#.###...
-..#.......
-..#.###...
-""","""
-.#.#..#.##...#.##..#####
-###....#.#....#..#......
-##.##.###.#.#..######...
-###.#####...#.#####.#..#
-##.#....#.##.####...#.##
-...########.#....#####.#
-....#..#...##..#.#.###..
-.####...#..#.....#......
-#..#.##..#..###.#.##....
-#.####..#.####.#.#.###..
-###.#.#...#.######.#..##
-#.####....##..########.#
-##..##.#...#...#.#.#.#..
-...#..#..#.#.##..###.###
-.#.#....#.##.#...###.##.
-###.#...#..#.##.######..
-.#.#.###.##.##.#..#.##..
-.####.###.#...###.#..#.#
-..#.#..#..#.#.#.####.###
-#..####...#.#.#.###.###.
-#####..#####...###....##
-#.##..#..#...#..####...#
-.#.###..##..##..####.##.
-...###...##...#...#..###
-"""]
+  Return a list of rows where each output row is a reversed input column.
 
-MONSTER = [
-	'                  # ',
-	'#    ##    ##    ###',
-	' #  #  #  #  #  #   ',
-]
+  a b c      d a
+  d e f  =>  e b
+             f c
+  """
+  return [
+    list(reversed(
+      [rows[y][x] for y in range(len(rows))]
+    ))
+    for x in range(len(rows[0]))
+  ]
 
-TOP = 0
-BOTTOM = 1
-LEFT = 2
-RIGHT = 3
-SIDE_NAMES = {TOP: "TOP", BOTTOM: "BOTTOM", LEFT: "LEFT", RIGHT: "RIGHT"}
-
-def rot90(rows):
-  out = []
-  for x in range(len(rows[0])):
-    r = ''
-    for y in range(len(rows) -1, -1, -1):
-      r += rows[y][x]
-    out.append(r)
-  return out
 
 class Tile:
+  """An image tile, a part of the whole."""
 
-  def __init__(self, block):
+  def __init__(self, block: str) -> 'Tile':
+    """Construct a Tile from the input text."""
     lines = block.split('\n')
     self.num = int(lines[0].split(' ')[1][:-1])
-    self.tile_rows = list(reversed(lines[1:]))
+    self.image = [list(l) for l in lines[1:]]
+    # Neighboring tiles for stitching.
     self.neighbors = {}
-    self.locked = False
+    # Used to verify we don't try to rotate a tile multiple times.
+    # Not needed to solve AOC.
+    self.oriented = False
 
-  @property
-  def edges(self):
-    # Top, bottom
-    edges = [self.tile_rows[0], self.tile_rows[-1]]
-    # Left edge
-    edges.append([t[0] for t in self.tile_rows])
-    # Right edge
-    edges.append([t[-1] for t in self.tile_rows])
-    # Reversed
-    edges.extend([reversed(t) for t in edges])
-    # Convert list to str.
-    return [''.join(t) for t in edges]
+  def edges(self) -> List[Row]:
+    """Return a list of edges. Top, right, bottom left."""
+    return [
+      self.image[0],
+      self.col(-1),
+      self.image[-1],
+      self.col(0),
+    ]
 
-  def is_neighbor(self, other) -> bool:
-    return any(e in self.edges for e in other.edges)
+  def all_edges(self) -> List[Row]:
+    """Return all edges, i.e. edges plus their flipped version."""
+    edges = self.edges()
+    edges.extend([list(reversed(t)) for t in edges])
+    return edges
 
-  def oriented_edges(self, flipped):
-    if flipped:
-      return self.edges[4:]
+  def edge(self, side: Side) -> Row:
+    """Return a specific edge of the image."""
+    return self.edges()[side.value]
+
+  def col(self, n: int) -> Row:
+    """Return an column from the image."""
+    return [t[n] for t in self.image]
+
+  def is_neighbor(self, other: 'Tile') -> bool:
+    """Check if these Tiles are neighbors, i.e. share a common Edge."""
+    assert isinstance(other, type(self))
+    return any(e in self.edges() for e in other.all_edges())
+
+  def rot90(self, count: int):
+    """Rotate self.image by count * 90 degrees."""
+    for _ in range(count % 4):
+      self.image = rot90(self.image)
+
+  def _common_edge(self, other) -> Tuple[Row, Side]:
+    """Find the common edge between two Tiles."""
+    other_edges = other.all_edges()
+    for n, edge in enumerate(self.edges()):
+      if edge in other_edges:
+        return edge, Side(n)
     else:
-      return self.edges[:4]
+      assert False, f'Failed to find a matching edge between {self.num} and {other.num}'
 
-  def top(self):
-    return self.edges[TOP]
+  def _orient(self, other):
+    """Orient the other tile to align with this tile."""
+    matching_edge, matching_side = self._common_edge(other)
+    want_others_side = matching_side.neighbor()
 
-  def bottom(self):
-    return self.edges[BOTTOM]
+    got_others_side = Side([
+      i for i, n in enumerate(other.all_edges())
+      if n == matching_edge
+    ][0] % 4)  # mod 4 to ignore if it is a regular or flipped edge.
 
-  def left(self):
-    return self.edges[LEFT]
-
-  def right(self):
-    return self.edges[RIGHT]
-
-  def rot90(self):
-    self.tile_rows = rot90(self.tile_rows)
-
-  def pair(self, other):
-    orient = {TOP: self.top(), BOTTOM: self.bottom(), LEFT: self.left(), RIGHT: self.right()}
-    pairings = {TOP:BOTTOM, LEFT:RIGHT, RIGHT:LEFT, BOTTOM:TOP}
-    # How to rotate/orient other. 4 combos.
-    rotations = [[0,1,2,3],[2,3,1,0],[1,0,3,2],[3,2,0,1]]
-
-    for n, edge in orient.items():
-      if edge in other.edges:
-        matching_side = n
-        matching_edge = edge
-        break
-    else:
-      assert False
-    others_side = [i for i, n in enumerate(other.edges) if n == matching_edge][0]
-
-    self.neighbors[matching_side] = other
-    other.neighbors[pairings[matching_side]] = self
-    # print(f'Pair {self.num} side {SIDE_NAMES[matching_side]} to {other.num} {SIDE_NAMES[pairings[matching_side]]} on o.side {others_side}')
-    # print(f'Matching {matching_side} to {others_side}')
-    rot_map = {
-      0: {
-        1: (0,0),
-        3: (1,1),
-        0: (2,1),
-        2: (3,0),
-      },
-      1: {
-        0: (0,0),
-        2: (1,1),
-        1: (2,1),
-        3: (3,0),
-      },
-      2: {
-        3: (0,0),
-        0: (1,0),
-        2: (2,1),
-        1: (3,1),
-      },
-      3: {
-        2: (0,0),
-        1: (1,0),
-        3: (2,1),
-        0: (3,1),
-      },
-    }
-
-    if other.locked:
-      return
-    other.locked = True
-    rot, flip = rot_map[matching_side][others_side % 4]
-    for i in range(rot):
-      other.rot90()
-    if (flip ^ (others_side > 3)):
-      if matching_side in (TOP, BOTTOM):
+    rotations_needed = 4 + want_others_side - got_others_side
+    other.rot90(rotations_needed)
+    # Maybe flip.
+    if other.edge(matching_side.neighbor()) != matching_edge:
+      if matching_side in (Side['TOP'], Side['BOTTOM']):
         other.h_flip()
       else:
         other.v_flip()
 
+  def pair(self, other):
+    """Pair up two tiles."""
+    matching_edge, matching_side = self._common_edge(other)
+
+    # Link the tiles to each other.
+    self.neighbors[matching_side] = other
+    other.neighbors[matching_side.neighbor()] = self
+    # print(f'Pair {self.num} side {matching_side} to {other.num}.')
+
+    if not other.oriented:
+      self._orient(other)
+      other.oriented = True
+
   def h_flip(self):
-    self.tile_rows = ["".join(reversed(i)) for i in self.tile_rows]
+    """Flip horizontally."""
+    self.image = [list(reversed(i)) for i in self.image]
 
   def v_flip(self):
-    self.tile_rows = list(reversed(self.tile_rows))
+    """Flip vertically."""
+    self.image = list(reversed(self.image))
 
-  def trimmed_row(self, row):
-    return self.tile_rows[row + 1][1:-1]
+  def trimmed_row(self, row: int) -> Row:
+    """Return a row of the image, ignoring the edges."""
+    return self.image[row + 1][1:-1]
 
   def num_rows(self):
-    return len(self.tile_rows) - 2
+    """Return the number of rows in the image - ignoring edges."""
+    return len(self.image) - 2
 
 
 class Day20(aoc.Challenge):
+  """Stitch image tiles and find sea monsters in them."""
 
   TRANSFORM = str
-  DEBUG = True
   SEP = '\n\n'
 
   TESTS = (
-    # aoc.TestCase(inputs=SAMPLE[0], part=1, want=20899048083289),
-    # Validate the stitching.
-    # aoc.TestCase(inputs=SAMPLE[0], part=2, want=SAMPLE[1].strip()),
+    aoc.TestCase(inputs=SAMPLE[0], part=1, want=20899048083289),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=273),
-    # aoc.TestCase(inputs=SAMPLE[0], part=2, want=0)
   )
 
-  def part2(self, blocks: List[str]) -> int:
-    tiles = [Tile(b) for b in blocks]
-    tiles_by_num = {t.num: t for t in tiles}
-    unmatched = list(tiles_by_num.keys())
-    # print(unmatched)
-    unmatched.remove(1951)
-    matched = [1951]
-    tiles_by_num[matched[0]].locked = True
-    while unmatched:
+  def stitched_tiles(self, blocks: List[str]) -> Dict[int, Tile]:
+    """Turn input into a set of Tiles stitched together."""
+    tiles = {t.num: t for t in [Tile(b) for b in blocks]}
+
+    # Maintain a list of Tiles that have been "placed" and are now fixed
+    # vs Tiles that need to be matched up, oriented and placed.
+    unplaced_nums = list(tiles.keys())
+    placed_nums = [unplaced_nums.pop()]
+    tiles[placed_nums[0]].oriented = True
+
+    while unplaced_nums:
       progress = False
-      for tn in list(unmatched):
-        if tn in matched:
-          continue
+      for unplaced_tile_num in list(unplaced_nums):
+        assert unplaced_tile_num not in placed_nums
         found_match = False
-        for un in matched:
-          t = tiles_by_num[tn]
-          u = tiles_by_num[un]
-          if t.is_neighbor(u):
-            u.pair(t)
+        for placed_tile_num in placed_nums:
+          # For all unplaced tiles, try matching with all placed tiles.
+          unplaced_tile = tiles[unplaced_tile_num]
+          placed_tile = tiles[placed_tile_num]
+          if unplaced_tile.is_neighbor(placed_tile):
+            placed_tile.pair(unplaced_tile)
             found_match = True
         if found_match:
-          unmatched.remove(tn)
-          matched.append(tn)
+          unplaced_nums.remove(unplaced_tile_num)
+          placed_nums.append(unplaced_tile_num)
           progress = True
-      assert progress, unmatched
-    topleft = tiles[0]
+      assert progress, unplaced_nums
+    return tiles
 
-    while TOP in topleft.neighbors or LEFT in topleft.neighbors:
-      if TOP in topleft.neighbors:
-        topleft = topleft.neighbors[TOP]
-      else:
-        topleft = topleft.neighbors[LEFT]
+  def find_corner(self, tiles: Dict[int, 'Tile'], dirs: List[Side]) -> int:
+    """Find a corner tile in a stitched set of tiles.
 
-    row_left = topleft
-    tile_rows = topleft.num_rows()
-    final_image = []
-    row_count = 0
+    Start at any arbitrary tile and walk all the way in two directions.
+    """
+    cur = list(tiles.values())[0]
+    for d in dirs:
+      while d in cur.neighbors:
+        if d in cur.neighbors:
+          cur = cur.neighbors[d]
+    return cur.num
+    
+  def stitched_image(self, tiles: Dict[int, Tile]) -> Image:
+    """Return the stitched image from the tiles."""
+    image = []
+
+    # Start at the top left and work our way down the tiles.
+    #  For each image line, walk tiles from left to right to generate full row.
+    row_left = tiles[self.find_corner(tiles, (Side['TOP'], Side['LEFT']))]
     while row_left:
-      row_count += 1
-      subrow = 0
-
-      row_cursor = row_left
-      while row_cursor:
-        # print(row_cursor.num, end=' ')
-        row_cursor = row_cursor.neighbors.get(RIGHT, None)
-      # print('')
-      for i in range(10):
+      for i in range(row_left.num_rows()):
+        row = []
         row_cursor = row_left
         while row_cursor:
-          # print(row_cursor.tile_rows[i], end=' ')
-          row_cursor = row_cursor.neighbors.get(RIGHT, None)
-        # print('')
+          # Add this tile's piece to the complete row and shift right.
+          row.extend(row_cursor.trimmed_row(i))
+          row_cursor = row_cursor.neighbors.get(Side['RIGHT'])
+        # Add the new row to the overall image.
+        image.append(row)
+      # Shift down.
+      row_left = row_left.neighbors.get(Side['BOTTOM'])
 
-      for i in range(tile_rows):
-        subrow += 1
-        row_cursor = row_left
-        row = ""
-        while row_cursor:
-          if subrow == 1:
-            pass
-          row_part = row_cursor.trimmed_row(i)
-          if RIGHT in row_cursor.neighbors:
-            row_cursor = row_cursor.neighbors[RIGHT]
-          else:
-            row_cursor = None
-          row += row_part
-        final_image.append(row)
-      if BOTTOM in row_left.neighbors:
-        assert row_left != row_left.neighbors[BOTTOM]
-        row_left = row_left.neighbors[BOTTOM]
-      else:
-        row_left = None
-      # print()
-    if len(tiles) == 9:  # unit test
-      assert "\n".join(final_image).strip() == SAMPLE[1].strip()
+    return image
 
+  def part2(self, blocks: List[str]) -> int:
+    """Return how choppy the waters are.
+
+    Stitch tiles. Build image. Locate sea monsters. Replace with 0's. Count remaining #'s.
+    """
+    tiles = self.stitched_tiles(blocks)
+
+    image = self.stitched_image(tiles)
+    # Check I generate the correct stitched image.
+    if self.testing:
+      assert '\n'.join(''.join(l) for l in image) == SAMPLE[1].strip()
 
     # Count monsters in the image
-    count = 0
-    found_at = set()
-    monster = list(MONSTER)
-    for j in range(4):
-      for i in range(2):
-        for origin_y in range(len(final_image) - len(monster) + 1):
-          for origin_x in range(len(final_image[0]) - len(monster[0]) + 1):
+    monster_count = 0
+    monster_orientation = set()
+    # For all flips, for all rotations, look for monsters.
+    for j in range(2):
+      for i in range(4):
+        # Check if a monster exists at all coordinates.
+        for origin_y in range(len(image) - len(MONSTER) + 1):
+          for origin_x in range(len(image[0]) - len(MONSTER[0]) + 1):
+            # Test if a monster lives at this spot.
             found = True
-            for y in range(len(monster)):
-              for x in range(len(monster[0])):
-                if monster[y][x] == '#' and final_image[y + origin_y][x + origin_x] != '#':
+            for y in range(len(MONSTER)):
+              for x in range(len(MONSTER[0])):
+                if MONSTER[y][x] == '#' and image[y + origin_y][x + origin_x] != '#':
                   found = False
+                  break
+              if not found:
+                break
             if found:
-              print(f'Found monster at rot{i} flips{j} ({origin_y},{origin_x})')
-              found_at.add(f'{i}.{j}')
-              count += 1
-              for y in range(len(monster)):
-                for x in range(len(monster[0])):
-                  if monster[y][x] == '#':
-                    l = list(final_image[y + origin_y])
-                    l[x + origin_x] = '0'
-                    final_image[y + origin_y] = "".join(l)
-        if count: break
-        monster = list(reversed(monster))
-      if count: break
-      monster = rot90(monster)
-    print(f'Monster count: {count}')
-    assert len(found_at) == 1
+              self.debug(f'Found monster at rot{i} flips{j} ({origin_y},{origin_x})')
+              monster_orientation.add(f'{i}.{j}')
+              monster_count += 1
+              # Redraw the monster using 0's.
+              for y in range(len(MONSTER)):
+                for x in range(len(MONSTER[0])):
+                  if MONSTER[y][x] == '#':
+                    image[y + origin_y][x + origin_x] = '0'
+        if monster_count:
+          break
+        # Rotate and try again.
+        image = rot90(image)
+      if monster_count:
+        break
+      # Flip and try again.
+      image = list(reversed(image))
+    self.debug(f'Monster count: {monster_count}')
 
-    return sum(True for line in final_image for char in line if char == '#')
+    # Monsters ought to only appear when the image is held a specific way.
+    assert len(monster_orientation) == 1
+    if self.testing:
+      assert monster_count == 2
 
+    # Count the waves.
+    return sum(True for line in image for char in line if char == '#')
 
   def part1(self, blocks: List[str]) -> int:
-    data = {}
-    all_edges = []
-    for block in blocks:
-      lines = block.split('\n')
-      tile_num = int(lines[0].split(' ')[1][:-1])
-      tile_rows = lines[1:]
-      edges = [tile_rows[0], tile_rows[-1]]
-      # Left edge
-      edges.append([t[0] for t in tile_rows])
-      # Right edge
-      edges.append([t[-1] for t in tile_rows])
-      # Reversed
-      edges.extend([reversed(t) for t in edges])
-      # Convert list to str.
-      edges = [''.join(t) for t in edges]
-      all_edges.extend(edges)
-      data[tile_num] = edges
-    edge_counts = collections.Counter(all_edges)
-    return aoc.mult([tile_num for tile_num, edges in data.items() if sum(True for e in edges if edge_counts[e] == 2) == 4])
+    """Return the product of the four corner tiles' numbers."""
+    tiles = self.stitched_tiles(blocks)
 
-  def preparse_input(self, x):
-    return x
+    # Four corners. Top left, top right, bottom left, bottom right.
+    l = list(range(4))
+    corners = zip(l, l[1:] + l[:1])
+    return aoc.mult(
+      self.find_corner(tiles, corner)
+      for corner in corners
+    )
 
 
 if __name__ == '__main__':
