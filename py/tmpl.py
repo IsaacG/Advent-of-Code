@@ -7,11 +7,6 @@ import math
 import re
 from typing import Any, Callable, Dict, List
 
-SAMPLE = ["""\
-1
-""", """\
-"""]
-
 
 class DayNN(aoc.Challenge):
 
@@ -24,9 +19,6 @@ class DayNN(aoc.Challenge):
   )
 
   def part1(self, lines: List[str]) -> int:
-    return 0
-
-  def part2(self, lines: List[str]) -> int:
     return 0
 
   def preparse_input(self, x):

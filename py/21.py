@@ -6,7 +6,7 @@ import itertools
 import functools
 import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 SAMPLE = ["""\
 mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
@@ -18,95 +18,65 @@ sqjhc mxmxvkd sbzzf (contains fish)
 
 class Day21(aoc.Challenge):
 
-  TRANSFORM = str
-  DEBUG = True
-  SEP = '\n'
+  TIMER_ITERATIONS = (20000, 20000)
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want='mxmxvkd,sqjhc,fvjkl'),
   )
 
-  def part2(self, lines: List[str]) -> int:
+  def allergen_to_food(self, data: List[Tuple[List[str], List[str]]]) -> Dict[str, str]:
+    """Map allergens to the ingredient that contains it.
+
+    Map an allergen to a list of potential ingredients and pair down that list until
+    it contains exactly one ingredient.
+    """
     solved = {}
-    unsolved = set()
-    all_ing = []
+
+    # Map allergens to the intersections of candidates.
     candidates = {}
-    for line in lines:
-      ing, alg = line.split(' (contains ')
-      ing = ing.split()
-      all_ing.extend(ing)
-      alg = alg[:-1].split(', ')
-
-      for i in alg:
-        if i not in candidates:
-          candidates[i] = set(ing)
+    for pair in data:
+      ingredients, allergens = pair
+      for allergen in allergens:
+        if allergen not in candidates:
+          candidates[allergen] = set(ingredients)  # Copy the set.
         else:
-          candidates[i] &= set(ing)
-        progress = True
-        while any(len(a) == 1 for a in candidates.values()):
-          i, j = [(m,n) for m,n in candidates.items() if len(n) == 1][0]
-          j = list(j)[0]
-          solved[i] = j
+          candidates[allergen] &= ingredients
 
-          for n in candidates.values():
-            if j in n: n.remove(j)
+    # Pair up allergens to ingredients and remove candidates.
+    while candidates:
+      # Find an allergen with only one candidate.
+      allergen, foods = [(i, j) for i, j in candidates.items() if len(j) == 1][0]
+      food = foods.pop()
+      solved[allergen] = food
+      # Drop the candidate and remove the ingredient from all other candidate lists.
+      del candidates[allergen]
+      for i in candidates.values():
+        if food in i:
+          i.remove(food)
+    return solved
 
+  def part1(self, data: List[Tuple[List[str], List[str]]]) -> int:
+    """Count the ingredients (including repeats) of food without allergens."""
+    solved = self.allergen_to_food(data)
+    all_ingredients = [b for line in data for b in line[0]]
+    bad_ingredients = solved.values()
+    return sum(True for i in all_ingredients if i not in bad_ingredients)
 
-    print(1,candidates)
-    print(2,solved)
-    good_foods = set(all_ing) - set(solved.values())
-    print(3,good_foods)
+  def part2(self, data: List[Tuple[List[str], List[str]]]) -> str:
+    """Return the foods containing allergens, sorted by allergen."""
+    solved = self.allergen_to_food(data)
+    return ",".join(solved[i] for i in sorted(solved.keys()))
 
-    progress = True
-    while progress:
-      progress = False
-
-    bad = ",".join(solved[i] for i in sorted(solved.keys()))
-
-    return bad
-
-  def part1(self, lines: List[str]) -> int:
-    solved = {}
-    unsolved = set()
-    all_ing = []
-    candidates = {}
+  def preparse_input(self, lines):
+    """Parse input lines into tuple(list[ingredients], list[allergens])."""
+    out = []
     for line in lines:
-      ing, alg = line.split(' (contains ')
-      ing = ing.split()
-      all_ing.extend(ing)
-      alg = alg[:-1].split(', ')
-
-      for i in alg:
-        if i not in candidates:
-          candidates[i] = set(ing)
-        else:
-          candidates[i] &= set(ing)
-        progress = True
-        while any(len(a) == 1 for a in candidates.values()):
-          i, j = [(m,n) for m,n in candidates.items() if len(n) == 1][0]
-          j = list(j)[0]
-          solved[i] = j
-
-          for n in candidates.values():
-            if j in n: n.remove(j)
-
-
-    print(1,candidates)
-    print(2,solved)
-    good_foods = set(all_ing) - set(solved.values())
-    print(3,good_foods)
-
-    progress = True
-    while progress:
-      progress = False
-
-    return sum(True for i in all_ing if i in good_foods)
-
-
-
-  def preparse_input(self, x):
-    return x
+      ingredients, allergens = line.split(' (contains ')
+      ingredients = ingredients.split(' ')
+      allergens = allergens[:-1].split(', ')
+      out.append((set(ingredients), set(allergens)))
+    return out
 
 
 if __name__ == '__main__':
