@@ -18,7 +18,7 @@ sqjhc mxmxvkd sbzzf (contains fish)
 
 class Day21(aoc.Challenge):
 
-  TIMER_ITERATIONS = (20000, 20000)
+  TIMER_ITERATIONS = (20000, 200000)
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
@@ -82,5 +82,4 @@ class Day21(aoc.Challenge):
 if __name__ == '__main__':
   Day21().run()
 
-# vim:ts=2:sw=2:expandtab
 # vim:ts=2:sw=2:expandtab
