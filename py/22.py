@@ -60,21 +60,25 @@ class Day22(aoc.Challenge):
 
   def part2(self, decks) -> int:
     """Play Recursive Combat."""
-    winning_hand = self.combat(copy.deepcopy(decks))[1]
+    winner, winning_hand = self.combat(copy.deepcopy(decks))
+    # print(f'Winner: {winner}')
     return sum((i+1) * c for i, c in enumerate(winning_hand[::-1]))
 
   def combat(self, hands) -> Tuple[int, List[int]]:
     """Return the winner and the winning deck."""
+    seen_f = set()
     seen = set()
     while all(hands):
-      # This line is the most important line in this file in terms of runtime.
-      # We could just store the full list, but runtime suffers terribly.
-      # This value seems to give the right results in good time, though I do not know
-      # it necessarily works for all inputs.
+      # This block is the most important line in this file in terms of runtime.
       combined = (hands[0][0], hands[0][-1], len(hands[0]), hands[1][0], hands[1][-1])
+      full = 0
+      # Needed for correctness for a few specific inputs but kills runtime.
+      # full = tuple(hands[0] + [0] + hands[1])
       if combined in seen:
-        return 0, hands[0]
+        if full in seen_f:
+          return 0, hands[0]
       seen.add(combined)
+      seen_f.add(full)
 
       # All cards have a unique value. Ties are not an issue.
       cards_played = [h.pop(0) for h in hands]
@@ -84,7 +88,7 @@ class Day22(aoc.Challenge):
         winner = [i for i in (0, 1) if cards_played[i] == max(cards_played)][0]
       else:
         supercard = max(hands[0])
-        if supercard > max(hands[1]):
+        if supercard > max(hands[1]) and supercard < sum(len(h) for h in hands):
           # jle`s supercard optimization.
           # Has major impact (~15x) on some inputs, very little on others.
           winner = 1
