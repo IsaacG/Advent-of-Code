@@ -79,13 +79,19 @@ class Day22(aoc.Challenge):
       # All cards have a unique value. Ties are not an issue.
       cards_played = [h.pop(0) for h in hands]
 
-      # Recursive battle. Recurse when hand have enough cards.
-      if all(len(h) >= c for h, c in zip(hands, cards_played)):
-        sub_hands = tuple(h[:c] for h, c in zip(hands, cards_played))
-        winner = self.combat(sub_hands)[0]
-      else:
-        # Otherwise, use simple rules - highest card wins.
+      if not all(len(h) >= c for h, c in zip(hands, cards_played)):
+        # Not enough cards for recurse; use simple rules - highest card wins.
         winner = [i for i in (0, 1) if cards_played[i] == max(cards_played)][0]
+      else:
+        supercard = max(hands[0])
+        if supercard > max(hands[1]):
+          # jle`s supercard optimization.
+          # Has major impact (~15x) on some inputs, very little on others.
+          winner = 1
+        else:
+          # Recursive battle. Recurse when hand have enough cards.
+          sub_hands = tuple(h[:c] for h, c in zip(hands, cards_played))
+          winner = self.combat(sub_hands)[0]
 
       # Add the cards to the winner's hand. Make use of 0/1 as bool()s to
       # determine if the card order needs to be reversed.
