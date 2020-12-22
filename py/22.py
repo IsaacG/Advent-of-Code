@@ -2,10 +2,11 @@
 
 import aoc
 import collections
+import copy
 import functools
 import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 SAMPLE = ["""\
 Player 1:
@@ -21,89 +22,86 @@ Player 2:
 4
 7
 10
+""","""
+Player 1:
+43
+19
+
+Player 2:
+2
+29
+14
 """]
-# vim:ts=2:sw=2:expandtab
 
 class Day22(aoc.Challenge):
 
   SEP = '\n\n'
+  TIMER_ITERATIONS = (1, 3)
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=306),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=291),
+    aoc.TestCase(inputs=SAMPLE[1], part=2, want=105),
   )
 
-  def part1(self, lines: List[str]) -> int:
-    p1 = [int(l) for l in lines[0].split('\n')[1:]]
-    p2 = [int(l) for l in lines[1].split('\n')[1:]]
-    rounds = 0
-    while p1 and p2:
-      rounds += 1
-      cards = p1.pop(0), p2.pop(0)
-      assert cards[0] != cards[1]
-      if cards[0] > cards[1]:
-        p1.append(cards[0])
-        p1.append(cards[1])
+  def part1(self, decks) -> int:
+    """Simple Combat."""
+    hands = copy.deepcopy(decks)
+    # Keep playing while everyone has cards in hand.
+    while all(hands):
+      # Everyone plays a card.
+      cards_played = [h.pop(0) for h in hands]
+      # Find the player who played the highest card.
+      winner = [i for i in (0, 1) if cards_played[i] == max(cards_played)][0]
+      # Add the cards to hand, highest first.
+      hands[winner].extend(sorted(cards_played, reverse=True))
+    winning_hand = [h for h in hands if h][0]
+    return sum((i+1) * c for i, c in enumerate(winning_hand[::-1]))
+
+  def part2(self, decks) -> int:
+    """Play Recursive Combat."""
+    winning_hand = self.combat(copy.deepcopy(decks))[1]
+    return sum((i+1) * c for i, c in enumerate(winning_hand[::-1]))
+
+  def combat(self, hands) -> Tuple[int, List[int]]:
+    """Return the winner and the winning deck."""
+    seen = set()
+    while all(hands):
+      # This line is the most important line in this file in terms of runtime.
+      # We could just store the full list, but runtime suffers terribly.
+      # This value seems to give the right results in good time, though I do not know
+      # it necessarily works for all inputs.
+      combined = (hands[0][0], hands[0][-1], len(hands[0]), hands[1][0], hands[1][-1])
+      if combined in seen:
+        return 0, hands[0]
+      seen.add(combined)
+
+      # All cards have a unique value. Ties are not an issue.
+      cards_played = [h.pop(0) for h in hands]
+
+      # Recursive battle. Recurse when hand have enough cards.
+      if all(len(h) >= c for h, c in zip(hands, cards_played)):
+        sub_hands = tuple(h[:c] for h, c in zip(hands, cards_played))
+        winner = self.combat(sub_hands)[0]
       else:
-        p2.append(cards[1])
-        p2.append(cards[0])
-    w = p1 if p1 else p2
-    w = reversed(w)
+        # Otherwise, use simple rules - highest card wins.
+        winner = [i for i in (0, 1) if cards_played[i] == max(cards_played)][0]
 
-    return sum((i+1) * c for i, c in enumerate(w))
+      # Add the cards to the winner's hand. Make use of 0/1 as bool()s to
+      # determine if the card order needs to be reversed.
+      hands[winner].extend(reversed(cards_played) if winner else cards_played)
 
-  def recurse(self, p1, p2, top=False):
-    seen1 = []
-    seen2 = []
-    rounds = 0
-    while p1 and p2:
-      rounds += 1
+    # Assume either p1 ^ p2 is always true.
+    for player, hand in enumerate(hands):
+      if hand:
+        return player, hand
 
-      if p1 in seen1 or p2 in seen2:
-        if top:
-          w = reversed(p1)
-          return sum((i+1) * c for i, c in enumerate(w))
-        return 1
-      seen1.append(list(p1))
-      seen2.append(list(p2))
-
-      cards = p1.pop(0), p2.pop(0)
-      assert cards[0] != cards[1]
-
-      winner = None
-      # Recursive battle
-      if len(p1) >= cards[0] and len(p2) >= cards[1]:
-        winner = self.recurse(p1[:cards[0]], p2[:cards[1]])
-      else:
-        if cards[0] > cards[1]:
-          winner = 1
-        else:
-          winner = 2
-
-      if winner == 1:
-        p1.append(cards[0])
-        p1.append(cards[1])
-      else:
-        p2.append(cards[1])
-        p2.append(cards[0])
-    if top:
-      w = p1 if p1 else p2
-      w = reversed(w)
-      return sum((i+1) * c for i, c in enumerate(w))
-
-    if p1 and not p2:
-      return 1
-    elif p2 and not p1:
-      return 2
-    raise RuntimeError
-
-  def part2(self, lines: List[str]) -> int:
-    p1 = [int(l) for l in lines[0].split('\n')[1:]]
-    p2 = [int(l) for l in lines[1].split('\n')[1:]]
-    return self.recurse(p1, p2, top=True)
-
-  def preparse_input(self, x):
-    return x
+  def preparse_input(self, decks):
+    """Split the input into two decks."""
+    return [
+      [int(l) for l in deck.split('\n')[1:]]
+      for deck in decks
+    ]
 
 
 if __name__ == '__main__':
