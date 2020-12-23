@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/bin/pypy3
 """Day 23.
 
 Crab Cups.
