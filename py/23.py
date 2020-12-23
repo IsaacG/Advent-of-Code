@@ -1,57 +1,37 @@
-#!/bin/pypy3
+#!/bin/python3
+"""Day 23.
+
+Crab Cups.
+The small crab challenges you to a game! The crab is going to mix up some cups, and you have to predict where they'll end up.
+https://adventofcode.com/2020/day/23
+"""
 
 import aoc
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 class Cup:
+  """Linked list node."""
 
-  def __init__(self, val, prev):
-    self.prev = prev
+  TIMER_ITERATIONS = (50, 3)
+
+  def __init__(self, val: int, prev: Optional["Cup"]):
+    """Create a Cup."""
+    self.val = val
     if prev:
       prev.next = self
-    self.next = None
-    self.val = val
 
-  def move_next_3(self, other):
-    next3 = self.next
-    third = self.next.next.next
-    self.next = third.next
-    self.next.prev = self
-
-    old = other.next
-    other.next = next3
-    third.next = old
-
-  def next3(self):
-    out = []
-    cur = self
-    for i in range(3):
-      cur = cur.next
-      out.append(cur.val)
-    return out
-
-  def all(self):
+  def nodes(self):
+    """Generate all nodes starting at `self`."""
     yield self
     c = self.next
     while c != self:
       yield c
       c = c.next
 
-  def __str__(self):
-    out = [f'({self.val})']
-    c = self.next
-    while c != self:
-      out.append(str(c.val))
-      c = c.next
-    return ' '.join(out)
-    
 
 class Day23(aoc.Challenge):
+  """Track the cups."""
 
   TESTS = (
     aoc.TestCase(inputs='389125467', part=1, want=67384529),
@@ -74,24 +54,42 @@ class Day23(aoc.Challenge):
 
     # Link the last and first cups, making the list circular.
     cur.next = mapping[cups[0]]
-    mapping[cups[0]].prev = cur
-
     
     # Start the game with the "first" Cup.
     cur = mapping[cups[0]]
     highest = max(cups)
     for rounds in range(rounds):
       # Destination label cannot be current or next three labels.
-      not_valid = cur.next3() + [cur.val]
+      not_valid_dest = (cur.val, cur.next.val, cur.next.next.val, cur.next.next.next.val)
       dest = cur.val
-      while dest in not_valid:
+      while dest in not_valid_dest:
         # Try one lower value - with circular counting.
         dest = (dest - 1) or highest
 
       # Move 3 Cups from cur to dest.
-      cur.move_next_3(mapping[dest])
+      other = mapping[dest]
+
+      # Update the cups with the next three cups shifted.
+      # C => (j k l) => x y z D => e
+      # C: current cup. D: destination cup. j k l are the three to move.
+      # Update C.next = x; l.next = e; D.next = j
+      if False:
+        # Does not work. No idea why.
+        cur.next, cur.next.next.next.next, other.next = cur.next.next.next.next, other.next, cur.next
+      else:
+        # Longer form.
+        taken = cur.next
+        taken_end = cur.next.next.next
+        taken_next = cur.next.next.next.next
+        dest_plus_one = other.next
+
+        cur.next = taken_next
+        other.next = taken
+        taken_end.next = dest_plus_one
+
       # Move to the next Cup.
       cur = cur.next
+
     return mapping[1]
 
   def part2(self, cups: List[int]) -> int:
@@ -105,8 +103,8 @@ class Day23(aoc.Challenge):
     """Play for 100 rounds, return the list of Cups."""
     cups = list(cups)
     one = self.solve(cups, 100)
-    vals = [str(i.val) for i in one.all()][1:]
-    return int("".join(vals))
+    vals = [i.val for i in one.nodes()]
+    return int("".join(str(i) for i in vals[1:]))
 
   def preparse_input(self, lines):
     return [int(i) for i in lines[0]]
