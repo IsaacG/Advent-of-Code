@@ -57,17 +57,13 @@ class Day24(aoc.Challenge):
     # Speed up tests for convenience.
     limit = 20 if self.testing else 100
     for _ in range(limit):
-      # Compute a set of candidate cells to check.
-      neighbors = {l + x for x in DIRS for l in live}
-      neighbors.update(live)
+      # Count all the "neighbor" values.
+      counts = collections.Counter(l + x for x in DIRS for l in live)
 
       next_board = set()
-      for l in neighbors:
-        count = sum(True for x in DIRS if l + x in live)
-        if l in live and count in (1, 2):
-          next_board.add(l)
-        elif l not in live and count == 2:
-          next_board.add(l)
+      for coord, count in counts.items():
+        if count == 2 or (count == 1 and coord in live):
+          next_board.add(coord)
       live = next_board
 
     return len(live)
