@@ -5,7 +5,7 @@ import collections
 import functools
 import math
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Set
 
 
 SAMPLE = ["""\
@@ -31,26 +31,39 @@ neswnwewnwnwseenwseesewsenwsweewe
 wseweeenwnesenwwwswnew
 """]
 
-DIR = (1,-1,1j, -1j, 1+1j, -1-1j)
+# redblobgames hex grid -- axial coordinates.
+DIRECTIONS = {
+  'e': +1 + 0j,
+  'w': -1 + 0j,
+  'ne': 1 + 1j,
+  'nw': 0 + 1j,
+  'se': 0 - 1j,
+  'sw': -1 - 1j,
+}
+DIR = tuple(DIRECTIONS.values())
 
 class Day24(aoc.Challenge):
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=10),
-    aoc.TestCase(inputs=SAMPLE[0], part=2, want=2208),
+    aoc.TestCase(inputs=SAMPLE[0], part=2, want=132), # 20 rounds
+    # aoc.TestCase(inputs=SAMPLE[0], part=2, want=2208), # 100 rounds
   )
 
-  def part2(self, lines: List[str]) -> int:
-    flipped = self.build_grid(lines)
-    live = {k for k, v in flipped.items() if v}
-    for _ in range(100):
-      neighbors = set(live)
+  def part2(self, lines: List[List[str]]) -> int:
+    """Play Game of Life on a hex grid. See day 17."""
+    live = self.build_grid(lines)
+    # Speed up tests for convenience.
+    limit = 20 if self.testing else 100
+    for _ in range(limit):
+      # Compute a set of candidate cells to check.
+      neighbors = {l + x for x in DIR for l in live}
+      neighbors.update(live)
+
       next_board = set()
-      for l in live:
-        neighbors.update((l + x for x in DIR))
       for l in neighbors:
         count = sum(True for x in DIR if l + x in live)
-        if l in live and count in (1,2):
+        if l in live and count in (1, 2):
           next_board.add(l)
         elif l not in live and count == 2:
           next_board.add(l)
@@ -58,44 +71,25 @@ class Day24(aoc.Challenge):
 
     return len(live)
 
-  def part1(self, lines: List[str]) -> int:
-    flipped = self.build_grid(lines)
-    return sum(flipped.values())
+  def part1(self, lines: List[List[str]]) -> int:
+    """Count flipped tiles after applying instructions."""
+    return len(self.build_grid(lines))
 
-  def build_grid(self, lines):
-    flipped = collections.defaultdict(lambda: False)
+  def build_grid(self, lines: List[List[str]]) -> Set[complex]:
+    """Convert a list of directions to a coord and flip that tile on/off."""
+    flipped = set()
     for line in lines:
-      c = 0 + 0j
-      for i in line:
-        if i == 'e':
-          c += (1 + 0j)
-        elif i == 'w':
-          c -= (1 + 0j)
-        elif i == 'ne':
-          c += (1 + 1j)
-        elif i == 'nw':
-          c += (0 + 1j)
-        elif i == 'se':
-          c -= (0 + 1j)
-        elif i == 'sw':
-          c -= (1 + 1j)
-      flipped[c] = not flipped[c]
+      c = sum(DIRECTIONS[i] for i in line)
+      if c in flipped:
+        flipped.remove(c)
+      else:
+        flipped.add(c)
     return flipped
 
   def preparse_input(self, x):
-    out = []
-    for l in x:
-      row = []
-      l = list(l)
-      while l:
-        if l[0] in 'ew':
-          row.append(l.pop(0))
-        else:
-          row.append(l[0] + l[1])
-          l.pop(0)
-          l.pop(0)
-      out.append(row)
-    return out
+    """Split lines into lists of directions."""
+    dir_re = re.compile('[ns]?[ew]')
+    return [dir_re.findall(l) for l in x]
 
 
 if __name__ == '__main__':
