@@ -31,7 +31,8 @@ neswnwewnwnwseenwseesewsenwsweewe
 wseweeenwnesenwwwswnew
 """]
 
-# redblobgames hex grid -- axial coordinates.
+# https://www.redblobgames.com/grids/hexagons/ -- axial coordinates.
+# Cartesian coordinates represented by complex numbers, as per Day 12.
 DIRMAP = {
   'e': +1 + 0j,
   'w': -1 + 0j,
