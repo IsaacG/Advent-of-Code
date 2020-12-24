@@ -32,7 +32,7 @@ wseweeenwnesenwwwswnew
 """]
 
 # redblobgames hex grid -- axial coordinates.
-DIRECTIONS = {
+DIRMAP = {
   'e': +1 + 0j,
   'w': -1 + 0j,
   'ne': 1 + 1j,
@@ -40,7 +40,7 @@ DIRECTIONS = {
   'se': 0 - 1j,
   'sw': -1 - 1j,
 }
-DIR = tuple(DIRECTIONS.values())
+DIRS = tuple(DIRMAP.values())
 
 class Day24(aoc.Challenge):
 
@@ -57,12 +57,12 @@ class Day24(aoc.Challenge):
     limit = 20 if self.testing else 100
     for _ in range(limit):
       # Compute a set of candidate cells to check.
-      neighbors = {l + x for x in DIR for l in live}
+      neighbors = {l + x for x in DIRS for l in live}
       neighbors.update(live)
 
       next_board = set()
       for l in neighbors:
-        count = sum(True for x in DIR if l + x in live)
+        count = sum(True for x in DIRS if l + x in live)
         if l in live and count in (1, 2):
           next_board.add(l)
         elif l not in live and count == 2:
@@ -79,7 +79,7 @@ class Day24(aoc.Challenge):
     """Convert a list of directions to a coord and flip that tile on/off."""
     flipped = set()
     for line in lines:
-      c = sum(DIRECTIONS[i] for i in line)
+      c = sum(DIRMAP[i] for i in line)
       if c in flipped:
         flipped.remove(c)
       else:
