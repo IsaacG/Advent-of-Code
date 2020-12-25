@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# TODO: Convert to Python
+# Merge in the codeblocks code
+# Pandoc the HTML -> MD
+# Auto sleep and compute date
+
 if (( $# != 1 )); then
   echo 'Bad usage'
   exit 1
@@ -9,7 +14,7 @@ printf -vnum '%02d' "$1"
 if [[ ! -f "py/$num.py" ]]; then
   sed "s/NN/$num/" py/tmpl.py > "py/$num.py"
   ./codeblocks.py "$1" >> "py/$num.py"
-  printf '# vim:ts=2:sw=2:expandtab\n' >> "py/$num.py"
+  printf '# v''im:ts=2:sw=2:expandtab\n' >> "py/$num.py"
 fi
 chmod 700 "py/$num.py"
 

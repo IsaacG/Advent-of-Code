@@ -123,7 +123,7 @@ class Challenge:
     self.pre_run()
     if test:
       self.run_tests()
-      print(f'Day {self.day}: PASS')
+      print(f'Day {self.day:02d}: TEST PASS')
 
     if solve:
       for i, func in self.funcs.items():
@@ -136,7 +136,7 @@ class Challenge:
       for l in lines:
         parts = l.split()
         assert len(parts) == 3, f'Line does not have 3 parts: {l!r}.'
-        if parts[0] == self.day:
+        if int(parts[0]) == self.day:
           break
       for i, func in self.funcs.items():
         parsed_data = self.preparse_input(raw_data)
@@ -144,7 +144,8 @@ class Challenge:
         want = parts[i]
         if isinstance(got, int):
           want = int(want)
-        assert want == got, f'Day{self.day} Part {i}: want({want}) != got({got})'
+        assert want == got, f'Day {self.day:02d} Part {i}: want({want}) != got({got})'
+      print(f'Day {self.day:02d}: CHECK PASS')
     if time:
       self.time(raw_data)
 
