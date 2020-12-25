@@ -25,22 +25,26 @@ class Day25(aoc.Challenge):
       num = (num * subject) % 20201227
     return num
     
-  def force(self, result, subject):
+  def force(self, want):
     """Brute force the loop_counter to "solve" Diffie Hellman."""
     attempt = 0
     num = 1
-    while num != result:
+    w0, w1 = want
+    while num != w0 and num != w1:
       attempt += 1
-      num = (num * subject) % 20201227
-    return attempt
+      num = (num * 7) % 20201227
+    return attempt, want.index(num)
 
-  def part1(self, lines: List[str]) -> int:
-    b = self.force(lines[1], 7)
-    # a = self.force(lines[0], 7)
-    # print(1, a)
-    return self.transform(lines[0], b)
+  def part1(self, pubkeys: List[str]) -> int:
+    """Brute force the key.
+
+    Brute force both public keys to find the smaller loop counter.
+    Use the loop counter to transform the *other* public key.
+    """
+    loop_counter, key_index = self.force(pubkeys)
+    return self.transform(pubkeys[1 - key_index], loop_counter)
   
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, pubkeys: List[str]) -> int:
     return 0
 
 

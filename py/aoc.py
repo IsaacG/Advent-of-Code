@@ -80,6 +80,7 @@ class Challenge:
     self.testing = True
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
+      assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
       data = self.load_data(case.inputs)
       data = self.preparse_input(data)
       got = self.funcs[case.part](data, *self.TEST_ARGS)
