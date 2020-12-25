@@ -110,8 +110,6 @@ class Challenge:
     time: bool = False,
   ):
     assert any((test, solve, check, time))
-
-    print(data)
     if data is None:
       data = pathlib.Path(__file__).parent / 'data' / f'{self.day:02d}'
       data = data.with_suffix('.txt')
