@@ -23,7 +23,7 @@ class Runner:
     if not self.watch:
       return func(self.day)
     inotify = inotify_simple.INotify()
-    inotify.add_watch(self.base / 'py', inotify_simple.flags.CLOSE_WRITE)
+    inotify.add_watch(self.base / '2020', inotify_simple.flags.CLOSE_WRITE)
     while e := inotify.read():
       if not e[0].name.endswith('.py'):
         continue
@@ -40,7 +40,7 @@ class Runner:
     if day:
       day = f'{day:02d}'
 
-    for f in sorted(self.base.glob('py/[0-9][0-9].py')):
+    for f in sorted(self.base.glob('2020/[0-9][0-9].py')):
       if day and f.stem != day:
         continue
       data = (self.base / 'data' / f.stem).with_suffix('.txt')
