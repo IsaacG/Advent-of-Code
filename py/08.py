@@ -1,12 +1,9 @@
 #!/bin/pypy3
 
-import collections
 import typer
+from typing import List
+
 import aoc
-import re
-import sys
-import time
-from typing import List, Dict
 
 
 SAMPLE = ["""\
@@ -74,7 +71,7 @@ class Day08(aoc.Challenge):
   def part1(self, lines: List[str]) -> int:
     """Run the code until a loop is detected."""
     acc, end = self.compute(lines)
-    assert end == False
+    assert not end
     return acc
 
   def part2(self, lines: List[str]) -> int:

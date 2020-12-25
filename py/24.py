@@ -3,10 +3,8 @@
 import typer
 import aoc
 import collections
-import functools
-import math
 import re
-from typing import Any, Callable, Dict, List, Set
+from typing import List, Set
 
 
 SAMPLE = ["""\
@@ -44,12 +42,13 @@ DIRMAP = {
 }
 DIRS = tuple(DIRMAP.values())
 
+
 class Day24(aoc.Challenge):
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=10),
-    aoc.TestCase(inputs=SAMPLE[0], part=2, want=132), # 20 rounds
-    # aoc.TestCase(inputs=SAMPLE[0], part=2, want=2208), # 100 rounds
+    aoc.TestCase(inputs=SAMPLE[0], part=2, want=132),  # 20 rounds
+    # aoc.TestCase(inputs=SAMPLE[0], part=2, want=2208),  # 100 rounds
   )
 
   def part2(self, lines: List[List[str]]) -> int:
@@ -59,7 +58,7 @@ class Day24(aoc.Challenge):
     limit = 20 if self.testing else 100
     for _ in range(limit):
       # Count all the "neighbor" values.
-      counts = collections.Counter(l + x for x in DIRS for l in live)
+      counts = collections.Counter(coord + x for x in DIRS for coord in live)
 
       next_board = set()
       for coord, count in counts.items():
@@ -87,7 +86,7 @@ class Day24(aoc.Challenge):
   def preparse_input(self, x):
     """Split lines into lists of directions."""
     dir_re = re.compile('[ns]?[ew]')
-    return [dir_re.findall(l) for l in x]
+    return [dir_re.findall(direction) for direction in x]
 
 
 if __name__ == '__main__':

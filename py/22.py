@@ -1,15 +1,12 @@
 #!/bin/pypy3
 
 import typer
-import aoc
-import collections
 import copy
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List, Tuple
+from typing import List, Tuple
+import aoc
 
-SAMPLE = ["""\
+SAMPLE = [
+  """\
 Player 1:
 9
 2
@@ -23,7 +20,7 @@ Player 2:
 4
 7
 10
-""","""
+""", """
 Player 1:
 43
 19
@@ -33,6 +30,7 @@ Player 2:
 29
 14
 """]
+
 
 class Day22(aoc.Challenge):
 
@@ -57,13 +55,13 @@ class Day22(aoc.Challenge):
       # Add the cards to hand, highest first.
       hands[winner].extend(sorted(cards_played, reverse=True))
     winning_hand = [h for h in hands if h][0]
-    return sum((i+1) * c for i, c in enumerate(winning_hand[::-1]))
+    return sum((i + 1) * c for i, c in enumerate(winning_hand[::-1]))
 
   def part2(self, decks) -> int:
     """Play Recursive Combat."""
     winner, winning_hand = self.combat(copy.deepcopy(decks))
     # print(f'Winner: {winner}')
-    return sum((i+1) * c for i, c in enumerate(winning_hand[::-1]))
+    return sum((i + 1) * c for i, c in enumerate(winning_hand[::-1]))
 
   def combat(self, hands) -> Tuple[int, List[int]]:
     """Return the winner and the winning deck."""
@@ -110,7 +108,7 @@ class Day22(aoc.Challenge):
   def preparse_input(self, decks):
     """Split the input into two decks."""
     return [
-      [int(l) for l in deck.split('\n')[1:]]
+      [int(line) for line in deck.split('\n')[1:]]
       for deck in decks
     ]
 

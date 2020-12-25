@@ -11,6 +11,7 @@ import data
 SAMPLE = data.D19
 TEXT_RE = re.compile(r'"(.*)"')
 
+
 class Day19(aoc.Challenge):
 
   TRANSFORM = str
@@ -50,7 +51,7 @@ class Day19(aoc.Challenge):
 
   def part2(self, data: Tuple[List[str], List[str]]) -> int:
     """Find the num of lines that match the regex-like rules.
-    
+
     However, handle circular rules. Relevant rules:
     0: 8 11
     8: 42 | 42 8
@@ -63,7 +64,7 @@ class Day19(aoc.Challenge):
           == r42{n}r31{m}, n > m
       Manually generate a rule, (r42+)(r31+) and check if match_count(r42) > match_count(r31).
     """
-    raw_rules, inputs = data 
+    raw_rules, inputs = data
     # Drop these rules. We well hand-craft them.
     for i in (0, 8, 11):
       if i in raw_rules:
@@ -95,7 +96,7 @@ class Day19(aoc.Challenge):
 
   def part1(self, data: Tuple[List[str], List[str]]) -> int:
     """Find the num of lines that match the regex-like rules."""
-    raw_rules, inputs = data 
+    raw_rules, inputs = data
     # Map input to regexps.
     regexps = self.generate_regexes(raw_rules).values()
     # Count the lines that match.
@@ -107,7 +108,7 @@ class Day19(aoc.Challenge):
 
   def preparse_input(self, x):
     """Parse the two input blocks."""
-    return {int(l.split(': ')[0]): l.split(': ')[1] for l in x[0].split('\n')}, x[1].split('\n')
+    return {int(line.split(': ')[0]): line.split(': ')[1] for line in x[0].split('\n')}, x[1].split('\n')
 
 
 if __name__ == '__main__':

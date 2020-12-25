@@ -4,13 +4,8 @@
 import typer
 import aoc
 import collections
-import copy
 import enum
-import functools
-import itertools
-import math
-import re
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Dict, List, Tuple
 import data
 
 # An image row/column/edge is a list of chars. An image is a list of these.
@@ -60,7 +55,7 @@ class Tile:
     """Construct a Tile from the input text."""
     lines = block.split('\n')
     self.num = int(lines[0].split(' ')[1][:-1])
-    self.image = [list(l) for l in lines[1:]]
+    self.image = [list(line) for line in lines[1:]]
     # Neighboring tiles for stitching.
     self.neighbors = {}
     # Used to verify we don't try to rotate a tile multiple times.
@@ -212,7 +207,7 @@ class Day20(aoc.Challenge):
         if d in cur.neighbors:
           cur = cur.neighbors[d]
     return cur.num
-    
+
   def stitched_image(self, tiles: Dict[int, Tile]) -> Image:
     """Return the stitched image from the tiles."""
     image = []
@@ -245,7 +240,7 @@ class Day20(aoc.Challenge):
     image = self.stitched_image(tiles)
     # Check I generate the correct stitched image.
     if self.testing:
-      assert '\n'.join(''.join(l) for l in image) == SAMPLE[1].strip()
+      assert '\n'.join(''.join(line) for line in image) == SAMPLE[1].strip()
 
     # Count monsters in the image
     monster_count = 0
@@ -297,8 +292,8 @@ class Day20(aoc.Challenge):
     tiles = self.stitched_tiles(blocks)
 
     # Four corners. Top left, top right, bottom left, bottom right.
-    l = list(range(4))
-    corners = zip(l, l[1:] + l[:1])
+    line = list(range(4))
+    corners = zip(line, line[1:] + line[:1])
     return aoc.mult(
       self.find_corner(tiles, corner)
       for corner in corners

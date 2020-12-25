@@ -72,18 +72,18 @@ class Day07(aoc.Challenge):
           queued.update(rules[j])
     return len([i for i in expanded.values() if TARGET in i])
 
-
   def part2(self, rules: Rules) -> int:
     """How many bags are inside a shiny gold bag?
 
     Dynamic programming!
     """
     cache = {}
+
     def num_inside(color):
       """How many bags do we have, starting at `color`?"""
       if color not in cache:
         # For each item inside this bag, sum the count (k) * [ 1 (for the bag self) + contends ]
-        cache[color] = sum(k * (1 + num_inside(j)) for  j, k in rules[color].items())
+        cache[color] = sum(k * (1 + num_inside(j)) for j, k in rules[color].items())
       return cache[color]
 
     return num_inside(TARGET)

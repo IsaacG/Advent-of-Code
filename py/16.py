@@ -2,12 +2,8 @@
 """Train tickets."""
 
 import typer
+from typing import List
 import aoc
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List
 
 # Fudge the second sample to include departure rows
 # so it would be valid input to part2.
@@ -24,7 +20,7 @@ nearby tickets:
 40,4,50
 55,2,20
 38,6,12
-""","""
+""", """
 departure class: 0-1 or 4-19
 departure row: 0-5 or 8-19
 seat: 0-13 or 16-19
@@ -57,8 +53,8 @@ class Day16(aoc.Challenge):
 
     rule_by_name = {}
     for line in rules.split('\n'):
-       name, l = line.split(': ')
-       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in l.split(' or '))
+       name, val = line.split(': ')
+       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in val.split(' or '))
     # CSV data, one row (after the header).
     your_ticket = [int(i) for i in your_ticket.split('\n')[1].split(',')]
     # CSV data. Split in "\n" for a record, split record on "," for values.
@@ -80,7 +76,6 @@ class Day16(aoc.Challenge):
     ]
     return sum(bad_values)
 
-
   def part2(self, data) -> int:
     rule_by_name, your_ticket, nearby_tickets = data
     # Find good tickets.
@@ -88,9 +83,9 @@ class Day16(aoc.Challenge):
     nearby_tickets = [
       ticket
       for ticket in nearby_tickets
-      if all(  # All numbers on the ticket
-        any(   # pass any of the rules
-          any( # by matching any part of the rule
+      if all(   # All numbers on the ticket
+        any(    # pass any of the rules
+          any(  # by matching any part of the rule
             rule_part[0] <= number <= rule_part[1] for rule_part in rule
           )
           for rule in rule_by_name.values()

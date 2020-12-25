@@ -1,8 +1,6 @@
 #!/bin/pypy3
 
-import pathlib
 import re
-import sys
 from typing import List, Tuple
 import typer
 
@@ -15,6 +13,7 @@ SAMPLE = """\
 1-3 b: cdefg
 2-9 c: ccccccccc
 """
+
 
 class Day02(aoc.Challenge):
 

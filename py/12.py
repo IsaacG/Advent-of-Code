@@ -77,7 +77,7 @@ class Day12(aoc.Challenge):
     return self.solve(lines, 1, 1)
 
   def part2(self, lines: List[str]) -> int:
-    return self.solve(lines, (10+1j), 2)
+    return self.solve(lines, (10 + 1j), 2)
 
 
 if __name__ == '__main__':

@@ -9,7 +9,8 @@ import typer
 import aoc
 
 
-SAMPLE = ["""\
+SAMPLE = [
+  """\
 16
 10
 15
@@ -76,7 +77,7 @@ class Day10(aoc.Challenge):
     nums.insert(0, 0)
     nums.append(max(nums) + 3)
     # Compute the size of each step.
-    diffs = [nums[i+1] - nums[i] for i in range(len(nums) - 1)]
+    diffs = [nums[i + 1] - nums[i] for i in range(len(nums) - 1)]
     # Count and multiply.
     counts = collections.Counter(diffs)
     return counts[1] * counts[3]

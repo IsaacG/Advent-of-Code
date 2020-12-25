@@ -2,12 +2,13 @@
 
 import typer
 import aoc
-from typing import List, Dict
+from typing import List
 
 SAMPLE = [
   'abc\n\na\nb\nc\n\nab\nac\n\na\na\na\na\n\nb',
   "abc\n\na\nb\nc\n\nab\nac\n\na\na\na\na\n\nb",
 ]
+
 
 class Day06(aoc.Challenge):
 

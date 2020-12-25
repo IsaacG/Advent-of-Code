@@ -1,13 +1,8 @@
 #!/bin/pypy3
 
 import typer
+from typing import Dict, List, Tuple
 import aoc
-import collections
-import itertools
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List, Tuple
 
 SAMPLE = ["""\
 mxmxvkd kfcds sqjhc nhms (contains dairy, fish)

@@ -1,6 +1,5 @@
 #!/bin/pypy3
 
-import sys
 from typing import List, Set
 import typer
 
@@ -14,6 +13,7 @@ SAMPLE = """\
 675
 1456
 """
+
 
 class Day01(aoc.Challenge):
 
@@ -29,7 +29,7 @@ class Day01(aoc.Challenge):
       return 0
     if len(vals) == 2:
       return vals[0] * vals[1]
-    raise ValueError(f'Found too many matches.')
+    raise ValueError('Found too many matches.')
 
   def part1(self, data: List[str]) -> int:
     return self.prod_of_pair(2020, data)

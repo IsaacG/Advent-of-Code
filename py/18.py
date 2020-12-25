@@ -8,17 +8,13 @@ With the tree parser: 0.178/4.177/4.783 ms
 """
 
 import typer
+from typing import Callable, List
 import aoc
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List, Union, Optional
 
 
 class Node:
   """A node can either be a single number or two nodes with an operator."""
-  
+
   def __init__(self, a, op=None, b=None):
     self.a = a
     self.op = op
@@ -65,7 +61,7 @@ class Day18(aoc.Challenge):
 
   def preparse_input(self, x):
     """Drop whitespace."""
-    return [l.replace(" ", "") for l in x]
+    return [line.replace(" ", "") for line in x]
 
   def part1(self, lines: List[str]) -> int:
     """Treat + and * equally."""
@@ -110,7 +106,7 @@ class Day18(aoc.Challenge):
       else:
         left = _go(tkns[:i])
         op = tkns[i]
-        right = _go(tkns[i+1:])
+        right = _go(tkns[i + 1:])
         return Node(left, op, right)
     return _go(tokens)
 

@@ -1,7 +1,5 @@
 #!/bin/pypy3
 
-import sys
-
 from typing import List
 
 import typer
@@ -21,6 +19,7 @@ SAMPLE = """\
 #...##....#
 .#..#...#.#
 """
+
 
 class Day03(aoc.Challenge):
 
@@ -43,7 +42,7 @@ class Day03(aoc.Challenge):
 
   def part2(self, grid: List[str]) -> int:
     prod = 1
-    for x_step, y_step in ((1,1), (3,1), (5,1), (7,1), (1,2)):
+    for x_step, y_step in ((1, 1), (3, 1), (5, 1), (7, 1), (1, 2)):
       prod *= self.tree_count(grid, x_step, y_step)
     return prod
 

@@ -2,12 +2,9 @@
 """Day 15. Van Eck sequence. https://www.youtube.com/watch?v=etMJxB-igrc - Numberphile."""
 
 import typer
+from typing import List
+
 import aoc
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable, Dict, List
 
 
 class Day15(aoc.Challenge):
@@ -24,7 +21,7 @@ class Day15(aoc.Challenge):
 
   def part1(self, lines: List[List[int]]) -> int:
     return self.solve(lines[0], 2020)
-        
+
   def part2(self, lines: List[List[int]]) -> int:
     return self.solve(lines[0], 30000000)
 

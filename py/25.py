@@ -2,12 +2,8 @@
 """Brute force solve Diffie Hellman key exchange."""
 
 import aoc
-import collections
-import functools
-import math
-import re
 import typer
-from typing import Any, Callable, Dict, List
+from typing import List
 
 MODULO = 20201227
 
@@ -27,7 +23,7 @@ class Day25(aoc.Challenge):
     for i in range(loop_counter):
       num = (num * subject) % MODULO
     return num
-    
+
   def force(self, w0, w1):
     """Brute force the loop_counter to "solve" Diffie Hellman."""
     attempt = 0
@@ -45,7 +41,7 @@ class Day25(aoc.Challenge):
     """
     loop_counter, key_index = self.force(*pubkeys)
     return self.transform(pubkeys[1 - key_index], loop_counter)
-  
+
   def part2(self, pubkeys: List[str]) -> int:
     """No part 2."""
     return 0

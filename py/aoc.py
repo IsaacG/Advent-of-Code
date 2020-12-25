@@ -4,9 +4,7 @@
 import dataclasses
 import os
 import pathlib
-import sys
 import time
-import typer
 
 from typing import Callable, Iterable, List
 
@@ -21,7 +19,7 @@ def mult(nums: Iterable[int]) -> int:
 
 def sum_map(lines: List[str], func: Callable[[str], int]) -> int:
   """sum_map(lines, func)"""
-  return sum(func(l) for l in lines)
+  return sum(func(line) for line in lines)
 
 
 @dataclasses.dataclass
@@ -72,7 +70,7 @@ class Challenge:
     if isinstance(src, pathlib.Path):
       assert src.exists(), f'{src} does not exist'
       text = src.read_text()
-    elif isinstance(src, str) and  os.path.exists(src):
+    elif isinstance(src, str) and os.path.exists(src):
       text = pathlib.Path(src).read_text()
     else:
       text = src
@@ -130,12 +128,12 @@ class Challenge:
         parsed_data = self.preparse_input(raw_data)
         self.debug(f'Running part {i}:')
         print(func(parsed_data, *self.RUN_ARGS))
-    
+
     if check:
       lines = (pathlib.Path(__file__).parent.parent / 'data/solutions').read_text().strip().split('\n')
-      for l in lines:
-        parts = l.split()
-        assert len(parts) == 3, f'Line does not have 3 parts: {l!r}.'
+      for line in lines:
+        parts = line.split()
+        assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
         if int(parts[0]) == self.day:
           break
       for i, func in self.funcs.items():

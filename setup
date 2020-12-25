@@ -4,6 +4,8 @@
 # Merge in the codeblocks code
 # Pandoc the HTML -> MD
 # Auto sleep and compute date
+# --sleep flag -- sleep until midnight EST and open vim after fetching
+# Optional --date YYYYDD or auto compute
 
 if (( $# != 1 )); then
   echo 'Bad usage'

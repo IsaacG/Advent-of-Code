@@ -1,13 +1,9 @@
 #!/bin/pypy3
 
 import typer
-import aoc
-import collections
-import functools
 import itertools
-import math
-import re
-from typing import Any, Callable, Dict, Generator, List, Tuple, Set, FrozenSet
+from typing import List, Tuple
+import aoc
 
 Coord = Tuple[int, ...]
 
@@ -57,7 +53,7 @@ class GameOfLife:
 
   def active_neighbor_count(self, coord: Coord) -> int:
     """Count the number of active seats immediately surround this one.
-    
+
     We could reuse self.neighbors() here but that's a lot slower.
     """
     return sum(
@@ -88,36 +84,36 @@ class GameOfLife:
     w, z, y, x = coord
     return sum(
       True
-      for a in (-1,0,1)
-      for b in (-1,0,1)
-      for c in (-1,0,1)
-      for d in (-1,0,1)
-      if not (a == 0 and b == 0 and c == 0 and d == 0)
-      and self.active((w + d, z + a, y + b, x + c))
+      for a in (-1, 0, 1)
+      for b in (-1, 0, 1)
+      for c in (-1, 0, 1)
+      for d in (-1, 0, 1)
+      if not (a == 0 and b == 0 and c == 0 and d == 0) and (
+        self.active((w + d, z + a, y + b, x + c)))
     )
 
   def fast_calc_next(self):
     """Fast calc_next with fixed N."""
     next = set()
 
-    x_min = min(x for (w,z,y,x) in self.board)
-    x_max = max(x for (w,z,y,x) in self.board)
-    y_min = min(y for (w,z,y,x) in self.board)
-    y_max = max(y for (w,z,y,x) in self.board)
-    z_min = min(z for (w,z,y,x) in self.board)
-    z_max = max(z for (w,z,y,x) in self.board)
-    w_min = min(w for (w,z,y,x) in self.board)
-    w_max = max(w for (w,z,y,x) in self.board)
+    x_min = min(x for (w, z, y, x) in self.board)
+    x_max = max(x for (w, z, y, x) in self.board)
+    y_min = min(y for (w, z, y, x) in self.board)
+    y_max = max(y for (w, z, y, x) in self.board)
+    z_min = min(z for (w, z, y, x) in self.board)
+    z_max = max(z for (w, z, y, x) in self.board)
+    w_min = min(w for (w, z, y, x) in self.board)
+    w_max = max(w for (w, z, y, x) in self.board)
     for w in range(w_min - 1, w_max + 2):
       for z in range(z_min - 1, z_max + 2):
         for y in range(y_min - 1, y_max + 2):
           for x in range(x_min - 1, x_max + 2):
             count = self.fast_active_neighbor_count((w, z, y, x))
-            if self.active((w,z,y,x)) and count in (2, 3):
-              next.add((w,z,y,x))
+            if self.active((w, z, y, x)) and count in (2, 3):
+              next.add((w, z, y, x))
             elif count == 3:
-              next.add((w,z,y,x))
-    self.board  = next
+              next.add((w, z, y, x))
+    self.board = next
 
 
 class Day17(aoc.Challenge):

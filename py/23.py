@@ -2,13 +2,14 @@
 """Day 23.
 
 Crab Cups.
-The small crab challenges you to a game! The crab is going to mix up some cups, and you have to predict where they'll end up.
+The small crab challenges you to a game! The crab is going to mix up some cups,
+and you have to predict where they'll end up.
 https://adventofcode.com/2020/day/23
 """
 
 import typer
 import aoc
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 
 class Cup:
@@ -55,7 +56,7 @@ class Day23(aoc.Challenge):
 
     # Link the last and first cups, making the list circular.
     cur.next = mapping[cups[0]]
-    
+
     # Start the game with the "first" Cup.
     cur = mapping[cups[0]]
     highest = max(cups)
@@ -96,7 +97,7 @@ class Day23(aoc.Challenge):
   def part2(self, cups: List[int]) -> int:
     """Extend the cups through 1M. Play for 10M rounds."""
     cups = list(cups)
-    cups.extend(range(10, int(1e6)+1))
+    cups.extend(range(10, int(1e6) + 1))
     one = self.solve(cups, int(1e7))
     return one.next.val * one.next.next.val
 

@@ -1,9 +1,7 @@
 #!/bin/python
 """Walrus operator not supported by pypy3."""
 
-import sys
 import typer
-import aoc
 import re
 
 from typing import List
@@ -36,6 +34,7 @@ def valid1(record):
   fields = {f.split(':', 1)[0] for f in record.split()}
   return fields >= REQUIRED_FIELDS
 
+
 def range_check(s: str, mn: int, mx: int) -> bool:
   """Check a numeric str in in a range."""
   return mn <= int(s) <= mx
@@ -64,9 +63,13 @@ def valid2(record) -> bool:
     if not range_check(data[k], mn, mx):
       return False
 
-  if (m := HEIGHT_IN_RE.match(data['hgt'])) and range_check(m.group(1), 59, 76):
+  if (
+    m := HEIGHT_IN_RE.match(data['hgt'])
+  ) and range_check(m.group(1), 59, 76):
     pass
-  elif (m := HEIGHT_CM_RE.match(data['hgt'])) and range_check(m.group(1), 150, 193):
+  elif (
+    m := HEIGHT_CM_RE.match(data['hgt'])
+  ) and range_check(m.group(1), 150, 193):
     pass
   else:
     return False
