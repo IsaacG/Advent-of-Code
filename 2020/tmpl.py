@@ -5,6 +5,7 @@ import collections
 import functools
 import math
 import re
+import typer
 from typing import Any, Callable, Dict, List
 
 
@@ -26,6 +27,6 @@ class DayNN(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  DayNN().run()
+  typer.run(DayNN().run)
 
 # vim:ts=2:sw=2:expandtab

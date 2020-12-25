@@ -3,6 +3,7 @@
 
 import datetime
 import inotify_simple
+import os
 import pathlib
 import subprocess
 from typing import List, Optional
@@ -17,13 +18,17 @@ class Runner:
     self.timeout = timeout
     self.watch = watch
     self.base = pathlib.Path(__file__).parent
+    if os.getenv('YEAR'):
+      self.year = os.getenv('YEAR')
+    else:
+      self.year = '2020'
 
   def maybe_watch(self, func):
     """Run the function once or on every CLOSE_WRITE."""
     if not self.watch:
       return func(self.day)
     inotify = inotify_simple.INotify()
-    inotify.add_watch(self.base / '2020', inotify_simple.flags.CLOSE_WRITE)
+    inotify.add_watch(self.base / self.year, inotify_simple.flags.CLOSE_WRITE)
     while e := inotify.read():
       if not e[0].name.endswith('.py'):
         continue
@@ -36,23 +41,22 @@ class Runner:
       print('Done.')
 
   def get_days(self, day):
-    """Generate the filenames of the py code and matching data.txt"""
+    """Generate the filenames of the py code."""
     if day:
       day = f'{day:02d}'
 
-    for f in sorted(self.base.glob('2020/[0-9][0-9].py')):
+    for f in sorted(self.base.glob(f'{self.year}/[0-9][0-9].py')):
       if day and f.stem != day:
         continue
-      data = (self.base / 'data' / f.stem).with_suffix('.txt')
-      yield((f, data))
+      yield(f)
 
   def run_with_flags(self, flags: List[str]):
     """Run the .py file with a flag and data."""
     self.maybe_watch(lambda d: self._run_with_flags(flags, d))
 
   def _run_with_flags(self, flags: List[str], day: Optional[int]):
-    for (f, d) in self.get_days(day):
-      cmd = [f] + flags + ['--data', d]
+    for f in self.get_days(day):
+      cmd = [f] + flags
       if self.timeout:
         if '--time' in flags and self.timeout == 30:
           self.timeout = 120
@@ -85,6 +89,7 @@ def main(
     flags.append('--time')
   if check:
     flags.append('--check')
+  assert flags
   r.run_with_flags(flags)
 
 

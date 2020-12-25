@@ -111,8 +111,9 @@ class Challenge:
   ):
     assert any((test, solve, check, time))
 
+    print(data)
     if data is None:
-      data = pathlib.Path(__file__).parent.parent / 'data' / f'{self.day:02d}'
+      data = pathlib.Path(__file__).parent / 'data' / f'{self.day:02d}'
       data = data.with_suffix('.txt')
     else:
       data = pathlib.Path(data)
@@ -127,10 +128,13 @@ class Challenge:
       for i, func in self.funcs.items():
         parsed_data = self.preparse_input(raw_data)
         self.debug(f'Running part {i}:')
-        print(func(parsed_data, *self.RUN_ARGS))
+        try:
+          print(func(parsed_data, *self.RUN_ARGS))
+        except NotImplementedError:
+          print(f'Part {i}: Not implemented')
 
     if check:
-      lines = (pathlib.Path(__file__).parent.parent / 'data/solutions').read_text().strip().split('\n')
+      lines = (pathlib.Path(__file__).parent / 'solutions').read_text().strip().split('\n')
       for line in lines:
         parts = line.split()
         assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'

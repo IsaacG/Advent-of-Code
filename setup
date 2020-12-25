@@ -7,17 +7,19 @@
 # --sleep flag -- sleep until midnight EST and open vim after fetching
 # Optional --date YYYYDD or auto compute
 
+[[ $YEAR ]] || { echo 'Set $YEAR.'; exit 1; }
+
 if (( $# != 1 )); then
   echo 'Bad usage'
   exit 1
 fi
 printf -vnum '%02d' "$1"
 
-if [[ ! -f "py/$num.py" ]]; then
-  sed "s/NN/$num/" py/tmpl.py > "py/$num.py"
-  ./codeblocks.py "$1" >> "py/$num.py"
-  printf '# v''im:ts=2:sw=2:expandtab\n' >> "py/$num.py"
+if [[ ! -f "$YEAR/$num.py" ]]; then
+  sed "s/NN/$num/" $YEAR/tmpl.py > "$YEAR/$num.py"
+  ./codeblocks.py "$1" >> "$YEAR/$num.py"
+  printf '# v''im:ts=2:sw=2:expandtab\n' >> "$YEAR/$num.py"
 fi
-chmod 700 "py/$num.py"
+chmod 700 "$YEAR/$num.py"
 
-[[ ! -f "data/$num.txt" ]] && wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="data/$num.txt" "https://adventofcode.com/2020/day/$1/input"
+[[ ! -f "$YEAR/data/$num.txt" ]] && wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="$YEAR/data/$num.txt" "https://adventofcode.com/$YEAR/day/$1/input"
