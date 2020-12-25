@@ -2,6 +2,7 @@
 
 import sys
 from typing import List, Set
+import typer
 
 import aoc
 
@@ -44,6 +45,6 @@ class Day01(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day01().run()
+  typer.run(Day01().run)
 
 # vim:ts=2:sw=2:expandtab

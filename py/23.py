@@ -6,6 +6,7 @@ The small crab challenges you to a game! The crab is going to mix up some cups, 
 https://adventofcode.com/2020/day/23
 """
 
+import typer
 import aoc
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -111,6 +112,6 @@ class Day23(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day23().run()
+  typer.run(Day23().run)
 
 # vim:ts=2:sw=2:expandtab

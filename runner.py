@@ -1,66 +1,27 @@
 #!/bin/python3
-"""Run AoC code in various flavors.
+"""Run AoC code in various flavors."""
 
-TODO: Add a timeout flag.
-"""
-
-import click
 import datetime
 import inotify_simple
 import pathlib
 import subprocess
-from typing import List
-
-@click.group()
-def cli():
-  pass
-
-
-@cli.command()
-@click.argument('days', type=int, nargs=-1)
-@click.option('-w', '--watch', type=bool, default=False)
-def test(days: List[int], watch: bool):
-  """Run the unit tests/sample inputs."""
-  Runner(days, watch).run_with_flag('-v')
-  print('All unit tests good!')
-
-
-@cli.command()
-@click.argument('days', type=int, nargs=-1)
-@click.option('-w', '--watch', type=bool, default=False)
-def solve(days: List[int], watch: bool):
-  """Spit out the solutions."""
-  Runner(days, watch).run_with_flag('-r')
-
-
-@cli.command()
-@click.argument('days', type=int, nargs=-1)
-@click.option('-w', '--watch', type=bool, default=False)
-def time(days: List[int], watch: bool):
-  """Generate runtimes."""
-  Runner(days, watch).run_with_flag('-t')
-
-
-@cli.command()
-@click.option('-w', '--watch', type=bool, default=False)
-@click.argument('days', type=int, nargs=-1)
-def check(days: List[int], watch: bool):
-  """Check the solution matches data/solutions."""
-  Runner(days, watch).check()
+from typing import List, Optional
+import typer
 
 
 class Runner:
   """Code runner."""
 
-  def __init__(self, days: List[int], watch: bool):
-    self.days = days
+  def __init__(self, day: int, watch: bool, timeout: int):
+    self.day = day
+    self.timeout = timeout
     self.watch = watch
     self.base = pathlib.Path(__file__).parent
 
   def maybe_watch(self, func):
     """Run the function once or on every CLOSE_WRITE."""
     if not self.watch:
-      return func()
+      return func(self.day)
     inotify = inotify_simple.INotify()
     inotify.add_watch(self.base / 'py', inotify_simple.flags.CLOSE_WRITE)
     while e := inotify.read():
@@ -74,59 +35,28 @@ class Runner:
       func(day)
       print('Done.')
 
-  def get_days(self, day=None):
+  def get_days(self, day):
     """Generate the filenames of the py code and matching data.txt"""
     if day:
-      days = [day]
-    else:
-      days = self.days
-    days = [f"{i:02d}" for i in days]
+      day = f'{day:02d}'
 
     for f in sorted(self.base.glob('py/[0-9][0-9].py')):
-      if days and f.stem not in days:
+      if day and f.stem != day:
         continue
       data = (self.base / 'data' / f.stem).with_suffix('.txt')
       yield((f, data))
 
-  def check(self):
-    """Check the solutions match data/solutions."""
-    self.maybe_watch(self._check)
-
-  def _check(self, day=None):
-    if day:
-      days = [day]
-    else:
-      days = self.days
-
-    for line in (self.base / 'data/solutions').read_text().strip().split('\n'):
-      day, want1, want2 = line.split()
-      day = int(day)
-      if days and day not in days:
-        continue
-      f = (self.base / 'py' / f'{day:02d}').with_suffix('.py')
-      d = (self.base / 'data' / f'{day:02d}').with_suffix('.txt')
-      cmd = [f, d]
-      p = subprocess.run(cmd, text=True, capture_output=True)
-      output = p.stdout.strip()
-      if len(output.split()) != 2:
-        print(f'Day {day:02d}: FAILED')
-        print('> ', output)
-        continue
-      got1, got2 = output.split()
-      if want1 == got1 and want2 == got2:
-        print(f'Day {day:02d}: PASS')
-      else:
-        print(f'Day {day:02d}: FAILED')
-        print(f'1: want[{want1}] got[{got1}]. 2: want[{want2}] got[{got2}].')
-
-  def run_with_flag(self, flag: str):
+  def run_with_flags(self, flags: List[str]):
     """Run the .py file with a flag and data."""
-    self.maybe_watch(lambda x=None: self._run_with_flag(flag, x))
+    self.maybe_watch(lambda d: self._run_with_flags(flags, d))
 
-  def _run_with_flag(self, flag: str, day=None):
+  def _run_with_flags(self, flags: List[str], day: Optional[int]):
     for (f, d) in self.get_days(day):
-      # cmd = ['timeout', '2', f, flag, d]
-      cmd = [f, flag, d]
+      cmd = [f] + flags + ['--data', d]
+      if self.timeout:
+        if '--time' in flags and self.timeout == 30:
+          self.timeout = 120
+        cmd = ['timeout', str(self.timeout)] + cmd
       try:
         p = subprocess.run(cmd)
       except Exception as e:
@@ -136,7 +66,29 @@ class Runner:
         print('TIMEOUT!')
 
 
+def main(
+  day: Optional[int],
+  test: bool = False,
+  solve: bool = False,
+  check: bool = False,
+  watch: bool = False,
+  time: bool = False,
+  timeout: int = 30,
+):
+  r = Runner(day, watch, timeout)
+  flags = []
+  if test:
+    flags.append('--test')
+  if solve:
+    flags.append('--solve')
+  if time:
+    flags.append('--time')
+  if check:
+    flags.append('--check')
+  r.run_with_flags(flags)
+
+
 if __name__ == '__main__':
-  cli()
+  typer.run(main)
 
 # vim:ts=2:sw=2:expandtab

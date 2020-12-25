@@ -21,6 +21,7 @@ In order to keep 0 <= bearing < 360, bearing = (bearing + n) % 360.
 """
 
 from typing import List
+import typer
 import aoc
 
 SAMPLE = ["""\
@@ -80,6 +81,6 @@ class Day12(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day12().run()
+  typer.run(Day12().run)
 
 # vim:ts=2:sw=2:expandtab

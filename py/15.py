@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Day 15. Van Eck sequence. https://www.youtube.com/watch?v=etMJxB-igrc - Numberphile."""
 
+import typer
 import aoc
 import collections
 import functools
@@ -50,6 +51,6 @@ class Day15(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day15().run()
+  typer.run(Day15().run)
 
 # vim:ts=2:sw=2:expandtab

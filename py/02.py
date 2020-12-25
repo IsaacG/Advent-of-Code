@@ -4,6 +4,7 @@ import pathlib
 import re
 import sys
 from typing import List, Tuple
+import typer
 
 import aoc
 
@@ -44,6 +45,6 @@ class Day02(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day02().run()
+  typer.run(Day02().run)
 
 # vim:ts=2:sw=2:expandtab

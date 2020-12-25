@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Day 13. Bus terminal departure schedules."""
 
+import typer
 import aoc
 from typing import List
 
@@ -67,6 +68,6 @@ class Day13(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day13().run()
+  typer.run(Day13().run)
 
 # vim:ts=2:sw=2:expandtab

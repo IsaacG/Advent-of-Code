@@ -7,6 +7,7 @@ Part 1, non-parameterized conds test: 3.313 ms
 With the tree parser: 0.178/4.177/4.783 ms
 """
 
+import typer
 import aoc
 import collections
 import functools
@@ -133,6 +134,6 @@ class Day18(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day18().run()
+  typer.run(Day18().run)
 
 # vim:ts=2:sw=2:expandtab

@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Day 20. Process satellite images."""
 
+import typer
 import aoc
 import collections
 import copy
@@ -305,6 +306,6 @@ class Day20(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day20().run()
+  typer.run(Day20().run)
 
 # vim:ts=2:sw=2:expandtab

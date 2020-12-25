@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Day 19. Regex building."""
 
+import typer
 import aoc
 import re
 from typing import Dict, List, Tuple
@@ -110,6 +111,6 @@ class Day19(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day19().run()
+  typer.run(Day19().run)
 
 # vim:ts=2:sw=2:expandtab

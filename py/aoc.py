@@ -6,6 +6,7 @@ import os
 import pathlib
 import sys
 import time
+import typer
 
 from typing import Callable, Iterable, List
 
@@ -48,7 +49,7 @@ class Challenge:
     super().__init__()
 
   @property
-  def day(self):
+  def day(self) -> int:
     """Return the day of this class."""
     name = type(self).__name__
     assert name.startswith('Day')
@@ -68,7 +69,10 @@ class Challenge:
 
   def load_data(self, src: str) -> List[str]:
     """Load exercise data."""
-    if os.path.exists(src):
+    if isinstance(src, pathlib.Path):
+      assert src.exists(), f'{src} does not exist'
+      text = src.read_text()
+    elif isinstance(src, str) and  os.path.exists(src):
       text = pathlib.Path(src).read_text()
     else:
       text = src
@@ -99,35 +103,50 @@ class Challenge:
   def pre_run(self):
     """Hook to run things prior to tests and actual."""
 
-  def run(self):
-    """Run the tests then the problems."""
-    run_solution = True
-    run_timer = False
+  def run(
+    self,
+    data: str = None,
+    test: bool = False,
+    solve: bool = False,
+    check: bool = False,
+    time: bool = False,
+  ):
+    assert any((test, solve, check, time))
 
-    if sys.argv[1].startswith('-'):
-      mode = sys.argv.pop(1)
-      if mode == '-r':
-        run_solution, run_timer = True, False
-      elif mode == '-v':
-        run_solution, run_timer = False, False
-      elif mode == '-t':
-        run_solution, run_timer = False, True
-      elif mode == '-b':
-        run_solution, run_timer = True, True
-      else:
-        raise ValueError(f'Bad arg {mode}')
+    if data is None:
+      data = pathlib.Path(__file__).parent.parent / 'data' / f'{self.day:02d}'
+      data = data.with_suffix('.txt')
+    else:
+      data = pathlib.Path(data)
+    raw_data = self.load_data(data)
 
     self.pre_run()
-    self.run_tests()
+    if test:
+      self.run_tests()
+      print(f'Day {self.day}: PASS')
 
-    if run_solution:
+    if solve:
       for i, func in self.funcs.items():
-        data = self.load_data(sys.argv[1])
-        data = self.preparse_input(data)
+        parsed_data = self.preparse_input(raw_data)
         self.debug(f'Running part {i}:')
-        print(func(data, *self.RUN_ARGS))
-    if run_timer:
-      self.time()
+        print(func(parsed_data, *self.RUN_ARGS))
+    
+    if check:
+      lines = (pathlib.Path(__file__).parent.parent / 'data/solutions').read_text().strip().split('\n')
+      for l in lines:
+        parts = l.split()
+        assert len(parts) == 3, f'Line does not have 3 parts: {l!r}.'
+        if parts[0] == self.day:
+          break
+      for i, func in self.funcs.items():
+        parsed_data = self.preparse_input(raw_data)
+        got = func(parsed_data, *self.RUN_ARGS)
+        want = parts[i]
+        if isinstance(got, int):
+          want = int(want)
+        assert want == got, f'Day{self.day} Part {i}: want({want}) != got({got})'
+    if time:
+      self.time(raw_data)
 
   def time_func(self, count: int, func: Callable) -> float:
     start = time.clock_gettime(time.CLOCK_MONOTONIC)
@@ -136,19 +155,16 @@ class Challenge:
     end = time.clock_gettime(time.CLOCK_MONOTONIC)
     return 1000 * (end - start) / count
 
-  def time(self, count: int = None):
+  def time(self, raw_data):
     """Benchmark the solution."""
-    data = self.load_data(sys.argv[1])
     times = []
-    times.append(self.time_func(10000, lambda: self.preparse_input(data)))
-    data = self.preparse_input(data)
+    times.append(self.time_func(10000, lambda: self.preparse_input(raw_data)))
+    parsed_data = self.preparse_input(raw_data)
 
     for part, func in self.funcs.items():
-      r = lambda: func(data, *self.RUN_ARGS)
+      r = lambda: func(parsed_data, *self.RUN_ARGS)
 
-      if count:
-        _count = count
-      elif self.TIMER_ITERATIONS[part - 1]:
+      if self.TIMER_ITERATIONS[part - 1]:
         _count = self.TIMER_ITERATIONS[part - 1]
       else:
         t = self.time_func(5, r) / 1000

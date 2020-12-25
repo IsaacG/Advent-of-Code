@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Train tickets."""
 
+import typer
 import aoc
 import collections
 import functools
@@ -145,6 +146,6 @@ class Day16(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day16().run()
+  typer.run(Day16().run)
 
 # vim:ts=2:sw=2:expandtab

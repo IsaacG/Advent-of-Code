@@ -1,5 +1,6 @@
 #!/bin/pypy3
 
+import typer
 import aoc
 from typing import List, Dict
 
@@ -33,6 +34,6 @@ class Day06(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day06().run()
+  typer.run(Day06().run)
 
 # vim:ts=2:sw=2:expandtab

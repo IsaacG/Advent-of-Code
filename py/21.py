@@ -1,5 +1,6 @@
 #!/bin/pypy3
 
+import typer
 import aoc
 import collections
 import itertools
@@ -80,6 +81,6 @@ class Day21(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day21().run()
+  typer.run(Day21().run)
 
 # vim:ts=2:sw=2:expandtab

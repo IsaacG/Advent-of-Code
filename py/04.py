@@ -2,6 +2,7 @@
 """Walrus operator not supported by pypy3."""
 
 import sys
+import typer
 import aoc
 import re
 
@@ -96,6 +97,6 @@ class Day04(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day04().run()
+  typer.run(Day04().run)
 
 # vim:ts=2:sw=2:expandtab

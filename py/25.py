@@ -6,6 +6,7 @@ import collections
 import functools
 import math
 import re
+import typer
 from typing import Any, Callable, Dict, List
 
 MODULO = 20201227
@@ -51,6 +52,6 @@ class Day25(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day25().run()
+  typer.run(Day25().run)
 
 # vim:ts=2:sw=2:expandtab

@@ -1,5 +1,6 @@
 #!/bin/pypy3
 
+import typer
 import aoc
 import collections
 import functools
@@ -147,6 +148,6 @@ class Day17(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day17().run()
+  typer.run(Day17().run)
 
 # vim:ts=2:sw=2:expandtab

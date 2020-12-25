@@ -5,6 +5,7 @@ import collections
 import functools
 from typing import List
 
+import typer
 import aoc
 
 
@@ -109,6 +110,6 @@ class Day10(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day10().run()
+  typer.run(Day10().run)
 
 # vim:ts=2:sw=2:expandtab

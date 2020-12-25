@@ -4,6 +4,7 @@
 import itertools
 from typing import List
 
+import typer
 import aoc
 import data
 
@@ -138,6 +139,6 @@ class Day11(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day11().run()
+  typer.run(Day11().run)
 
 # vim:ts=2:sw=2:expandtab

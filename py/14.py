@@ -1,6 +1,7 @@
 #!/bin/pypy3
 """Day 14. Write data to memory?"""
 
+import typer
 import aoc
 from typing import Callable, List
 
@@ -82,6 +83,6 @@ class Day14(aoc.Challenge):
 
 
 if __name__ == '__main__':
-  Day14().run()
+  typer.run(Day14().run)
 
 # vim:ts=2:sw=2:expandtab
