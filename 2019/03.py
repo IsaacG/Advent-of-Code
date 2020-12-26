@@ -26,7 +26,7 @@ class Day03(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLES[2], part=2, want=410),
   )
 
-  def solve(self, lines: List[str], cost_func) -> int:
+  def solve(self, lines: List[str], part: int) -> int:
     """Walk the two wires.
 
     For wire 1, save locations visited and steps.
@@ -42,7 +42,13 @@ class Day03(aoc.Challenge):
 
     def save_cost(cur, steps):
       if cur in spots:
-        intersections.add(cost_func(spots, cur, steps))
+        if part == 1:
+          # Manhatten distance.
+          cost = abs(int(cur.real)) + abs(int(cur.imag))
+        else:
+          # Combined steps.
+          cost = spots[cur] + steps
+        intersections.add(cost)
 
     def walk_wire(wire, func):
       steps = 0
@@ -61,13 +67,11 @@ class Day03(aoc.Challenge):
 
   def part2(self, lines: List[str]) -> int:
     """Wire cross cost: combined step count."""
-    cost_func = lambda spots, cur, steps: spots[cur] + steps
-    return self.solve(lines, cost_func)
+    return self.solve(lines, 2)
 
   def part1(self, lines: List[str]) -> int:
     """Wire cross cost: Manhatten distance."""
-    cost_func = lambda a, cur, c: abs(int(cur.real)) + abs(int(cur.imag))
-    return self.solve(lines, cost_func)
+    return self.solve(lines, 1)
 
   def preparse_input(self, x):
     return [line.split(',') for line in x]
