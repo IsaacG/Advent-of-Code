@@ -6,7 +6,13 @@ import os
 import pathlib
 import time
 
-from typing import Callable, Iterable, List
+try:
+  from . import site
+  _SITE = True
+except ImportError:
+  _SITE = False
+
+from typing import Callable, Iterable, List, Optional
 
 
 def mult(nums: Iterable[int]) -> int:
@@ -44,7 +50,25 @@ class Challenge:
   def __init__(self):
     self.funcs = {1: self.part1, 2: self.part2}
     self.testing = False
+    self._site = None
     super().__init__()
+
+  def site(self):
+    if self._site is None:
+      self._site = site.Website(self.year, self.day)
+    return self._site
+
+  @property
+  def data_file(self) -> pathlib.Path:
+    return (self.data_dir / f'{self.day:02d}').with_suffix('.txt')
+
+  @property
+  def data_dir(self) -> pathlib.Path:
+    for p in pathlib.Path(__file__).parents:
+      d = p / 'data'
+      if d.exists():
+        return d
+    return RuntimeError('No data dir found')
 
   @property
   def day(self) -> int:
@@ -52,6 +76,13 @@ class Challenge:
     name = type(self).__name__
     assert name.startswith('Day')
     return int(name[3:])
+
+  @property
+  def year(self) -> int:
+    """Return the year of this class."""
+    p = pathlib.Path(__file__).parent.parent.name
+    assert len(p) == 4 and p.isnumeric(), p
+    return p
 
   def part1(self, lines: List[str]) -> int:
     """Solve part 1."""
@@ -65,15 +96,22 @@ class Challenge:
     """Optional parser to parse data to send to the parts."""
     return x
 
-  def load_data(self, src: str) -> List[str]:
+  def load_data(self, src: Optional[str]) -> List[str]:
     """Load exercise data."""
-    if isinstance(src, pathlib.Path):
-      assert src.exists(), f'{src} does not exist'
-      text = src.read_text()
+    if src is None:
+      src = self.data_file
     elif isinstance(src, str) and os.path.exists(src):
-      text = pathlib.Path(src).read_text()
-    else:
+      src = pathlib.Path(src)
+
+    if isinstance(src, pathlib.Path):
+      if not src.exists():
+        src.write_text(self.site().get_input())
+      text = src.read_text()
+    elif isinstance(src, str):
       text = src
+    else:
+      raise RuntimeError('Bad data source {src!r}')
+
     data = text.strip().split(self.SEP)
     return [self.TRANSFORM(i) for i in data]
 
@@ -106,15 +144,11 @@ class Challenge:
     data: str = None,
     test: bool = False,
     solve: bool = False,
+    submit: bool = False,
     check: bool = False,
     time: bool = False,
   ):
     assert any((test, solve, check, time))
-    if data is None:
-      data = pathlib.Path(__file__).parent / 'data' / f'{self.day:02d}'
-      data = data.with_suffix('.txt')
-    else:
-      data = pathlib.Path(data)
     raw_data = self.load_data(data)
 
     self.pre_run()
@@ -131,8 +165,19 @@ class Challenge:
         except NotImplementedError:
           print(f'Part {i}: Not implemented')
 
+    if submit:
+      answer = None
+      for i, func in self.funcs.items():
+        parsed_data = self.preparse_input(raw_data)
+        try:
+          answer = func(parsed_data, *self.RUN_ARGS)
+        except NotImplementedError:
+          pass
+      if answer is not None:
+        self.site().submit(answer)
+
     if check:
-      lines = (pathlib.Path(__file__).parent / 'solutions').read_text().strip().split('\n')
+      lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
       for line in lines:
         parts = line.split()
         assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'

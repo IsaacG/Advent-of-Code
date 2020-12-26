@@ -4,7 +4,7 @@ import re
 from typing import List, Tuple
 import typer
 
-import aoc
+from lib import aoc
 
 RE = re.compile('^([0-9]+)-([0-9]+) (.): (.*)$')
 

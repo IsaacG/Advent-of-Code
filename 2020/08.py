@@ -3,7 +3,7 @@
 import typer
 from typing import List
 
-import aoc
+from lib import aoc
 
 
 SAMPLE = ["""\

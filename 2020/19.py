@@ -2,7 +2,7 @@
 """Day 19. Regex building."""
 
 import typer
-import aoc
+from lib import aoc
 import re
 from typing import Dict, List, Tuple
 

@@ -5,7 +5,7 @@ import itertools
 from typing import List
 
 import typer
-import aoc
+from lib import aoc
 import data
 
 S1 = data.D11S1

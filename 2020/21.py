@@ -2,7 +2,7 @@
 
 import typer
 from typing import Dict, List, Tuple
-import aoc
+from lib import aoc
 
 SAMPLE = ["""\
 mxmxvkd kfcds sqjhc nhms (contains dairy, fish)

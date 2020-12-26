@@ -1,7 +1,7 @@
 #!/bin/pypy3
 
 import typer
-import aoc
+from lib import aoc
 
 from typing import List
 

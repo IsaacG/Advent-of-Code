@@ -4,7 +4,7 @@
 import typer
 from typing import List
 
-import aoc
+from lib import aoc
 
 
 class Day15(aoc.Challenge):

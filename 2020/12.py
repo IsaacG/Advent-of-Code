@@ -22,7 +22,7 @@ In order to keep 0 <= bearing < 360, bearing = (bearing + n) % 360.
 
 from typing import List
 import typer
-import aoc
+from lib import aoc
 
 SAMPLE = ["""\
 F10

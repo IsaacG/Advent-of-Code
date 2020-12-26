@@ -6,7 +6,7 @@ import re
 
 from typing import List
 
-import aoc
+from lib import aoc
 
 REQUIRED_FIELDS = {
   'byr',

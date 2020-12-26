@@ -8,7 +8,7 @@ https://adventofcode.com/2020/day/23
 """
 
 import typer
-import aoc
+from lib import aoc
 from typing import List, Optional
 
 

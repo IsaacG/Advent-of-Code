@@ -2,7 +2,7 @@
 """Day 13. Bus terminal departure schedules."""
 
 import typer
-import aoc
+from lib import aoc
 from typing import List
 
 

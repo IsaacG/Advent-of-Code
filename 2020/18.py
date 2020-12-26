@@ -9,7 +9,7 @@ With the tree parser: 0.178/4.177/4.783 ms
 
 import typer
 from typing import Callable, List
-import aoc
+from lib import aoc
 
 
 class Node:

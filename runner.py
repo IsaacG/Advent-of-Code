@@ -75,6 +75,7 @@ def main(
   test: bool = False,
   solve: bool = False,
   check: bool = False,
+  submit: bool = False,
   watch: bool = False,
   time: bool = False,
   timeout: int = 30,
@@ -85,6 +86,8 @@ def main(
     flags.append('--test')
   if solve:
     flags.append('--solve')
+  if submit:
+    flags.append('--submit')
   if time:
     flags.append('--time')
   if check:

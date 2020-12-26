@@ -5,8 +5,8 @@
 import typer
 from typing import List
 
-import aoc
 import intcode
+from lib import aoc
 
 
 SAMPLE = ['1,9,10,3,2,3,11,0,99,30,40,50']

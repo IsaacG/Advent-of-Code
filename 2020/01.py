@@ -3,7 +3,7 @@
 from typing import List, Set
 import typer
 
-import aoc
+from lib import aoc
 
 SAMPLE = """\
 1721

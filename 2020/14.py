@@ -2,7 +2,7 @@
 """Day 14. Write data to memory?"""
 
 import typer
-import aoc
+from lib import aoc
 from typing import Callable, List
 
 

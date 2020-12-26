@@ -5,7 +5,7 @@ import itertools
 from typing import List
 
 import typer
-import aoc
+from lib import aoc
 
 SAMPLE = """\
 35

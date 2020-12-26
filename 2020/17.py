@@ -3,7 +3,7 @@
 import typer
 import itertools
 from typing import List, Tuple
-import aoc
+from lib import aoc
 
 Coord = Tuple[int, ...]
 

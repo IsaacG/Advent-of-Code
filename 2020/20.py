@@ -2,7 +2,7 @@
 """Day 20. Process satellite images."""
 
 import typer
-import aoc
+from lib import aoc
 import collections
 import enum
 from typing import Dict, List, Tuple

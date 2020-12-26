@@ -1,7 +1,7 @@
 #!/bin/pypy3
 """Brute force solve Diffie Hellman key exchange."""
 
-import aoc
+from lib import aoc
 import typer
 from typing import List
 

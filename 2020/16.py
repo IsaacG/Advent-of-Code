@@ -3,7 +3,7 @@
 
 import typer
 from typing import List
-import aoc
+from lib import aoc
 
 # Fudge the second sample to include departure rows
 # so it would be valid input to part2.
