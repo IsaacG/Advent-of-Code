@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Brute force solve Diffie Hellman key exchange."""
 
 from lib import aoc

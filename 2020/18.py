@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Math parser.
 
 Initial messy code: 0.177/6.108/4.791 ms

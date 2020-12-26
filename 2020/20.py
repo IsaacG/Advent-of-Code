@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Day 20. Process satellite images."""
 
 import typer

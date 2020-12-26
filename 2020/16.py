@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Train tickets."""
 
 import typer

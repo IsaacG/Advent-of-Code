@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Day 15. Van Eck sequence. https://www.youtube.com/watch?v=etMJxB-igrc - Numberphile."""
 
 import typer

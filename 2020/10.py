@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 "Day 10. Power adapters."""
 
 import collections

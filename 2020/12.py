@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Ship coordinates and movement.
 
 The x, y position can be mapped to the complex plane[1] using a complex number.

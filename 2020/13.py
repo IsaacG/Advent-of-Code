@@ -1,4 +1,4 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 """Day 13. Bus terminal departure schedules."""
 
 import typer

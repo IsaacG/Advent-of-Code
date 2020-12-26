@@ -13,22 +13,19 @@ import typer
 class Runner:
   """Code runner."""
 
-  def __init__(self, day: int, watch: bool, timeout: int):
+  def __init__(self, year: int, day: int, watch: bool, timeout: int):
     self.day = day
     self.timeout = timeout
     self.watch = watch
     self.base = pathlib.Path(__file__).parent
-    if os.getenv('YEAR'):
-      self.year = os.getenv('YEAR')
-    else:
-      self.year = '2020'
+    self.year = year
 
   def maybe_watch(self, func):
     """Run the function once or on every CLOSE_WRITE."""
     if not self.watch:
       return func(self.day)
     inotify = inotify_simple.INotify()
-    inotify.add_watch(self.base / self.year, inotify_simple.flags.CLOSE_WRITE)
+    inotify.add_watch(self.base / str(self.year), inotify_simple.flags.CLOSE_WRITE)
     while e := inotify.read():
       if not e[0].name.endswith('.py'):
         continue
@@ -79,8 +76,9 @@ def main(
   watch: bool = False,
   time: bool = False,
   timeout: int = 30,
+  year: int = datetime.datetime.now().year,
 ):
-  r = Runner(day, watch, timeout)
+  r = Runner(year, day, watch, timeout)
   flags = []
   if test:
     flags.append('--test')

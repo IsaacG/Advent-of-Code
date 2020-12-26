@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 """Walrus operator not supported by pypy3."""
 
 import typer

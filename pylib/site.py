@@ -1,8 +1,11 @@
 import dotenv
 import os
+import re
 import requests
-from lxml import etree
+import subprocess
 from urllib import parse
+from lxml import etree
+
 
 class Website:
   
@@ -30,6 +33,19 @@ class Website:
     resp = self.session.get(u)
     resp.raise_for_status()
     return resp.text
+
+  def _no_lxml_submit(self, answer) -> str:
+    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
+    resp = self.session.get(u)
+    resp.raise_for_status()
+    m = re.search(r'name="level" value="(.*)"', resp.text)
+    assert m, 'Cannot find the submit level'
+    level = m.group(1)
+    resp = self.session.post(f'{u}/answer', data={'answer': answer, 'level': level})
+    resp.raise_for_status()
+    cmd = ['pandoc', '--from=html', '--to=markdown']
+    p = subprocess.run(cmd, text=True, capture_output=True, input=resp.text)
+    return p.stdout
 
   def submit(self, answer) -> str:
     u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')

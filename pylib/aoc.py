@@ -6,12 +6,7 @@ import os
 import pathlib
 import time
 
-try:
-  from . import site
-  _SITE = True
-except ImportError:
-  _SITE = False
-
+from . import site
 from typing import Callable, Iterable, List, Optional
 
 
@@ -148,7 +143,7 @@ class Challenge:
     check: bool = False,
     time: bool = False,
   ):
-    assert any((test, solve, check, time))
+    assert any((test, solve, check, time, submit))
     raw_data = self.load_data(data)
 
     self.pre_run()
@@ -174,7 +169,9 @@ class Challenge:
         except NotImplementedError:
           pass
       if answer is not None:
-        self.site().submit(answer)
+        print('Submitting answer:', answer)
+        print('Response:')
+        print(self.site().submit(answer))
 
     if check:
       lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
