@@ -7,7 +7,7 @@ https://adventofcode.com/2019/day/1
 
 import aoc
 import typer
-from typing import Any, Callable, Dict, List
+from typing import List
 
 
 class Day01(aoc.Challenge):
