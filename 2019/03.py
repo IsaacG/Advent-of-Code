@@ -1,0 +1,79 @@
+#!/usr/bin/env pypy
+"""2019 Day 3: Crossed Wires."""
+
+from lib import aoc
+import typer
+from typing import List
+
+DIRS = {'R': 1, 'L': -1, 'U': 1j, 'D': -1j}
+
+SAMPLES = [
+  'R8,U5,L5,D3\nU7,R6,D4,L4',
+  'R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83',
+  'R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7',
+]
+
+
+class Day03(aoc.Challenge):
+  """Compute where wires cross and find the min cost of a crossing."""
+
+  TESTS = (
+    aoc.TestCase(inputs=SAMPLES[0], part=1, want=6),
+    aoc.TestCase(inputs=SAMPLES[1], part=1, want=159),
+    aoc.TestCase(inputs=SAMPLES[2], part=1, want=135),
+    aoc.TestCase(inputs=SAMPLES[0], part=2, want=30),
+    aoc.TestCase(inputs=SAMPLES[1], part=2, want=610),
+    aoc.TestCase(inputs=SAMPLES[2], part=2, want=410),
+  )
+
+  def solve(self, lines: List[str], cost_func) -> int:
+    """Walk the two wires.
+
+    For wire 1, save locations visited and steps.
+    For wire two, on intersection, save `cost`.
+    Return min cost.
+    """
+    spots = {}
+    intersections = set()
+
+    def save_steps(cur, steps):
+      if cur not in spots:
+        spots[cur] = steps
+
+    def save_cost(cur, steps):
+      if cur in spots:
+        intersections.add(cost_func(spots, cur, steps))
+
+    def walk_wire(wire, func):
+      steps = 0
+      cur = 0
+      for piece in wire:
+        direction = DIRS[piece[0]]
+        count = int(piece[1:])
+        for _ in range(count):
+          steps += 1
+          cur += direction
+          func(cur, steps)
+
+    walk_wire(lines[0], save_steps)
+    walk_wire(lines[1], save_cost)
+    return min(intersections)
+
+  def part2(self, lines: List[str]) -> int:
+    """Wire cross cost: combined step count."""
+    cost_func = lambda spots, cur, steps: spots[cur] + steps
+    return self.solve(lines, cost_func)
+
+  def part1(self, lines: List[str]) -> int:
+    """Wire cross cost: Manhatten distance."""
+    cost_func = lambda a, cur, c: abs(int(cur.real)) + abs(int(cur.imag))
+    return self.solve(lines, cost_func)
+
+  def preparse_input(self, x):
+    return [line.split(',') for line in x]
+
+
+if __name__ == '__main__':
+  typer.run(Day03().run)
+
+# vim:ts=2:sw=2:expandtab

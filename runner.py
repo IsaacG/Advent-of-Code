@@ -2,6 +2,7 @@
 """Run AoC code in various flavors."""
 
 import datetime
+import dotenv
 import inotify_simple
 import os
 import pathlib
@@ -76,8 +77,15 @@ def main(
   watch: bool = False,
   time: bool = False,
   timeout: int = 30,
-  year: int = datetime.datetime.now().year,
+  year: Optional[int] = None,
 ):
+  dotenv.load_dotenv()
+  if year is None:
+    if os.getenv('YEAR'):
+      year = os.getenv('YEAR')
+    else:
+      year = datetime.datetime.now().year
+
   r = Runner(year, day, watch, timeout)
   flags = []
   if test:
