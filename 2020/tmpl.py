@@ -1,12 +1,13 @@
-#!/bin/pypy3
+#!/usr/bin/env pypy
 
-import aoc
 import collections
 import functools
 import math
 import re
 import typer
 from typing import Any, Callable, Dict, List
+
+from lib import aoc
 
 
 class DayNN(aoc.Challenge):
