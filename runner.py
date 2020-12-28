@@ -69,7 +69,7 @@ class Runner:
 
 
 def main(
-  day: Optional[int],
+  day: Optional[int] = None,
   test: bool = False,
   solve: bool = False,
   check: bool = False,
