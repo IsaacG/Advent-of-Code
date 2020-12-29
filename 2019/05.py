@@ -1,45 +1,35 @@
 #!/usr/bin/env pypy
 
-import collections
-import functools
-import math
-import re
 import typer
-from typing import Any, Callable, Dict, List
 
 import intcode
 from lib import aoc
 
-SAMPLE = [""]
 
-class Day05(aoc.Challenge):
+class Day05(intcode.Challenge):
 
   TESTS = (
     aoc.TestCase(inputs='4,0,99', part=1, want=4),
     aoc.TestCase(inputs='04,2,99', part=1, want=99),
     aoc.TestCase(inputs='104,6,99', part=1, want=6),
     aoc.TestCase(inputs='1002,7,3,5,104,5,99,33', part=1, want=99),
+    aoc.TestCase(inputs='3,9,8,9,10,9,4,9,99,-1,8', part=2, want=0), # input == 8 POS Mode
+    aoc.TestCase(inputs='3,9,8,9,10,9,4,9,99,-1,5', part=2, want=1), # input == 5 POS Mode
+    aoc.TestCase(inputs='3,9,7,9,10,9,4,9,99,-1,8', part=2, want=1), # input  < 8 POS Mode
+    aoc.TestCase(inputs='3,9,7,9,10,9,4,9,99,-1,5', part=2, want=0), # input  < 5 POS Mode
+    aoc.TestCase(inputs='3,3,1108,-1,8,3,4,3,99', part=2, want=0), # input == 8 IMM Mode
+    aoc.TestCase(inputs='3,3,1108,-1,5,3,4,3,99', part=2, want=1), # input == 5 IMM Mode
+    aoc.TestCase(inputs='3,3,1107,-1,8,3,4,3,99', part=2, want=1), # input  < 8 IMM Mode
+    aoc.TestCase(inputs='3,3,1107,-1,5,3,4,3,99', part=2, want=0), # input  < 5 IMM Mode
   )
 
-  def run_computer(self, memory: List[int]) -> int:
-    """Run the computer with a given noun, verb."""
-    computer = intcode.Computer(memory, debug=0)
-    # First input: 1
-    computer.inputs.append(1)
-    computer.run()
-    # Read the last output.
+  def part1(self, computer: intcode.Computer) -> int:
+    computer.run(inputs=[1])
     return computer.outputs.pop()
 
-  def part1(self, memory: List[int]) -> int:
-    """Run the computer with fixed noun, verb."""
-    return self.run_computer(memory)
-
-  def part2(self, memory: List[int]) -> int:
-    return 0
-
-  def preparse_input(self, x) -> List[int]:
-    """Return the first row as a list of ints."""
-    return [int(num) for num in x[0].split(',')]
+  def part2(self, computer: intcode.Computer) -> int:
+    computer.run(inputs=[5])
+    return computer.outputs.pop()
 
 
 if __name__ == '__main__':

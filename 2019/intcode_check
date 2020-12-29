@@ -3,7 +3,7 @@
 files=()
 for i in ??.py; do
   grep -q 'import intcode' "$i" || continue
-  files+=( "./$i" )
+  files=( "./$i" "${files[@]}" )
 done
 
 for i in "${files[@]}"; do

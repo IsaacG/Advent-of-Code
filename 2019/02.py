@@ -1,5 +1,8 @@
 #!/usr/bin/env pypy
-"""Day 2: 1202 Program Alarm."""
+"""Day 2: 1202 Program Alarm.
+
+Implement an Intcode computer.
+"""
 
 
 import typer
@@ -12,41 +15,32 @@ from lib import aoc
 SAMPLE = ['1,9,10,3,2,3,11,0,99,30,40,50']
 
 
-class Day02(aoc.Challenge):
-  """Implement an Intcode computer."""
+class Day02(intcode.Challenge):
 
-  TRANSFORM = str
+  TESTS = (aoc.TestCase(inputs=SAMPLE[0], part=1, want=3500),)
 
-  TESTS = (
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=3500),
-  )
+  def run_with(self, computer: intcode.Computer, noun, verb) -> int:
+    """Run a copy of the computer, with a given noun, verb and return mem[0]."""
+    computer = computer.copy()
+    computer.memory[1], computer.memory[2] = noun, verb
+    computer.run()
+    return computer.memory[0]
 
-  def run_computer(self, memory: List[int], noun: int, verb: int) -> int:
-    """Run the computer with a given noun, verb."""
-    memory[1] = noun
-    memory[2] = verb
-    computer = intcode.Computer(memory, debug=0)
-    return computer.run()
-
-  def part1(self, memory: List[int]) -> int:
+  def part1(self, computer: intcode.Computer) -> int:
     """Run the computer with fixed noun, verb."""
     if self.testing:
-      noun, verb = memory[1:3]
+      noun, verb = 9, 10
     else:
       noun, verb = 12, 2
-    return self.run_computer(memory, noun, verb)
+    return self.run_with(computer, noun, verb)
 
-  def part2(self, memory: List[int]) -> int:
+  def part2(self, computer: intcode.Computer) -> int:
     """Brute force the noun, verb to get the computer to generate `want`."""
     want = 19690720  # https://en.wikipedia.org/wiki/Apollo_11
     for noun in range(100):
       for verb in range(100):
-        if self.run_computer(memory, noun, verb) == want:
+        if self.run_with(computer, noun, verb) == want:
           return 100 * noun + verb
-
-  def preparse_input(self, x) -> List[int]:
-    """Return the first row as a list of ints."""
-    return [int(num) for num in x[0].split(',')]
 
 
 if __name__ == '__main__':
