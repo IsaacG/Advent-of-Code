@@ -7,7 +7,7 @@
 # --sleep flag -- sleep until midnight EST and open vim after fetching
 # Optional --date YYYYDD or auto compute
 
-[[ $YEAR ]] || { echo 'Set $YEAR.'; exit 1; }
+[[ $YEAR ]] || YEAR=2019
 
 if (( $# != 1 )); then
   echo 'Bad usage'
@@ -21,5 +21,3 @@ if [[ ! -f "$YEAR/$num.py" ]]; then
   printf '# v''im:ts=2:sw=2:expandtab\n' >> "$YEAR/$num.py"
 fi
 chmod 700 "$YEAR/$num.py"
-
-[[ ! -f "$YEAR/data/$num.txt" ]] && wget --header "$(< ~/.xdg/data/aoc.2020.cookie)" --output-document="$YEAR/data/$num.txt" "https://adventofcode.com/$YEAR/day/$1/input"
