@@ -1,0 +1,20 @@
+#!/bin/bash
+
+files=()
+for i in ??.py; do
+  grep -q 'import intcode' "$i" || continue
+  files+=( "./$i" )
+done
+
+for i in "${files[@]}"; do
+  "./$i" --test --check
+done
+
+while true; do
+  inotifywait -e CLOSE_WRITE ./
+  sleep .2
+  for i in "${files[@]}"; do
+    "./$i" --test --check
+  done
+done
+

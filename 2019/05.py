@@ -23,7 +23,7 @@ class Day05(aoc.Challenge):
 
   def run_computer(self, memory: List[int]) -> int:
     """Run the computer with a given noun, verb."""
-    computer = intcode.Computer(memory, debug=False)
+    computer = intcode.Computer(memory, debug=0)
     # First input: 1
     computer.inputs.append(1)
     computer.run()
@@ -33,6 +33,9 @@ class Day05(aoc.Challenge):
   def part1(self, memory: List[int]) -> int:
     """Run the computer with fixed noun, verb."""
     return self.run_computer(memory)
+
+  def part2(self, memory: List[int]) -> int:
+    return 0
 
   def preparse_input(self, x) -> List[int]:
     """Return the first row as a list of ints."""

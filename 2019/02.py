@@ -25,7 +25,7 @@ class Day02(aoc.Challenge):
     """Run the computer with a given noun, verb."""
     memory[1] = noun
     memory[2] = verb
-    computer = intcode.Computer(memory, debug=False)
+    computer = intcode.Computer(memory, debug=0)
     return computer.run()
 
   def part1(self, memory: List[int]) -> int:
