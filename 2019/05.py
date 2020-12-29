@@ -23,7 +23,7 @@ class Day05(aoc.Challenge):
 
   def run_computer(self, memory: List[int]) -> int:
     """Run the computer with a given noun, verb."""
-    computer = intcode.Intcode(memory, debug=False)
+    computer = intcode.Computer(memory, debug=False)
     # First input: 1
     computer.inputs.append(1)
     computer.run()
