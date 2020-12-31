@@ -168,7 +168,9 @@ class Challenge:
           answer = func(parsed_data, *self.RUN_ARGS)
         except NotImplementedError:
           pass
-      if answer is not None:
+      if answer == 0:
+        print('Got 0 as an answer. Probably not right.')
+      elif answer is not None:
         print('Submitting answer:', answer)
         print('Response:')
         print(self.site().submit(answer))
