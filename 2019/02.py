@@ -6,7 +6,6 @@ Implement an Intcode computer.
 
 
 import typer
-from typing import List
 
 import intcode
 from lib import aoc

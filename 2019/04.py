@@ -2,11 +2,8 @@
 """2019 Day 4: Secure Container"""
 
 import collections
-import functools
-import math
-import re
 import typer
-from typing import Any, Callable, Dict, List
+from typing import Callable, List
 
 from lib import aoc
 

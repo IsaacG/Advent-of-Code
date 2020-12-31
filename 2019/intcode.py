@@ -3,7 +3,7 @@
 import collections
 import enum
 import more_itertools
-from typing import Callable, Iterable, List
+from typing import Iterable, List
 
 from lib import aoc
 
@@ -203,4 +203,3 @@ class Challenge(aoc.Challenge):
     """Return a Computer using the first line of input as the program."""
     memory = [int(num) for num in x[0].split(',')]
     return Computer(memory, debug=0)
-
