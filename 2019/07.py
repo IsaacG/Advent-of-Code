@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 7: Amplification Circuit.
 
 Connect multiple Intcode Computers in a pipeline.

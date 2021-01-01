@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 2: 1202 Program Alarm.
 
 Implement an Intcode computer.

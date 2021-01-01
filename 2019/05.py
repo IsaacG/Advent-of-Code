@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 5: Sunny with a Chance of Asteroids
 
 Run a computer with more operations: equality, control flow, address modes.
