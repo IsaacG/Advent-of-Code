@@ -178,7 +178,11 @@ class Computer:
     """Return a copy of a Computer."""
     return type(self)(self.memory)
 
-  async def run(self, inputs: Iterable[int] = tuple(), io: Tuple[Optional[asyncio.Queue], Optional[asyncio.Queue]] = (None, None)):
+  async def run(
+    self,
+    inputs: Iterable[int] = tuple(),
+    io: Tuple[Optional[asyncio.Queue], Optional[asyncio.Queue]] = (None, None)
+  ):
     """Run the program until Halted and return mem[0]."""
     i, o = io
     self._in = i if i else asyncio.Queue()
