@@ -3,7 +3,7 @@
 import asyncio
 import enum
 import more_itertools
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 from lib import aoc
 
@@ -31,27 +31,25 @@ class Operation:
     self.op = instruction[0]
     self._params = instruction[1:]
 
-  def param_mode(self, param: int) -> ParameterMode:
-    mask = 10 ** (param + 1)
-    param_mode = (self.op // mask) % 10
-    return ParameterMode(param_mode)
+    self.params = []
+    for i, p in enumerate(instruction[1:]):
+      mask = 10 ** (i + 2)
+      param_mode = (self.op // mask) % 10
+      if self._writes and i == self.len - 2:
+        # If this instruction writes, the last param is a POS
+        # but we are writing to it, not reading, so we do not
+        # actually want to dereference it.
+        assert param_mode == 0
+        self.params.append(p)
+      elif param_mode == 0:  # position mode
+        self.params.append(self.read(p))
+      elif param_mode == 1:  # immediate mode
+        self.params.append(p)
+    assert all(isinstance(p, int) for p in self.params)
 
-  def read_from(self, param: int) -> int:
-    """Read a value specified by a given parameter.
-
-    Based on the op mask, the value might be read in position mode or immediate mode.
-    """
-    if self.param_mode(param) == ParameterMode['POS']:  # position mode
-      assert isinstance(self.read(self._params[param - 1]), int)
-      return self.read(self._params[param - 1])
-    else:  # 1 == immediate mode
-      assert isinstance(self._params[param - 1], int)
-      return self._params[param - 1]
-
-  def write_to(self, param: int, val: int):
+  def write_to(self, addr: int, val: int):
     """Write a value to a location specified by a parameter."""
     assert isinstance(val, int)
-    addr = self._params[param - 1]
     self.memory[addr] = val
 
   @property
@@ -76,15 +74,11 @@ class Operation:
     return await self.comp._out.put(val)
 
   def __str__(self):
-    return '<OP[%02d] %-6s: %s>' % (
-      self.ptr,
-      type(self).__name__,
-      ', '.join(f'{self.param_mode(i).name}!{i}' for i in self._params)
-    )
+    return '<OP[%02d] %-6s: %s>' % (self.ptr, type(self).__name__, ', '.join(self.params))
 
   async def run(self):
     """Run an Instruction, executing it and updating the pointer."""
-    await self.execute()
+    await self.execute(*self.params)
     self.comp.ptr += self.len
 
 
@@ -101,64 +95,69 @@ class Calculate(Operation):
   def calculate(self, a: int, b: int) -> int:
     return NotImplementedError
 
-  async def execute(self):
-    val = self.calculate(self.read_from(1), self.read_from(2))
+  async def execute(self, a, b, dest):
+    val = self.calculate(a, b)
     assert isinstance(val, int), self
-    self.write_to(3, val)
+    self.write_to(dest, val)
 
 
-def make_op(name: str, opcode: int, length: int, base: type = Operation):
+def make_op(name: str, opcode: int, length: int, base: type = Operation, writes: bool = False):
   """Register an Operation.
 
   Use Python magic to dynamically create a class.
   This class will be an Operation with a given name, length and execute.
   """
   def register(func):
-    OPS[opcode] = type(name, (base, ), {base._PARAMETER: func, '_LEN': length})
+    OPS[opcode] = type(name, (base, ), {base._PARAMETER: func, '_LEN': length, '_writes': writes})
   return register
 
 
-@make_op('Add', opcode=1, length=4, base=Calculate)
+@make_op('Add', opcode=1, length=4, base=Calculate, writes=True)
 def _operation_add(self, a: int, b: int) -> int:
   return a + b
 
 
-@make_op('Mult', opcode=2, length=4, base=Calculate)
+@make_op('Mult', opcode=2, length=4, base=Calculate, writes=True)
 def _operation_mult(self, a: int, b: int) -> int:
   return a * b
 
 
-@make_op('Input', opcode=3, length=2)
-async def _operation_input(self):
-  self.write_to(1, await self.pop_input())
+@make_op('Input', opcode=3, length=2, writes=True)
+async def _operation_input(self, addr):
+  self.write_to(addr, await self.pop_input())
 
 
 @make_op('Output', opcode=4, length=2)
-async def _operation_output(self):
-  assert isinstance(self.read_from(1), int)
-  await self.push_output(self.read_from(1))
+async def _operation_output(self, val):
+  assert isinstance(val, int)
+  await self.push_output(val)
 
 
 @make_op('JumpIfTrue', opcode=5, length=3)
-async def _operation_jump_true(self):
-  if self.read_from(1):
-    self.comp.ptr = self.read_from(2) - self.len
+async def _operation_jump_true(self, cond, addr):
+  if cond:
+    self.comp.ptr = addr - self.len
 
 
 @make_op('JumpIfFalse', opcode=6, length=3)
-async def _operation_jump_false(self):
-  if not self.read_from(1):
-    self.comp.ptr = self.read_from(2) - self.len
+async def _operation_jump_false(self, cond, addr):
+  if not cond:
+    self.comp.ptr = addr - self.len
 
 
-@make_op('LessThan', opcode=7, length=4, base=Calculate)
+@make_op('LessThan', opcode=7, length=4, base=Calculate, writes=True)
 def _operation_less_than(self, a: int, b: int) -> int:
-  return 1 if self.read_from(1) < self.read_from(2) else 0
+  return 1 if a < b else 0
 
 
-@make_op('Equals', opcode=8, length=4, base=Calculate)
+@make_op('Equals', opcode=8, length=4, base=Calculate, writes=True)
 def _operation_equals(self, a: int, b: int) -> int:
-  return 1 if self.read_from(1) == self.read_from(2) else 0
+  return 1 if a == b else 0
+
+
+@make_op('BaseOffset', opcode=9, length=2)
+def _operation_base_offset(self, val: int):
+  self.comp.base_offset += val
 
 
 @make_op('Halt', opcode=99, length=1)
