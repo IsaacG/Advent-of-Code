@@ -149,23 +149,22 @@ class Challenge:
     self.pre_run()
     if test:
       self.run_tests()
-      print(f'Day {self.day:02d}: TEST PASS')
 
     if solve:
-      for i, func in self.funcs.items():
+      for i in (1, 2):
         parsed_data = self.preparse_input(raw_data)
         self.debug(f'Running part {i}:')
         try:
-          print(func(parsed_data, *self.RUN_ARGS))
+          print(self.funcs[i](parsed_data, *self.RUN_ARGS))
         except NotImplementedError:
           print(f'Part {i}: Not implemented')
 
     if submit:
       answer = None
-      for i, func in self.funcs.items():
+      for i in (1, 2):
         parsed_data = self.preparse_input(raw_data)
         try:
-          a = func(parsed_data, *self.RUN_ARGS)
+          a = self.funcs[i](parsed_data, *self.RUN_ARGS)
           if a:
             answer = a
         except NotImplementedError:
@@ -184,9 +183,9 @@ class Challenge:
         assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
         if int(parts[0]) == self.day:
           break
-      for i, func in self.funcs.items():
+      for i in (1, 2):
         parsed_data = self.preparse_input(raw_data)
-        got = func(parsed_data, *self.RUN_ARGS)
+        got = self.funcs[i](parsed_data, *self.RUN_ARGS)
         want = parts[i]
         if isinstance(got, int):
           want = int(want)

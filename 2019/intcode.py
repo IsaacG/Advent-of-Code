@@ -1,6 +1,7 @@
 """Intcode computer."""
 
 import asyncio
+import collections
 import enum
 import more_itertools
 from typing import Iterable, List, Optional, Sequence, Tuple
@@ -39,12 +40,17 @@ class Operation:
         # If this instruction writes, the last param is a POS
         # but we are writing to it, not reading, so we do not
         # actually want to dereference it.
-        assert param_mode == 0
-        self.params.append(p)
+        assert param_mode != 1
+        if param_mode == 0:
+          self.params.append(p)
+        elif param_mode == 2:
+          self.params.append(self.comp.relative_base_offset + p)
       elif param_mode == 0:  # position mode
         self.params.append(self.read(p))
       elif param_mode == 1:  # immediate mode
         self.params.append(p)
+      elif param_mode == 2:  # relative mode
+        self.params.append(self.read(self.comp.relative_base_offset + p))
     assert all(isinstance(p, int) for p in self.params)
 
   def write_to(self, addr: int, val: int):
@@ -63,21 +69,22 @@ class Operation:
 
   def read_n(self, addr: int, count: int) -> List[int]:
     """Read N values from mem[addr]."""
-    return self.memory[addr:addr + count]
+    return [self.memory[addr + n] for n in range(count)]
 
   async def pop_input(self) -> int:
     """Pop an input, reading the next input value."""
-    return await self.comp._in.get()
+    return await asyncio.wait_for(self.comp._in.get(), timeout=2)
 
   async def push_output(self, val: int):
     """Push an output for future reading."""
     return await self.comp._out.put(val)
 
   def __str__(self):
-    return '<OP[%02d] %-6s: %s>' % (self.ptr, type(self).__name__, ', '.join(self.params))
+    return '<OP[%02d] %-6s: %s>' % (self.ptr, type(self).__name__, ', '.join(str(i) for i in self.params))
 
   async def run(self):
     """Run an Instruction, executing it and updating the pointer."""
+    assert all(i is not None for i in (self, self.params, self.execute))
     await self.execute(*self.params)
     self.comp.ptr += self.len
 
@@ -92,11 +99,11 @@ class Calculate(Operation):
 
   _PARAMETER = 'calculate'
 
-  def calculate(self, a: int, b: int) -> int:
+  async def calculate(self, a: int, b: int) -> int:
     return NotImplementedError
 
   async def execute(self, a, b, dest):
-    val = self.calculate(a, b)
+    val = await self.calculate(a, b)
     assert isinstance(val, int), self
     self.write_to(dest, val)
 
@@ -113,12 +120,12 @@ def make_op(name: str, opcode: int, length: int, base: type = Operation, writes:
 
 
 @make_op('Add', opcode=1, length=4, base=Calculate, writes=True)
-def _operation_add(self, a: int, b: int) -> int:
+async def _operation_add(self, a: int, b: int) -> int:
   return a + b
 
 
 @make_op('Mult', opcode=2, length=4, base=Calculate, writes=True)
-def _operation_mult(self, a: int, b: int) -> int:
+async def _operation_mult(self, a: int, b: int) -> int:
   return a * b
 
 
@@ -146,18 +153,18 @@ async def _operation_jump_false(self, cond, addr):
 
 
 @make_op('LessThan', opcode=7, length=4, base=Calculate, writes=True)
-def _operation_less_than(self, a: int, b: int) -> int:
+async def _operation_less_than(self, a: int, b: int) -> int:
   return 1 if a < b else 0
 
 
 @make_op('Equals', opcode=8, length=4, base=Calculate, writes=True)
-def _operation_equals(self, a: int, b: int) -> int:
+async def _operation_equals(self, a: int, b: int) -> int:
   return 1 if a == b else 0
 
 
 @make_op('BaseOffset', opcode=9, length=2)
-def _operation_base_offset(self, val: int):
-  self.comp.base_offset += val
+async def _operation_base_offset(self, val: int):
+  self.comp.relative_base_offset += val
 
 
 @make_op('Halt', opcode=99, length=1)
@@ -170,12 +177,15 @@ class Computer:
 
   def __init__(self, memory: List[int]):
     """Initialize computer 'hardware'."""
-    self.memory = list(memory)
+    self.memory = collections.defaultdict(lambda: 0, enumerate(memory))
     self.ptr = 0
+    self.relative_base_offset = 0
 
   def copy(self):
     """Return a copy of a Computer."""
-    return type(self)(self.memory)
+    copy = type(self)([])
+    copy.memory = self.memory.copy()
+    return copy
 
   async def run(
     self,
@@ -195,6 +205,7 @@ class Computer:
     while self.running:
       op_type = self.memory[self.ptr] % 100
       op = OPS[op_type](self)
+      assert op is not None
       await op.run()
 
   def output(self):
