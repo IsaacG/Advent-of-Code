@@ -1,9 +1,9 @@
 """Intcode computer."""
 
-import collections
+import asyncio
 import enum
 import more_itertools
-from typing import Iterable, List
+from typing import Iterable, List, Optional, Tuple
 
 from lib import aoc
 
@@ -42,12 +42,15 @@ class Operation:
     Based on the op mask, the value might be read in position mode or immediate mode.
     """
     if self.param_mode(param) == ParameterMode['POS']:  # position mode
+      assert isinstance(self.read(self._params[param - 1]), int)
       return self.read(self._params[param - 1])
     else:  # 1 == immediate mode
+      assert isinstance(self._params[param - 1], int)
       return self._params[param - 1]
 
   def write_to(self, param: int, val: int):
     """Write a value to a location specified by a parameter."""
+    assert isinstance(val, int)
     addr = self._params[param - 1]
     self.memory[addr] = val
 
@@ -57,19 +60,20 @@ class Operation:
 
   def read(self, addr: int) -> int:
     """Read one value from mem[addr]."""
+    assert isinstance(self.memory[addr], int)
     return self.memory[addr]
 
   def read_n(self, addr: int, count: int) -> List[int]:
     """Read N values from mem[addr]."""
     return self.memory[addr:addr + count]
 
-  def pop_input(self) -> int:
+  async def pop_input(self) -> int:
     """Pop an input, reading the next input value."""
-    return self.comp.inputs.popleft()
+    return await self.comp._in.get()
 
-  def push_output(self, val: int):
+  async def push_output(self, val: int):
     """Push an output for future reading."""
-    return self.comp.outputs.append(val)
+    return await self.comp._out.put(val)
 
   def __str__(self):
     return '<OP[%02d] %-6s: %s>' % (
@@ -78,9 +82,9 @@ class Operation:
       ', '.join(f'{self.param_mode(i).name}!{i}' for i in self._params)
     )
 
-  def run(self):
+  async def run(self):
     """Run an Instruction, executing it and updating the pointer."""
-    self.execute()
+    await self.execute()
     self.comp.ptr += self.len
 
 
@@ -97,8 +101,9 @@ class Calculate(Operation):
   def calculate(self, a: int, b: int) -> int:
     return NotImplementedError
 
-  def execute(self):
+  async def execute(self):
     val = self.calculate(self.read_from(1), self.read_from(2))
+    assert isinstance(val, int), self
     self.write_to(3, val)
 
 
@@ -124,23 +129,24 @@ def _operation_mult(self, a: int, b: int) -> int:
 
 
 @make_op('Input', opcode=3, length=2)
-def _operation_input(self):
-  self.write_to(1, self.pop_input())
+async def _operation_input(self):
+  self.write_to(1, await self.pop_input())
 
 
 @make_op('Output', opcode=4, length=2)
-def _operation_output(self):
-  self.push_output(self.read_from(1))
+async def _operation_output(self):
+  assert isinstance(self.read_from(1), int)
+  await self.push_output(self.read_from(1))
 
 
 @make_op('JumpIfTrue', opcode=5, length=3)
-def _operation_jump_true(self):
+async def _operation_jump_true(self):
   if self.read_from(1):
     self.comp.ptr = self.read_from(2) - self.len
 
 
 @make_op('JumpIfFalse', opcode=6, length=3)
-def _operation_jump_false(self):
+async def _operation_jump_false(self):
   if not self.read_from(1):
     self.comp.ptr = self.read_from(2) - self.len
 
@@ -156,37 +162,43 @@ def _operation_equals(self, a: int, b: int) -> int:
 
 
 @make_op('Halt', opcode=99, length=1)
-def _operation_halt(self):
+async def _operation_halt(self):
   self.comp.running = False
 
 
 class Computer:
   """Intcode computer."""
 
-  def __init__(self, memory: List[int], debug: int = 0):
+  def __init__(self, memory: List[int]):
     """Initialize computer 'hardware'."""
     self.memory = list(memory)
     self.ptr = 0
-    self.inputs = collections.deque()
-    self.outputs = collections.deque()
-    self.debug = debug
 
   def copy(self):
     """Return a copy of a Computer."""
-    return type(self)(self.memory, self.debug)
+    return type(self)(self.memory)
 
-  def run(self, inputs: Iterable[int] = tuple()):
+  async def run(self, inputs: Iterable[int] = tuple(), io: Tuple[Optional[asyncio.Queue], Optional[asyncio.Queue]] = (None, None)):
     """Run the program until Halted and return mem[0]."""
-    self.inputs.extend(inputs)
+    i, o = io
+    self._in = i if i else asyncio.Queue()
+    self._out = o if o else asyncio.Queue()
+    assert isinstance(self._in, asyncio.Queue)
+    assert isinstance(self._out, asyncio.Queue)
+
+    for i in inputs:
+      self._in.put_nowait(i)
     self.running = True
     while self.running:
       op_type = self.memory[self.ptr] % 100
       op = OPS[op_type](self)
-      if self.debug:
-        self.debug -= 1
-        print(op)
-        # print(self.memory)
-      op.run()
+      await op.run()
+
+  def output(self):
+    out = []
+    while not self._out.empty():
+      out.append(self._out.get_nowait())
+    return out
 
   def pretty_mem(self):
     """Pretty print the memory."""
@@ -202,4 +214,4 @@ class Challenge(aoc.Challenge):
   def preparse_input(self, x: List[str]) -> Computer:
     """Return a Computer using the first line of input as the program."""
     memory = [int(num) for num in x[0].split(',')]
-    return Computer(memory, debug=0)
+    return Computer(memory)

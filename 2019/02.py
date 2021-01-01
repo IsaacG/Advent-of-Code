@@ -4,7 +4,7 @@
 Implement an Intcode computer.
 """
 
-
+import asyncio
 import typer
 
 import intcode
@@ -22,7 +22,7 @@ class Day02(intcode.Challenge):
     """Run a copy of the computer, with a given noun, verb and return mem[0]."""
     computer = computer.copy()
     computer.memory[1], computer.memory[2] = noun, verb
-    computer.run()
+    asyncio.run(computer.run())
     return computer.memory[0]
 
   def part1(self, computer: intcode.Computer) -> int:

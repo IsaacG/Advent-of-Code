@@ -2,6 +2,7 @@
 
 import typer
 
+import asyncio
 import intcode
 from lib import aoc
 
@@ -24,12 +25,12 @@ class Day05(intcode.Challenge):
   )
 
   def part1(self, computer: intcode.Computer) -> int:
-    computer.run(inputs=[1])
-    return computer.outputs.pop()
+    asyncio.run(computer.run(inputs=[1]))
+    return computer.output()[-1]
 
   def part2(self, computer: intcode.Computer) -> int:
-    computer.run(inputs=[5])
-    return computer.outputs.pop()
+    asyncio.run(computer.run(inputs=[5]))
+    return computer.output()[-1]
 
 
 if __name__ == '__main__':
