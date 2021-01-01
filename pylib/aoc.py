@@ -165,12 +165,14 @@ class Challenge:
       for i, func in self.funcs.items():
         parsed_data = self.preparse_input(raw_data)
         try:
-          answer = func(parsed_data, *self.RUN_ARGS)
+          a = func(parsed_data, *self.RUN_ARGS)
+          if a:
+            answer = a
         except NotImplementedError:
           pass
-      if answer == 0:
-        print('Got 0 as an answer. Probably not right.')
-      elif answer is not None:
+      if not answer:
+        print('Did not get an answer.')
+      else:
         print('Submitting answer:', answer)
         print('Response:')
         print(self.site().submit(answer))
@@ -188,8 +190,10 @@ class Challenge:
         want = parts[i]
         if isinstance(got, int):
           want = int(want)
-        assert want == got, f'Day {self.day:02d} Part {i}: want({want}) != got({got})'
-      print(f'Day {self.day:02d}: CHECK PASS')
+        if want == got:
+          print(f'Day {self.day:02d} Part {i}: PASS!')
+        else:
+          print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
     if time:
       self.time(raw_data)
 
