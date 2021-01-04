@@ -8,7 +8,7 @@ from lxml import etree
 
 
 class Website:
-  
+
   BASE = 'https://adventofcode.com/'
 
   def __init__(self, year, day):
@@ -58,6 +58,3 @@ class Website:
     et = etree.HTML(resp.content)
     output = ''.join(et.xpath('//main/article//text()'))
     return output
-
-
-
