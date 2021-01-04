@@ -15,7 +15,7 @@ from lib import aoc
 SAMPLE = ['1']
 
 
-class Day09(intcode.Challenge):
+class DayNN(intcode.Challenge):
 
   DEBUG = True
 
@@ -28,6 +28,6 @@ class Day09(intcode.Challenge):
 
 
 if __name__ == '__main__':
-  typer.run(Day09().run)
+  typer.run(DayNN().run)
 
 # vim:ts=2:sw=2:expandtab
