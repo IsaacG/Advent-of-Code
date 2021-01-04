@@ -7,7 +7,7 @@ import pathlib
 import time
 
 from . import site
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Generator, Iterable, List, Optional
 
 
 def mult(nums: Iterable[int]) -> int:
@@ -31,7 +31,46 @@ class TestCase:
   part: int
 
 
-class Challenge:
+class Helpers:
+
+  _primes = [2, 3, 5]
+  _gcd = {}
+
+  def primes(self) -> Generator[int, None, None]:
+    s = 0
+    for s in self._primes:
+      yield s
+    while True:
+      s += 2
+      if all(s % f for f in self._primes):
+        self._primes.append(s)
+        yield s
+
+  def angle(self, c: complex) -> complex:
+    return c / self.gcd(int(c.real), int(c.imag))
+
+  def gcd(self, a: int, b: int) -> int:
+    a, b = abs(a), abs(b)
+    if a > b:
+      a, b = b, a
+    if a == 0:
+      return b if b else 1
+    tple = (a, b)
+    if tple not in self._gcd:
+      gcd = 1
+      p = 1
+      pgen = self.primes()
+      while p < a:
+        p = next(pgen)
+        while (a % p == 0 and b % p == 0):
+          a //= p
+          b //= p
+          gcd *= p
+      self._gcd[tple] = gcd
+    return self._gcd[tple]
+
+
+class Challenge(Helpers):
   """Daily Challenge."""
 
   SEP = '\n'
