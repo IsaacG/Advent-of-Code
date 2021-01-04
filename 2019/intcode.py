@@ -4,7 +4,7 @@ import asyncio
 import collections
 import enum
 import more_itertools
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from lib import aoc
 
