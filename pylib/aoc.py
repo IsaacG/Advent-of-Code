@@ -10,19 +10,6 @@ from . import site
 from typing import Callable, Generator, Iterable, List, Optional
 
 
-def mult(nums: Iterable[int]) -> int:
-  """Product of all values. Like sum() but with multiplication."""
-  p = 1
-  for n in nums:
-    p *= n
-  return p
-
-
-def sum_map(lines: List[str], func: Callable[[str], int]) -> int:
-  """sum_map(lines, func)"""
-  return sum(func(line) for line in lines)
-
-
 @dataclasses.dataclass
 class TestCase:
   """Test out a solution with a known input/want."""
@@ -35,6 +22,17 @@ class Helpers:
 
   _primes = [2, 3, 5]
   _gcd = {}
+
+  def mult(self, nums: Iterable[int]) -> int:
+    """Product of all values. Like sum() but with multiplication."""
+    p = 1
+    for n in nums:
+      p *= n
+    return p
+
+  def sum_map(self, lines: List[str], func: Callable[[str], int]) -> int:
+    """sum_map(lines, func)"""
+    return sum(func(line) for line in lines)
 
   def primes(self) -> Generator[int, None, None]:
     s = 0

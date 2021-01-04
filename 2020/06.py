@@ -20,7 +20,7 @@ class Day06(aoc.Challenge):
 
   def part1(self, data: List[str]) -> int:
     """Part 1: count the unique chars, joining all lines."""
-    return aoc.sum_map(data, lambda l: len(set(l.replace('\n', ''))))
+    return self.sum_map(data, lambda l: len(set(l.replace('\n', ''))))
 
   def part2(self, data: List[str]) -> int:
     """Part 2: count num of chars found on all lines."""

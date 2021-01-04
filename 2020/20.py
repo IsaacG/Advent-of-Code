@@ -294,7 +294,7 @@ class Day20(aoc.Challenge):
     # Four corners. Top left, top right, bottom left, bottom right.
     line = list(range(4))
     corners = zip(line, line[1:] + line[:1])
-    return aoc.mult(
+    return self.mult(
       self.find_corner(tiles, corner)
       for corner in corners
     )

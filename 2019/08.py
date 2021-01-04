@@ -42,7 +42,7 @@ class Day08(aoc.Challenge):
     # Displays the actual solution.
     # print('\n'.join(out))
     # Meaningless number to use in the solutions file.
-    return sum(sum(True for i in row if i != ' ') for row in out)
+    return self.mult(sum(True for i in row if i != ' ') for row in out)
 
   def preparse_input(self, x):
     return x[0]

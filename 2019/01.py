@@ -37,10 +37,10 @@ class Day01(aoc.Challenge):
     return max(0, int(mass / 3) - 2)
 
   def part2(self, lines: List[int]) -> int:
-    return aoc.sum_map(lines, self.fuel)
+    return self.sum_map(lines, self.fuel)
 
   def part1(self, lines: List[int]) -> int:
-    return aoc.sum_map(lines, self.simple_fuel)
+    return self.sum_map(lines, self.simple_fuel)
 
 
 if __name__ == '__main__':

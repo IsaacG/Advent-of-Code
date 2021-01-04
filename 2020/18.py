@@ -66,12 +66,12 @@ class Day18(aoc.Challenge):
   def part1(self, lines: List[str]) -> int:
     """Treat + and * equally."""
     conds = [lambda x: x in '+*']
-    return aoc.sum_map(lines, lambda x: self.solve(x, conds))
+    return self.sum_map(lines, lambda x: self.solve(x, conds))
 
   def part2(self, lines: List[str]) -> int:
     """Split on * first making it lower precendent than +."""
     conds = [lambda x: x == '*', lambda x: x == '+']
-    return aoc.sum_map(lines, lambda x: self.solve(x, conds))
+    return self.sum_map(lines, lambda x: self.solve(x, conds))
 
   def solve(self, tokens: List[str], f: List[Callable[[str], bool]]) -> int:
     """Tokenize, create tree and math the tree."""

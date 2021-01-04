@@ -105,7 +105,7 @@ class Day10(aoc.Challenge):
         j for j in range(i + 1, min(i + 4, len(nums)))
         if nums[j] - nums[i] <= 3
       ]
-      return aoc.sum_map(valid, possible_paths_from)
+      return self.sum_map(valid, possible_paths_from)
 
     return possible_paths_from(0)
 

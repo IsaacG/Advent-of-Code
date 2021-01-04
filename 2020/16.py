@@ -137,7 +137,7 @@ class Day16(aoc.Challenge):
         candidates.remove(column)
 
     # Multiply all the fields that start with "departure".
-    return aoc.mult(v for k, v in completed_ticket.items() if k.startswith('departure'))
+    return self.mult(v for k, v in completed_ticket.items() if k.startswith('departure'))
 
 
 if __name__ == '__main__':
