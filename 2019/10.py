@@ -70,6 +70,7 @@ class Day10(aoc.Challenge):
         astroid = angle_map[angle].pop(0)
         if shot == 200:
           return int(100 * astroid.real + astroid.imag)
+    raise ValueError
 
   def preparse_input(self, lines: List[str]) -> Set[complex]:
     """Convert the input lines to a set of astroid coordinates."""

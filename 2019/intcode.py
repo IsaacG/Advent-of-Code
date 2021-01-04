@@ -21,6 +21,7 @@ class Operation:
   """Base Operation class."""
 
   _PARAMETER = 'execute'
+  _WRITES = False
 
   def __init__(self, comp: 'Computer'):
     self.comp = comp
@@ -36,7 +37,7 @@ class Operation:
     for i, p in enumerate(instruction[1:]):
       mask = 10 ** (i + 2)
       param_mode = (self.op // mask) % 10
-      if self._writes and i == self.len - 2:
+      if self._WRITES and i == self.len - 2:
         # If this instruction writes, the last param is a POS
         # but we are writing to it, not reading, so we do not
         # actually want to dereference it.
@@ -100,7 +101,7 @@ class Calculate(Operation):
   _PARAMETER = 'calculate'
 
   async def calculate(self, a: int, b: int) -> int:
-    return NotImplementedError
+    raise NotImplementedError
 
   async def execute(self, a, b, dest):
     val = await self.calculate(a, b)
@@ -115,7 +116,7 @@ def make_op(name: str, opcode: int, length: int, base: type = Operation, writes:
   This class will be an Operation with a given name, length and execute.
   """
   def register(func):
-    OPS[opcode] = type(name, (base, ), {base._PARAMETER: func, '_LEN': length, '_writes': writes})
+    OPS[opcode] = type(name, (base, ), {base._PARAMETER: func, '_LEN': length, '_WRITES': writes})
   return register
 
 
@@ -199,8 +200,8 @@ class Computer:
     assert isinstance(self._in, asyncio.Queue)
     assert isinstance(self._out, asyncio.Queue)
 
-    for i in inputs:
-      self._in.put_nowait(i)
+    for val in inputs:
+      self._in.put_nowait(val)
     self.running = True
     while self.running:
       op_type = self.memory[self.ptr] % 100

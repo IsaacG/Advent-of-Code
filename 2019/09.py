@@ -32,7 +32,7 @@ class Day09(intcode.Challenge):
 
   def test_part(self, computer: intcode.Computer) -> str:
     if not self.testing:
-      return 0
+      return ''
     asyncio.run(computer.run())
     return ','.join(str(i) for i in computer.output())
 

@@ -40,6 +40,7 @@ class Day02(intcode.Challenge):
       for verb in range(100):
         if self.run_with(computer, noun, verb) == want:
           return 100 * noun + verb
+    raise ValueError('Should not get here.')
 
 
 if __name__ == '__main__':

@@ -22,12 +22,12 @@ class Day04(aoc.Challenge):
     aoc.TestCase(inputs='100000-111123', part=2, want=1),
   )
 
-  def has_a_repeat(self, num: int) -> int:
+  def has_a_repeat(self, num: int) -> bool:
     """Must contain a doubled digit."""
     digits = [int(i) for i in str(num)]
     return any(digits[i + 1] == digits[i] for i in range(LEN - 1))
 
-  def has_a_double(self, num: int) -> int:
+  def has_a_double(self, num: int) -> bool:
     """Must contain a doubled - not tripled or more - digit."""
     digits = collections.Counter(str(num))
     return 2 in digits.values()
