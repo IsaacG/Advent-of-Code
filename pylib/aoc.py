@@ -7,7 +7,7 @@ import pathlib
 import time
 
 from . import site
-from typing import Callable, Generator, Iterable, List, Optional
+from typing import Any, Callable, Generator, Iterable, List, Optional
 
 
 @dataclasses.dataclass
@@ -83,6 +83,7 @@ class Challenge(Helpers):
     self.funcs = {1: self.part1, 2: self.part2}
     self.testing = False
     self._site = None
+    self._filecache = {}
     super().__init__()
 
   def site(self):
@@ -128,24 +129,30 @@ class Challenge(Helpers):
     """Optional parser to parse data to send to the parts."""
     return x
 
-  def load_data(self, src: Optional[str]) -> List[str]:
-    """Load exercise data."""
-    if src is None:
-      src = self.data_file
-    elif isinstance(src, str) and os.path.exists(src):
-      src = pathlib.Path(src)
+  def raw_data(self, filename: Optional[str]) -> str:
+    """Read puzzle data from file."""
+    if filename not in self._filecache:
+      if filename is None:
+        path = self.data_file
+      else:
+        path = pathlib.Path(filename)
 
-    if isinstance(src, pathlib.Path):
-      if not src.exists():
-        src.write_text(self.site().get_input())
-      text = src.read_text()
-    elif isinstance(src, str):
-      text = src
-    else:
-      raise RuntimeError('Bad data source {src!r}')
+      if not path.exists():
+        if filename:
+          raise RuntimeError(f'Input file {filename} does not exist.')
+        else:
+          print(f'Input does not exist. Downloading.')
+          path.write_text(self.site().get_input())
 
-    data = text.strip().split(self.SEP)
-    return [self.TRANSFORM(i) for i in data]
+      self._filecache[filename] = path.read_text().strip()
+    return self._filecache[filename]
+
+  def parse_input(self, data: str) -> List[Any]:
+    """Parse input data. Block of text -> lines -> TRANSFORM -> preparse_input."""
+    data = data.strip().split(self.SEP)
+    data = [self.TRANSFORM(i) for i in data]
+    data = self.preparse_input(data)
+    return data
 
   def run_tests(self):
     """Run the tests."""
@@ -153,8 +160,7 @@ class Challenge(Helpers):
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-      data = self.load_data(case.inputs)
-      data = self.preparse_input(data)
+      data = self.parse_input(case.inputs)
       got = self.funcs[case.part](data, *self.TEST_ARGS)
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
@@ -181,7 +187,6 @@ class Challenge(Helpers):
     time: bool = False,
   ):
     assert any((test, solve, check, time, submit))
-    raw_data = self.load_data(data)
 
     self.pre_run()
     if test:
@@ -189,19 +194,19 @@ class Challenge(Helpers):
 
     if solve:
       for i in (1, 2):
-        parsed_data = self.preparse_input(raw_data)
+        puzzle_input = self.parse_input(self.raw_data(data))
         self.debug(f'Running part {i}:')
         try:
-          print(self.funcs[i](parsed_data, *self.RUN_ARGS))
+          print(self.funcs[i](puzzle_input, *self.RUN_ARGS))
         except NotImplementedError:
           print(f'Part {i}: Not implemented')
 
     if submit:
       answer = None
       for i in (1, 2):
-        parsed_data = self.preparse_input(raw_data)
+        puzzle_input = self.parse_input(self.raw_data(data))
         try:
-          a = self.funcs[i](parsed_data, *self.RUN_ARGS)
+          a = self.funcs[i](puzzle_input, *self.RUN_ARGS)
           if a:
             answer = a
         except NotImplementedError:
@@ -221,8 +226,8 @@ class Challenge(Helpers):
         if int(parts[0]) == self.day:
           break
       for i in (1, 2):
-        parsed_data = self.preparse_input(raw_data)
-        got = self.funcs[i](parsed_data, *self.RUN_ARGS)
+        puzzle_input = self.parse_input(self.raw_data(data))
+        got = self.funcs[i](puzzle_input, *self.RUN_ARGS)
         want = parts[i]
         if isinstance(got, int):
           want = int(want)
@@ -231,7 +236,8 @@ class Challenge(Helpers):
         else:
           print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
     if time:
-      self.time(raw_data)
+      puzzle_input = self.parse_input(self.raw_data(data))
+      self.time(puzzle_input)
 
   def time_func(self, count: int, func: Callable) -> float:
     start = time.clock_gettime(time.CLOCK_MONOTONIC)
@@ -240,14 +246,13 @@ class Challenge(Helpers):
     end = time.clock_gettime(time.CLOCK_MONOTONIC)
     return 1000 * (end - start) / count
 
-  def time(self, raw_data):
+  def time(self, puzzle_input):
     """Benchmark the solution."""
     times = []
-    times.append(self.time_func(10000, lambda: self.preparse_input(raw_data)))
-    parsed_data = self.preparse_input(raw_data)
+    times.append(self.time_func(10000, lambda: self.preparse_input(list(raw_data))))
 
     for part, func in self.funcs.items():
-      r = lambda: func(parsed_data, *self.RUN_ARGS)
+      r = lambda: func(puzzle_input, *self.RUN_ARGS)
 
       if self.TIMER_ITERATIONS[part - 1]:
         _count = self.TIMER_ITERATIONS[part - 1]
