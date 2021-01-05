@@ -35,8 +35,6 @@ class Day09(aoc.Challenge):
   """Day 9."""
 
   TRANSFORM = int
-  TEST_ARGS = [5]
-  RUN_ARGS = [25]
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE, part=1, want=127),
@@ -50,8 +48,9 @@ class Day09(aoc.Challenge):
         return True
     return False
 
-  def part1(self, nums: List[int], preamble: int) -> int:
+  def part1(self, nums: List[int]) -> int:
     """Return the first number not composed of two values in the last `preamble` values."""
+    preamble = 5 if self.testing else 25
     pool = nums[0:preamble]
     nums = nums[preamble:]
     for num in nums:
@@ -61,9 +60,9 @@ class Day09(aoc.Challenge):
       pool.append(num)
     raise ValueError
 
-  def part2(self, nums: List[int], preamble: int) -> int:
+  def part2(self, nums: List[int]) -> int:
     """Find a contiguous set of nums that sum to `part1()`. Return min(pool) + max(pool)."""
-    want = self.part1(nums, preamble)
+    want = self.part1(nums)
     for i in range(len(nums)):
       for j in range(i + 1, len(nums)):
         s = sum(nums[i:j])

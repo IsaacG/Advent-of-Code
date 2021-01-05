@@ -75,8 +75,6 @@ class Challenge(Helpers):
   TRANSFORM = str
   TESTS = ()
   DEBUG = False
-  TEST_ARGS = []
-  RUN_ARGS = []
   TIMER_ITERATIONS = (None, None)
 
   def __init__(self):
@@ -161,7 +159,7 @@ class Challenge(Helpers):
       self.debug(f'Running test {i + 1} (part{case.part})')
       assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
       data = self.parse_input(case.inputs)
-      got = self.funcs[case.part](data, *self.TEST_ARGS)
+      got = self.funcs[case.part](data)
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
         break
@@ -197,7 +195,7 @@ class Challenge(Helpers):
         puzzle_input = self.parse_input(self.raw_data(data))
         self.debug(f'Running part {i}:')
         try:
-          print(self.funcs[i](puzzle_input, *self.RUN_ARGS))
+          print(self.funcs[i](puzzle_input))
         except NotImplementedError:
           print(f'Part {i}: Not implemented')
 
@@ -206,7 +204,7 @@ class Challenge(Helpers):
       for i in (1, 2):
         puzzle_input = self.parse_input(self.raw_data(data))
         try:
-          a = self.funcs[i](puzzle_input, *self.RUN_ARGS)
+          a = self.funcs[i](puzzle_input)
           if a:
             answer = a
         except NotImplementedError:
@@ -227,7 +225,7 @@ class Challenge(Helpers):
           break
       for i in (1, 2):
         puzzle_input = self.parse_input(self.raw_data(data))
-        got = self.funcs[i](puzzle_input, *self.RUN_ARGS)
+        got = self.funcs[i](puzzle_input)
         want = parts[i]
         if isinstance(got, int):
           want = int(want)
@@ -252,7 +250,7 @@ class Challenge(Helpers):
     times.append(self.time_func(10000, lambda: self.preparse_input(list(raw_data))))
 
     for part, func in self.funcs.items():
-      r = lambda: func(puzzle_input, *self.RUN_ARGS)
+      r = lambda: func(puzzle_input)
 
       if self.TIMER_ITERATIONS[part - 1]:
         _count = self.TIMER_ITERATIONS[part - 1]
