@@ -15,8 +15,6 @@ SAMPLE = ["""\
 class Day13(aoc.Challenge):
   """Figure out when busses depart."""
 
-  TRANSFORM = str
-
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=295),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=1068781),
@@ -47,8 +45,8 @@ class Day13(aoc.Challenge):
     until we found all busses.
     """
     # Build a list of offset, bus for all busses we care about.
-    busses = [int(i) if i != 'x' else 0 for i in lines[1].split(',')]
-    busses = [(a, b) for a, b in enumerate(busses) if b]
+    buslist = [int(i) if i != 'x' else 0 for i in lines[1].split(',')]
+    busses = [(a, b) for a, b in enumerate(buslist) if b]
 
     start_time = 0
     step = 1
@@ -56,9 +54,9 @@ class Day13(aoc.Challenge):
       start_time += step
 
       # See if any new busses align with this timestamp.
-      newfound = [b for (k, b) in busses if not (start_time + k) % b]
-      if newfound:
-        newfound = newfound[0]
+      newfounds = [b for (k, b) in busses if not (start_time + k) % b]
+      if newfounds:
+        newfound = newfounds[0]
         # Remove the bus from the unfound bus list and update the step
         # so future iterations would include this bus, too.
         busses = [(a, b) for a, b in busses if b != newfound]

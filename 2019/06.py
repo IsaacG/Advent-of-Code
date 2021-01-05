@@ -7,7 +7,7 @@ Count orbits and steps from one orbit to another.
 import collections
 import itertools
 import typer
-from typing import List
+from typing import List, Tuple
 
 from lib import aoc
 
@@ -18,8 +18,6 @@ SAMPLE = [
 
 
 class Day06(aoc.Challenge):
-
-  TRANSFORM = lambda _, s: s.split(')')
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=42),
@@ -82,6 +80,9 @@ class Day06(aoc.Challenge):
       cur = reverse[cur]
 
     return steps
+
+  def parse_input(self, puzzle_input: str) -> List[Tuple[str, ...]]:
+    return [tuple(line.split(')')) for line in puzzle_input.split('\n')]
 
 
 if __name__ == '__main__':

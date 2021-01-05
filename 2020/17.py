@@ -44,7 +44,7 @@ class GameOfLife:
     """Return if a spot is live."""
     return coord in self.board
 
-  def neighbors(self, coord: Coord) -> List[Tuple[Coord]]:
+  def neighbors(self, coord: Coord) -> List[Coord]:
     """List of all neighboring cells for a given Coord."""
     return [
       tuple(a + b for (a, b) in zip(coord, d))
@@ -118,7 +118,6 @@ class GameOfLife:
 
 class Day17(aoc.Challenge):
 
-  TRANSFORM = str
   TIMER_ITERATIONS = (5, 2)
 
   TESTS = (

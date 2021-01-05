@@ -2,7 +2,6 @@
 """Train tickets."""
 
 import typer
-from typing import List
 from lib import aoc
 
 # Fudge the second sample to include departure rows
@@ -38,8 +37,6 @@ nearby tickets:
 class Day16(aoc.Challenge):
   """Day 16. Train tickets."""
 
-  TRANSFORM = str
-  SEP = '\n\n'
   TIMER_ITERATIONS = (1000, 1000)
 
   TESTS = (
@@ -47,18 +44,18 @@ class Day16(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
   )
 
-  def preparse_input(self, chunks: List[str]):
+  def parse_input(self, puzzle_input: str):
     """Parse the input."""
-    rules, your_ticket, nearby_tickets = chunks
+    rules, your_ticket_raw, nearby_tickets_raw = puzzle_input.split('\n\n')
 
     rule_by_name = {}
     for line in rules.split('\n'):
        name, val = line.split(': ')
        rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in val.split(' or '))
     # CSV data, one row (after the header).
-    your_ticket = [int(i) for i in your_ticket.split('\n')[1].split(',')]
+    your_ticket = [int(i) for i in your_ticket_raw.split('\n')[1].split(',')]
     # CSV data. Split in "\n" for a record, split record on "," for values.
-    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets.split('\n')[1:]]
+    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets_raw.split('\n')[1:]]
 
     return rule_by_name, your_ticket, nearby_tickets
 

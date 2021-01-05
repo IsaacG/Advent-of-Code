@@ -1,6 +1,6 @@
 #!/usr/bin/env pypy
 
-from typing import List, Set
+from typing import Iterable, List
 import typer
 
 from lib import aoc
@@ -23,7 +23,7 @@ class Day01(aoc.Challenge):
   )
   TRANSFORM = int
 
-  def prod_of_pair(self, pair_sum: int, data: Set[int]) -> int:
+  def prod_of_pair(self, pair_sum: int, data: Iterable[int]) -> int:
     vals = [i for i in data if (pair_sum - i) in data]
     if not vals:
       return 0
@@ -31,10 +31,10 @@ class Day01(aoc.Challenge):
       return vals[0] * vals[1]
     raise ValueError('Found too many matches.')
 
-  def part1(self, data: List[str]) -> int:
+  def part1(self, data: List[int]) -> int:
     return self.prod_of_pair(2020, data)
 
-  def part2(self, data: List[str]) -> int:
+  def part2(self, data: List[int]) -> int:
     for n in data:
       subset = list(data)
       subset.remove(n)
@@ -42,6 +42,7 @@ class Day01(aoc.Challenge):
       if prod:
         prod *= n
         return prod
+    raise RuntimeError
 
 
 if __name__ == '__main__':

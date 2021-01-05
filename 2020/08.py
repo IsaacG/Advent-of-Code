@@ -1,7 +1,7 @@
 #!/usr/bin/env pypy
 
 import typer
-from typing import List
+from typing import List, Tuple
 
 from lib import aoc
 
@@ -36,7 +36,7 @@ class Day08(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=8),
   )
 
-  def compute(self, lines: List[str]) -> int:
+  def compute(self, lines: List[str]) -> Tuple[int, bool]:
     """Run the code, returning the accumulator and if the end was hit."""
     # Accumulator
     acc = 0
@@ -49,8 +49,8 @@ class Day08(aoc.Challenge):
 
     while True:
       seen.add(ptr)
-      op, val = lines[ptr].split()
-      val = int(val)
+      op, sval = lines[ptr].split()
+      val = int(sval)
       if op == 'nop':
         ptr += 1
       elif op == 'jmp':
@@ -89,6 +89,7 @@ class Day08(aoc.Challenge):
       if end:
         return acc
       lines[i] = line
+    raise RuntimeError
 
 
 if __name__ == '__main__':

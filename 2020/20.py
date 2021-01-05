@@ -51,13 +51,13 @@ def rot90(rows: Image) -> Image:
 class Tile:
   """An image tile, a part of the whole."""
 
-  def __init__(self, block: str) -> 'Tile':
+  def __init__(self, block: str):
     """Construct a Tile from the input text."""
     lines = block.split('\n')
     self.num = int(lines[0].split(' ')[1][:-1])
     self.image = [list(line) for line in lines[1:]]
     # Neighboring tiles for stitching.
-    self.neighbors = {}
+    self.neighbors = {}  # type: Dict[Row, Tile]
     # Used to verify we don't try to rotate a tile multiple times.
     # Not needed to solve AOC.
     self.oriented = False
@@ -155,9 +155,6 @@ class Tile:
 
 class Day20(aoc.Challenge):
   """Stitch image tiles and find sea monsters in them."""
-
-  TRANSFORM = str
-  SEP = '\n\n'
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=20899048083289),
@@ -298,6 +295,9 @@ class Day20(aoc.Challenge):
       self.find_corner(tiles, corner)
       for corner in corners
     )
+
+  def parse_input(self, puzzle_input: str):
+    return puzzle_input.split('\n\n')
 
 
 if __name__ == '__main__':

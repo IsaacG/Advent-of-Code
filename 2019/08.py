@@ -44,8 +44,8 @@ class Day08(aoc.Challenge):
     # Meaningless number to use in the solutions file.
     return self.mult(sum(True for i in row if i != ' ') for row in out)
 
-  def preparse_input(self, x):
-    return x[0]
+  def parse_input(self, puzzle_input: str):
+    return puzzle_input
 
 
 if __name__ == '__main__':

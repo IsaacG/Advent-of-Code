@@ -3,7 +3,7 @@
 
 import typer
 from lib import aoc
-from typing import Callable, List
+from typing import Callable, Dict, List, Tuple
 
 
 SAMPLE = ["""\
@@ -26,23 +26,21 @@ class Day14(aoc.Challenge):
   They only differ in how a "write" is applied.
   """
 
-  TRANSFORM = lambda _, x: x.split(' = ')
-
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=165),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=208),
   )
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, lines: List[Tuple[str, ...]]) -> int:
     return self.solve(lines, self.write1)
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, lines: List[Tuple[str, ...]]) -> int:
     return self.solve(lines, self.write2)
 
-  def solve(self, lines: List[str], mem_writer: Callable[[str, int, int], None]) -> int:
+  def solve(self, lines: List[Tuple[str, ...]], mem_writer: Callable[[str, int, int], None]) -> int:
     """Read input. Track mask. Apply writes with the mem_writer."""
-    self.mem = {}
-    mask = None
+    self.mem = {}  # type:Dict[int, int]
+    mask = ''
     for (op, val) in lines:
       if op == 'mask':
         mask = val
@@ -63,10 +61,10 @@ class Day14(aoc.Challenge):
   def write2(self, mask: str, address: int, value: int):
     """Use the mask to generate multiple addresses to write the value to."""
     # 36-bit binary string of the address.
-    address = f'{address:036b}'
+    padded_addr = f'{address:036b}'
 
     # Pass through address on mask=0, otherwise apply mask value.
-    masked_addr = [b if a == '0' else a for a, b in zip(mask, address)]
+    masked_addr = [b if a == '0' else a for a, b in zip(mask, padded_addr)]
 
     # If there are 3 X's, we need to write to 2^3 addresses, i.e.
     # there are 2^3 possible sunstitutes for those X's.
@@ -78,8 +76,11 @@ class Day14(aoc.Challenge):
       substitute = list(format(i, ('0%db' % count)))
       # Rebuild the address, replacing 'X' with a char from substitute.
       final_addr = [substitute.pop(0) if a == 'X' else a for a in masked_addr]
-      final_addr = int("".join(final_addr), 2)
-      self.mem[final_addr] = value
+      addr = int("".join(final_addr), 2)
+      self.mem[addr] = value
+
+  def parse_input(self, puzzle_input: str) -> List[Tuple[str, ...]]:
+    return [tuple(line.split(' = ')) for line in puzzle_input.split('\n')]
 
 
 if __name__ == '__main__':

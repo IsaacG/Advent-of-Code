@@ -102,7 +102,6 @@ class Seating:
 class Day11(aoc.Challenge):
   """Solve Day 11."""
 
-  TRANSFORM = str
   TIMER_ITERATIONS = (50, 10)
 
   TESTS = (

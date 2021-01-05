@@ -8,7 +8,7 @@ astroid is #200 to get evaporated by laser beam.
 import collections
 import math
 import typer
-from typing import Dict, List, Set
+from typing import Dict, Set
 
 import data
 from lib import aoc
@@ -72,10 +72,10 @@ class Day10(aoc.Challenge):
           return int(100 * astroid.real + astroid.imag)
     raise ValueError
 
-  def preparse_input(self, lines: List[str]) -> Set[complex]:
+  def parse_input(self, puzzle_input: str) -> Set[complex]:
     """Convert the input lines to a set of astroid coordinates."""
     locations = set()
-    for row, line in enumerate(lines):
+    for row, line in enumerate(puzzle_input.split('\n')):
       for col, val in enumerate(line):
         if val == '#':
           locations.add(col + (row * 1j))

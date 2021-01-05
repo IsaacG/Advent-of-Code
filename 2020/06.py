@@ -12,7 +12,6 @@ SAMPLE = [
 
 class Day06(aoc.Challenge):
 
-  SEP = '\n\n'
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=11),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=6),
@@ -32,6 +31,9 @@ class Day06(aoc.Challenge):
         s &= set(records.pop())
       total += len(s)
     return total
+
+  def parse_input(self, puzzle_input: str):
+    return puzzle_input.split('\n\n')
 
 
 if __name__ == '__main__':

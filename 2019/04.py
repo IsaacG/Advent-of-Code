@@ -13,9 +13,6 @@ LEN = 6
 class Day04(aoc.Challenge):
   """Day 4. Count valid passwords (incrementing, double num, in range)."""
 
-  TRANSFORM = lambda _, s: s.split('-')
-  DEBUG = False
-
   TESTS = (
     aoc.TestCase(inputs='100000-111111', part=1, want=1),
     aoc.TestCase(inputs='100000-111115', part=1, want=5),
@@ -70,8 +67,8 @@ class Day04(aoc.Challenge):
     # Or at least, it won't be in the range given by my input.
     return sum(sum_valid(num, 1) for num in range(1, 10))
 
-  def preparse_input(self, x):
-    return x[0]
+  def parse_input(self, puzzle_input: str):
+    return [int(i) for i in puzzle_input.split('-')]
 
 
 if __name__ == '__main__':

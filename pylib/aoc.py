@@ -71,7 +71,6 @@ class Helpers:
 class Challenge(Helpers):
   """Daily Challenge."""
 
-  SEP = '\n'
   TRANSFORM = str
   TESTS = ()
   DEBUG = False
@@ -123,10 +122,6 @@ class Challenge(Helpers):
     """Solve part 2."""
     raise NotImplementedError
 
-  def preparse_input(self, x):
-    """Optional parser to parse data to send to the parts."""
-    return x
-
   def raw_data(self, filename: Optional[str]) -> str:
     """Read puzzle data from file."""
     if filename not in self._filecache:
@@ -145,12 +140,9 @@ class Challenge(Helpers):
       self._filecache[filename] = path.read_text().strip()
     return self._filecache[filename]
 
-  def parse_input(self, data: str) -> List[Any]:
-    """Parse input data. Block of text -> lines -> TRANSFORM -> preparse_input."""
-    data = data.strip().split(self.SEP)
-    data = [self.TRANSFORM(i) for i in data]
-    data = self.preparse_input(data)
-    return data
+  def parse_input(self, data: str) -> Any:
+    """Parse input data. Block of text -> output."""
+    return [self.TRANSFORM(i) for i in data.split('\n')]
 
   def run_tests(self):
     """Run the tests."""
@@ -158,7 +150,7 @@ class Challenge(Helpers):
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-      data = self.parse_input(case.inputs)
+      data = self.parse_input(case.inputs.strip())
       got = self.funcs[case.part](data)
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
@@ -234,8 +226,7 @@ class Challenge(Helpers):
         else:
           print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
     if time:
-      puzzle_input = self.parse_input(self.raw_data(data))
-      self.time(puzzle_input)
+      self.time(data)
 
   def time_func(self, count: int, func: Callable) -> float:
     start = time.clock_gettime(time.CLOCK_MONOTONIC)
@@ -244,13 +235,13 @@ class Challenge(Helpers):
     end = time.clock_gettime(time.CLOCK_MONOTONIC)
     return 1000 * (end - start) / count
 
-  def time(self, puzzle_input):
+  def time(self, data):
     """Benchmark the solution."""
     times = []
-    times.append(self.time_func(10000, lambda: self.preparse_input(list(raw_data))))
+    times.append(self.time_func(10000, lambda: self.parse_input(self.raw_data(data))))
 
     for part, func in self.funcs.items():
-      r = lambda: func(puzzle_input)
+      r = lambda: func(self.parse_input(self.raw_data(data)))
 
       if self.TIMER_ITERATIONS[part - 1]:
         _count = self.TIMER_ITERATIONS[part - 1]

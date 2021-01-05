@@ -8,7 +8,7 @@ With the tree parser: 0.178/4.177/4.783 ms
 """
 
 import typer
-from typing import Callable, List
+from typing import Callable, List, Optional
 from lib import aoc
 
 
@@ -35,6 +35,8 @@ class Node:
       return self.a.compute() * self.b.compute()
     elif self.op == '+':
       return self.a.compute() + self.b.compute()
+    else:
+      raise RuntimeError
 
   def __str__(self):
     if self.op is None:
@@ -44,8 +46,6 @@ class Node:
 
 
 class Day18(aoc.Challenge):
-
-  TRANSFORM = str
 
   TESTS = (
     aoc.TestCase(part=1, inputs="2 * 3 + (4 * 5)", want=26),
@@ -59,9 +59,9 @@ class Day18(aoc.Challenge):
     aoc.TestCase(part=2, inputs="((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2", want=23340),
   )
 
-  def preparse_input(self, x):
+  def parse_input(self, puzzle_input: str) -> List[str]:
     """Drop whitespace."""
-    return [line.replace(" ", "") for line in x]
+    return [line.replace(" ", "") for line in puzzle_input.split('\n')]
 
   def part1(self, lines: List[str]) -> int:
     """Treat + and * equally."""
@@ -77,7 +77,7 @@ class Day18(aoc.Challenge):
     """Tokenize, create tree and math the tree."""
     return self.make_tree(self.tokenize(tokens), f).compute()
 
-  def get_split_for(self, tokens: List[str], conds: List[Callable[[str], bool]]) -> int:
+  def get_split_for(self, tokens: List[str], conds: List[Callable[[str], bool]]) -> Optional[int]:
     """Return the split-point, respecting (x) as one block."""
     for cond in conds:
       i = len(tokens) - 1

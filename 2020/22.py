@@ -34,7 +34,6 @@ Player 2:
 
 class Day22(aoc.Challenge):
 
-  SEP = '\n\n'
   TIMER_ITERATIONS = (1, 3)
 
   TESTS = (
@@ -104,12 +103,13 @@ class Day22(aoc.Challenge):
     for player, hand in enumerate(hands):
       if hand:
         return player, hand
+    raise RuntimeError
 
-  def preparse_input(self, decks):
+  def parse_input(self, puzzle_input: str):
     """Split the input into two decks."""
     return [
       [int(line) for line in deck.split('\n')[1:]]
-      for deck in decks
+      for deck in puzzle_input.split('\n\n')
     ]
 
 

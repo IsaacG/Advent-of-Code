@@ -4,7 +4,7 @@ import typer
 from lib import aoc
 import collections
 import re
-from typing import List, Dict
+from typing import Dict
 Rules = Dict[str, Dict[str, int]]
 
 SAMPLE = ["""\
@@ -39,10 +39,10 @@ class Day07(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=126),
   )
 
-  def preparse_input(self, data: List[str]) -> Rules:
+  def parse_input(self, data: str) -> Rules:
     """Parse the input data into structured data."""
-    rules = {}
-    for line in data:
+    rules = {}  # type: Rules
+    for line in data.split('\n'):
       # (red) bags contain (2 purple bags, 3 yellow bags.)
       outer, contains = line.split(' bags contain ')
       rules[outer] = {}
@@ -52,6 +52,7 @@ class Day07(aoc.Challenge):
       # (2 purple bags), (3 yellow bags.)
       for c in contains.split(', '):
         m = RE_CONTENTS.search(c)
+        assert m
         # rules['red'] = {'purple': 2, 'yellow': 3}
         rules[outer][m.group(2)] = int(m.group(1))
     return rules

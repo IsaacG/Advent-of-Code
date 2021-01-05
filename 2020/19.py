@@ -14,15 +14,12 @@ TEXT_RE = re.compile(r'"(.*)"')
 
 class Day19(aoc.Challenge):
 
-  TRANSFORM = str
-  SEP = '\n\n'
-
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=2),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=12),
   )
 
-  def generate_regexes(self, raw_rules: Dict[int, str]) -> Dict[int, str]:
+  def generate_regexes(self, raw_rules: Dict[int, str]) -> Dict[int, re.Pattern]:
     """Resolve the input data to a set of regexps."""
     regexps = {}
     raw_rules = dict(raw_rules)
@@ -49,7 +46,7 @@ class Day19(aoc.Challenge):
       assert len(raw_rules) != old_len
     return {k: re.compile(v) for k, v in regexps.items()}
 
-  def part2(self, data: Tuple[List[str], List[str]]) -> int:
+  def part2(self, data: Tuple[Dict[int, str], List[str]]) -> int:
     """Find the num of lines that match the regex-like rules.
 
     However, handle circular rules. Relevant rules:
@@ -74,12 +71,11 @@ class Day19(aoc.Challenge):
     r42 = regexps[42]
     r31 = regexps[31]
     r0 = re.compile(r'(%s{2,})(%s+)' % (r42.pattern, r31.pattern))
-    regexps = regexps.values()
 
     matches = sum(
       True
       for inp in inputs
-      if any(i.fullmatch(inp) for i in regexps)
+      if any(i.fullmatch(inp) for i in regexps.values())
     )
     # r0 needs to match r42{n}r31{m} where n>m
     r0_matches = 0
@@ -94,7 +90,7 @@ class Day19(aoc.Challenge):
           r0_matches += 1
     return matches + r0_matches
 
-  def part1(self, data: Tuple[List[str], List[str]]) -> int:
+  def part1(self, data: Tuple[Dict[int, str], List[str]]) -> int:
     """Find the num of lines that match the regex-like rules."""
     raw_rules, inputs = data
     # Map input to regexps.
@@ -106,9 +102,11 @@ class Day19(aoc.Challenge):
       if any(i.fullmatch(inp) for i in regexps)
     )
 
-  def preparse_input(self, x):
+  def parse_input(self, puzzle_input: str):
     """Parse the two input blocks."""
-    return {int(line.split(': ')[0]): line.split(': ')[1] for line in x[0].split('\n')}, x[1].split('\n')
+    rules_raw, strings = puzzle_input.split('\n\n')
+    rules = {int(line.split(': ')[0]): line.split(': ')[1] for line in rules_raw.split('\n')}
+    return rules, strings.split('\n')
 
 
 if __name__ == '__main__':

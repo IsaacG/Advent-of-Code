@@ -226,7 +226,7 @@ class Computer:
 class Challenge(aoc.Challenge):
   """AOC Intcode Computer Challenge."""
 
-  def preparse_input(self, x: List[str]) -> Computer:
+  def parse_input(self, puzzle_input: str) -> Computer:
     """Return a Computer using the first line of input as the program."""
-    memory = [int(num) for num in x[0].split(',')]
+    memory = [int(num) for num in puzzle_input.split(',')]
     return Computer(memory)

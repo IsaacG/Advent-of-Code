@@ -16,6 +16,7 @@ class Cup:
   """Linked list node."""
 
   TIMER_ITERATIONS = (50, 3)
+  next = None  # type: Cup
 
   def __init__(self, val: int, prev: Optional["Cup"]):
     """Create a Cup."""
@@ -49,7 +50,7 @@ class Day23(aoc.Challenge):
     """
     # Build a linked list of Cups with a map from label to Cup.
     mapping = {}
-    cur = None
+    cur = None  # type: Cup
     for i in cups:
       cur = Cup(i, cur)
       mapping[i] = cur
@@ -108,8 +109,8 @@ class Day23(aoc.Challenge):
     vals = [i.val for i in one.nodes()]
     return int("".join(str(i) for i in vals[1:]))
 
-  def preparse_input(self, lines):
-    return [int(i) for i in lines[0]]
+  def parse_input(self, puzzle_input: str):
+    return [int(i) for i in puzzle_input]
 
 
 if __name__ == '__main__':

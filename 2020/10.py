@@ -69,7 +69,7 @@ class Day10(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=19208),
   )
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, lines: List[int]) -> int:
     """Count the 1-steps and 3-steps."""
     # Sort the plugs.
     nums = sorted(lines)
@@ -82,7 +82,7 @@ class Day10(aoc.Challenge):
     counts = collections.Counter(diffs)
     return counts[1] * counts[3]
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, lines: List[int]) -> int:
     """Count all possible paths from 0 to dest."""
     nums = [0] + sorted(lines) + [max(lines) + 3]
 

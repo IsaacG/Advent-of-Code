@@ -88,15 +88,15 @@ def valid2(record) -> bool:
 
 class Day04(aoc.Challenge):
 
-  SEP = '\n\n'
-  TESTS = []
-
   def part1(self, lines: List[str]) -> int:
     """Check the record has all the required fields."""
     return len([1 for i in lines if valid1(i)])
 
   def part2(self, lines: List[str]) -> int:
     return len([1 for i in lines if valid2(i)])
+
+  def parse_input(self, puzzle_input: str):
+    return puzzle_input.split('\n\n')
 
 
 if __name__ == '__main__':

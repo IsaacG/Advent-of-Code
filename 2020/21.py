@@ -37,7 +37,7 @@ class Day21(aoc.Challenge):
         if allergen not in candidates:
           candidates[allergen] = set(ingredients)  # Copy the set.
         else:
-          candidates[allergen] &= ingredients
+          candidates[allergen] &= set(ingredients)
 
     # Pair up allergens to ingredients and remove candidates.
     while candidates:
@@ -64,13 +64,13 @@ class Day21(aoc.Challenge):
     solved = self.allergen_to_food(data)
     return ",".join(solved[i] for i in sorted(solved.keys()))
 
-  def preparse_input(self, lines):
+  def parse_input(self, puzzle_input: str):
     """Parse input lines into tuple(list[ingredients], list[allergens])."""
     out = []
-    for line in lines:
-      ingredients, allergens = line.split(' (contains ')
-      ingredients = ingredients.split(' ')
-      allergens = allergens[:-1].split(', ')
+    for line in puzzle_input.split('\n'):
+      ingredients_raw, allergens_raw = line.split(' (contains ')
+      ingredients = ingredients_raw.split(' ')
+      allergens = allergens_raw[:-1].split(', ')
       out.append((set(ingredients), set(allergens)))
     return out
 

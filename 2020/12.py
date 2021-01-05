@@ -20,7 +20,7 @@ In order to keep 0 <= bearing < 360, bearing = (bearing + n) % 360.
 [2] https://en.wikipedia.org/wiki/Polar_coordinate_system
 """
 
-from typing import List
+from typing import List, Tuple
 import typer
 from lib import aoc
 
@@ -54,7 +54,7 @@ class Day12(aoc.Challenge):
     """Manhattan distance of a complex number."""
     return int(abs(num.real) + abs(num.imag))
 
-  def solve(self, lines: List[str], waypoint: complex, part: int) -> int:
+  def solve(self, lines: List[Tuple[str, int]], waypoint: complex, part: int) -> int:
     """Track the ship's position - with a magical waypoint."""
     ship = 0 + 0j
     for instruction, num in lines:
@@ -67,16 +67,16 @@ class Day12(aoc.Challenge):
       if instruction in 'LR':
         if instruction == 'R':
           num = 360 - num
-        num /= 90
+        num //= 90
         waypoint *= 1j ** num
       if instruction == 'F':
         ship += num * waypoint
     return self.manhattan_dist(ship)
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, lines: List[Tuple[str, int]]) -> int:
     return self.solve(lines, 1, 1)
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, lines: List[Tuple[str, int]]) -> int:
     return self.solve(lines, (10 + 1j), 2)
 
 

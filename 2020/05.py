@@ -35,6 +35,7 @@ class Day05(aoc.Challenge):
     for s in seats:
       if (s + 1) not in seats and (s + 2) in seats:
         return s + 1
+    raise RuntimeError
 
 
 if __name__ == '__main__':

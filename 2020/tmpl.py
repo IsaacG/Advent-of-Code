@@ -12,9 +12,7 @@ from lib import aoc
 
 class DayNN(aoc.Challenge):
 
-  TRANSFORM = str
   DEBUG = True
-  SEP = '\n'
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
@@ -23,8 +21,10 @@ class DayNN(aoc.Challenge):
   def part1(self, lines: List[str]) -> int:
     return 0
 
-  def preparse_input(self, x):
-    return x
+  def parse_input(self, puzzle_input: str):
+    return puzzle_input.split('\n')
+    return puzzle_input
+    return [int(i) for i in puzzle_input.split('\n')]
 
 
 if __name__ == '__main__':

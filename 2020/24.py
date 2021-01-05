@@ -74,7 +74,7 @@ class Day24(aoc.Challenge):
 
   def build_grid(self, lines: List[List[str]]) -> Set[complex]:
     """Convert a list of directions to a coord and flip that tile on/off."""
-    flipped = set()
+    flipped = set()  # type: Set[complex]
     for line in lines:
       c = sum(DIRMAP[i] for i in line)
       if c in flipped:
@@ -83,10 +83,10 @@ class Day24(aoc.Challenge):
         flipped.add(c)
     return flipped
 
-  def preparse_input(self, x):
+  def parse_input(self, puzzle_input: str):
     """Split lines into lists of directions."""
     dir_re = re.compile('[ns]?[ew]')
-    return [dir_re.findall(direction) for direction in x]
+    return [dir_re.findall(direction) for direction in puzzle_input.split('\n')]
 
 
 if __name__ == '__main__':

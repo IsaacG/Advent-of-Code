@@ -22,10 +22,11 @@ class Day02(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=2, want=1),
   )
 
-  def preparse_input(self, lines: List[str]) -> Tuple[int, int, str, str]:
+  def parse_input(self, text: str) -> List[Tuple[int, int, str, str]]:
     data = []
-    for line in lines:
+    for line in text.split('\n'):
       r = RE.match(line)
+      assert r
       mn, mx, char, passwd = r.groups()
       data.append((int(mn), int(mx), char, passwd))
     return data
