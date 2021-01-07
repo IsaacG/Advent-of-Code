@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/bin/python
 
 import collections
 import functools
