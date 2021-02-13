@@ -1,3 +1,4 @@
+import apsw
 import dotenv
 import os
 import re
@@ -14,13 +15,12 @@ class Website:
   def __init__(self, year, day):
     self.year = str(year)
     self.day = str(int(day))
-
-    if not os.getenv('session'):
-      dotenv.load_dotenv()
-    assert os.getenv('session')
+    conn = apsw.Connection(os.getenv('SQL_DB')
+    query = 'SELECT value FROM cookies WHERE key = ?'
+    cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
 
     self.session = requests.Session()
-    self.session.headers.update({'cookie': f'session={os.getenv("session")}'})
+    self.session.headers.update({'cookie': f'session={cookie}'})
     self.assert_logged_in()
 
   def assert_logged_in(self):
