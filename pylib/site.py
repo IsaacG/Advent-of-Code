@@ -15,7 +15,7 @@ class Website:
   def __init__(self, year, day):
     self.year = str(year)
     self.day = str(int(day))
-    conn = apsw.Connection(os.getenv('SQL_DB')
+    conn = apsw.Connection(os.getenv('SQL_DB'))
     query = 'SELECT value FROM cookies WHERE key = ?'
     cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
 
