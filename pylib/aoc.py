@@ -140,7 +140,7 @@ class Challenge(Helpers):
       self._filecache[filename] = path.read_text().strip()
     return self._filecache[filename]
 
-  def parse_input(self, data: str) -> Any:
+  def parse_input(self, puzzle_input: str) -> Any:
     """Parse input data. Block of text -> output."""
     return [self.TRANSFORM(i) for i in data.split('\n')]
 

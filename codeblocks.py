@@ -10,7 +10,7 @@ from lxml import etree
 
 def main():
   day = sys.argv[1]
-  cookie_file = pathlib.Path(os.getenv('HOME')) / '.xdg/data/cookie/aoc'
+  cookie_file = pathlib.Path(os.getenv('HOME')) / '.xdg/data/cookies/aoc'
   cookie = cookie_file.read_text().split()[1]
   year = os.getenv("YEAR", datetime.datetime.now().year)
   resp = requests.get(f'https://adventofcode.com/{year}/day/{day}', headers={'cookie': cookie})
