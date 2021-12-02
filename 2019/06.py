@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """2019 Day 6: Universal Orbit Map.
 
 Count orbits and steps from one orbit to another.

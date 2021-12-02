@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """2019 Day 4: Secure Container"""
 
 import collections

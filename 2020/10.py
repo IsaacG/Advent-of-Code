@@ -61,7 +61,7 @@ SAMPLE = [
 class Day10(aoc.Challenge):
   """Solution to Day 10."""
 
-  TRANSFORM = int
+  INPUT_TYPES = int
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=35),

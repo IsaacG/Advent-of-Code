@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Walrus operator not supported by pypy3."""
+"""Walrus operator not supported by python3."""
 
 import typer
 import re

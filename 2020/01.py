@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 
 from typing import Iterable, List
 import typer
@@ -21,7 +21,7 @@ class Day01(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=1, want=514579),
     aoc.TestCase(inputs=SAMPLE, part=2, want=241861950),
   )
-  TRANSFORM = int
+  INPUT_TYPES = int
 
   def prod_of_pair(self, pair_sum: int, data: Iterable[int]) -> int:
     vals = [i for i in data if (pair_sum - i) in data]

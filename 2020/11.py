@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 11. Ferry Seating Area a.k.a. Conway's Game of Life."""
 
 import itertools

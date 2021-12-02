@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """2019 Day 3: Crossed Wires."""
 
 from lib import aoc

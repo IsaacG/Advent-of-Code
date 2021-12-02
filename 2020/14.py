@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 14. Write data to memory?"""
 
 import typer

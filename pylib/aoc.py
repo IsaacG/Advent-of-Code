@@ -71,7 +71,8 @@ class Helpers:
 class Challenge(Helpers):
   """Daily Challenge."""
 
-  TRANSFORM = str
+  INPUT_TYPES = str
+  TRANSFORM = None
   TESTS = ()
   DEBUG = False
   TIMER_ITERATIONS = (None, None)
@@ -142,7 +143,17 @@ class Challenge(Helpers):
 
   def parse_input(self, puzzle_input: str) -> Any:
     """Parse input data. Block of text -> output."""
-    return [self.TRANSFORM(i) for i in data.split('\n')]
+    if self.TRANSFORM is not None:
+      transform = self.TRANSFORM
+    elif not isinstance(self.INPUT_TYPES, list):
+      transform = self.INPUT_TYPES
+    else:
+
+      def transform(line: str) -> list:
+        parts = line.split(maxsplit=len(self.INPUT_TYPES) - 1)
+        return [func(piece) for func, piece in zip(self.INPUT_TYPES, parts)]
+
+    return [transform(i) for i in puzzle_input.splitlines()]
 
   def run_tests(self):
     """Run the tests."""

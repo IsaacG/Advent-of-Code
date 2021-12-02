@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 
 import typer
 from typing import Dict, List, Tuple

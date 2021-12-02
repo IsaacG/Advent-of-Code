@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 9."""
 
 import itertools
@@ -34,7 +34,7 @@ SAMPLE = """\
 class Day09(aoc.Challenge):
   """Day 9."""
 
-  TRANSFORM = int
+  INPUT_TYPES = int
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE, part=1, want=127),

@@ -18,13 +18,23 @@ class DayNN(aoc.Challenge):
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
+        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
     )
+
+    # Convert lines to type:
+    INPUT_TYPES = int
+    # Split on whitespace and coerce types:
+    # INPUT_TYPES = [str, int]
+    # Apply a transform function
+    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
     def part1(self, lines: list[str]) -> int:
         return 0
 
     def parse_input(self, puzzle_input: str):
         """Parse the input data."""
+        return super().parse_input(puzzle_input)
+
         return puzzle_input.splitlines()
         return puzzle_input
         return [int(i) for i in puzzle_input.splitlines()]

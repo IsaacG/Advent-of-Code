@@ -28,6 +28,7 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=7),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=5),
     )
+    INPUT_TYPES = int
 
     def part1(self, lines: list[int]) -> int:
         """Return the number of "steps" with an increase.
@@ -45,12 +46,6 @@ class Day01(aoc.Challenge):
         groups = [a + b + c for a, b, c in zip(lines, lines[1:], lines[2:])]
         return self.part1(groups)
 
-    def parse_input(self, puzzle_input: str) -> list[int]:
-        """Parse the input data."""
-        return [int(i) for i in puzzle_input.split('\n')]
-
 
 if __name__ == '__main__':
     typer.run(Day01().run)
-
-# vim:ts=2:sw=2:expandtab

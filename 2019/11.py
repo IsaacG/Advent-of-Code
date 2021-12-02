@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 11: Space Police
 
 Implement a robot with inputs/outputs that connects to an Intcode Computer.

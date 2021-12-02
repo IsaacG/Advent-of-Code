@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 10: Monitoring Station
 
 Determine the best place for an astroid station and figure out which

@@ -24,6 +24,7 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=150),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=900),
     )
+    INPUT_TYPES = [str, int]
 
     def part1(self, lines: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position and depth."""
@@ -52,14 +53,6 @@ class Day02(aoc.Challenge):
 
         return horiz * depth
 
-    def parse_input(self, puzzle_input: str) -> list[tuple[str, int]]:
-        """Parse the input data."""
-        mutate = lambda x: (x[0], int(x[1]))
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-
 
 if __name__ == '__main__':
     typer.run(Day02().run)
-
-# vim:ts=2:sw=2:expandtab
-# vim:ts=2:sw=2:expandtab

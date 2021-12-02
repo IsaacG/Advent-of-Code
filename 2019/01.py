@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """2019 Day 01: The Tyranny of the Rocket Equation."""
 
 import typer
@@ -10,7 +10,7 @@ from lib import aoc
 class Day01(aoc.Challenge):
   """Compute fuel costs."""
 
-  TRANSFORM = int
+  INPUT_TYPES = int
 
   TESTS = (
     aoc.TestCase(inputs="12", part=1, want=2),

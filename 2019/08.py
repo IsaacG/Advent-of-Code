@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 """Day 8: Space Image Format.
 
 Read and flatten layered images.
