@@ -18,6 +18,5 @@ printf -vnum '%02d' "$1"
 if [[ ! -f "$YEAR/$num.py" ]]; then
   sed "s/NN/$num/" $YEAR/tmpl.py > "$YEAR/$num.py"
   ./codeblocks.py "$1" >> "$YEAR/$num.py"
-  printf '# v''im:ts=2:sw=2:expandtab\n' >> "$YEAR/$num.py"
 fi
 chmod 700 "$YEAR/$num.py"

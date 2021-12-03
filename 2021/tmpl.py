@@ -45,5 +45,3 @@ class DayNN(aoc.Challenge):
 
 if __name__ == '__main__':
     typer.run(DayNN().run)
-
-# vim:ts=4:sw=4:expandtab
