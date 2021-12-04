@@ -3,11 +3,7 @@
 """Advent of Code: Day 03."""
 
 import collections
-import functools
-import math
-import re
 import typer
-from typing import Any, Callable
 
 from lib import aoc
 
@@ -36,7 +32,8 @@ class Day03(aoc.Challenge):
     )
     INPUT_TYPES = str
 
-    def common(self, lines: list[str], position: int) -> tuple[str, str]:
+    @staticmethod
+    def common(lines: list[str], position: int) -> tuple[str, str]:
         """Return the most and least common values found at a given position."""
         count = collections.Counter(l[position] for l in lines)
         return ("1", "0") if count["1"] >= count["0"] else ("0", "1")
@@ -64,6 +61,5 @@ class Day03(aoc.Challenge):
         return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     typer.run(Day03().run)
-

@@ -1,14 +1,9 @@
 #!/bin/python
-
 """Advent of Code: Day 04."""
 
-import collections
-import functools
-import math
-import re
-import typer
-from typing import Any, Callable
+from typing import Optional
 
+import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -34,75 +29,82 @@ SAMPLE = ["""\
 """]
 
 
-class Day04(aoc.Challenge):
+class BingoCard:
+    """A Bingo card."""
 
-    DEBUG = True
+    def __init__(self, chunk: str):
+        self.rows: list[list[Optional[int]]] = [
+            [int(elem) for elem in row.split()]
+            for row in chunk.splitlines()
+        ]
+        self.width = len(self.rows[0])
+
+    def won(self) -> bool:
+        """Return if this card is a winner."""
+        # Check for a row.
+        if any(all(elem is None for elem in row) for row in self.rows):
+            return True
+        # Check for a column.
+        if any(all(row[i] is None for row in self.rows) for i in range(self.width)):
+            return True
+        return False
+
+    def update(self, num: int) -> None:
+        """Update the card, crossing off a number."""
+        for row in self.rows:
+            for i in range(self.width):
+                if row[i] == num:
+                    row[i] = None
+
+    def __int__(self):
+        """Return the int-value of the card (sum of all non-used numbers)."""
+        return sum(elem for row in self.rows for elem in row if elem)
+
+
+InputType = tuple[list[int], list[BingoCard]]
+
+
+class Day04(aoc.Challenge):
+    """Undersea Bingo with a giant squid.
+
+    Store Bingo boards as list[list[int|None]], swapping out numbers for None
+    when they are crossed out.
+    """
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=4512),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1924),
     )
 
-    # Convert lines to type:
-    # INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    def part1(self, lines: InputType) -> int:
+        """Find the first winning Bingo card."""
+        inputs, boards = lines
+        for ball in inputs:
+            for board in boards:
+                board.update(ball)
+                if board.won():
+                    return ball * int(board)
+        raise RuntimeError("no winner found")
 
-    def is_done(self,board):
-      return any(all(elem is None for elem in row) for row in board) or (
-        any(all(row[i] is None for row in board) for i in range(len(board[0]))))
+    def part2(self, lines: InputType) -> int:
+        """Find the last winning Bingo card."""
+        inputs, boards = lines
+        for ball in inputs:
+            for board in boards:
+                board.update(ball)
+            if len(boards) > 1:
+                boards = [b for b in boards if not b.won()]
+            elif boards[0].won():
+                return ball * int(boards[0])
+        raise RuntimeError("no winner found")
 
-    def part2(self, lines: list[str]) -> int:
-        inputs = lines[0]
-        boards = [
-          [[int(elem) for elem in row.split()] for row in chunk.splitlines()]
-          for chunk in lines[1:]
-        ]
-        for num in inputs.split(","):
-          num = int(num)
-          for board in boards:
-            for row in board:
-              for i in range(len(row)):
-                if row[i] == num:
-                  row[i] = None
-          if len(boards) > 1:
-            boards = [b for b in boards if not self.is_done(b)]
-          if len(boards) == 1 and self.is_done(boards[0]):
-            break
-        board = boards[0]
-        print(num)
-        print(sum(ele for row in board for ele in row if ele))
-        return int(num) * sum(ele for row in board for ele in row if ele)
-
-    def part1(self, lines: list[str]) -> int:
-        inputs = lines[0]
-        boards = [
-          [[int(elem) for elem in row.split()] for row in chunk.splitlines()]
-          for chunk in lines[1:]
-        ]
-        winner = None
-        for num in inputs.split(","):
-          num = int(num)
-          for board in boards:
-            for row in board:
-              for i in range(len(row)):
-                if row[i] == num:
-                  row[i] = None
-            if any(all(elem is None for elem in row) for row in board) or (
-              any(all(row[i] is None for row in board) for i in range(len(board[0])))):
-              print(board)
-              winner = board
-              break
-          if winner: break
-        print(num)
-        print(sum(ele for row in board for ele in row if ele))
-        return int(num) * sum(ele for row in board for ele in row if ele)
-
-    def parse_input(self, puzzle_input: str):
+    def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return puzzle_input.split('\n\n')
+        chunks = puzzle_input.split("\n\n")
+        inputs = [int(i) for i in chunks[0].split(",")]
+        boards = [BingoCard(chunk) for chunk in chunks[1:]]
+        return inputs, boards
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     typer.run(Day04().run)

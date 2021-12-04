@@ -43,5 +43,5 @@ class DayNN(aoc.Challenge):
         return [mutate(line.split()) for line in puzzle_input.splitlines()]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     typer.run(DayNN().run)
