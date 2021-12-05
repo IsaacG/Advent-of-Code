@@ -5,6 +5,7 @@
 import collections
 import dataclasses
 import functools
+import itertools
 import math
 import re
 import typer
@@ -28,39 +29,45 @@ SAMPLE = ["""\
 
 @dataclasses.dataclass(frozen=True)
 class Point:
+    """A cartesian point."""
     x: int
     y: int
 
-    def line(self, other: "Point") -> list["Point"]:
-        if self.x == other.x:
-            return [
-                Point(self.x, y)
-                for y in range(min(self.y, other.y), max(self.y, other.y) + 1)
-            ]
-        if self.y == other.y:
-            return [
-                Point(x, self.y)
-                for x in range(min(self.x, other.x), max(self.x, other.x) + 1)
-            ]
-        if abs(self.x - other.x) != abs(self.y - other.y):
+
+@dataclasses.dataclass(frozen=True)
+class Line:
+    """A line formed between two cartesian points."""
+    start: Point
+    end: Point
+
+    def points(self) -> list[Point]:
+        """Return the points on the line."""
+        if (
+            abs(self.start.x - self.end.x) != abs(self.start.y - self.end.y)  # 45 degrees
+            and abs(self.start.x - self.end.x) != 0  # vertical
+            and abs(self.start.y - self.end.y) != 0  # horizontal
+        ):
             raise RuntimeError("Not 90 nor 45 degrees")
-        count = abs(self.x - other.x) + 1
-        dir_x = 1 if other.x > self.x else -1
-        dir_y = 1 if other.y > self.y else -1
+
+        if abs(self.start.x - self.end.x) != 0:
+            steps = abs(self.start.x - self.end.x)
+        else:
+            steps = abs(self.start.y - self.end.y)
+
+        dir_x = (self.end.x - self.start.x) / steps
+        dir_y = (self.end.y - self.start.y) / steps
         return [
-            Point(self.x + dir_x * i, self.y + dir_y * i)
-            for i in range(count)
+            Point(self.start.x + dir_x * i, self.start.y + dir_y * i)
+            for i in range(steps + 1)
         ]
 
 
 # A list of point->point pairs, delineating a line.
-InputType = list[tuple[Point, Point]]
+InputType = list[Line]
 
 
 class Day05(aoc.Challenge):
     """Map where geothermal vent clouds cross paths."""
-
-    DEBUG = True
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
@@ -69,25 +76,29 @@ class Day05(aoc.Challenge):
 
     def part1(self, lines: InputType) -> int:
         """Find hot areas where lines overlap. Ignore diagonals."""
-        lines = [l for l in lines if l[0].x == l[1].x or l[0].y == l[1].y]
+        # Filter for horizontal/vertical and call part 2.
+        lines = [l for l in lines if l.start.x == l.end.x or l.start.y == l.end.y]
         return self.part2(lines)
 
     def part2(self, lines: InputType) -> int:
         """Find hot areas where lines overlap. Include diagonals."""
-        points = []
-        count = collections.Counter()
-        for start, end in lines:
-            count.update(start.line(end))
-
-        return len([1 for v in count.values() if v > 1])
+        # Count points that are on lines.
+        count = collections.Counter(
+            itertools.chain.from_iterable(line.points() for line in lines)
+        )
+        return sum(1 for v in count.values() if v > 1)
 
     def parse_input(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
+        """Parse the input data.
+
+        Split into lines. Split each line into a `start -> end`.
+        Make a tuple(begin, end) Points for each line.
+        """
         return [
-            tuple(
+            Line(*list(
                 Point(*list(int(i) for i in part.split(",")))
                 for part in line.split(" -> ")
-            )
+            ))
             for line in puzzle_input.splitlines()
         ]
 

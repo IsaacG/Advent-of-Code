@@ -1,5 +1,4 @@
 #!/bin/python
-
 """Advent of Code: Day NN."""
 
 import collections
@@ -10,6 +9,8 @@ import typer
 from typing import Any, Callable
 
 from lib import aoc
+
+InputType = list[int]
 
 
 class DayNN(aoc.Challenge):
@@ -28,10 +29,10 @@ class DayNN(aoc.Challenge):
     # Apply a transform function
     # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
-    def part1(self, lines: list[str]) -> int:
+    def part1(self, lines: InputType) -> int:
         return 0
 
-    def parse_input(self, puzzle_input: str):
+    def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return super().parse_input(puzzle_input)
 
