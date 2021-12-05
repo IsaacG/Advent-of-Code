@@ -9,7 +9,7 @@ from lxml import etree
 
 
 def main():
-  day = sys.argv[1]
+  day = int(sys.argv[1])
   cookie_file = pathlib.Path(os.getenv('HOME')) / '.xdg/data/cookies/aoc'
   cookie = cookie_file.read_text().split()[1]
   year = os.getenv("YEAR", datetime.datetime.now().year)

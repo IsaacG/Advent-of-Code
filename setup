@@ -7,7 +7,7 @@
 # --sleep flag -- sleep until midnight EST and open vim after fetching
 # Optional --date YYYYDD or auto compute
 
-[[ $YEAR ]] || YEAR=2021
+[[ $YEAR ]] || YEAR=$(date +%Y)
 
 if (( $# != 1 )); then
   echo 'Bad usage'
