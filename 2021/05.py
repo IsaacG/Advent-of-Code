@@ -4,12 +4,9 @@
 
 import collections
 import dataclasses
-import functools
 import itertools
-import math
 import re
 import typer
-from typing import Any, Callable
 
 from lib import aoc
 
@@ -47,9 +44,11 @@ class Line:
             and abs(self.start.x - self.end.x) != 0  # vertical
             and abs(self.start.y - self.end.y) != 0  # horizontal
         ):
-            raise RuntimeError("Not 90 nor 45 degrees")
+            raise RuntimeError(f"{self} not 90 nor 45 degrees")
 
-        if abs(self.start.x - self.end.x) != 0:
+        if self.start == self.end:
+            steps = 1
+        elif abs(self.start.x - self.end.x) != 0:
             steps = abs(self.start.x - self.end.x)
         else:
             steps = abs(self.start.y - self.end.y)
@@ -94,13 +93,17 @@ class Day05(aoc.Challenge):
         Split into lines. Split each line into a `start -> end`.
         Make a tuple(begin, end) Points for each line.
         """
-        return [
-            Line(*list(
-                Point(*list(int(i) for i in part.split(",")))
-                for part in line.split(" -> ")
-            ))
-            for line in puzzle_input.splitlines()
-        ]
+        pattern = re.compile(r'^([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)$')
+        lines = []
+        for line in puzzle_input.splitlines():
+            match = pattern.match(line)
+            lines.append(
+                Line(
+                    Point(int(match.group(1)), int(match.group(2))),
+                    Point(int(match.group(3)), int(match.group(4))),
+                )
+            )
+        return lines
 
 
 if __name__ == "__main__":

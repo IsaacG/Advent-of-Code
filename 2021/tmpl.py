@@ -5,8 +5,9 @@ import collections
 import functools
 import math
 import re
-import typer
 from typing import Any, Callable
+
+import typer
 
 from lib import aoc
 
