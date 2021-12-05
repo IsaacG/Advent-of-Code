@@ -10,6 +10,43 @@ from . import site
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
 
+@dataclasses.dataclass(frozen=True)
+class Point:
+    """A cartesian point."""
+    x: int
+    y: int
+
+
+@dataclasses.dataclass(frozen=True)
+class Line:
+    """A line formed between two cartesian points."""
+    start: Point
+    end: Point
+
+    def points(self) -> list[Point]:
+        """Return the points on the line."""
+        if (
+            abs(self.start.x - self.end.x) != abs(self.start.y - self.end.y)  # 45 degrees
+            and abs(self.start.x - self.end.x) != 0  # vertical
+            and abs(self.start.y - self.end.y) != 0  # horizontal
+        ):
+            raise RuntimeError(f"{self} not 90 nor 45 degrees")
+
+        if self.start == self.end:
+            steps = 1
+        elif abs(self.start.x - self.end.x) != 0:
+            steps = abs(self.start.x - self.end.x)
+        else:
+            steps = abs(self.start.y - self.end.y)
+
+        dir_x = (self.end.x - self.start.x) / steps
+        dir_y = (self.end.y - self.start.y) / steps
+        return [
+            Point(self.start.x + dir_x * i, self.start.y + dir_y * i)
+            for i in range(steps + 1)
+        ]
+
+
 @dataclasses.dataclass
 class TestCase:
   """Test out a solution with a known input/want."""
