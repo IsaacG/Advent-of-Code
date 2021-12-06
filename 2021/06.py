@@ -2,10 +2,6 @@
 """Advent of Code: Day 06."""
 
 import collections
-import functools
-import math
-import re
-from typing import Any, Callable
 
 import typer
 
@@ -34,11 +30,12 @@ class Day06(aoc.Challenge):
         """Compute fish population after 256 days."""
         return self.solve(lines, 256)
 
-    def solve(self, lines: InputType, days: int) -> int:
+    @staticmethod
+    def solve(lines: InputType, days: int) -> int:
         """Compute fish population after N days."""
         # Construct the initial population map. Age -> count.
         counter = dict(collections.Counter(lines))
-        for i in range(days):
+        for _ in range(days):
             # Reduce day counter for all fish.
             new = {k - 1: v for k, v in counter.items() if k}
             # Add new baby fish and reset the counter on fish that spawned.
