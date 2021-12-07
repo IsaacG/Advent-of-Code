@@ -1,52 +1,37 @@
 #!/bin/python
 """Advent of Code: Day 07."""
 
-import collections
-import functools
-import math
-import re
-from typing import Any, Callable
-
+from typing import Callable
 import typer
 
 from lib import aoc
 
 InputType = list[int]
 
-SAMPLE = ["""\
-16,1,2,0,4,2,7,1,2,14
-"""]
+SAMPLE = "16,1,2,0,4,2,7,1,2,14"
 
 class Day07(aoc.Challenge):
-
-    DEBUG = True
+    """Solve the optimal positioning for crab-submarine blasting."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=37),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=168),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=37),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=168),
     )
 
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
-
     def part1(self, lines: InputType) -> int:
-        costs = []
-        for i in range(min(lines), max(lines) + 1):
-            costs.append(sum(abs(i - l) for l in lines))
-        return min(costs)
-          
+        """Return the optimal blast position with constant movement cost."""
+        return self.solver(lines, lambda x: x)
+
     def part2(self, lines: InputType) -> int:
+        """Return the optimal blast position with linear movement cost."""
+        return self.solver(lines, lambda x: x * (x + 1) // 2)
 
-        def s(n):
-            return n*(n+1)//2
-
+    @classmethod
+    def solver(self, positions: list[int], func: Callable[[int], int]) -> int:
+        """Find the location where it is cheapest for all the crabs to move."""
         costs = []
-        for i in range(min(lines), max(lines) + 1):
-            costs.append(sum(s(abs(i - l)) for l in lines))
+        for i in range(min(positions), max(positions) + 1):
+            costs.append(sum(func(abs(i - l)) for l in positions))
         return min(costs)
 
     def parse_input(self, puzzle_input: str) -> InputType:
