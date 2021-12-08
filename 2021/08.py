@@ -88,12 +88,12 @@ class Day08(aoc.Challenge):
         """Decipher each output digits based on the sample digits."""
         sum_result = 0
         for samples, digits in lines:
-            display = ""
-            known = self.decipher(samples)
-            wires_to_str = {wires: str(value) for value, wires in known.items()}
+            wires_to_str = {
+                wires: str(value)
+                for value, wires in self.decipher(samples).items()
+            }
 
-            for wires in digits:
-                display += wires_to_str[wires]
+            display = "".join(wires_to_str[wires] for wires in digits)
             sum_result += int(display)
 
         return sum_result
