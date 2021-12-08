@@ -60,18 +60,21 @@ class Helpers:
   _primes = [2, 3, 5]
   _gcd = {}
 
-  def mult(self, nums: Iterable[int]) -> int:
+  @classmethod
+  def mult(nums: Iterable[int]) -> int:
     """Product of all values. Like sum() but with multiplication."""
     p = 1
     for n in nums:
       p *= n
     return p
 
-  def sum_map(self, lines: List[str], func: Callable[[str], int]) -> int:
+  @classmethod
+  def sum_map(lines: List[str], func: Callable[[str], int]) -> int:
     """sum_map(lines, func)"""
     return sum(func(line) for line in lines)
 
-  def primes(self) -> Generator[int, None, None]:
+  @classmethod
+  def primes() -> Generator[int, None, None]:
     s = 0
     for s in self._primes:
       yield s
@@ -81,10 +84,16 @@ class Helpers:
         self._primes.append(s)
         yield s
 
-  def angle(self, c: complex) -> complex:
+  @classmethod
+  def angle(c: complex) -> complex:
     return c / self.gcd(int(c.real), int(c.imag))
 
-  def gcd(self, a: int, b: int) -> int:
+  @classmethod
+  def sum_series(n: int) -> int:
+    return n * (n + 1) // 2
+
+  @classmethod
+  def gcd(a: int, b: int) -> int:
     a, b = abs(a), abs(b)
     if a > b:
       a, b = b, a

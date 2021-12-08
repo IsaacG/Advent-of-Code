@@ -2,16 +2,14 @@
 """Advent of Code: Day 08."""
 
 import collections
-import functools
-import math
-import re
-from typing import Any, Callable
-
 import typer
 
 from lib import aoc
 
-InputType = list[int]
+# A list of lines.
+# Each line is split into a tuple (data, output).
+# Each data, output is a list of wires, each a set[str].
+InputType = list[tuple[list[frozenset[str]], list[frozenset[str]]]]
 
 SAMPLE = """\
 be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
@@ -25,7 +23,9 @@ bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbg
 egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce"""
 
+
 class Day08(aoc.Challenge):
+    """Debug a seven segment display, based on which wires are on."""
 
     DEBUG = True
 
@@ -34,78 +34,79 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=61229),
     )
 
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
-
     def part1(self, lines: InputType) -> int:
-        x = []
-        for line in lines:
-          a, b = line
-          for p in b:
-            if len(p) in (2, 3, 4, 7):
-              x.append(p)
-        return len(x)
-            
-    def part2(self, lines: InputType) -> int:
-        x = []
-        for line in lines:
-          x1 = []
-          known = {}
-          a, b = line
-          for p in a:
-            if len(p) == 2:
-              known[1] = set(p)
-            if len(p) == 3:
-              known[7] = set(p)
-            if len(p) == 4:
-              known[4] = set(p)
-            if len(p) == 7:
-              known[8] = set(p)
-          for p in a:
-            if len(p) == 6:
-              if set(p).issuperset(known[4]):
-                known[9] = set(p)
-              elif known[1] < set(p):
-                known[0] = set(p)
-              else:
-                known[6] = set(p)
-          for p in a:
-            if len(p) == 5:
-              if known[1] < set(p):
-                known[3] = set(p)
-              elif set(p).issubset(known[6]):
-                known[5] = set(p)
-              else:
-                known[2] = set(p)
-          assert len(known) >= 9, sorted(known)
-          default = None
-          if len(known) == 9:
-            default = [i for i in range(10) if i not in known][0]
-            print(f"len 9 => {known.keys()} => {default}")
+        """Count the number of 1, 4, 7, 8's in the output."""
+        want_lengths = {2, 3, 4, 7}
+        return sum(
+            # Count occurances...
+            1
+            # ...for all wires in the digits...
+            for _, digits in lines for wires in digits
+            # ...where the right number of wires are on.
+            if len(wires) in want_lengths
+        )
 
-          for p in b:
-            y = [k for k, v in known.items() if v == set(p)]
-            if y:
-              x1.append(y[0])
+    @staticmethod
+    def decipher(values: list[set[str]]) -> dict[frozenset, int]:
+        """Build a map of wires -> value from inputs."""
+        known = {}
+        # Sort wires by length.
+        inputs_by_size = collections.defaultdict(list)
+        for wires in values:
+            inputs_by_size[len(wires)].append(wires)
+
+        # First map wires based on the number of wires.
+        by_size = {2: 1, 3: 7, 4: 4, 7: 8}
+        for size, val in by_size.items():
+            known[val] = inputs_by_size[size][0]
+
+        # Next handles length 6 wires.
+        for wires in inputs_by_size[6]:
+            if wires.issuperset(known[4]):
+                known[9] = wires
+            elif wires.issuperset(known[1]):
+                known[0] = wires
             else:
-              x1.append(default)
-          print("".join(str(s) for s in  x1))
-          x.append(int("".join(str(s) for s in  x1)))
+                known[6] = wires
 
-        return sum(x)
-            
+        # Next handles length 5 wires (this should be all of them).
+        for wires in inputs_by_size[5]:
+            if wires.issuperset(known[1]):
+                known[3] = wires
+            elif wires.issubset(known[6]):
+                known[5] = wires
+            else:
+                known[2] = wires
+
+        # If only 9 are found, we could infer the 10th by omission.
+        # Not needed here, though.
+        assert len(known) == 10, f"{len(known)} {sorted(known)}"
+
+        return known
+
+    def part2(self, lines: InputType) -> int:
+        """Decipher each output digits based on the sample digits."""
+        sum_result = 0
+        for samples, digits in lines:
+            display = ""
+            known = self.decipher(samples)
+            wires_to_str = {wires: str(value) for value, wires in known.items()}
+
+            for wires in digits:
+                display += wires_to_str[wires]
+            sum_result += int(display)
+
+        return sum_result
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        out = []
-        for line in puzzle_input.splitlines():
-            a, b = line.split(" | ")
-            out.append((a.split(), b.split()))
-        return out
+        return [
+            tuple(
+                [frozenset(wires) for wires in section.split()]
+                for section in line.split(" | ")
+            )
+            for line in puzzle_input.splitlines()
+        ]
 
 
 if __name__ == "__main__":
