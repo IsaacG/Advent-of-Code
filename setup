@@ -13,7 +13,7 @@ if (( $# != 1 )); then
   echo 'Bad usage'
   exit 1
 fi
-printf -vnum '%02d' "$1"
+printf -vnum '%02d' "$(( 10#$1 ))"
 
 if [[ ! -f "$YEAR/$num.py" ]]; then
   sed "s/NN/$num/" $YEAR/tmpl.py > "$YEAR/$num.py"
