@@ -92,7 +92,6 @@ class Day08(aoc.Challenge):
                 wires: str(value)
                 for value, wires in self.decipher(samples).items()
             }
-
             display = "".join(wires_to_str[wires] for wires in digits)
             sum_result += int(display)
 
