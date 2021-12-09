@@ -1,18 +1,11 @@
 #!/bin/python
 """Advent of Code: Day 09."""
 
-import collections
-import dataclasses
-import functools
-import math
-import re
-from typing import Any, Callable
-
 import typer
 
 from lib import aoc
 
-InputType = list[list[int]]
+InputType = dict[complex, int]
 
 SAMPLE = ["""\
 2199943210
@@ -32,47 +25,79 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),
     )
 
+    @staticmethod
+    def neighbors(point: complex) -> list[complex]:
+        """Return all the neighbors of a given point."""
+        return [point + n for n in (1, -1, -1j, +1j)]
+
+    @classmethod
+    def lows(cls, depths: dict[complex, int]) -> list[complex]:
+        """Return all the minimum points on the map."""
+        return [
+            point
+            for point, depth in depths.items()
+            if all(
+                depth < depths[n] for n in cls.neighbors(point) if n in depths
+            )
+        ]
+
     def part1(self, lines: InputType) -> int:
         """Find all the low points on the map."""
-        neighbors = (1, -1, -1j, +1j)
         depths = lines
-        result = 0
-        for xy, depth in depths.items():
-          if all(depth < depths[xy + n] for n in neighbors if xy + n in depths):
-            result += depth + 1
-        return result
+        return sum(depths[point] + 1 for point in self.lows(lines))
 
     def part2(self, lines: InputType) -> int:
-        neighbors = (1, -1, -1j, +1j)
+        """Find the largest three basins.
+
+        Simply remove 9's from the map and find the size of each island."""
+        # Remove borders around the islands, i.e. points of height 9.
+        unexplored = {point for point, depth in lines.items() if depth != 9}
+        basin_sizes = []
+        # Group points into islands. Pick any point and flood fill to neighboring points.
+        while unexplored:
+            in_basin = set()
+            queue = set([unexplored.pop()])
+            while queue:
+                point = queue.pop()
+                in_basin.add(point)
+                for neighbor in self.neighbors(point):
+                    if neighbor not in unexplored:
+                        continue
+                    queue.add(neighbor)
+                    unexplored.remove(neighbor)
+            basin_sizes.append(len(in_basin))
+
+        return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
+
+    def part2_slow(self, lines: InputType) -> int:
+        """Find the largest three basins. Flood fill."""
         depths = lines
-        low = []
-        for xy, depth in depths.items():
-          if all(depth < depths[xy + n] for n in neighbors if xy + n in depths):
-            low.append(xy)
+        basin_sizes = []
+        # For each minimum, explore the basin.
+        for lowpoint in self.lows(depths):
+            in_basin = set()
+            # Djiksta's algorithm.
+            todo = set([lowpoint])
+            while todo:
+                # Flood fill, lowest depths to highest.
+                point = sorted(todo, key=lambda x: depths[x])[0]
+                todo.remove(point)
+                # Examine all neighboring spots that are not yet added to the basin.
+                neighbors = [n for n in self.neighbors(point) if n in depths and n not in in_basin]
+                # If this spot is lower/equal to all unflooded neighbors, add it to the basin.
+                if all(depths[n] >= depths[point] for n in neighbors):
+                    in_basin.add(point)
+                    # Add all neighbors as possible basic members. Do not include 9's.
+                    todo.update(n for n in neighbors if depths[n] != 9)
+            basin_sizes.append(len(in_basin))
 
-        basins = []
-        for lowpoint in low:
-          seen = set()
-          todo = set([(depths[lowpoint], lowpoint)])
-          size = 0
-          while todo:
-            depth, xy = sorted(todo, key=lambda x: x[0])[0]
-            todo.remove((depth, xy))
-            if depth == 9:
-              continue
-            seen.add(xy)
-            ns = [xy + n for n in neighbors if xy+n in depths and xy + n not in seen]
-            if all(depths[n] >= depth for n in ns):
-              size += 1
-              todo.update((depths[n], n) for n in ns)
-          basins.append(size)
-
-        a, b, c = list(sorted(basins, reverse=True))[:3]
-        return a * b * c
-
+        return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
 
     def parse_input(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
+        """Parse the input data.
+
+        Construct a map for coordinate -> depth.
+        """
         grid = [[int(e) for e in line] for line in puzzle_input.splitlines()]
         depths = {x + y * 1j: grid[x][y] for x in range(len(grid)) for y in range(len(grid[0]))}
         return depths
