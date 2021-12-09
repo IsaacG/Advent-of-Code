@@ -2,6 +2,7 @@
 """Advent of Code: Day 09."""
 
 import collections
+import dataclasses
 import functools
 import math
 import re
@@ -11,7 +12,7 @@ import typer
 
 from lib import aoc
 
-InputType = list[int]
+InputType = list[list[int]]
 
 SAMPLE = ["""\
 2199943210
@@ -22,6 +23,7 @@ SAMPLE = ["""\
 """]
 
 class Day09(aoc.Challenge):
+    """Find low points and basins in a topographic map."""
 
     DEBUG = True
 
@@ -30,83 +32,50 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),
     )
 
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
-
     def part1(self, lines: InputType) -> int:
-        sumt = 0
-        for x in range(len(lines[0])):
-          for y in range(len(lines)):
-            neighs = self.ns(lines, y, x)
-            if all(lines[y][x] < neigh for neigh in neighs):
-              sumt += lines[y][x] + 1
-        return sumt
-
-    def ns(self, lines, y, x):
-      neighs = []
-      if y > 0:
-        neighs.append(lines[y-1][x])
-      if x > 0:
-        neighs.append(lines[y][x-1])
-      if y + 1 < len(lines):
-        neighs.append(lines[y+1][x])
-      if x + 1 < len(lines[0]):
-        neighs.append(lines[y][x+1])
-      return neighs
-
-    def n2(self, lines, y, x):
-      neighs = []
-      if y > 0:
-        neighs.append((y-1,x))
-      if x > 0:
-        neighs.append((y, x-1))
-      if y + 1 < len(lines):
-        neighs.append((y+1, x))
-      if x + 1 < len(lines[0]):
-        neighs.append((y, x+1))
-      return neighs
+        """Find all the low points on the map."""
+        neighbors = (1, -1, -1j, +1j)
+        depths = lines
+        result = 0
+        for xy, depth in depths.items():
+          if all(depth < depths[xy + n] for n in neighbors if xy + n in depths):
+            result += depth + 1
+        return result
 
     def part2(self, lines: InputType) -> int:
+        neighbors = (1, -1, -1j, +1j)
+        depths = lines
         low = []
-        for x in range(len(lines[0])):
-          for y in range(len(lines)):
-            neighs = self.ns(lines, y, x)
-            if all(lines[y][x] < neigh for neigh in neighs):
-              low.append((y, x))
-        bs = []
-        for y, x in low:
+        for xy, depth in depths.items():
+          if all(depth < depths[xy + n] for n in neighbors if xy + n in depths):
+            low.append(xy)
+
+        basins = []
+        for lowpoint in low:
           seen = set()
-          todo = set([(lines[y][x],y,x)])
+          todo = set([(depths[lowpoint], lowpoint)])
           size = 0
           while todo:
-            l, a, b = sorted(todo)[0]
-            todo.remove((l, a, b))
-            if lines[a][b] == 9: continue
-            seen.add((a,b))
-            ns = [(c,d) for c,d in self.n2(lines, a, b) if (c,d) not in seen]
-            if all(lines[c][d] >= lines[a][b] for c,d in ns):
+            depth, xy = sorted(todo, key=lambda x: x[0])[0]
+            todo.remove((depth, xy))
+            if depth == 9:
+              continue
+            seen.add(xy)
+            ns = [xy + n for n in neighbors if xy+n in depths and xy + n not in seen]
+            if all(depths[n] >= depth for n in ns):
               size += 1
-              todo.update((lines[c][d], c,d) for c, d in ns)
-          bs.append(size)
+              todo.update((depths[n], n) for n in ns)
+          basins.append(size)
 
-        a, b, c = list(sorted(bs, reverse=True))[:3]
+        a, b, c = list(sorted(basins, reverse=True))[:3]
         return a * b * c
 
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return [[int(e) for e in line] for line in puzzle_input.splitlines()]
-
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
+        grid = [[int(e) for e in line] for line in puzzle_input.splitlines()]
+        depths = {x + y * 1j: grid[x][y] for x in range(len(grid)) for y in range(len(grid[0]))}
+        return depths
 
 
 if __name__ == "__main__":
