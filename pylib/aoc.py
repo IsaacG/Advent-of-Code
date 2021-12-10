@@ -1,5 +1,14 @@
 #!/bin/python
-"""Advent of Code framework."""
+"""Advent of Code framework.
+
+TODO:
+* prepare file needs to insert SAMPLES in the right place
+* prepare file should run the day
+* running the day:
+  - watch the file and run tests, ignore NotImplemented
+  - when a test transitions from failing to passing, submit one time (and only one time)
+  - exit after both submits
+"""
 
 import dataclasses
 import os
