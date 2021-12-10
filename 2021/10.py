@@ -6,7 +6,7 @@ import typer
 
 from lib import aoc
 
-InputType = list[int]
+InputType = list[str]
 
 SAMPLE = """\
 [({(<(())[]>[[{[]{<()<>>
@@ -48,7 +48,7 @@ class Day10(aoc.Challenge):
             if char in close_chars:
                 if not stack:
                     return char, stack
-                elif stack[-1] == pairs[char]:
+                if stack[-1] == pairs[char]:
                     stack.pop()
                 else:
                     return char, stack
@@ -81,7 +81,7 @@ class Day10(aoc.Challenge):
         # Return the middle score.
         return sorted(scores)[len(scores)//2]
 
-                
+
 if __name__ == "__main__":
     typer.run(Day10().run)
 
