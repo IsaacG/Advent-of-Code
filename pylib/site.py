@@ -4,8 +4,10 @@ import os
 import re
 import requests
 import subprocess
-from urllib import parse
+
 from lxml import etree
+from typing import Optional
+from urllib import parse
 
 
 class Website:
@@ -23,6 +25,16 @@ class Website:
     self.session.headers.update({'cookie': f'session={cookie}'})
     self.assert_logged_in()
 
+  def codeblocks(self):
+    resp = self.session.get(f'https://adventofcode.com/{self.year}/day/{self.day}')
+    et = etree.HTML(resp.content)
+    sample = [
+      '["""\\',
+      '\n""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')),
+      '"""]',
+    ]
+    return "\n".join(sample)
+
   def assert_logged_in(self):
     resp = self.session.get(self.BASE)
     resp.raise_for_status()
@@ -33,6 +45,15 @@ class Website:
     resp = self.session.get(u)
     resp.raise_for_status()
     return resp.text
+
+  def part(self) -> Optional[int]:
+    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
+    resp = self.session.get(u)
+    resp.raise_for_status()
+    m = re.search(r'name="level" value="([^"]+)"', resp.text)
+    if m is None:
+      return None
+    return int(m.group(1))
 
   def _no_lxml_submit(self, answer) -> str:
     u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')

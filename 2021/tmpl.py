@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code: Day NN."""
+"""Advent of Code: Day ${day}."""
 
 import collections
 import functools
@@ -11,15 +11,16 @@ import typer
 from lib import aoc
 
 InputType = list[int]
+SAMPLE = ${sample}
 
 
-class DayNN(aoc.Challenge):
+class Day${day}(aoc.Challenge):
 
     DEBUG = True
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
+        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
     )
 
     # Convert lines to type:
@@ -45,6 +46,6 @@ class DayNN(aoc.Challenge):
 
 
 if __name__ == "__main__":
-    typer.run(DayNN().run)
+    typer.run(Day${day}().run)
 
 # vim:expandtab:sw=4:ts=4
