@@ -10,7 +10,7 @@ import typer
 
 from lib import aoc
 
-InputType = list[int]
+InputType = tuple[set[complex], list[tuple[str, int]]]
 SAMPLE = ["""\
 6,10
 0,14
@@ -37,87 +37,65 @@ fold along x=5
 
 
 class Day13(aoc.Challenge):
-
-    DEBUG = True
+    """Fold a piece of transparent paper a bunch of times to reveal a pattern."""
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=17),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
+        aoc.TestCase(inputs=SAMPLE[0], part=2, want=64), # Not really, but I don't OCR.
     )
 
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    @staticmethod
+    def fold(points: set[complex], axis: str, position: int) -> set[complex]:
+        """Fold the sheet along an axis."""
+        new = set()
+        for point in points:
+            if axis == "y":
+                if point.imag < position:
+                    new.add(point)
+                else:
+                    new.add(point.real + (2 * position - point.imag) * 1j)
+            if axis == "x":
+                if point.real < position:
+                    new.add(point)
+                else:
+                    new.add(2 * position - point.real + point.imag * 1j)
+        return new
 
     def part1(self, lines: InputType) -> int:
+        """Fold the sheet once and count points."""
         points, instructions = lines
-        for axis, pos in instructions:
-            new = set()
-            if axis == "y":
-                for point in points:
-                    if point.imag < pos:
-                        new.add(point)
-                    else:
-                        new.add(point.real + (pos - (int(point.imag) - pos)) * 1j)
-            if axis == "x":
-                for point in points:
-                    if point.real < pos:
-                        new.add(point)
-                    else:
-                        new.add((pos - (int(point.real) - pos)) + int(point.imag) * 1j)
-            break
-        return len(new)
+        axis, position = instructions[0]
+        points = self.fold(points, axis, position)
+        return len(points)
 
     def part2(self, lines: InputType) -> int:
+        """Fold the sheet many times and render the resulting points."""
         points, instructions = lines
-        for axis, pos in instructions:
-            new = set()
-            if axis == "y":
-                for point in points:
-                    if point.imag < pos:
-                        new.add(point)
-                    else:
-                        new.add(point.real + (pos - (int(point.imag) - pos)) * 1j)
-            if axis == "x":
-                for point in points:
-                    if point.real < pos:
-                        new.add(point)
-                    else:
-                        new.add(int(pos - (int(point.real) - pos)) + int(point.imag) * 1j)
-            print("inst", axis, pos)
-            points = new
-            xs = max(int(p.real) for p in points)
-            ys = max(int(p.imag) for p in points)
-            print(xs, ys)
-        for y in range(ys+1):
-            row = ''
-            for x in range(xs+1):
-                if (x + y * 1j) in points:
-                    row += "#"
-                else:
-                    row += " "
-            print(row)
-                    
+        for axis, position in instructions:
+            points = self.fold(points, axis, position)
 
-        
-
+        # The actual solution requires OCR or visual reading.
+        self.debug(aoc.render(points))
+        # Since I do not have an OCR, return an arbitrary number.
+        return sum(int(point.real * point.imag) for point in points)
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
+        # Dots on the top half, instructions below.
         dots, instructions = puzzle_input.split("\n\n")
+        # Dots become (x,y) points as complex values.
         points = set()
         for line in dots.splitlines():
             x, y = line.split(",")
             points.add(int(x) + int(y) * 1j)
-        instructions2 = []
+
+        # Folds are an axis and offset.
+        folds = []
         for line in instructions.splitlines():
-            _, _, instruction = line.split()
+            instruction = line.split()[-1]
             a, b = instruction.split("=")
-            instructions2.append((a, int(b)))
-        return points, instructions2
+            folds.append((a, int(b)))
+        return points, folds
 
 
 if __name__ == "__main__":

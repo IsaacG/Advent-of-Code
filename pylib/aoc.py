@@ -19,6 +19,10 @@ from . import site
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
 
+COLOR_SOLID = '█'
+COLOR_EMPTY = ' '
+
+
 @dataclasses.dataclass(frozen=True)
 class Point:
     """A cartesian point."""
@@ -54,6 +58,23 @@ class Line:
             Point(self.start.x + dir_x * i, self.start.y + dir_y * i)
             for i in range(steps + 1)
         ]
+
+
+def render(points: set[complex]) -> str:
+    """Render a set of points to a string."""
+    xs = int(max(p.real for p in points))
+    ys = int(max(p.imag for p in points))
+
+    rows = []
+    for y in range(ys + 1):
+        row = ''
+        for x in range(xs + 1):
+            if (x + y * 1j) in points:
+                row += COLOR_SOLID
+            else:
+                row += COLOR_EMPTY
+        rows.append(row)
+    return "\n".join(rows)
 
 
 @dataclasses.dataclass
