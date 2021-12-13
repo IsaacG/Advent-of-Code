@@ -35,7 +35,7 @@ class Day11(aoc.Challenge):
         points = [point + x + y * 1j for x in range(-1, 2) for y in range(-1, 2) if x or y]
         # Return neighboring points which are on the grid.
         return [point for point in points if point in octopuses]
-                
+
     def step(self, octopuses: dict[complex, int]) -> dict[complex, int]:
         """Apply one clock step to the octopuses."""
         # Add one energy to each octopus.
@@ -59,7 +59,7 @@ class Day11(aoc.Challenge):
         """Count how many octopuses flash after 100 steps."""
         octopuses = lines
         flashes = 0
-        for i in range(100):
+        for _ in range(100):
             octopuses = self.step(octopuses)
             flashes += sum(1 for v in octopuses.values() if v == 0)
         return flashes

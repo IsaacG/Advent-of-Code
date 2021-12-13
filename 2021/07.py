@@ -26,8 +26,8 @@ class Day07(aoc.Challenge):
         """Return the optimal blast position with linear movement cost."""
         return self.solver(lines, lambda x: x * (x + 1) // 2)
 
-    @classmethod
-    def solver(self, positions: list[int], func: Callable[[int], int]) -> int:
+    @staticmethod
+    def solver(positions: list[int], func: Callable[[int], int]) -> int:
         """Find the location where it is cheapest for all the crabs to move."""
         costs = []
         for i in range(min(positions), max(positions) + 1):

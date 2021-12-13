@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 13."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 
 from lib import aoc
@@ -86,15 +81,15 @@ class Day13(aoc.Challenge):
         # Dots become (x,y) points as complex values.
         points = set()
         for line in dots.splitlines():
-            x, y = line.split(",")
-            points.add(int(x) + int(y) * 1j)
+            x_pos, y_pos = line.split(",")
+            points.add(int(x_pos) + int(y_pos) * 1j)
 
         # Folds are an axis and offset.
         folds = []
         for line in instructions.splitlines():
             instruction = line.split()[-1]
-            a, b = instruction.split("=")
-            folds.append((a, int(b)))
+            axis, position = instruction.split("=")
+            folds.append((axis, int(position)))
         return points, folds
 
 

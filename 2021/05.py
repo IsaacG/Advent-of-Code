@@ -3,7 +3,6 @@
 """Advent of Code: Day 05."""
 
 import collections
-import dataclasses
 import itertools
 import re
 import typer
