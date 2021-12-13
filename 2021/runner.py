@@ -43,13 +43,18 @@ class Runner:
     filename.write_text(out)
     filename.chmod(0o700)
 
+  @staticmethod
+  def now() -> datetime.datetime:
+    return datetime.datetime.now(pytz.timezone("EST"))
+
   def wait_solve(self):
     """Wait for the clock to tick down then live solve."""
-    now = datetime.datetime.now(pytz.timezone("EST"))
+    now = self.now()
     midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
     delay = midnight - now
     print(f"Next exercise starts in {delay.seconds} seconds.")
-    time.sleep(delay.seconds)
+    while midnight > self.now():
+      time.sleep((midnight - self.now()).seconds + 1)
     self.live_solve()
 
   def live_solve(self):
@@ -112,9 +117,9 @@ class Runner:
             print('Response:')
             resp = obj.site().submit(answer)
             if "That's the right answer!" in resp:
-              print("Solved part {part}!!")
-              part += 1
+              print(f"Solved part {part}!!")
               solutions[part] = answer
+              part += 1
             else:
               print("Incorrect answer for part {part}. You're on your own :(")
               break
@@ -139,7 +144,7 @@ class Runner:
     if not self.watch:
       return func(self.day)
     inotify = inotify_simple.INotify()
-    inotify.add_watch(self.base / str(self.year), inotify_simple.flags.CLOSE_WRITE)
+    inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
     while e := inotify.read():
       if not e[0].name.endswith('.py'):
         continue
