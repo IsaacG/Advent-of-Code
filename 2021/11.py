@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 11."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 
 from lib import aoc
@@ -26,57 +21,66 @@ SAMPLE = ["""\
 
 
 class Day11(aoc.Challenge):
-
-    DEBUG = True
+    """Count the flashing octopuses."""
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=1656),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=195),
     )
 
-
     @staticmethod
-    def neighbors(octos: dict[complex, int], p: complex) -> list[complex]:
-        points = [p + x + y * 1j for x in range(-1, 2) for y in range(-1, 2) if x or y]
-        return [p for p in points if p in octos]
+    def neighbors(octopuses: dict[complex, int], point: complex) -> list[complex]:
+        """Return all the neighboring octopuses of this one."""
+        # Compute all possible 8 neighboring points.
+        points = [point + x + y * 1j for x in range(-1, 2) for y in range(-1, 2) if x or y]
+        # Return neighboring points which are on the grid.
+        return [point for point in points if point in octopuses]
                 
+    def step(self, octopuses: dict[complex, int]) -> dict[complex, int]:
+        """Apply one clock step to the octopuses."""
+        # Add one energy to each octopus.
+        new = {point: energy + 1 for point, energy in octopuses.items()}
+        # Handle octopus flashing, updating neighbors as needed, until all
+        # octopuses are done flashing.
+        to_flash = set(point for point, energy in new.items() if energy == 10)
+        flashed = set()
+        while to_flash:
+            point = to_flash.pop()
+            flashed.add(point)
+            for neighbor in self.neighbors(octopuses, point):
+                new[neighbor] += 1
+                if new[neighbor] == 10:
+                    to_flash.add(neighbor)
+        # Reset flashed octopuses to 0.
+        new.update({point: 0 for point in flashed})
+        return new
+
     def part1(self, lines: InputType) -> int:
-        octos = lines
+        """Count how many octopuses flash after 100 steps."""
+        octopuses = lines
         flashes = 0
         for i in range(100):
-            new = {p: v + 1 for p, v in octos.items()}
-            to_flash = set(p for p, v in new.items() if v > 9)
-            while to_flash:
-                flashing = to_flash.pop()
-                for n in self.neighbors(octos, flashing):
-                    new[n] += 1
-                    if new[n] == 10:
-                        to_flash.add(n)
-            octos = {p: v if v < 10 else 0 for p, v in new.items()}
-            flashes += sum(1 for v in octos.values() if v == 0)
+            octopuses = self.step(octopuses)
+            flashes += sum(1 for v in octopuses.values() if v == 0)
         return flashes
 
     def part2(self, lines: InputType) -> int:
-        octos = lines
-        for step in range(1, 500):
-            new = {p: v + 1 for p, v in octos.items()}
-            to_flash = set(p for p, v in new.items() if v > 9)
-            while to_flash:
-                flashing = to_flash.pop()
-                for n in self.neighbors(octos, flashing):
-                    new[n] += 1
-                    if new[n] == 10:
-                        to_flash.add(n)
-            octos = {p: v if v < 10 else 0 for p, v in new.items()}
-            if all(v == 0 for v in octos.values()):
+        """Count how many steps until all the octopuses flashed in the same step."""
+        octopuses = lines
+        # Stop after a bunch of steps, just in case this isn't working.
+        for step in range(1, 5000):
+            octopuses = self.step(octopuses)
+            if all(v == 0 for v in octopuses.values()):
                 return step
-        raise RuntimeError("Not found")
+        raise RuntimeError("Could not solve in allocated steps.")
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        grid = [[int(e) for e in line] for line in puzzle_input.splitlines()]
-        energy = {x + y * 1j: val for x, line in enumerate(grid) for y, val in enumerate(line)}
-        return energy
+        return {
+            x + y * 1j: int(val)
+            for x, line in enumerate(puzzle_input.splitlines())
+            for y, val in enumerate(line)
+        }
 
 
 if __name__ == "__main__":
