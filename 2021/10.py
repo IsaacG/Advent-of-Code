@@ -35,19 +35,22 @@ class Day10(aoc.Challenge):
     @staticmethod
     def bracket_match(line: str) -> tuple[Optional[str], list[str]]:
         """Bracket match a line, returning first invalid char and stack."""
-        stack = []
         # Map closing bracket to its opening pair.
         pairs = {BRACKETS[i + 1]: BRACKETS[i] for i in range(0, len(BRACKETS), 2)}
         open_chars = pairs.values()  # ([{<
         close_chars = pairs.keys()   # )]}>
+
+        stack = []
         for char in line:
             # Open bracket. Add to the stack.
             if char in open_chars:
                 stack.append(char)
             # Close bracket. Pop from the stack or error.
             if char in close_chars:
+                # AoC input should not allow this to occur.
+                # This condition isn't strictly needed.
                 if not stack:
-                    return char, stack
+                    raise ValueError("invalid input")
                 if stack[-1] == pairs[char]:
                     stack.pop()
                 else:
