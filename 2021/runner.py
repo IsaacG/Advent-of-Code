@@ -18,6 +18,8 @@ import typer
 
 from lib import site
 
+EST = pytz.timezone("EST")
+
 
 class Runner:
     """Code runner."""
@@ -44,6 +46,14 @@ class Runner:
         filename = self.base / f"{day:02}.py"
         filename.write_text(out)
         filename.chmod(0o700)
+
+    def december(self):
+        """Run live wait-solve for all of December."""
+        year = self.now().year
+        start = datetime.datetime(year, 11, 30, tzinfo=EST)
+        end = datetime.datetime(year, 12, 25, 1, tzinfo=EST)
+        while start < self.now() < end:
+            self.wait_solve()
 
     @staticmethod
     def now() -> datetime.datetime:
@@ -122,7 +132,6 @@ class Runner:
                         resp = obj.site().submit(answer)
                         if "That's the right answer!" in resp:
                             print(f"Solved part {part}!!")
-                            solutions[part] = answer
                             part += 1
                         else:
                             print("Incorrect answer for part {part}. You're on your own :(")
@@ -135,13 +144,50 @@ class Runner:
             except Exception:
                 traceback.print_exc()
 
+        solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
         print(solutions)
+        solution_line = f"{day:02} {solutions[1]} {solutions[2]}\n"
         solution_file = self.base / "solutions.txt"
         solution_values = solution_file.read_text()
-        solution_values += f"{day:02} {solutions[1]} {solutions[2]}\n"
-        solution_file.write_text(solution_values)
+        if solution_line not in solution_values:
+            solution_values += f"{day:02} {solutions[1]} {solutions[2]}\n"
+            solution_file.write_text(solution_values)
 
-        print("Done")
+        print("Updated Solutions. Watch and run test/check.")
+
+        stop_at = self.now().replace(hour=4, minute=0, second=0, microsecond=0)
+        while self.now() < stop_at:
+            timeout = (stop_at - self.now()).seconds
+            events = inotify.read(timeout=timeout)
+            if not any(i.name == f"{day:02}.py" for i in events):
+                continue
+            print(datetime.datetime.now().strftime("%H:%M:%S"))
+            try:
+                # Reload code and get the Challenge.
+                module = importlib.reload(module)
+                obj = getattr(module, f"Day{day:02}")()
+                puzzle_input = obj.parse_input(raw_data)
+                # Run tests for this part.
+                obj.testing = True
+                tests = [t for t in obj.TESTS if t.want != 0]
+                for case in tests:
+                    data = obj.parse_input(case.inputs.strip())
+                    got = obj.funcs[case.part](data)
+                    if case.want == got:
+                        print(f"TEST PASSED! {case.part}")
+                    else:
+                        print(f"TEST FAILED! {case.part}: want({case.want}) != got({got})")
+                obj.testing = False
+                # If tests pass, try to submit.
+                for part in (1, 2):
+                    got = obj.funcs[part](puzzle_input)
+                    if solutions[part] == got:
+                        print(f"CHECK PASSED! {part}")
+                    else:
+                        print(f"CHECK FAILED! {part}: want({solutions[part]}) != got({got})")
+            except Exception:
+                traceback.print_exc()
+        print("Done for the day.")
 
     def maybe_watch(self, func):
         """Run the function once or on every CLOSE_WRITE."""
@@ -193,6 +239,7 @@ class Runner:
 def main(
     day: Optional[int] = None,
     waitlive: bool = False,
+    december: bool = False,
     live: bool = False,
     test: bool = False,
     solve: bool = False,
@@ -212,6 +259,8 @@ def main(
             year = datetime.datetime.now(pytz.timezone("EST")).year
 
     runner = Runner(year, day, watch, timeout)
+    if december:
+        return runner.december()
     if waitlive:
         return runner.wait_solve()
     if live:
