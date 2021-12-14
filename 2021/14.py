@@ -75,9 +75,7 @@ class Day14(aoc.Challenge):
             out: dict[str, int] = collections.defaultdict(int)
             # Assume AB -> C. If AB appears N times, add AC and CB both N times.
             for pair, occurances in pairs.items():
-                new_char = formulas[pair]
-                new_pairs = (pair[0] + new_char, new_char + pair[1])
-                for new_pair in new_pairs:
+                for new_pair in formulas[pair]:
                     out[new_pair] += occurances
             pairs = out
         # Count the number of occurances of each letter.
@@ -95,8 +93,13 @@ class Day14(aoc.Challenge):
         """Parse the input data."""
         # Start formula and a list of formulas.
         start, formula_block = puzzle_input.split("\n\n")
+
         # The formulas are pairs joined on " -> ".
-        formulas: dict[str, str] = dict(line.split(" -> ") for line in formula_block.splitlines())
+        formulas = {}
+        for line in formula_block.splitlines():
+            pair, add = line.split(" -> ")
+            formulas[pair] = (pair[0] + add, add + pair[1])
+
         return (start, formulas)
 
 
