@@ -7,11 +7,10 @@ import math
 import re
 
 import typer
-
 from lib import aoc
 
-InputType = list[int]
 SAMPLE = ${sample}
+InputType = list[int]
 
 
 class Day${day}(aoc.Challenge):

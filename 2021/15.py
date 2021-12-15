@@ -1,18 +1,9 @@
 #!/bin/python
 """Advent of Code: Day 15."""
 
-import collections
-import functools
-import math
-import re
-import time
-import sys
-
 import typer
-
 from lib import aoc
 
-InputType = list[int]
 SAMPLE = ["""\
 1163751742
 1381373672
@@ -25,9 +16,11 @@ SAMPLE = ["""\
 1293138521
 2311944581
 """]
+InputType = dict[complex, int]
 
 
 class Day15(aoc.Challenge):
+    """Navigate through a maze of chiton, minimizing damage/cost."""
 
     DEBUG = True
 
@@ -37,60 +30,74 @@ class Day15(aoc.Challenge):
     )
 
     def part1(self, lines: InputType) -> int:
-        graph = lines
-        costs = {0: 0}
-        visited = set()
-        todo = set([0])
-        while todo:
-            current = sorted(todo, key=lambda x: costs[x])[0]
-            todo.remove(current)
-            visited.add(current)
-            neighbors = [current + d for d in (1, -1, 1j, -1j) if current + d in graph and current + d not in visited]
-            todo.update(neighbors)
-            for neighbor in neighbors:
-                cost = costs[current] + graph[neighbor]
-                if neighbor not in costs or costs[neighbor] > cost:
-                    costs[neighbor] = cost
-        return costs[self.end]
+        """Return the lowest cost path from start to end."""
+        return self.solve(lines)
 
     def part2(self, lines: InputType) -> int:
+        """Return the lowest cost path from start to end ... with larger input."""
         graph = lines
+        width = max(p.real for p in graph) + 1
+        height = max(p.imag for p in graph) + 1
+
+        # Dictionary comprehension is hard to read.
+        # full_graph = {
+        #     (x * width + point.real) + (y * height + point.imag) * 1j: (
+        #         ((val + x + y - 1) % 9) + 1
+        #     )
+        #     for x in range(5) for y in range(5) for point, val in graph.items()
+        # }
+
         full_graph = {}
         for x in range(5):
             for y in range(5):
                 for point, val in graph.items():
-                    point = (x * (self.width+1) + point.real) + (y * (self.height+1) + point.imag) * 1j
+                    # Scale the point by x, y
+                    point = (x * width + point.real) + (y * height + point.imag) * 1j
+                    # Add +1 to the value for each shift. Modulus 9 so that 10 wraps around to 1.
                     val = ((val + x + y - 1) % 9) + 1
+                    # Insert the point.
                     full_graph[point] = val
-        graph = full_graph
-        end = max(p.real for p in graph) + max(p.imag for p in graph) * 1j
 
-        costs = {0: 0}
+        return self.solve(full_graph)
+
+    @staticmethod
+    def solve(node_weights: InputType) -> int:
+        """Return the lowest cost path from start to end with Djiksta's."""
+        starting_point = complex(0)
+        end_point = max(p.real for p in node_weights) + max(p.imag for p in node_weights) * 1j
+
+        # Use Djiksta's to compute the cost from start to every node.
+        cost = {starting_point: 0}
         visited = set()
-        todo = set([0])
+        todo = set([starting_point])
         while todo:
-            current = sorted(todo, key=lambda x: costs[x])[0]
+            # Pop the lowest cost node.
+            current = sorted(todo, key=lambda x: cost[x])[0]
             todo.remove(current)
+            # Mark it visited.
             visited.add(current)
-            neighbors = [current + d for d in (1, -1, 1j, -1j) if current + d in graph and current + d not in visited]
+            # Find unvisited neighbors.
+            neighbors = [
+                current + direction for direction in (1, -1, 1j, -1j)
+                if current + direction in node_weights and current + direction not in visited
+            ]
+            # Add unvisited neighbors to the todo list.
             todo.update(neighbors)
+            # Update neighbors with min(existing cost, cost through current)
             for neighbor in neighbors:
-                cost = costs[current] + graph[neighbor]
-                if neighbor not in costs or costs[neighbor] > cost:
-                    costs[neighbor] = cost
-        return costs[end]
+                cost_through_current = cost[current] + node_weights[neighbor]
+                if neighbor not in cost or cost[neighbor] > cost_through_current:
+                    cost[neighbor] = cost_through_current
+        return cost[end_point]
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        lines = puzzle_input.splitlines()
-        self.width = len(lines[0]) - 1
-        self.height = len(lines) - 1
-        self.end = self.width + self.height * 1j
         return {
             x + y * 1j: int(val)
-            for y, line in enumerate(lines)
+            for y, line in enumerate(puzzle_input.splitlines())
             for x, val in enumerate(line)
         }
+
 
 if __name__ == "__main__":
     typer.run(Day15().run)
