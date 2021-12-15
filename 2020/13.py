@@ -20,10 +20,10 @@ class Day13(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=1068781),
   )
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, parsed_input: List[str]) -> int:
     """Find which bus will first arrive once we are at the bus terminal."""
-    earliest = int(lines[0])
-    busses = [int(i) for i in lines[1].split(',') if i != 'x']
+    earliest = int(parsed_input[0])
+    busses = [int(i) for i in parsed_input[1].split(',') if i != 'x']
     departs_at = {}
     for bus in busses:
       depart_time = (int(earliest / bus) + 1) * bus
@@ -31,7 +31,7 @@ class Day13(aoc.Challenge):
     pick = min(departs_at)
     return (pick - earliest) * departs_at[pick]
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, parsed_input: List[str]) -> int:
     """Find out a time at which the busses will all arrive one minute apart.
 
     The bus numbers are all prime which is handy.
@@ -45,7 +45,7 @@ class Day13(aoc.Challenge):
     until we found all busses.
     """
     # Build a list of offset, bus for all busses we care about.
-    buslist = [int(i) if i != 'x' else 0 for i in lines[1].split(',')]
+    buslist = [int(i) if i != 'x' else 0 for i in parsed_input[1].split(',')]
     busses = [(a, b) for a, b in enumerate(buslist) if b]
 
     start_time = 0

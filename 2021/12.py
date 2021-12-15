@@ -94,19 +94,19 @@ class Day12(aoc.Challenge):
                 subpaths += self.paths(node, seen, node)
         return subpaths
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Count the number of paths from "start" to "end".
 
         Do not revisit small caves.
         """
-        return self.solve(lines, "start")
+        return self.solve(parsed_input, "start")
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Count the number of paths from "start" to "end".
 
         Do not revisit small caves... excepting one small cave.
         """
-        return self.solve(lines, None)
+        return self.solve(parsed_input, None)
 
     def solve(self, graph: InputType, twice: Optional[str]) -> int:
         """Solve the problem for either day."""

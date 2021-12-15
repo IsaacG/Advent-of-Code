@@ -63,15 +63,15 @@ class Day18(aoc.Challenge):
     """Drop whitespace."""
     return [line.replace(" ", "") for line in puzzle_input.split('\n')]
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, parsed_input: List[str]) -> int:
     """Treat + and * equally."""
     conds = [lambda x: x in '+*']
-    return self.sum_map(lines, lambda x: self.solve(x, conds))
+    return self.sum_map(parsed_input, lambda x: self.solve(x, conds))
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, parsed_input: List[str]) -> int:
     """Split on * first making it lower precendent than +."""
     conds = [lambda x: x == '*', lambda x: x == '+']
-    return self.sum_map(lines, lambda x: self.solve(x, conds))
+    return self.sum_map(parsed_input, lambda x: self.solve(x, conds))
 
   def solve(self, tokens: List[str], f: List[Callable[[str], bool]]) -> int:
     """Tokenize, create tree and math the tree."""

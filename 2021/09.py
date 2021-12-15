@@ -25,33 +25,28 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),
     )
 
-    @staticmethod
-    def neighbors(point: complex) -> list[complex]:
-        """Return all the neighbors of a given point."""
-        return [point + n for n in (1, -1, -1j, +1j)]
-
     @classmethod
-    def lows(cls, depths: dict[complex, int]) -> list[complex]:
+    def lows(cls, depths: aoc.Board) -> list[complex]:
         """Return all the minimum points on the map."""
         return [
             point
             for point, depth in depths.items()
             if all(
-                depth < depths[n] for n in cls.neighbors(point) if n in depths
+                depth < depths[n] for n in depths.neighbors(point, diagonal=False)
             )
         ]
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Find all the low points on the map."""
-        depths = lines
-        return sum(depths[point] + 1 for point in self.lows(lines))
+        depths = parsed_input
+        return sum(depths[point] + 1 for point in self.lows(parsed_input))
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Find the largest three basins.
 
         Simply remove 9's from the map and find the size of each island."""
         # Remove borders around the islands, i.e. points of height 9.
-        unexplored = {point for point, depth in lines.items() if depth != 9}
+        unexplored = {point for point, depth in parsed_input.items() if depth != 9}
         basin_sizes = []
         # Group points into islands. Pick any point and flood fill to neighboring points.
         while unexplored:
@@ -60,7 +55,7 @@ class Day09(aoc.Challenge):
             while queue:
                 point = queue.pop()
                 in_basin.add(point)
-                for neighbor in self.neighbors(point):
+                for neighbor in parsed_input.neighbors(point, diagonal=False):
                     if neighbor not in unexplored:
                         continue
                     queue.add(neighbor)
@@ -69,9 +64,9 @@ class Day09(aoc.Challenge):
 
         return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
 
-    def part2_slow(self, lines: InputType) -> int:
+    def part2_slow(self, parsed_input: InputType) -> int:
         """Find the largest three basins. Flood fill."""
-        depths = lines
+        depths = parsed_input
         basin_sizes = []
         # For each minimum, explore the basin.
         for lowpoint in self.lows(depths):
@@ -94,13 +89,8 @@ class Day09(aoc.Challenge):
         return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
 
     def parse_input(self, puzzle_input: str) -> InputType:
-        """Parse the input data.
-
-        Construct a map for coordinate -> depth.
-        """
-        grid = [[int(e) for e in line] for line in puzzle_input.splitlines()]
-        depths = {x + y * 1j: grid[x][y] for x in range(len(grid)) for y in range(len(grid[0]))}
-        return depths
+        """Parse the input data."""
+        return aoc.Board.from_int_block(puzzle_input)
 
 
 if __name__ == "__main__":

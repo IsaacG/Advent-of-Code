@@ -26,10 +26,10 @@ class Day02(aoc.Challenge):
     )
     INPUT_TYPES = [str, int]
 
-    def part1(self, lines: list[tuple[str, int]]) -> int:
+    def part1(self, parsed_input: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position and depth."""
         horiz, depth = 0, 0
-        for direction, num in lines:
+        for direction, num in parsed_input:
             if direction == "forward":
                 horiz += num
             if direction == "up":
@@ -39,10 +39,10 @@ class Day02(aoc.Challenge):
 
         return depth * horiz
 
-    def part2(self, lines: list[tuple[str, int]]) -> int:
+    def part2(self, parsed_input: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position, depth and aim."""
         horiz, depth, aim = 0, 0, 0
-        for direction, num in lines:
+        for direction, num in parsed_input:
             if direction == "forward":
                 horiz += num
                 depth += aim * num

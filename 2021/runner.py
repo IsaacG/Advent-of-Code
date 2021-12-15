@@ -53,7 +53,13 @@ class Runner:
         start = datetime.datetime(year, 11, 30, tzinfo=EST)
         end = datetime.datetime(year, 12, 25, 1, tzinfo=EST)
         while start < self.now() < end:
-            self.wait_solve()
+            solved = [int(line.split()[0]) for line in (self.base / "solutions.txt").read_text().splitlines()]
+            if self.now().day in solved:
+                print("Wait for tomorrow's problem to start and solve it.")
+                self.wait_solve()
+            else:
+                print("Today's problem is not yet solved. Solve it now.")
+                self.live_solve()
 
     @staticmethod
     def now() -> datetime.datetime:
@@ -91,6 +97,7 @@ class Runner:
         part = obj.site().part()
         if part is None:
             print("It looks like you completed this day.")
+            self.update_solutions(day)
             return
 
         # Watch the file.
@@ -144,15 +151,7 @@ class Runner:
             except Exception:
                 traceback.print_exc()
 
-        solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
-        print(solutions)
-        solution_line = f"{day:02} {solutions[1]} {solutions[2]}\n"
-        solution_file = self.base / "solutions.txt"
-        solution_values = solution_file.read_text()
-        if solution_line not in solution_values:
-            solution_values += f"{day:02} {solutions[1]} {solutions[2]}\n"
-            solution_file.write_text(solution_values)
-
+        self.update_solutions(day)
         print("Updated Solutions. Watch and run test/check.")
 
         stop_at = self.now().replace(hour=4, minute=0, second=0, microsecond=0)
@@ -188,6 +187,20 @@ class Runner:
             except Exception:
                 traceback.print_exc()
         print("Done for the day.")
+
+    def update_solutions(self, day):
+        # Reload code and get the Challenge.
+        module = importlib.import_module(f"{day:02}")
+        obj = getattr(module, f"Day{day:02}")()
+        puzzle_input = obj.parse_input(obj.raw_data(None))
+        solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
+        print(solutions)
+        solution_line = f"{day:02} {solutions[1]} {solutions[2]}\n"
+        solution_file = self.base / "solutions.txt"
+        solution_values = solution_file.read_text()
+        if solution_line not in solution_values:
+            solution_values += f"{day:02} {solutions[1]} {solutions[2]}\n"
+            solution_file.write_text(solution_values)
 
     def maybe_watch(self, func):
         """Run the function once or on every CLOSE_WRITE."""

@@ -26,7 +26,7 @@ class Day03(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLES[2], part=2, want=410),
   )
 
-  def solve(self, lines: List[str], part: int) -> int:
+  def solve(self, parsed_input: List[str], part: int) -> int:
     """Walk the two wires.
 
     For wire 1, save locations visited and steps.
@@ -61,17 +61,17 @@ class Day03(aoc.Challenge):
           cur += direction
           func(cur, steps)
 
-    walk_wire(lines[0], save_steps)
-    walk_wire(lines[1], save_cost)
+    walk_wire(parsed_input[0], save_steps)
+    walk_wire(parsed_input[1], save_cost)
     return min(intersections)
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, parsed_input: List[str]) -> int:
     """Wire cross cost: combined step count."""
-    return self.solve(lines, 2)
+    return self.solve(parsed_input, 2)
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, parsed_input: List[str]) -> int:
     """Wire cross cost: Manhatten distance."""
-    return self.solve(lines, 1)
+    return self.solve(parsed_input, 1)
 
   def parse_input(self, puzzle_input: str):
     return [line.split(',') for line in puzzle_input.split('\n')]

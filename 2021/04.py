@@ -76,9 +76,9 @@ class Day04(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1924),
     )
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Find the first winning Bingo card."""
-        inputs, boards = lines
+        inputs, boards = parsed_input
         for ball in inputs:
             for board in boards:
                 board.update(ball)
@@ -86,9 +86,9 @@ class Day04(aoc.Challenge):
                     return ball * int(board)
         raise RuntimeError("no winner found")
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Find the last winning Bingo card."""
-        inputs, boards = lines
+        inputs, boards = parsed_input
         for ball in inputs:
             for board in boards:
                 board.update(ball)

@@ -29,7 +29,7 @@ class Day${day}(aoc.Challenge):
     # Apply a transform function
     # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         return 0
 
     def parse_input(self, puzzle_input: str) -> InputType:

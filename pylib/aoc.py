@@ -10,6 +10,7 @@ TODO:
   - exit after both submits
 """
 
+from __future__ import annotations
 import dataclasses
 import os
 import pathlib
@@ -21,6 +22,49 @@ from typing import Any, Callable, Generator, Iterable, List, Optional
 
 COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
+
+
+class Board(dict):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert all(isinstance(point, complex) for point in self.keys())
+
+    @property
+    def width(self):
+        return int(max(point.real for point in self.keys())) + 1
+
+    @property
+    def height(self):
+        return int(max(point.imag for point in self.keys())) + 1
+
+    @property
+    def max_point(self):
+        return (self.width - 1) + (self.height - 1) * 1j
+
+    def neighbors(self, point: complex, diagonal: bool) -> list[complex]:
+        neighbors = []
+        for i in range(4):
+            if (candidate := point + -1j ** i) in self:
+                neighbors.append(candidate)
+        if diagonal:
+            for i in range(4):
+                if (candidate := point + (1 + 1j) * -1j ** i) in self:
+                    neighbors.append(candidate)
+        return neighbors
+    
+    @classmethod
+    def from_block_map(cls, block: str, transform: Callable[[str], Any]) -> Board:
+        raw_dict = {
+            x + y * 1j: transform(val)
+            for y, line in enumerate(block.splitlines())
+            for x, val in enumerate(line)
+        }
+        return cls(raw_dict)
+
+    @classmethod
+    def from_int_block(cls, block: str) -> Board:
+        return cls.from_block_map(block, int)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -103,8 +147,7 @@ class Helpers:
     """sum_map(lines, func)"""
     return sum(func(line) for line in lines)
 
-  @staticmethod
-  def primes() -> Generator[int, None, None]:
+  def primes(self) -> Generator[int, None, None]:
     s = 0
     for s in self._primes:
       yield s
@@ -114,16 +157,14 @@ class Helpers:
         self._primes.append(s)
         yield s
 
-  @staticmethod
-  def angle(c: complex) -> complex:
+  def angle(self, c: complex) -> complex:
     return c / self.gcd(int(c.real), int(c.imag))
 
   @staticmethod
   def sum_series(n: int) -> int:
     return n * (n + 1) // 2
 
-  @staticmethod
-  def gcd(a: int, b: int) -> int:
+  def gcd(self, a: int, b: int) -> int:
     a, b = abs(a), abs(b)
     if a > b:
       a, b = b, a
@@ -191,11 +232,11 @@ class Challenge(Helpers):
     assert len(p) == 4 and p.isnumeric(), p
     return p
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, parsed_input: List[str]) -> int:
     """Solve part 1."""
     raise NotImplementedError
 
-  def part2(self, lines: List[str]) -> int:
+  def part2(self, parsed_input: List[str]) -> int:
     """Solve part 2."""
     raise NotImplementedError
 

@@ -27,15 +27,15 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=315),
     )
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Return the lowest cost path from start to end."""
-        return self.solve(lines)
+        return self.solve(parsed_input)
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Return the lowest cost path from start to end ... with larger input."""
-        graph = lines
-        width = max(p.real for p in graph) + 1
-        height = max(p.imag for p in graph) + 1
+        graph = parsed_input
+        width = graph.width
+        height = graph.height
 
         # Dictionary comprehension is hard to read.
         # full_graph = {
@@ -45,7 +45,7 @@ class Day15(aoc.Challenge):
         #     for x in range(5) for y in range(5) for point, val in graph.items()
         # }
 
-        full_graph = {}
+        full_graph = aoc.Board()
         for x in range(5):
             for y in range(5):
                 for point, val in graph.items():
@@ -62,7 +62,7 @@ class Day15(aoc.Challenge):
     def solve(node_weights: InputType) -> int:
         """Return the lowest cost path from start to end with Djiksta's."""
         starting_point = complex(0)
-        end_point = max(p.real for p in node_weights) + max(p.imag for p in node_weights) * 1j
+        end_point = node_weights.max_point
 
         # Use Djiksta's to compute the cost from start to every node.
         cost = {starting_point: 0}
@@ -74,27 +74,20 @@ class Day15(aoc.Challenge):
             todo.remove(current)
             # Mark it visited.
             visited.add(current)
-            # Find unvisited neighbors.
-            neighbors = [
-                current + direction for direction in (1, -1, 1j, -1j)
-                if current + direction in node_weights and current + direction not in visited
-            ]
-            # Add unvisited neighbors to the todo list.
-            todo.update(neighbors)
             # Update neighbors with min(existing cost, cost through current)
-            for neighbor in neighbors:
+            for neighbor in node_weights.neighbors(current, diagonal=False):
+                if neighbor in visited:
+                    continue
                 cost_through_current = cost[current] + node_weights[neighbor]
                 if neighbor not in cost or cost[neighbor] > cost_through_current:
                     cost[neighbor] = cost_through_current
+                    # Add unvisited neighbors to the todo list.
+                    todo.add(neighbor)
         return cost[end_point]
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return {
-            x + y * 1j: int(val)
-            for y, line in enumerate(puzzle_input.splitlines())
-            for x, val in enumerate(line)
-        }
+        return aoc.Board.from_int_block(puzzle_input)
 
 
 if __name__ == "__main__":

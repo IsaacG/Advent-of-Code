@@ -22,19 +22,19 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=26984457539),
     )
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Compute fish population after 80 days."""
-        return self.solve(lines, 80)
+        return self.solve(parsed_input, 80)
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Compute fish population after 256 days."""
-        return self.solve(lines, 256)
+        return self.solve(parsed_input, 256)
 
     @staticmethod
-    def solve(lines: InputType, days: int) -> int:
+    def solve(parsed_input: InputType, days: int) -> int:
         """Compute fish population after N days."""
         # Construct the initial population map. Age -> count.
-        counter = dict(collections.Counter(lines))
+        counter = dict(collections.Counter(parsed_input))
         for _ in range(days):
             # Reduce day counter for all fish.
             new = {k - 1: v for k, v in counter.items() if k}

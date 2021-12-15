@@ -18,13 +18,13 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=168),
     )
 
-    def part1(self, lines: InputType) -> int:
+    def part1(self, parsed_input: InputType) -> int:
         """Return the optimal blast position with constant movement cost."""
-        return self.solver(lines, lambda x: x)
+        return self.solver(parsed_input, lambda x: x)
 
-    def part2(self, lines: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> int:
         """Return the optimal blast position with linear movement cost."""
-        return self.solver(lines, lambda x: x * (x + 1) // 2)
+        return self.solver(parsed_input, lambda x: x * (x + 1) // 2)
 
     @staticmethod
     def solver(positions: list[int], func: Callable[[int], int]) -> int:

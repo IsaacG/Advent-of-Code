@@ -28,20 +28,20 @@ def hamming_distance(a, b):
 
 class Day02(aoc.Challenge):
 
-  TESTS = (aoc.TestCase(inputs=SAMPLE[0], part=2, want='fgij'))
+  TESTS = (aoc.TestCase(inputs=SAMPLE[0], part=2, want='fgij'),)
 
-  def part1(self, lines: List[str]) -> int:
+  def part1(self, parsed_input: List[str]) -> int:
     """Return the number of IDs that contain exactly 2|3 repeat letters."""
     # Also, functools.reduce()
     total: Dict[int, int] = collections.Counter([])
-    for line in lines:
+    for line in parsed_input:
       c = collections.Counter(line)
       total += collections.Counter(set(c.values()))
     return total[2] * total[3]
 
-  def part2(self, lines: List[str]) -> str:
+  def part2(self, parsed_input: List[str]) -> str:
     """Return the common chars in two IDs with hamming distance 1."""
-    for a, b in itertools.combinations(lines, 2):
+    for a, b in itertools.combinations(parsed_input, 2):
       if hamming_distance(a, b) == 1:
         return "".join(i for i, j in zip(a, b) if i == j)
     raise RuntimeError
