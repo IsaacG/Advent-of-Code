@@ -261,9 +261,9 @@ class Challenge(Helpers):
     solve: bool = False,
     submit: bool = False,
     check: bool = False,
-    time: bool = False,
+    timeit: bool = False,
   ):
-    assert any((test, solve, check, time, submit))
+    assert any((test, solve, check, timeit, submit))
 
     self.pre_run()
     if test:
@@ -303,16 +303,19 @@ class Challenge(Helpers):
         if int(parts[0]) == self.day:
           break
       for i in (1, 2):
+        start = time.clock_gettime(time.CLOCK_MONOTONIC)
         puzzle_input = self.parse_input(self.raw_data(data))
         got = self.funcs[i](puzzle_input)
+        end = time.clock_gettime(time.CLOCK_MONOTONIC)
+        delta = int(1000 * (end - start))
         want = parts[i]
         if isinstance(got, int):
           want = int(want)
         if want == got:
-          print(f'Day {self.day:02d} Part {i}: PASS!')
+          print(f'Day {self.day:02d} Part {i}: PASS in {delta}ms!')
         else:
           print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
-    if time:
+    if timeit:
       self.time(data)
 
   def time_func(self, count: int, func: Callable) -> float:

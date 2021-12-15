@@ -22,8 +22,6 @@ InputType = dict[complex, int]
 class Day15(aoc.Challenge):
     """Navigate through a maze of chiton, minimizing damage/cost."""
 
-    DEBUG = True
-
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=40),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=315),
