@@ -59,16 +59,16 @@ class Day14(aoc.Challenge):
         BC: 2 becomes BY: 2, YC: 2
         etc
 
-        At the end we can simply count up the letters from each pair-count.
-        AX: 1, XB: 1, BY: 2, YC: 2 => 1*(A, X, X, B), 2*(B, Y, Y, C)
+        At the end we can simply count up the (first) letter from each pair-count.
+        AX: 1, XB: 1, BY: 2, YC: 2 => 1*(A, X), 2*(B, Y)
 
-        Note, however, that ABCD turns into AB BC CD. The middle letters are all doubled.
-        The first and last are not doubled. They remain the same throughout all steps.
-        To balance that out, add one for the first and last then divide it all by two.
+        Note, however, that ABCD turns into AB BC CD.
+        Looking at just the first letters means dropping the final letter.
+        The final letter needs adding back.
         """
         start, formulas = lines
         # The first and last char need an extra count at the end as they are not duplicated.
-        first_last = start[0], start[-1]
+        last = start[-1]
         # Build a counter of how many times each pair shows up.
         pairs = dict(collections.Counter([a + b for a, b in zip(start, start[1:])]))
         for _ in range(count):
@@ -82,11 +82,8 @@ class Day14(aoc.Challenge):
         counter: dict[str, int] = collections.defaultdict(int)
         for pair, occurances in pairs.items():
             counter[pair[0]] += occurances
-            counter[pair[1]] += occurances
-        # Add one more for the first-last which didn't get doubled.
-        for letter in first_last:
-            counter[letter] += 1
-        counter = {k: v // 2 for k, v in counter.items()}
+        # Add the last letter back in.
+        counter[last] += 1
         return max(counter.values()) - min(counter.values())
 
     def parse_input(self, puzzle_input: str) -> InputType:

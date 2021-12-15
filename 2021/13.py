@@ -68,6 +68,7 @@ class Day13(aoc.Challenge):
         points, instructions = lines
         for axis, position in instructions:
             points = self.fold(points, axis, position)
+        # TODO: Can we do all the folds in a single pass?
 
         # The actual solution requires OCR or visual reading.
         self.debug(aoc.render(points))
