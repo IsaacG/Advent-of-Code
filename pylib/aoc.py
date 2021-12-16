@@ -283,7 +283,7 @@ class Challenge(Helpers):
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
         break
-      self.debug('PASSED!')
+      print('PASSED!')
     self.debug('=====')
     self.testing = False
 
