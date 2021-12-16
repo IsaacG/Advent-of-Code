@@ -1,8 +1,11 @@
 #!/bin/python
 """Advent of Code: Day 16."""
 
+from __future__ import annotations
+
 import dataclasses
 import io
+import math
 import operator
 from typing import Optional
 
@@ -12,41 +15,47 @@ from lib import aoc
 InputType = str
 
 
-
-def hex_to_bits(string):
-    return "".join(bin(int(char, 16))[2:].zfill(4) for char in string)
-
-
 @dataclasses.dataclass
 class BasePacket:
-    """A transmission packet."""
+    """A base transmission packet."""
+
     version: int
     packet_type: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Validate inputs."""
         pass
+
 
 @dataclasses.dataclass
 class Literal(BasePacket):
+    """A Literal transmission packet. This contains a single value."""
+
     value: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Validate inputs."""
         super().__post_init__()
         if self.packet_type != 4:
             raise ValueError("invalid packet")
 
-    def eval(self):
+    def eval(self) -> int:
+        """Evaluate the packet to an int."""
         return self.value
 
-    def sum_versions(self):
+    def sum_versions(self) -> int:
+        """Return the version sum value."""
         return self.version
 
 
 @dataclasses.dataclass
 class Operator(BasePacket):
-    sub_packets: list["Packet"]
+    """An Operator transmission packet. This contains an operator and operands."""
 
-    def __post_init__(self):
+    sub_packets: list[BasePacket]
+
+    def __post_init__(self) -> None:
+        """Validate inputs and initialize."""
         super().__post_init__()
         if self.packet_type not in (0, 1, 2, 3, 5, 7, 6):
             raise ValueError("invalid packet")
@@ -57,14 +66,16 @@ class Operator(BasePacket):
         else:
             self.binary_operator = False
 
-    def sum_versions(self):
+    def sum_versions(self) -> int:
+        """Return the version sum value."""
         ts = sum(p.sum_versions() for p in self.sub_packets)
         return self.version + ts
 
-    def eval(self):
+    def eval(self) -> int:
+        """Evaluate the packet to an int."""
         op = {
             0: sum,
-            1: aoc.Helpers().mult,
+            1: math.prod,
             2: min,
             3: max,
             5: operator.gt,
@@ -80,22 +91,34 @@ class Operator(BasePacket):
 
 
 class BitStream(io.StringIO):
+    """Bit stream reader."""
 
     def __init__(self, string: str):
+        """Initialize and validate."""
         if any(s not in ("0", "1") for s in string):
             raise ValueError("invalid binary stream")
         super().__init__(string)
         self.length = len(string)
 
+    @classmethod
+    def from_hex(cls, string: str) -> BitStream:
+        """Construct a BitStream from a hex string."""
+        # Convert each hex value => int => padded binary.
+        bits = "".join(f"{int(char, 16):04b}" for char in string)
+        return cls(bits)
+
     @property
     def done(self) -> bool:
+        """Return if the stream is done."""
         return self.tell() == self.length
 
     def read_int(self, count: int) -> int:
+        """Read n bits and convert from binary to an int."""
         return int(self.read(count), 2)
 
 
-def packet_parser(bits_io):
+def packet_parser(bits_io: BitStream) -> BasePacket:
+    """Parse a BitStream to a Packet."""
     version = bits_io.read_int(3)
     packet_type = bits_io.read_int(3)
 
@@ -116,14 +139,7 @@ def packet_parser(bits_io):
     if length_type == 0: # 15 bits => body len
         length = bits_io.read_int(15)
         sub_io = BitStream(bits_io.read(length))
-
-        # Solving this properly would involve:
-        # sub_end = sub_io.seek(0, io.SEEK_END)
-        # sub_io.seek(0, io.SEEK_SET)
-        # while sub_io.tell() != sub_end:
-        # But in the interest of simple code, just loop until tell == length
-
-        while sub_io.tell() != length:
+        while not sub_io.done:
             sub_packets.append(packet_parser(sub_io))
 
     elif length_type == 1: # 11 bits => sub-packet count
@@ -135,8 +151,6 @@ def packet_parser(bits_io):
 
 
 class Day16(aoc.Challenge):
-
-    DEBUG = True
 
     TESTS = (
         aoc.TestCase(inputs="8A004A801A8002F478", part=1, want=16),
@@ -155,11 +169,11 @@ class Day16(aoc.Challenge):
     )
 
     def part1(self, parsed_input: str) -> int:
-        bits_io = BitStream(hex_to_bits(parsed_input))
+        bits_io = BitStream.from_hex(parsed_input)
         return packet_parser(bits_io).sum_versions()
 
     def part2(self, parsed_input: str) -> int:
-        bits_io = BitStream(hex_to_bits(parsed_input))
+        bits_io = BitStream.from_hex(parsed_input)
         return packet_parser(bits_io).eval()
 
     def parse_input(self, puzzle_input: str) -> str:
