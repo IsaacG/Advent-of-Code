@@ -46,6 +46,9 @@ class BasePacket:
         """Return the version sum value."""
         return self.version
 
+    def __str__(self) -> str:
+        return self.packet_type.name
+
 @dataclasses.dataclass
 class Literal(BasePacket):
     """A Literal transmission packet. This contains a single value."""
@@ -61,6 +64,9 @@ class Literal(BasePacket):
     def eval(self) -> int:
         """Evaluate the packet to an int."""
         return self.value
+
+    def __str__(self) -> str:
+        return f"{self.packet_type.name}({self.value})"
 
 
 @dataclasses.dataclass
@@ -99,6 +105,9 @@ class Operator(BasePacket):
         else:
             return operation(p.eval() for p in self.operands)
 
+    def __str__(self) -> str:
+        sub_packets = ", ".join(str(p) for p in self.operands)
+        return f"{self.packet_type.name}({sub_packets})"
 
 class BitStream(io.StringIO):
     """Bit stream reader."""
