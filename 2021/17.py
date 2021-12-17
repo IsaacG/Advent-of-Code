@@ -1,22 +1,16 @@
 #!/bin/python
 """Advent of Code: Day 17."""
 
-import collections
-import functools
-import math
 import re
-import time
-
 import typer
 from lib import aoc
 
 SAMPLE = "target area: x=20..30, y=-10..-5"
-InputType = tuple[complex, complex]
+InputType = list[int]
 
 
 class Day17(aoc.Challenge):
-
-    DEBUG = True
+    """Determine what initial velocities will allow the probe to hit the target."""
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE, part=1, want=45),
@@ -24,73 +18,69 @@ class Day17(aoc.Challenge):
     )
 
     def part1(self, parsed_input: InputType) -> int:
-        x0, x1, y0, y1 = parsed_input
-        seen = set()
-        worked = []
-        for x in range(300):
-            for y in range(300):
-                vel = x + y * 1j
-                result, m = self.check_v(vel, x0, x1, y0, y1)
-                if result == 0:
-                    worked.append(m)
-
-        return int(max(worked))
-
+        """Compute the highest height that can be reached while hitting the target."""
+        y_max = max(v.imag for v in self.find_velocities(*parsed_input))
+        # At an upwards speed of y and a constant deceleration of 1,
+        # the height after each step is [y, y + (y-1), y + (y-1) + (y-2), ...]
+        # until y-velocity = 0. The distance travelled is sum(1..y). This is also
+        # y * (y + 1) / 2
+        return int(y_max * (y_max + 1) // 2)
 
     def part2(self, parsed_input: InputType) -> int:
-        x0, x1, y0, y1 = parsed_input
-        seen = set()
-        worked = []
-        for x in range(x1 + 1):
-            for y in range(y0, max(abs(y0), abs(y1)) + 1):
-                vel = x + y * 1j
-                result, m = self.check_v(vel, x0, x1, y0, y1)
-                if result == 0:
-                    worked.append(vel)
+        """Compute how many velocities would work to hit the target."""
+        return len(self.find_velocities(*parsed_input))
 
-        return len(worked)
+    @staticmethod
+    def find_velocities(x0, x1, y0, y1) -> list[complex]:
+        """Return velocities that can hit the target."""
+        velocities = []
+        assert y0 < 0, "The target must be negative."
 
+        # The x-velocity decreases by 1 every step. In order to hit the target,
+        # sum(x-velocities from v0_x to 0) >= x0.
+        min_x = 0
+        while (min_x * (min_x + 1)) // 2 < x0:
+            min_x += 1
 
-    def check_v(self,vel, x0, x1, y0, y1):
-        pos = complex(0)
-        step = 0
-        ys = []
-        while pos.real < x1:
-            if step > 10000:
-                break
-            # time.sleep(0.0001)
-            pos += vel
-            ys.append(pos.imag)
-            if vel.real > 0:
-                vel -= 1
-            elif vel.real < 0:
-                vel += 1
-            vel += -1j
+        # Try all intial x-velocities from min_x to target's x1.
+        # Anything lower than min_x will never hit the target.
+        # Anything over x1 will overshoot the target on the first step.
+        for x in range(min_x, x1 + 1):
+            # Try all initial y-velocities.
+            # Anything lower than y0 will immediately drop below the target.
+            # For high y values, by the time they arch up and return to the y=0 line,
+            # they will have y-velocity == -(initial y-velocity) due to constant
+            # acceleration. The same logic about not overshooting immediately as
+            # soon as it passes below y=0 applies to this bound.
+            for y in range(y0, -y0 + 1):
+                initial_velocity = complex(x, y)
 
-            if x0 <= pos.real <= x1 and y0 <= pos.imag <= y1:
-                return 0, max(ys)
+                velocity = initial_velocity
+                position = complex(0)
+                # Track the flight until the projectile passes the target's far edge.
+                while position.real <= x1 and position.imag >= y0:
+                    # Update the position.
+                    position += velocity
+                    # Apply drag, slowing down the x-velocity.
+                    if velocity.real > 0:
+                        velocity -= 1
+                    # Apply gravity, reducing the y-velocity.
+                    velocity += -1j
 
-            if vel.real == 0 and pos.imag < y0:
-                break
+                    # If we hit the target, record the max height and stop.
+                    if x0 <= position.real <= x1 and y0 <= position.imag <= y1:
+                        velocities.append(initial_velocity)
+                        break
 
-            if vel.imag < 0 and pos.imag < y0:
-                break
-
-            step += 1
-        if pos.real > x1:
-            return -1, None
-        if pos.real < x1:
-            return 1, None
-        return 1, None
-
+        return velocities
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         pattern = re.compile(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
         match = pattern.match(puzzle_input)
+        assert match is not None
         nums = [int(i) for i in match.groups()]
         return nums
-        return complex(*nums[0:2]), complex(*nums[2:4])
 
 
 if __name__ == "__main__":
