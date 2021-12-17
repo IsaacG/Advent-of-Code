@@ -19,7 +19,7 @@ class Day17(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Compute the highest height that can be reached while hitting the target."""
-        y_max = max(v.imag for v in self.find_velocities(*parsed_input))
+        y_max = max(y for x, y in self.find_velocities(*parsed_input))
         # At an upwards speed of y and a constant deceleration of 1,
         # the height after each step is [y, y + (y-1), y + (y-1) + (y-2), ...]
         # until y-velocity = 0. The distance travelled is sum(1..y). This is also
@@ -31,7 +31,7 @@ class Day17(aoc.Challenge):
         return len(self.find_velocities(*parsed_input))
 
     @staticmethod
-    def find_velocities(x0, x1, y0, y1) -> list[complex]:
+    def find_velocities(x0, x1, y0, y1) -> list[tuple[int, int]]:
         """Return velocities that can hit the target."""
         velocities = []
         assert y0 < 0, "The target must be negative."
@@ -53,23 +53,22 @@ class Day17(aoc.Challenge):
             # acceleration. The same logic about not overshooting immediately as
             # soon as it passes below y=0 applies to this bound.
             for y in range(y0, -y0 + 1):
-                initial_velocity = complex(x, y)
-
-                velocity = initial_velocity
-                position = complex(0)
+                v_x, v_y = x, y
+                pos_x, pos_y = 0, 0
                 # Track the flight until the projectile passes the target's far edge.
-                while position.real <= x1 and position.imag >= y0:
+                while pos_x <= x1 and pos_y >= y0:
                     # Update the position.
-                    position += velocity
+                    pos_x += v_x
+                    pos_y += v_y
                     # Apply drag, slowing down the x-velocity.
-                    if velocity.real > 0:
-                        velocity -= 1
+                    if v_x > 0:
+                        v_x -= 1
                     # Apply gravity, reducing the y-velocity.
-                    velocity += -1j
+                    v_y -= 1
 
                     # If we hit the target, record the max height and stop.
-                    if x0 <= position.real <= x1 and y0 <= position.imag <= y1:
-                        velocities.append(initial_velocity)
+                    if x0 <= pos_x <= x1 and y0 <= pos_y <= y1:
+                        velocities.append((x, y))
                         break
 
         return velocities
