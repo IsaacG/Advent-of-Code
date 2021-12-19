@@ -193,6 +193,7 @@ class Challenge(Helpers):
   TESTS = ()
   DEBUG = False
   TIMER_ITERATIONS = (None, None)
+  SUBMIT = {1: True, 2: True}
 
   def __init__(self):
     self.funcs = {1: self.part1, 2: self.part2}

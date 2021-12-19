@@ -131,7 +131,7 @@ class Runner:
                 if not tests_pass:
                     print("Test failed")
                     continue
-                if not submitted[part]:
+                if obj.SUBMIT[part] and not submitted[part]:
                     if answer := obj.funcs[part](puzzle_input):
                         submitted[part] = True
                         print("Submitting answer:", answer)
