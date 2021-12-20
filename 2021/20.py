@@ -68,6 +68,8 @@ class Day20(aoc.Challenge):
             new_area = set().union(*(set(self.point_to_area(point)) for point in new_area)) - explored
             candidate_points = candidate_points | new_area
 
+            # When the unexplored area is blinked on, points outside the explored
+            # area are "on".
             if is_blinking and step % 2:
                 on_logic = lambda point: point not in explored or point in image
             else:
