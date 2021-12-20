@@ -79,6 +79,22 @@ class Day19(aoc.Challenge):
         distances = [sum(abs(i - j) for i, j in zip(a, b)) for a, b in pairs]
         return distances
 
+    @functools.cache
+    def potential_match(self, map_a, map_b) -> bool:
+        """Orientation-agnostic check to see if two maps may line up.
+
+        For a rough test, we can check if maps overlap by examining the
+        Manhatten distances of all pairwise points in the map.
+        This allows to discard a map with only one orientation.
+        For 12 matching beacons, there should be sum(0..11) matching distances.
+        sum(0..11) = n*(n+1)/2 = 66
+        """
+        pairs = itertools.product(
+            self.relative_offsets(map_a),
+            self.relative_offsets(map_b)
+        )
+        return sum(1 for a, b in pairs if a == b) >= 66
+
     # This is slow. Cache results so part2 can reuse part1.
     @functools.cache
     def merge(self, beacon_maps):
@@ -100,18 +116,8 @@ class Day19(aoc.Challenge):
         while to_merge:
             to_merge_count = len(to_merge)
             # For every loose piece, try to fit it in.
-            for candidate, fixed in itertools.product(list(to_merge), merged_maps.keys()):
-                # For a rough test, we can check if maps overlap by examining the
-                # Manhatten distances of all pairwise points in the map.
-                # This allows to discard a map with only one orientation.
-                # For 12 matching beacons, there should be sum(0..11) matching distances.
-                # sum(0..11) = n*(n+1)/2 = 66
-                pairs = itertools.product(
-                    self.relative_offsets(candidate),
-                    self.relative_offsets(fixed)
-                )
-                matches = sum(1 for a, b in pairs if a == b)
-                if matches < 66:
+            for fixed, candidate in itertools.product(reversed(merged_maps.keys()), list(to_merge)):
+                if not self.potential_match(candidate, fixed):
                     continue
 
                 # Try to fit the loose piece in every possible orientation.
