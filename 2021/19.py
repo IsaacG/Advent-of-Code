@@ -1,27 +1,30 @@
 #!/bin/python
 """Advent of Code: Day 19."""
 
+import collections
 import functools
-import time
+import itertools
 
 import typer
 from lib import aoc
 import input_data
 
 SAMPLE = input_data.D19_SAMPLE
-InputType = list[int]
 
 
 class Day19(aoc.Challenge):
     """Merge disperate sensor maps of beacons into one unified map."""
+
+    DEBUG = True
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE, part=1, want=79),
         aoc.TestCase(inputs=SAMPLE, part=2, want=3621),
     )
 
+    @staticmethod
     @functools.cache
-    def orientations(self, scanner):
+    def orientations(scanner):
         """Return all 24 orientations of a beacon map.
 
         X: right, left.
@@ -61,22 +64,20 @@ class Day19(aoc.Challenge):
                 rot_z_90 = {(-y, x, z) for x, y, z in rot_z_90}
                 options.append(rot_z_90)
 
-        # assert len(options) == 24
-        # for i in range(24):
-        #     for j in range(24):
-        #         if i == j:
-        #             continue
-        #         assert options[i] != options[j], f"{i}, {j}"
-        
         return options
 
-    def test_orientations(self) -> int:
-        """Test the orientations work."""
-        beacon_maps = self.parse_input(input_data.D19_ORIENTATIONS)
-        initial = beacon_maps[0]
-        options = self.orientations(initial)
-        for scanner in beacon_maps:
-            assert scanner in options
+    @staticmethod
+    @functools.cache
+    def relative_offsets(beacon_map):
+        """Compute the pairwise Manhatten distance of all points in a map.
+
+        The Manhatten distance is orientation independent which allows
+        comparing maps for similarities without needing to try multiple orientations.
+        """
+        # distance(a, b) == distance(b, a) so only take one. Pick a > b.
+        pairs = ((a, b) for a in beacon_map for b in beacon_map if a > b)
+        distances = [sum(abs(i - j) for i, j in zip(a, b)) for a, b in pairs]
+        return distances
 
     # This is slow. Cache results so part2 can reuse part1.
     @functools.cache
@@ -91,85 +92,86 @@ class Day19(aoc.Challenge):
         possible orientation until something fits. Once a piece fits, "fix" it in place.
         Repeat until all the loose pieces have been fixed.
         """
-        # All the beacon_maps need merging.
+        #  All the beacon_maps need merging.
         to_merge = set(beacon_maps)
-        # Pick out one piece to start the "fixed" map.
-        merged_map = to_merge.pop()
-        # That fixed piece has the scanner at the origin.
-        scanners = [(0,0,0)]
-        # Expand all the other pieces to the set of all their possible orientations.
-        # to_merge = set(self.orientations(p) for p in to_merge)
+        merged_maps = {to_merge.pop().copy(): (0, 0, 0)}
 
-        start = time.clock_gettime(time.CLOCK_MONOTONIC)
         # Merge beacon maps until all are used.
         while to_merge:
-            matched = None
+            to_merge_count = len(to_merge)
             # For every loose piece, try to fit it in.
-            for beacon_map in list(to_merge):
+            for candidate, fixed in itertools.product(list(to_merge), merged_maps.keys()):
+                # For a rough test, we can check if maps overlap by examining the
+                # Manhatten distances of all pairwise points in the map.
+                # This allows to discard a map with only one orientation.
+                # For 12 matching beacons, there should be sum(0..11) matching distances.
+                # sum(0..11) = n*(n+1)/2 = 66
+                pairs = itertools.product(
+                    self.relative_offsets(candidate),
+                    self.relative_offsets(fixed)
+                )
+                matches = sum(1 for a, b in pairs if a == b)
+                if matches < 66:
+                    continue
+
                 # Try to fit the loose piece in every possible orientation.
-                for orientation in self.orientations(beacon_map):
-                    orientation = list(orientation)
-                    # Rather than working with the entire set of beacons in the map,
-                    # ignore 10 at first. Try to the other beacons match.
-                    # If at least two beacons match, then maybe there are 12 that match!
-                    # At that point, add back those 10 points and see if there is a full 12.
-                    sample_set, rest_of_points = orientation[:-10], orientation[10:]
-                    # When checking to see if a piece "fits" into the map, move the beacon map
-                    # such that a point on the beacon map aligns with a point on the fixed map.
-                    # If 12 points align at any point, this is a "match".
-                    # We need to try aligning every point on the beacon map with every point on
-                    # the fixed map. Since at least 12 points should line up, there are 12 points
-                    # on the beacon map that line up in the same way on the fixed map.
-                    # That is 12 translations that are identical. As such, we can trying to translate
-                    # 11 points on the beacon map as redundant.
-                    for mp in merged_map:
-                        for point in orientation[:-11]:
-                            # How much this beacon map needs shifting to align.
-                            translation = tuple(a - b for a, b in zip(point, mp))
-                            # Translate the sample points.
-                            translated = set(tuple(p - t for p, t in zip(x, translation)) for x in sample_set)
-                            # If only one point lines up, move on.
-                            if len(merged_map.intersection(translated)) == 2:
-                                continue
+                for orientation in self.orientations(candidate):
+                    # To see if a beacon map matches the fixed beacons,
+                    # compute all possible ways to translate a beacon to
+                    # fit the fixed beacons.
+                    # For every pairwise beacon between the fixed beacons and
+                    # candidate beacons, take the difference to get how the map
+                    # needs to be translated to match.
+                    # If 12 (or more) beacons can match with the same translation,
+                    # then that translation generates 12 overlaps and is a "match".
+                    translation, count = collections.Counter(
+                        tuple(a - b for a, b in zip(point, mp))
+                        for mp in fixed
+                        for point in orientation
+                    ).most_common(1)[0]
+                    if count < 12:
+                        continue
 
-                            # Otherwise, go for a full match.
-                            translated.update(tuple(p - t for p, t in zip(x, translation)) for x in rest_of_points)
-                            overlap = len(merged_map.intersection(translated))
-                            if overlap >= 12:
-                                matched = True
-                                # Fix this loose piece to the overall map.
-                                merged_map = merged_map.union(translated)
-                                scanners.append(translation)
-                                # Remove this piece from the loose pieces.
-                                to_merge.remove(beacon_map)
-                                end = time.clock_gettime(time.CLOCK_MONOTONIC)
-                                delta = int(end - start)
-                                self.debug(f"{len(to_merge)=} {len(merged_map)=} time: {delta}")
-                                break
-                        if matched: break
-                    if matched: break
-        return merged_map, scanners
+                    combined_translation = tuple(
+                        a + b for a, b in zip(translation, merged_maps[fixed])
+                    )
 
-    def part1(self, parsed_input: InputType) -> int:
+                    # Fix this loose piece to the overall map.
+                    merged_maps[frozenset(orientation)] = combined_translation
+                    # Remove this piece from the loose pieces.
+                    to_merge.remove(candidate)
+                    break
+                if to_merge_count != len(to_merge):
+                    break
+            # assert to_merge_count != len(to_merge)
+        return merged_maps
+
+    def part1(self, parsed_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
         """Return the number of beacons in the ocean."""
-        merged_map, scanners = self.merge(parsed_input)
-        return len(merged_map)
+        merged_map = self.merge(parsed_input)
+        merged_beacons = set()
+        for beacons, translation in merged_map.items():
+            merged_beacons |= {
+                tuple(a - b for a, b in zip(point, translation))
+                for point in beacons
+            }
+        return len(merged_beacons)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
         """Compute the maximum distance between any two sensors."""
-        merged_map, scanners = self.merge(parsed_input)
+        scanners = self.merge(parsed_input).values()
         distances = [sum(abs(i - j) for i, j in zip(a, b)) for a in scanners for b in scanners]
         return max(distances)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def parse_input(self, puzzle_input: str) -> frozenset[frozenset[tuple[int, ...]]]:
         """Parse the input data."""
         scans = []
         for block in puzzle_input.split("\n\n"):
-            points = set()
-            for line in block.splitlines()[1:]:
-                x, y, z = line.strip().split(",")
-                points.add(tuple([int(x), int(y), int(z)]))
-            scans.append(frozenset(points))
+            points = frozenset(
+                tuple([int(i) for i in line.split(",")])
+                for line in block.splitlines()[1:]
+            )
+            scans.append(points)
         return frozenset(scans)
 
 
