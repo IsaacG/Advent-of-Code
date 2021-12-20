@@ -23,6 +23,16 @@ from typing import Any, Callable, Generator, Iterable, List, Optional
 COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
 
+def print_point_set(self, board: set[complex]):
+    min_x, max_x = int(min(p.real for p in board)), int(max(p.real for p in board))
+    min_y, max_y = int(min(p.imag for p in board)), int(max(p.imag for p in board))
+    for y in range(min_y, max_y+1):
+        line = ""
+        for x in range(min_x, max_x+1):
+            line += "#" if complex(x,y) in board else "."
+        print(line)
+    print()
+
 
 class Board(dict):
 
@@ -32,11 +42,11 @@ class Board(dict):
 
     @property
     def width(self):
-        return int(max(point.real for point in self.keys())) + 1
+        return int(max(point.real for point in self)) + 1
 
     @property
     def height(self):
-        return int(max(point.imag for point in self.keys())) + 1
+        return int(max(point.imag for point in self)) + 1
 
     @property
     def max_point(self):
