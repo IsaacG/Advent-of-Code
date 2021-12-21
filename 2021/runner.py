@@ -154,6 +154,9 @@ class Runner:
         self.update_solutions(day)
         print("Updated Solutions. Watch and run test/check.")
 
+        if not solutions:
+          solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
+
         stop_at = self.now().replace(hour=4, minute=0, second=0, microsecond=0)
         while self.now() < stop_at:
             timeout = (stop_at - self.now()).seconds
