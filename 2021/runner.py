@@ -136,7 +136,7 @@ class Runner:
                         submitted[part] = True
                         print("Submitting answer:", answer)
                         resp = obj.site().submit(answer)
-                        print(f"Response: {rest}")
+                        print(f"Response: {resp}")
                         if "That's the right answer!" in resp:
                             print(f"Solved part {part}!!")
                             part += 1
