@@ -1,15 +1,10 @@
 #!/bin/python
 """Advent of Code: Day 25."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 v...>>.vv>
 .vv>>.vv..
 >>.>v>...v
@@ -19,69 +14,67 @@ v>v.vv.v..
 .vv..>.>v.
 v.v..>>v.v
 ....v..v.>
-"""]
-InputType = list[int]
-EMPTY = 0
-RIGHT = 1
-DOWN = 2
+"""
+# Set of RIGHT cucumbers, DOWN cucumbers and width, height.
+InputType = tuple[set[int, int], tuple[int, int], int, int]
 
 
 class Day25(aoc.Challenge):
-
-    DEBUG = True
-    SUBMIT = {1: True, 2: False}
+    """Emulate two herds of sea cucumbers moving across the sea floor."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=58),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=58),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=0),
     )
 
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
-
     def part1(self, parsed_input: InputType) -> int:
-        board = parsed_input
-        max_x = max(x for x, _ in board) + 1
-        max_y = max(y for _, y in board) + 1
-        right = {k for k, v in board.items() if v == RIGHT}
-        down = {k for k, v in board.items() if v == DOWN}
-        prior = set()
+        """Count the steps until the herds lock up and cease moving."""
+        right, down, width, height = parsed_input
+        herds = [(right, (1, 0)), (down, (0, 1))]
 
-        next_right = lambda x, y: ((x + 1) % max_x, y)
-        next_down = lambda x, y: (x, (y + 1) % max_y)
-
-        def new_set(old_set, next_f, other):
-            _new = set()
-            for x, y in old_set:
-                _point = next_f(x, y)
-                if _point in old_set or _point in other:
-                    _new.add((x, y))
-                else:
-                    _new.add(_point)
-            return _new
-
+        change = True
         for step in range(500):
-            new = right | down
-            if new == prior:
+            if not change:
                 return step
-            prior = new
+            change = False
 
-            right = new_set(right, next_right, down)
-            down = new_set(down, next_down, right)
-        raise RuntimeError("out of bounds")
+            for i in range(2):
+                herd, (dx, dy) = herds[i]
+                other_herd = herds[1 - i][0]
+                new_herd = herd.copy()
+
+                for x0, y0 in herd:
+                    new_spot = ((x0 + dx) % width, (y0 + dy) % height)
+                    if new_spot not in herd and new_spot not in other_herd:
+                        new_herd.remove((x0, y0))
+                        new_herd.add(new_spot)
+                        change = True
+                herds[i] = (new_herd, (dx, dy))
+
+        raise RuntimeError("max steps reached")
+
+    def part2(self, parsed_input: InputType) -> int:
+        """No part2 on Christmas."""
+        return 0
             
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        vals = {".": EMPTY, ">": RIGHT, "v": DOWN}
-        return {
-            (x, y): vals[val]
-            for y, line in enumerate(puzzle_input.splitlines())
+        lines = puzzle_input.splitlines()
+        right = {
+            (x, y)
+            for y, line in enumerate(lines)
             for x, val in enumerate(line)
+            if val == ">"
         }
+        down = {
+            (x, y)
+            for y, line in enumerate(lines)
+            for x, val in enumerate(line)
+            if val == "v"
+        }
+        width = len(lines[0])
+        height = len(lines)
+        return right, down, width, height
 
 
 if __name__ == "__main__":
