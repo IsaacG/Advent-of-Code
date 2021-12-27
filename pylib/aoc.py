@@ -286,15 +286,19 @@ class Challenge(Helpers):
   def run_tests(self):
     """Run the tests."""
     self.testing = True
+
     for i, case in enumerate(self.TESTS):
       self.debug(f'Running test {i + 1} (part{case.part})')
       assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
       data = self.parse_input(case.inputs.strip())
+      start = time.clock_gettime(time.CLOCK_MONOTONIC)
       got = self.funcs[case.part](data)
+      end = time.clock_gettime(time.CLOCK_MONOTONIC)
+      delta = int(1000 * (end - start))
       if case.want != got:
         print(f'FAILED! {case.part}: want({case.want}) != got({got})')
         break
-      print('PASSED!')
+      print(f'PASSED! Test #{i + 1} in {delta}ms')
     self.debug('=====')
     self.testing = False
 
