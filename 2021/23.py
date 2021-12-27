@@ -1,5 +1,36 @@
 #!/bin/python
-"""Advent of Code: Day 23."""
+"""Advent of Code: Day 23.
+
+Optimizations needed:
+* Never move C/D pieces in an x-direction away from final room.
+* When possible, move piece direct to home-room and skip hallways.
+* Use A* and h(): x-distance
+
+The A* should help when you have:
+
+#############
+#...........#
+###.#A#.#.###
+  #.#.#.#.#
+  #########
+
+when moving to the hallway first, Dijkstra generates:
+############# Cost: 2
+#...A.......#
+###.#.#.#.###
+  #.#.#.#.#
+  #########
+
+############# Cost: 2
+#.....A.....#
+###.#.#.#.###
+  #.#.#.#.#
+  #########
+
+Since both have the same cost, either might be considered first.
+This generates A in home-room with costs 5 or 9, depending which
+is considered first.
+"""
 
 import collections
 import functools
@@ -66,50 +97,51 @@ def can_reach(start, occupied):
 def next_board(positions):
     next_positions = {}
     for piece in positions:
-        other_pieces = [p for p in positions if p != piece]
-        costs = valid_moves(piece, positions)
-        for move, cost in costs.items():
-            piece_move = tuple([piece[0]] + list(move))
-            next_positions[tuple(sorted(other_pieces + [piece_move]))] = cost
+        for n, cost in valid_moves(piece, positions).items():
+            assert n not in next_positions
+            next_positions[n] = cost
     return next_positions
+
 
 @functools.cache
 def valid_moves(start, positions):
-    # When moving into a room, if the room does not have other types,
-    # the only valid move is to move to the lowest position.
-    # If the room does have other types, only move to the top position.
-    # If starting in the hall, do not move to the hall.
     amphi, loc = start[0], start[1:]
     locations = just_positions(positions)
     reachable = can_reach(loc, locations)
-    valid = reachable.keys() & VALID_FOR_TYPE[amphi]
-    # If the piece is in its final room, it may not move into this room.
-    maybe_room = valid & ROOM[amphi]
-    if maybe_room:
-        # If the piece can move to a final position, this is the only valid move.
-        # TODO: ADD THIS
-        if loc in ROOM[amphi]:
-            valid -= ROOM[amphi]
-        else:
-            valid_for_room = max(valid & ROOM[amphi])
-            valid -= ROOM[amphi]
-            valid.add(valid_for_room)
+    room = ROOM[amphi]
+    only_right = not any(
+        (x, y) in room and piece != amphi
+        for piece, x, y in positions
+    )
     step_cost = STEP_COST[amphi]
-    return {p: c * step_cost for p, c in reachable.items() if p in valid}
 
+    valid = reachable.keys()
+    
+    # If the amphipod is in the hallway, it will only move to its room, and only
+    # if no other amphipod types are in that room.
+    if loc in VALID_HALLWAY:
+        if only_right and (vr := valid & room):
+            valid = set([max(vr)])
+        else:
+            return {}
+    # If the amphipod is in its room and there are no other types of amphipods in that
+    # room, it will not move.
+    elif loc in room and only_right:
+        return {}
+    # Otherwise, the amphipod will only move to the hallway..
+    else:
+        valid &= VALID_HALLWAY
 
-@functools.cache
-def all_possible_next(current):
-    possibilities = []
-    positions = list(itertools.chain.from_iterable(current))
-    for i, current in enumerate(positions):
-        steps = can_reach(current, as_tuple(positions))
-        for position, cost in steps.items():
-            new_positions = positions.copy()
-            new_positions[i] = position
-            possibilities.append((cost, as_tuple(new_positions)))
-            check_type(possibilities[-1][1])
-    return possibilities
+    next_steps = {}
+    other_pieces = list(positions)
+    other_pieces.remove(start)
+    for p, c in reachable.items():
+        if p not in valid:
+            continue
+        energy = c * step_cost
+        new_positions = tuple(sorted(other_pieces + [(amphi,) + p]))
+        next_steps[new_positions] = energy
+    return next_steps
 
 
 def just_positions(pieces):
@@ -161,82 +193,42 @@ class Day23(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         pieces = parsed_input
         show(pieces)
-        # show(valid_moves(("B", 0, 0), (("C", 4,2),)).keys())
-        # return 0
-        for board, cost in next_board((("A", 0, 0),)).items():
+        print(1)
+        a = ("A", 2, 2)
+        b = ("B", 9, 0)
+        c = ("C", 2, 1)
+        print(valid_moves(a, (a, b, c)))
+        print(2)
+        show((a, b, c))
+        for board, cost in next_board((a,b,c)).items():
             print(cost)
             show(board)
-        return 0
-        # for board, cost in next_board(pieces).items():
-        #     print(cost)
-        #     show(board)
         # return 0
+
         to_explore = set([pieces])
         cost = {pieces: 0}
-        seen = set()
 
         count = 0
-        while to_explore and count < 1000:
+        while to_explore and count < 100000:
             count += 1
+
             current = sorted(to_explore, key=lambda x: cost[x])[0]
+            if count % 100 == 0:
+                print(len(cost))
+                print(cost[current])
+                show(current)
             to_explore.remove(current)
-            seen.add(current)
 
             for board, move_cost in next_board(current).items():
-                if board in seen:
+                combined_cost = cost[current] + move_cost
+                if board in cost and cost[board] <= combined_cost:
                     continue
-                cost[board] = cost[current] + move_cost
+                cost[board] = combined_cost
                 to_explore.add(board)
 
-        for b, c in cost.items():
-            print(c)
-            show(b)
-        print(len(cost))
+        final_pos = tuple(sorted((amphi, x, y) for amphi, room in ROOM.items() for x, y in room))
+        show(final_pos)
         return cost[final_pos]
-
-    # Implement A*
-
-    @staticmethod
-    @functools.cache
-    def heuristic(positions):
-        cost = 0
-        for i, pos in enumerate(positions):
-            want_x = ((i//2)+1)*2
-            want_y = max(1, pos[1])
-            distance = abs(pos[0] - want_x) + abs(pos[1] - want_y)
-            c = 10**(i//2)
-            cost += c * distance
-        return cost
-
-    def move_to_room(positions):
-        # check if a room is open for occupancy
-        open_room = []
-        for room in range(4):
-            # back of room is open 
-            if room*2+8 not in positions:
-                open_room.append(room)
-            # back of room is properly occupied and front of room is open
-            elif (positions.index(room*2+8) // 2) == room and room*2+7 not in positions:
-                open_room.append(room)
-        if not open_room:
-            return False
-
-        for room in open_room:
-            dest = room*2+8 if room*2+8 not in positions else room*2+7
-            for i, loc in enumerate(positions):
-                if (m := self.moves(positions, loc, dest)):
-                    new_pos = list(positions)
-                    new_pos[i] = dest
-                    return 10 ** (i // 2) * m + self.cost(tuple(new_pos))
-
-
-
-
-
-    @functools.cache
-    def cost(self, positions):
-        pass
-
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data.
