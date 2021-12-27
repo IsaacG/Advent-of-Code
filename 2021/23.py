@@ -230,12 +230,26 @@ class AmphipodGame:
             current = sorted(to_explore, key=lambda x: f_cost[x])[0]
             to_explore.remove(current)
 
+            if current == self.final_pieces:
+                return cost[current]
+
             # Update the cost for every reachable adjacent configuration.
             for board, move_cost in self.next_board(current).items():
                 combined_cost = cost[current] + move_cost
-                if board in cost and cost[board] <= combined_cost:
+                # Not valid for Dijksta. Maybe or maybe not valid for A*. Unsure.
+                # Works for the example and my input. Runs faster.
+                # Makes the check outside the for loop unnecessary.
+                # if board == self.final_pieces:
+                #    return combined_cost
+                # For Dijksta and possibly other inputs:
+                # if board in cost and cost[board] <= combined_cost:
+                #     continue
+                # Not valid for Dijksta. Maybe valid for A*?
+                # Works for the example and my input.
+                if board in cost:
                     continue
                 cost[board] = combined_cost
+                # Dijksta: heuristic(x) = 0. A*: use Manhattan distance.
                 f_cost[board] = combined_cost + self.heuristic(board)
                 to_explore.add(board)
 
