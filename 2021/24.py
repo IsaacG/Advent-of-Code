@@ -35,22 +35,24 @@ mod w 2
 """]
 InputType = list[int]
 
-EQL_OPER = lambda x, y: 0 if x == y else 1
+OPS = {
+    "add": operator.add,
+    "mul": operator.mul,
+    "div": operator.floordiv,
+    "mod": operator.mod,
+    "eql": operator.eq,
+}
 
-at_end = 0
+equallities = []
+
 
 @dataclasses.dataclass
 class Node:
     inp: int = None
+    eql: int = None
     operator: str = None
     parts: list[Node] = None
     lit: int = None
-
-    def __post_init__(self):
-        if self.parts is None:
-            self.parts = []
-        else:
-            self.parts = tuple(Node(lit=n) if isinstance(n, int) else n.copy() for n in self.parts)
 
     @property
     def is_input(self):
@@ -64,39 +66,73 @@ class Node:
         if self.is_lit:
             return f"{self.lit}"
         if self.is_input:
-            return f"Input_{self.inp}"
-        if self.operator == "add":
-            return f"({self.parts[0]} + {self.parts[1]})"
-        if self.operator == "mul":
-            return f"({self.parts[0]} * {self.parts[1]})"
-        if self.operator == "mod":
-            return f"({self.parts[0]} % {self.parts[1]})"
-        if self.operator == "div":
-            return f"({self.parts[0]} // {self.parts[1]})"
+            return f"Input_#{self.inp}"
+        if self.operator == "NEQ":
+            return f"NEQ#{self.eql}"
         if self.operator == "eql":
-            return f"({self.parts[0]} != {self.parts[1]})"
-        return super().__str__()
+            return f"NEQ#{self.parts[1].inp - 1}"
+        symbol = {
+            "add": "+",
+            "mul": "*",
+            "mod": "%",
+            "div": "//",
+            "eql": "!=",
+        }[self.operator]
+        return f"({self.parts[0]} {symbol} {self.parts[1]})"
 
     def copy(self):
         return copy.deepcopy(self)
 
     def __add__(self, n):
-        if self.is_lit:
-            if isinstance(n, int):
-                self.lit += n
-                return self
-            if self.lit == 0:
-                return n
-            if n.is_lit:
-                self.lit += n.lit
-                return self
-        if n == 0 or (isinstance(n, Node) and n.lit == 0):
+        if self.lit == 0:
+            return n
+        if n.lit == 0:
             return self
+        if self.is_lit and n.is_lit:
+            return Node(lit=self.lit + n.lit)
+        if self.operator == "add" and self.parts[1].is_lit and n.is_lit:
+            rhs = Node(lit=self.parts[1].lit + n.lit)
+            return Node(operator="add", parts=[self.parts[0], rhs])
         return Node(operator="add", parts=[self, n])
 
+    @property
+    def len(self):
+        if self.is_lit or self.is_input:
+            return 1
+        return sum(n.len for n in self.parts)
+
+    def eval(self, eqls):
+        if self.is_lit:
+            return self.lit
+        if self.operator == "eql":
+            assert self.parts[1].is_input
+            return eqls[self.parts[1].inp - 1]
+        if self.is_input:
+            print(self)
+            return 1
+        assert self.operator in ("add", "mul", "mod", "div"), str(self)
+        return OPS[self.operator](self.parts[0].eval(eqls), self.parts[1].eval(eqls))
+
+    @property
+    def max_val(self):
+        if self.operator == "add":
+            vals = [n.max_val for n in self.parts]
+            if any(v is None for v in vals):
+                return None
+            return sum(vals)
+        if self.is_lit:
+            return self.lit
+        if self.is_input:
+            return 9
+
     def __mod__(self, n):
-        # print(f"{self} % {n}")
-        assert n == 26
+        assert n.is_lit
+        if self.lit == 0:
+            return self
+        if (v := self.max_val) is not None and v < n.lit:
+            return self
+        return Node(operator="mod", parts=[self, n])
+        assert n.is_lit and n.lit == 26
         if self.operator == "mul" and self.parts[1].lit == 26:
             return Node(lit=0)
         if self.is_input:
@@ -108,35 +144,51 @@ class Node:
                 return self
             new = (self.parts[0] % 26) + (self.parts[1] % 26)
             return Node(operator="mod", parts=[new, n])
-        assert False, str(self)
+        return Node(operator="mod", parts=[self, n])
 
     def __mul__(self, n):
-        assert isinstance(n, int), str(n)
-        if n == 0:
-            return Node(lit=0)
-        if n == 1:
+        if self.lit == 0 or n.lit == 1:
             return self
+        if self.lit == 1 or n.lit == 0:
+            return n
         return Node(operator="mul", parts=[self, n])
 
     def __floordiv__(self, n):
-        if n == 1:
+        if n.lit == 1:
             return self
-        assert n == 26
+        assert n.lit == 26
+        return Node(operator="div", parts=[self,n])
         if self.operator == "mul" and self.parts[1].is_lit and self.parts[1].lit == 26:
             return self.parts[0]
         if self.operator == "add":
             if any(p.operator == "mul" and p.parts[1].lit == 26 for p in self.parts):
                 return (self.parts[0]//26) + (self.parts[1]//26)
-        if self.is_under():
-            return Node(lit=0)
         return Node(operator="div", parts=[self,n])
 
-    def is_under(self):
-        if self.is_lit and self.lit < 26:
-            return True
-        if self.operator == "add" and self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
-            return True
-        return False
+    def eval_eq(self):
+        # If we are comparing complex INPUTS, use a new node.
+        if b.is_input:
+            # print(f"Splitting at {idx=} for {line=}")
+            ret = []
+            assume = ([0, f"({mem[a]} == {b})"], [1, f"({mem[a]} != {b})"])
+            for val, assm in assume:
+                mem[a] = Node(lit=val)
+                for assumptions, results in self.solver(idx + 1, mem):
+                    ret.append(([assm] + assumptions, results))
+            assert ret
+
+    def __eq__(self, n):
+        # Skip. We treat eql as __ne__ since it is always negated.
+        if n.lit == 0:
+            return self
+        if self.is_lit and n.max_val is not None and self.lit > n.max_val:
+            return Node(lit=1)
+        eq = Node(operator="eql", parts=(self, n))
+        global equallities
+        equallities.append(eq)
+        return eq
+        eq = Node(operator="NEQ", eql=n.inp)
+        print(eq)
 
 
 class Day24(aoc.Challenge):
@@ -153,123 +205,49 @@ class Day24(aoc.Challenge):
         mem = {v: Node(lit=0) for v in 'wxyz'}
         self.code = parsed_input
         self.code_len = len(parsed_input)
+        # self.code_len = 80
 
-        results = self.solver(0, mem)
-        for assum, res in results:
-            print("a", assum)
-            print("r", res)
-            print()
-
-    def solver(self, start_idx, mem) -> int:
-        mem = copy.deepcopy(mem)
+        global equallities
 
         input_counter = 1
-        for idx in range(start_idx, self.code_len):
-            # if idx % 25 == 0:
-            #     print("Code Line", idx)
+        for idx in range(0, self.code_len):
+            if idx % 50 == 0:
+                print("Code Line", idx)
+                # for var, val in mem.items():
+                #     print(var, val)
             line = self.code[idx]
-            handled = False
 
             if line[0] == "inp":
                 var = line[1]
                 mem[var] = Node(inp=input_counter)
                 input_counter += 1
-                handled = True
             else:
                 a, b = line[1:]
                 if b in "wxyz":
                     b = mem[b]
-                    if b.is_lit:
-                        b = b.lit
                 else:
-                    b = int(b)
-
-            if line[0] == "eql":
-                handled = True
-                # Skip. We treat eql as __ne__ since it is always negated.
-                if b == 0:
-                    pass
-                # INPUT = (v: v>=10) is always False since INPUT < 10.
-                elif mem[a].is_lit and b.is_input and mem[a].lit > 9:
-                    mem[a].lit = 1
-                # If we are comparing complex INPUTS, split.
-                elif b.is_input:
-                    # print(f"Splitting at {idx=} for {line=}")
-                    ret = []
-                    assume = ([0, f"({mem[a]} == {b})"], [1, f"({mem[a]} != {b})"])
-                    for val, assm in assume:
-                        mem[a] = Node(lit=val)
-                        for assumptions, results in self.solver(idx + 1, mem):
-                            ret.append(([assm] + assumptions, results))
-                    assert ret
-                else:
-                    mem[a] = Node(operator=op, parts=(mem[a], b))
-                    if b == 26:
-                        print(f"{' '.join(line):12} | {handled}  | {args[0]} = {mem[args[0]]}")
-
-            elif line[0] != "inp":
-                oper = {
-                    "add": operator.add,
-                    "mul": operator.mul,
-                    "div": operator.floordiv,
-                    "mod": operator.mod,
-                }[line[0]]
-
-                if mem[a].is_lit and isinstance(b, int):
-                    mem[a].lit = oper(mem[a].lit, b)
-                    handled = True
-                elif isinstance(b, int) and mem[a].is_lit:
-                    mem[a] = oper(mem[a].lit, b)
-                    handled = True
-                else:
-                    mem[a] = oper(mem[a], b)
-                    handled = True
-
-            # print(f"{' '.join(line):12} | {handled}  | {args[0]} = {mem[args[0]]}")
-            assert handled, f"{' '.join(line):12} | {handled}  | {args[0]} = {mem[args[0]]}"
-
-        assert str(mem["z"])
-        global at_end
-        at_end += 1
-        print(f"{at_end=}")
-        return [([], str(mem["z"]))]
-
-
-
-    def brute(self, parsed_input: InputType) -> int:
-        input_vals = iter(range(1, 100))
-        for i in range(99999999999999, 0, -1):
-            if i % 10000 == 0:
-                print(i)
-            i = str(i)
-            if "0" in i:
-                continue
-            if self.check(parsed_input, i):
-                return i
-        raise RuntimeError("not found")
-
-    def check(self, monad, inputs):
-        input_vals = iter(inputs)
-        mem = {v: 0 for v in 'wxyz'}
-        for op, *args in monad:
-            if op == "inp":
-                mem[args[0]] = int(next(input_vals))
-            else:
-                a, b = args
-                if b in "wxyz":
-                    b = mem[b]
-                else:
-                    b = int(b)
-
-                oper = {
-                    "add": operator.add,
-                    "mul": operator.mul,
-                    "div": operator.floordiv,
-                    "mod": operator.mod,
-                    "eql": lambda x, y: 1 if x == y else 0,
-                }[op]
+                    b = Node(lit=int(b))
+                oper = OPS[line[0]]
                 mem[a] = oper(mem[a], b)
-        return mem["z"] == 0
+            if line == ["add", "z", "y"]:
+                if equallities:
+                    e = equallities[-1]
+                    print(f"NEQ#{e.parts[1].inp - 1} =>")
+                    print(f"{e.parts[0]} != {e.parts[1]}")
+                print(mem["z"])
+                print()
+            
+        print("Done")
+        print(mem["z"])
+        print("# eqls:", len(equallities))
+        if False:
+           for e in equallities:
+            print(f"NEQ#{e.parts[1].inp - 1} =>")
+            print(f"{e.parts[0]} != {e.parts[1]}")
+            print()
+        eqls = [0] * len(equallities)
+        # print("Eval:", mem["z"].eval(eqls))
+        # x = [ (v % 26 + j) != Input N ]   =>       x_next =  (v * ((25 * x) + k)) + ((Input N + l) * x))) % 26 + m  != Input (N+1)
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
