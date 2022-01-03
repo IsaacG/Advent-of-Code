@@ -12,29 +12,6 @@ import operator
 import typer
 from lib import aoc
 
-SAMPLE = ["""\
-inp x
-mul x -1
-""","""\
-inp z
-inp x
-mul z 3
-eql z x
-""","""\
-inp w
-add z w
-mod z 2
-div w 2
-add y w
-mod y 2
-div w 2
-add x w
-mod x 2
-div w 2
-mod w 2
-"""]
-InputType = list[int]
-
 OPS = {
     "add": operator.add,
     "mul": operator.mul,
@@ -184,13 +161,68 @@ class Node:
 
 
 class Day24(aoc.Challenge):
+    """Compute which serial numbers are valid for the MONAD.
+
+    This exercise is mostly focused around reverse engineering the "MONAD"
+    input program and only minimally about implementing the VM described in the prose.
+
+    The input MONADs have certain characteristics which need to be sussed out and used.
+    The MONAD follows the same pattern 14 times:
+    * Input is loaded into `w`.
+    * The `x` and `y` are set to 0.
+    * There are two `eql` statements back to back, `eql x w` then `eql x 0`. Combined,
+      this can be treated as `x != w`.
+    * The `z` is set to a function of the prior `z` and a conditional on the input.
+
+    Step 1
+    ------
+    Resolve all 14 `z` values (indicated by `add z y`) in terms of a prior `z`.
+    This gives the form:
+    z_(n+1) = (f(z_(n)) * ((25 * (((z_(n) % 26) + a) != Input_(n+1))) + 1)) + ((Input_(n+1) + b) * (((z_(n) % 26) + a) != Input_(n+1)))
+    where a, b are fixed ints and `f(x) = x` or `f(x) = x // 26`
+
+    Rewritten as a conditional,
+
+    ```
+    if ((z_(n) % 26) + a) != Input_(n+1):
+        z_(n+1) = 26 * f(z_(n)) + Input_(n+1) + c
+    else:
+        z_(n+1) = f((z_(n))
+    ```
+
+    Examining the conditionals and bearing in mind that inputs must be [1..9],
+    `(z % 26) + a != Input` will be true for all possible inputs if `a > 9`.
+
+    Applying that reduction to the code yields seven instances of:
+
+    ```
+    z_(n+1) = z_(n) * 26 + Input_(n+1) + a
+    ```
+
+    where `z_(-1) = 0` and `a` is a known int.
+
+    Given that inputs are valid iff `z_13 = 0`, there must be seven instances of:
+    `z_(n+1) = z_(n) // 26` to reduce the `z` value to 0. These are found by setting
+    the conditional `(z_n % 26) + a = Input_(n+1)`.
+
+    Given `z_(n+1) = z_(n) * 26 + Input_(n+1) + a` and `z_(n+2) = z_(n+1) // 26`,
+    we can reduce `z_(n+2) = z_(n)`. Using this transformation, this allows us to write
+    all `z` values in the form `z_(x) = z_(y) * 26 + Input_(z) + a`
+
+    Applying the reduced `z` for to the known equallities,
+    `(z_n % 26) + a = Input_(n+1)`, `z % 26` becomes `(z_y * 26 + Input + a) % 26`
+    which becomes `(z_y * 26) % 26 + (Input + a) % 26` which further reduces to
+    simply `Input + a`. That gives us seven instances of
+    `Input_x = Input_y + a`, each with unrelated `x` and `y` values.
+
+    Recalling that all inputs must be [1..9], `Input_x = Input_y + a` gives a min
+    and max value for both `Input` values. This gives upper and lowe limits on all
+    14 input values.
+    """
 
     DEBUG = False
 
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=-1),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=0),
-    )
+    TESTS = []
 
     def part1(self, parsed_input: InputType) -> int:
         ranges = self.solve_ranges(parsed_input)
@@ -226,8 +258,10 @@ class Day24(aoc.Challenge):
                 mem[a] = OPS[line[0]](mem[a], b)
 
             if line == ["add", "z", "y"]:
-                mem["z"] = Node(z=z_counter, val=mem["z"])
-                z_vals[z_counter] = mem["z"]
+                z = Node(z=z_counter, val=mem["z"])
+                mem["z"] = z
+                self.debug(f"{z} = {z.val}")
+                z_vals[z_counter] = z
                 z_counter += 1
             
         counts = {1: 0, 0: 0}
