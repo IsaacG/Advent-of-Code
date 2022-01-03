@@ -43,16 +43,15 @@ OPS = {
     "eql": operator.eq,
 }
 
-equallities = []
-
 
 @dataclasses.dataclass
 class Node:
     inp: int = None
-    eql: int = None
     operator: str = None
     parts: list[Node] = None
     lit: int = None
+    z: int = None
+    val: Node = None
 
     @property
     def is_input(self):
@@ -66,22 +65,53 @@ class Node:
         if self.is_lit:
             return f"{self.lit}"
         if self.is_input:
-            return f"Input_#{self.inp}"
-        if self.operator == "NEQ":
-            return f"NEQ#{self.eql}"
-        if self.operator == "eql":
-            return f"NEQ#{self.parts[1].inp - 1}"
-        symbol = {
-            "add": "+",
-            "mul": "*",
-            "mod": "%",
-            "div": "//",
-            "eql": "!=",
-        }[self.operator]
-        return f"({self.parts[0]} {symbol} {self.parts[1]})"
+            return f"Input_{self.inp}"
+        if self.z is not None:
+            return f"z_{self.z:02}"
+        return f"({self.parts[0]} {self.operator} {self.parts[1]})"
 
-    def copy(self):
-        return copy.deepcopy(self)
+    def eql_range_check_true(self):
+        assert self.operator == "!="
+        assert self.parts[1].is_input
+        if self.parts[0].is_lit:
+            return self.parts[0].lit >= 10
+        assert self.parts[0].parts[1].is_lit
+        return self.parts[0].parts[1].lit >= 10
+
+    @property
+    def len(self):
+        if self.is_lit or self.is_input:
+            return 1
+        return sum(n.len for n in self.parts)
+
+    def find_eql(self):
+        if self.operator == "!=":
+            return self
+        if self.operator:
+            for n in self.parts:
+                if m := n.find_eql():
+                    return m
+        return None
+
+    def eval_node_with(self, node, val):
+        if self.z is not None:
+            return self
+        if self.is_lit:
+            return self
+        if self.operator == "!=":
+            assert self == node
+            return Node(lit=val)
+        if self.is_input:
+            return self
+        assert self.operator in ("+", "*", "%", "//"), str(self)
+        op = {
+            "+": operator.add,
+            "*": operator.mul,
+            "//": operator.floordiv,
+            "%": operator.mod,
+        }[self.operator]
+        vals = [n.eval_node_with(node, val) for n in self.parts]
+        return op(vals[0], vals[1])
 
     def __add__(self, n):
         if self.lit == 0:
@@ -90,111 +120,72 @@ class Node:
             return self
         if self.is_lit and n.is_lit:
             return Node(lit=self.lit + n.lit)
-        if self.operator == "add" and self.parts[1].is_lit and n.is_lit:
+        if self.operator == "+" and self.parts[1].is_lit and n.is_lit:
             rhs = Node(lit=self.parts[1].lit + n.lit)
-            return Node(operator="add", parts=[self.parts[0], rhs])
-        return Node(operator="add", parts=[self, n])
-
-    @property
-    def len(self):
-        if self.is_lit or self.is_input:
-            return 1
-        return sum(n.len for n in self.parts)
-
-    def eval(self, eqls):
-        if self.is_lit:
-            return self.lit
-        if self.operator == "eql":
-            assert self.parts[1].is_input
-            return eqls[self.parts[1].inp - 1]
-        if self.is_input:
-            print(self)
-            return 1
-        assert self.operator in ("add", "mul", "mod", "div"), str(self)
-        return OPS[self.operator](self.parts[0].eval(eqls), self.parts[1].eval(eqls))
-
-    @property
-    def max_val(self):
-        if self.operator == "add":
-            vals = [n.max_val for n in self.parts]
-            if any(v is None for v in vals):
-                return None
-            return sum(vals)
-        if self.is_lit:
-            return self.lit
-        if self.is_input:
-            return 9
+            return Node(operator="+", parts=[self.parts[0], rhs])
+        return Node(operator="+", parts=[self, n])
 
     def __mod__(self, n):
-        assert n.is_lit
         if self.lit == 0:
             return self
-        if (v := self.max_val) is not None and v < n.lit:
-            return self
-        return Node(operator="mod", parts=[self, n])
-        assert n.is_lit and n.lit == 26
-        if self.operator == "mul" and self.parts[1].lit == 26:
-            return Node(lit=0)
-        if self.is_input:
-            return self
-        if self.is_lit and self.lit < 26:
-            return self
-        if self.operator == "add":
-            if self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
-                return self
-            new = (self.parts[0] % 26) + (self.parts[1] % 26)
-            return Node(operator="mod", parts=[new, n])
-        return Node(operator="mod", parts=[self, n])
+        return Node(operator="%", parts=[self, n])
 
     def __mul__(self, n):
         if self.lit == 0 or n.lit == 1:
             return self
         if self.lit == 1 or n.lit == 0:
             return n
-        return Node(operator="mul", parts=[self, n])
+        return Node(operator="*", parts=[self, n])
 
     def __floordiv__(self, n):
         if n.lit == 1:
             return self
-        assert n.lit == 26
-        return Node(operator="div", parts=[self,n])
-        if self.operator == "mul" and self.parts[1].is_lit and self.parts[1].lit == 26:
-            return self.parts[0]
-        if self.operator == "add":
-            if any(p.operator == "mul" and p.parts[1].lit == 26 for p in self.parts):
-                return (self.parts[0]//26) + (self.parts[1]//26)
-        return Node(operator="div", parts=[self,n])
-
-    def eval_eq(self):
-        # If we are comparing complex INPUTS, use a new node.
-        if b.is_input:
-            # print(f"Splitting at {idx=} for {line=}")
-            ret = []
-            assume = ([0, f"({mem[a]} == {b})"], [1, f"({mem[a]} != {b})"])
-            for val, assm in assume:
-                mem[a] = Node(lit=val)
-                for assumptions, results in self.solver(idx + 1, mem):
-                    ret.append(([assm] + assumptions, results))
-            assert ret
+        return Node(operator="//", parts=[self,n])
 
     def __eq__(self, n):
-        # Skip. We treat eql as __ne__ since it is always negated.
-        if n.lit == 0:
+        return Node(operator="!=", parts=[self,n])
+
+    def div26(self):
+        if self.z is not None:
+            self = self.val
+        if self.operator == "+" and self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
+            return Node(lit=0)
+        if self.operator == "*" and self.parts[1].is_lit and self.parts[1].lit == 26:
+            return self.parts[0]
+        if self.operator == "+":
+            return self.parts[0].div26() + self.parts[1].div26()
+        if self.operator == "//":
+            assert self.parts[1].lit == 26
+            return self.parts[0].div26().div26()
+        raise RuntimeError(f"wot: {self} {self.val}")
+
+    def mod26(self):
+        if self.z is not None:
+            self = self.val
+        if self.operator == "+" and self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
             return self
-        if self.is_lit and n.max_val is not None and self.lit > n.max_val:
-            return Node(lit=1)
-        eq = Node(operator="eql", parts=(self, n))
-        global equallities
-        equallities.append(eq)
-        return eq
-        eq = Node(operator="NEQ", eql=n.inp)
-        print(eq)
+        if self.operator == "*" and self.parts[1].is_lit and self.parts[1].lit == 26:
+            return Node(lit=0)
+        if self.operator == "+":
+            return self.parts[0].mod26() + self.parts[1].mod26()
+        raise RuntimeError(f"wot: {self} {self.val}")
+
+    def eval(self):
+        if self.is_lit:
+            return self
+        if self.operator == "+":
+            return self.parts[0].eval() + self.parts[1].eval()
+        if self.operator == "%":
+            assert self.parts[1] == 26
+            return self.parts[0].mod26()
+        raise RuntimeError(f"wot: {self} {self.val}")
+
+
 
 
 class Day24(aoc.Challenge):
 
-    DEBUG = True
-    SUBMIT = {1: False, 2: False}
+    DEBUG = False
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=-1),
@@ -202,20 +193,25 @@ class Day24(aoc.Challenge):
     )
 
     def part1(self, parsed_input: InputType) -> int:
+        ranges = self.solve_ranges(parsed_input)
+        return int("".join(str(ranges[i][1]) for i in range(14)))
+
+    def part2(self, parsed_input: InputType) -> int:
+        ranges = self.solve_ranges(parsed_input)
+        return int("".join(str(ranges[i][0]) for i in range(14)))
+
+    def solve_ranges(self, parsed_input: InputType) -> int:
         mem = {v: Node(lit=0) for v in 'wxyz'}
-        self.code = parsed_input
-        self.code_len = len(parsed_input)
-        # self.code_len = 80
+        z_vals = {}
 
-        global equallities
-
-        input_counter = 1
-        for idx in range(0, self.code_len):
-            if idx % 50 == 0:
-                print("Code Line", idx)
-                # for var, val in mem.items():
-                #     print(var, val)
-            line = self.code[idx]
+        input_counter = 0
+        z_counter = 0
+        for line in parsed_input:
+            # Skip.
+            # All "eql" statements come in pairs of "eql x ?" then "eql x 0" which
+            # can be combined and treated as "neq x ?".
+            if line == ["eql", "x", "0"]:
+                continue
 
             if line[0] == "inp":
                 var = line[1]
@@ -227,27 +223,112 @@ class Day24(aoc.Challenge):
                     b = mem[b]
                 else:
                     b = Node(lit=int(b))
-                oper = OPS[line[0]]
-                mem[a] = oper(mem[a], b)
+                mem[a] = OPS[line[0]](mem[a], b)
+
             if line == ["add", "z", "y"]:
-                if equallities:
-                    e = equallities[-1]
-                    print(f"NEQ#{e.parts[1].inp - 1} =>")
-                    print(f"{e.parts[0]} != {e.parts[1]}")
-                print(mem["z"])
-                print()
+                mem["z"] = Node(z=z_counter, val=mem["z"])
+                z_vals[z_counter] = mem["z"]
+                z_counter += 1
             
-        print("Done")
-        print(mem["z"])
-        print("# eqls:", len(equallities))
-        if False:
-           for e in equallities:
-            print(f"NEQ#{e.parts[1].inp - 1} =>")
-            print(f"{e.parts[0]} != {e.parts[1]}")
-            print()
-        eqls = [0] * len(equallities)
-        # print("Eval:", mem["z"].eval(eqls))
-        # x = [ (v % 26 + j) != Input N ]   =>       x_next =  (v * ((25 * x) + k)) + ((Input N + l) * x))) % 26 + m  != Input (N+1)
+        counts = {1: 0, 0: 0}
+        z_evaled = {}
+        for z, n in z_vals.items():
+            eql = n.val.find_eql()
+            value = 1 if eql.eql_range_check_true() else 0
+            counts[value] += 1
+            n.val = n.val.eval_node_with(eql, value)
+            self.debug(f"{n} = {n.val}")
+            z_evaled[z] = {"eql": eql, "evaled": n, "is_eql": not value}
+        self.debug(f"Shift counts: {counts}")
+        assert counts[0] == counts[1]
+
+        reduce_z_vals = []
+        for z, n in z_vals.items():
+            assert n.val.operator in ("+", "//"), n.val
+            if n.val.operator == "+":
+                reduce_z_vals.append(n.val)
+            if n.val.operator == "//":
+                assert n.val.parts[1] == 26
+                v = n.val.parts[0].div26()
+                while v.z is not None:
+                    v = reduce_z_vals[v.z]
+                reduce_z_vals.append(v)
+                z_vals[z].val = v
+            self.debug(f"{n} = {n.val} => {reduce_z_vals[-1]}")
+
+        for z, n in z_vals.items():
+            self.debug(f"{z}: {n.val}")
+
+        input_ranges = {}
+        for z in z_evaled:
+            if not z_evaled[z]["is_eql"]:
+                continue
+            parts = z_evaled[z]["eql"].parts
+            evaled = parts[0].eval()
+            assert evaled.operator == "+" and evaled.parts[0].is_input and evaled.parts[1].is_lit
+            offset = evaled.parts[1].lit
+            self.debug(f"{parts[1]} = {evaled} {offset=}") 
+            input_ranges[evaled.parts[0].inp] = (max(1, 1 - offset), min(9, 9 - offset))
+            input_ranges[parts[1].inp] = (max(1, 1 + offset), min(9, 9 + offset))
+        return input_ranges
+        """
+        z_00 = (Input_1 + 7)
+        z_01 = ((z_0 * 26) + (Input_2 + 8))
+        z_02 = ((z_1 * 26) + (Input_3 + 16))
+        z_03 = ((z_2 * 26) + (Input_4 + 8))
+        z_04 = (z_3 // 26)
+        z_05 = ((z_4 * 26) + (Input_6 + 12))
+        z_06 = (z_5 // 26)
+        z_07 = ((z_6 * 26) + (Input_8 + 8))
+        z_08 = (z_7 // 26)
+        z_09 = (z_8 // 26)
+        z_10 = ((z_9 * 26) + (Input_11 + 4))
+        z_11 = (z_10 // 26)
+        z_12 = (z_11 // 26)
+        z_13 = (z_12 // 26)
+
+        Input_5 = ((z_03 % 26) + -8)
+        Input_7 = ((z_05 % 26) + -11)
+        Input_9 = ((z_07 % 26) + -6)
+        Input_10 = ((z_08 % 26) + -9)
+        Input_12 = ((z_10 % 26) + -5)
+        Input_13 = ((z_11 % 26) + -4)
+        Input_14 = ((z_12 % 26) + -9)
+
+        z_00 = Input_01 + 7
+        z_01 = z_00 * 26 + Input_02 + 8
+        z_02 = z_01 * 26 + Input_03 + 16
+        z_03 = z_02 * 26 + Input_04 + 8
+        z_04 = z_02
+        z_05 = z_02 * 26 + Input_06 + 12
+        z_06 = z_02
+        z_07 = z_02 * 26 + Input_08 + 8
+        z_08 = z_02
+        z_09 = z_01
+        z_10 = z_09 * 26 + Input_11 + 4
+        z_11 = z_01
+        z_12 = z_00
+        z_13 = 0
+
+        Input_05 = Input_04
+        Input_07 = Input_06 + 1
+        Input_09 = Input_08 + 2
+        Input_10 = Input_03 + 7
+        Input_12 = Input_11 - 1
+        Input_13 = Input_02 + 4
+        Input_14 = Input_01 - 2
+
+        01: 3..9
+        02: 1..5
+        03: 1..2
+        04: 1..9
+        06: 1..8
+        08: 1..7
+        11: 2..9
+        """
+        # 95299897999897 == p1
+        # 31111121382151 == p2
+        
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
