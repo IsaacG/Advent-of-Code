@@ -3,16 +3,14 @@
 
 from __future__ import annotations
 import collections
-import copy
 import dataclasses
-import functools
-import math
 import operator
 
 import typer
+import input_data
 from lib import aoc
 
-OPS = {
+OP = {
     "add": operator.add,
     "mul": operator.mul,
     "div": operator.floordiv,
@@ -20,144 +18,232 @@ OPS = {
     "eql": operator.eq,
 }
 
+SYMBOL = {
+    "add": "+",
+    "mul": "*",
+    "div": "//",
+    "mod": "%",
+    "eql": "==",
+    "neq": "!=",
+}
+
 
 @dataclasses.dataclass
 class Node:
-    inp: int = None
+    """A node, representing one VM instruction/value."""
+
+    # Used to indicate an input and track input index.
+    input_idx: int = None
+    # Operator, one of OP. Used in conjunction with parts.
     operator: str = None
     parts: list[Node] = None
-    lit: int = None
-    z: int = None
-    val: Node = None
+    # Literal int value.
+    literal: int = None
+    # An indexed `z` node with the value in `value`.
+    z_idx: int = None
+    z_val: Node = None
+    # An indexed `eql` node with the value in `value`.
+    eql_idx: int = None
+    eql_val: Node = None
+    eql_evaled: Node = None
 
     @property
-    def is_input(self):
-        return self.inp is not None
+    def is_input(self) -> bool:
+        """Return if the Node is an input Node."""
+        return self.input_idx is not None
 
     @property
-    def is_lit(self):
-        return self.lit is not None
+    def is_literal(self) -> bool:
+        """Return if the Node is a literal Node."""
+        return self.literal is not None
 
-    def __str__(self):
-        if self.is_lit:
-            return f"{self.lit}"
+    @property
+    def is_z(self) -> bool:
+        """Return if the Node is a z Node."""
+        return self.z_idx is not None
+
+    @property
+    def is_op(self) -> bool:
+        """Return if the Node is an operation Node."""
+        return self.operator is not None
+
+    @property
+    def is_eql(self) -> bool:
+        """Return if the Node is an eql Node."""
+        return self.eql_idx is not None
+
+    @property
+    def left(self) -> Node:
+        """Return the left side of the operation."""
+        assert self.is_op
+        return self.parts[0]
+
+    @property
+    def right(self) -> Node:
+        """Return the right side of the operation."""
+        assert self.is_op
+        return self.parts[1]
+
+    def __str__(self) -> str:
+        """Return a string representation of a node."""
+        if self.is_literal:
+            return f"{self.literal}"
         if self.is_input:
-            return f"Input_{self.inp}"
-        if self.z is not None:
-            return f"z_{self.z:02}"
-        return f"({self.parts[0]} {self.operator} {self.parts[1]})"
+            return f"input_{self.input_idx:02}"
+        if self.is_z:
+            return f"z_{self.z_idx:02}"
+        if self.is_eql:
+            return f"eql_{self.eql_idx:02}"
+        assert self.is_op
+        return f"({self.left} {SYMBOL[self.operator]} {self.right})"
 
-    def eql_range_check_true(self):
-        assert self.operator == "!="
-        assert self.parts[1].is_input
-        if self.parts[0].is_lit:
-            return self.parts[0].lit >= 10
-        assert self.parts[0].parts[1].is_lit
-        return self.parts[0].parts[1].lit >= 10
+    def eql_range_check_true(self) -> bool:
+        """Return is a `eql` operator can be resolved as True.
 
-    @property
-    def len(self):
-        if self.is_lit or self.is_input:
-            return 1
-        return sum(n.len for n in self.parts)
+        Given `a != input` (z_idx == 0) or `(z % 26) + a != input` determine
+        if the `eql` is impossible and the inverse `neq` must be True.
 
-    def find_eql(self):
-        if self.operator == "!=":
+        Given that `input` cannot be larger than 9, if `a > 9` then the `neq`
+        must be True.
+        """
+        # assert: x != input
+        assert self.operator == "neq"
+        assert self.right.is_input
+        if self.left.is_literal:
+            # lit != input
+            a_val = self.left.literal
+        elif self.left.operator == "mod":
+            # assert: (z % 26) != input
+            # aka: (z % 26) + 0 != input
+            assert self.left.left.is_z
+            assert self.left.right.literal == 26
+            a_val = 0
+        else:
+            # assert: (z % 26) + lit != input
+            assert self.left.operator == "add", str(self)
+            assert self.left.right.is_literal
+            assert self.left.left.operator == "mod"
+            assert self.left.left.left.is_z
+            assert self.left.left.right.literal == 26
+            a_val = self.left.right.literal
+
+        return a_val >= 10
+
+    def eval_node(self) -> Node:
+        """Evalute a node, replacing `eql` nodes with their evaluated values."""
+        if self.is_z or self.is_literal or self.is_input:
             return self
-        if self.operator:
-            for n in self.parts:
-                if m := n.find_eql():
-                    return m
-        return None
+        if self.is_eql:
+            assert self.eql_evaled is not None
+            return self.eql_evaled
+        assert self.is_op and self.operator != "eql"
+        vals = [node.eval_node() for node in self.parts]
+        return OP[self.operator](vals[0], vals[1])
 
-    def eval_node_with(self, node, val):
-        if self.z is not None:
+    def __add__(self, other: Node) -> Node:
+        """Add two Nodes."""
+        # 0 + x == x
+        if self.literal == 0:
+            return other
+        # x + 0 == x
+        if other.literal == 0:
             return self
-        if self.is_lit:
+        if self.is_literal and other.is_literal:
+            return Node(literal=self.literal + other.literal)
+        # (x + y) + z = x + (y + z)
+        if self.operator == "add" and self.right.is_literal and other.is_literal:
+            rhs = Node(literal=self.right.literal + other.literal)
+            return Node(operator="add", parts=[self.left, rhs])
+        return Node(operator="add", parts=[self, other])
+
+    def __mod__(self, other: Node) -> Node:
+        """Apply modulus."""
+        # 0 % x == 0
+        if self.literal == 0:
             return self
-        if self.operator == "!=":
-            assert self == node
-            return Node(lit=val)
+        return Node(operator="mod", parts=[self, other])
+
+    def __mul__(self, other: Node) -> Node:
+        """Multiply two Nodes."""
+        # 0 * x == 0;  x * 1 == x
+        if self.literal == 0 or other.literal == 1:
+            return self
+        # 1 * x == x; x * 0 == 0
+        if self.literal == 1 or other.literal == 0:
+            return other
+        return Node(operator="mul", parts=[self, other])
+
+    def __floordiv__(self, other: Node) -> Node:
+        """Divide two Nodes."""
+        if other.literal == 1:
+            return self
+        return Node(operator="div", parts=[self,other])
+
+    def __eq__(self, other: Node) -> Node:
+        """Equallity operator is always followed by a `not`. Return a != Node."""
+        return Node(operator="neq", parts=[self,other])
+
+    def div26(self) -> Node:
+        """Apply Node // 26."""
+        node = self
+        if node.is_z:
+            node = node.z_val
+        # (input + a) // 26 = 0 for small values of a.
+        if (
+            node.operator == "add"
+            and node.left.is_input
+            and node.right.is_literal
+            and node.right.literal <= 16
+        ):
+            return Node(literal=0)
         if self.is_input:
-            return self
-        assert self.operator in ("+", "*", "%", "//"), str(self)
-        op = {
-            "+": operator.add,
-            "*": operator.mul,
-            "//": operator.floordiv,
-            "%": operator.mod,
-        }[self.operator]
-        vals = [n.eval_node_with(node, val) for n in self.parts]
-        return op(vals[0], vals[1])
+            return Node(literal=0)
+        # (a * 26) // 26 = a
+        if node.operator == "mul" and node.right.literal == 26:
+            return node.left
+        # (a + b) // 26 = a // 26 + b // 26 ... when a = x * 26.
+        if node.operator == "add":
+            # assert: z * 26 + x
+            assert node.left.operator == "mul" and node.left.right.literal == 26
+            return node.left.div26() + node.right.div26()
+        if node.operator == "div":
+            assert node.right.literal == 26
+            return node.left.div26().div26()
+        raise RuntimeError(f"Unhandled div26: {node}")
 
-    def __add__(self, n):
-        if self.lit == 0:
-            return n
-        if n.lit == 0:
-            return self
-        if self.is_lit and n.is_lit:
-            return Node(lit=self.lit + n.lit)
-        if self.operator == "+" and self.parts[1].is_lit and n.is_lit:
-            rhs = Node(lit=self.parts[1].lit + n.lit)
-            return Node(operator="+", parts=[self.parts[0], rhs])
-        return Node(operator="+", parts=[self, n])
-
-    def __mod__(self, n):
-        if self.lit == 0:
-            return self
-        return Node(operator="%", parts=[self, n])
-
-    def __mul__(self, n):
-        if self.lit == 0 or n.lit == 1:
-            return self
-        if self.lit == 1 or n.lit == 0:
-            return n
-        return Node(operator="*", parts=[self, n])
-
-    def __floordiv__(self, n):
-        if n.lit == 1:
-            return self
-        return Node(operator="//", parts=[self,n])
-
-    def __eq__(self, n):
-        return Node(operator="!=", parts=[self,n])
-
-    def div26(self):
-        if self.z is not None:
-            self = self.val
-        if self.operator == "+" and self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
-            return Node(lit=0)
-        if self.operator == "*" and self.parts[1].is_lit and self.parts[1].lit == 26:
-            return self.parts[0]
-        if self.operator == "+":
-            return self.parts[0].div26() + self.parts[1].div26()
-        if self.operator == "//":
-            assert self.parts[1].lit == 26
-            return self.parts[0].div26().div26()
-        raise RuntimeError(f"wot: {self} {self.val}")
-
-    def mod26(self):
-        if self.z is not None:
-            self = self.val
-        if self.operator == "+" and self.parts[0].is_input and self.parts[1].is_lit and self.parts[1].lit <= 16:
-            return self
-        if self.operator == "*" and self.parts[1].is_lit and self.parts[1].lit == 26:
-            return Node(lit=0)
-        if self.operator == "+":
-            return self.parts[0].mod26() + self.parts[1].mod26()
-        raise RuntimeError(f"wot: {self} {self.val}")
+    def mod26(self) -> Node:
+        """Apply Node % 26."""
+        node = self
+        if node.is_z:
+            node = node.z_val
+        # (input + a) % 26 = (input + a) for small values of a.
+        if (
+            node.operator == "add"
+            and node.left.is_input
+            and node.right.is_literal
+            and node.right.literal <= 16
+        ):
+            return node
+        if self.is_input:
+            return node
+        # (a * 26) % 26 == 0
+        if node.operator == "mul" and node.right.literal == 26:
+            return Node(literal=0)
+        # (a + b) % 26 = (a % 26 + b % 26) % 26
+        if node.operator == "add":
+            return (node.left.mod26() + node.right.mod26()).mod26()
+        raise RuntimeError(f"Unhandled mod26: {node}")
 
     def eval(self):
-        if self.is_lit:
+        """Evaluate a node, for simplified Nodes."""
+        if self.is_literal or self.is_input:
             return self
-        if self.operator == "+":
-            return self.parts[0].eval() + self.parts[1].eval()
-        if self.operator == "%":
-            assert self.parts[1] == 26
-            return self.parts[0].mod26()
-        raise RuntimeError(f"wot: {self} {self.val}")
-
-
+        if self.operator == "add":
+            return self.left.eval() + self.right.eval()
+        if self.operator == "mod":
+            assert self.right == 26
+            return self.left.mod26()
+        raise RuntimeError(f"Unhandled eval: {self}")
 
 
 class Day24(aoc.Challenge):
@@ -176,9 +262,12 @@ class Day24(aoc.Challenge):
 
     Step 1
     ------
+
     Resolve all 14 `z` values (indicated by `add z y`) in terms of a prior `z`.
     This gives the form:
-    z_(n+1) = (f(z_(n)) * ((25 * (((z_(n) % 26) + a) != Input_(n+1))) + 1)) + ((Input_(n+1) + b) * (((z_(n) % 26) + a) != Input_(n+1)))
+    z_(n+1) =
+        (f(z_(n)) * ((25 * (((z_(n) % 26) + a) != Input_(n+1))) + 1))
+        + ((Input_(n+1) + b) * (((z_(n) % 26) + a) != Input_(n+1)))
     where a, b are fixed ints and `f(x) = x` or `f(x) = x // 26`
 
     Rewritten as a conditional,
@@ -189,6 +278,9 @@ class Day24(aoc.Challenge):
     else:
         z_(n+1) = f((z_(n))
     ```
+
+    Step 2
+    ------
 
     Examining the conditionals and bearing in mind that inputs must be [1..9],
     `(z % 26) + a != Input` will be true for all possible inputs if `a > 9`.
@@ -205,6 +297,9 @@ class Day24(aoc.Challenge):
     `z_(n+1) = z_(n) // 26` to reduce the `z` value to 0. These are found by setting
     the conditional `(z_n % 26) + a = Input_(n+1)`.
 
+    Step 3
+    ------
+
     Given `z_(n+1) = z_(n) * 26 + Input_(n+1) + a` and `z_(n+2) = z_(n+1) // 26`,
     we can reduce `z_(n+2) = z_(n)`. Using this transformation, this allows us to write
     all `z` values in the form `z_(x) = z_(y) * 26 + Input_(z) + a`
@@ -215,111 +310,92 @@ class Day24(aoc.Challenge):
     simply `Input + a`. That gives us seven instances of
     `Input_x = Input_y + a`, each with unrelated `x` and `y` values.
 
+    Step 4
+    ------
+
     Recalling that all inputs must be [1..9], `Input_x = Input_y + a` gives a min
-    and max value for both `Input` values. This gives upper and lowe limits on all
+    and max value for both `Input` values. This gives upper and lower limits on all
     14 input values.
     """
 
     DEBUG = False
 
-    TESTS = []
+    TESTS = [
+        aoc.TestCase(inputs=v, part=p + 1, want=input_data.DAY24_SOLUTIONS[k][p])
+        for k, v in input_data.DAY24.items()
+        for p in (0, 1)
+    ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, parsed_input: list[tuple[str, ...]]) -> int:
+        """Return the max valid seriel number."""
         ranges = self.solve_ranges(parsed_input)
         return int("".join(str(ranges[i][1]) for i in range(14)))
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: list[tuple[str, ...]]) -> int:
+        """Return the min valid seriel number."""
         ranges = self.solve_ranges(parsed_input)
         return int("".join(str(ranges[i][0]) for i in range(14)))
 
-    def solve_ranges(self, parsed_input: InputType) -> int:
-        mem = {v: Node(lit=0) for v in 'wxyz'}
+    def build_ast(self, monad: list[tuple[str, ...]]) -> tuple[dict[int, Node], dict[int, Node]]:
+        """Parse the input Monad and return both the z Nodes and eql Nodes."""
+        mem = {v: Node(literal=0) for v in 'wxyz'}
+
         z_vals = {}
+        eql_vals = {}
 
         input_counter = 0
         z_counter = 0
-        for line in parsed_input:
-            # Skip.
+        eql_counter = 0
+
+        # Parse the input into a Node tree.
+        for operation, *operands in monad:
             # All "eql" statements come in pairs of "eql x ?" then "eql x 0" which
-            # can be combined and treated as "neq x ?".
-            if line == ["eql", "x", "0"]:
+            # can be combined and treated as "neq x ?". Skip the negation.
+            if operation == "eql" and operands == ["x", "0"]:
                 continue
 
-            if line[0] == "inp":
-                var = line[1]
-                mem[var] = Node(inp=input_counter)
+            # Set the memory to the value/instruction.
+            if operation == "inp":
+                var = operands[0]
+                mem[var] = Node(input_idx=input_counter)
                 input_counter += 1
             else:
-                a, b = line[1:]
-                if b in "wxyz":
-                    b = mem[b]
+                op_a, op_b = operands
+                if op_b in "wxyz":
+                    op_b = mem[op_b]
                 else:
-                    b = Node(lit=int(b))
-                mem[a] = OPS[line[0]](mem[a], b)
+                    op_b = Node(literal=int(op_b))
+                mem[op_a] = OP[operation](mem[op_a], op_b)
 
-            if line == ["add", "z", "y"]:
-                z = Node(z=z_counter, val=mem["z"])
-                mem["z"] = z
-                self.debug(f"{z} = {z.val}")
-                z_vals[z_counter] = z
+            # Replace `add z y` values with special z Nodes and track them.
+            if operation == "add" and operands == ["z", "y"]:
+                node = Node(z_idx=z_counter, z_val=mem[op_a])
+                mem[op_a] = node
+                self.debug(f"{node} = {node.z_val}")
+                z_vals[z_counter] = node
                 z_counter += 1
-            
-        counts = {1: 0, 0: 0}
-        z_evaled = {}
-        for z, n in z_vals.items():
-            eql = n.val.find_eql()
-            value = 1 if eql.eql_range_check_true() else 0
-            counts[value] += 1
-            n.val = n.val.eval_node_with(eql, value)
-            self.debug(f"{n} = {n.val}")
-            z_evaled[z] = {"eql": eql, "evaled": n, "is_eql": not value}
-        self.debug(f"Shift counts: {counts}")
-        assert counts[0] == counts[1]
 
-        reduce_z_vals = []
-        for z, n in z_vals.items():
-            assert n.val.operator in ("+", "//"), n.val
-            if n.val.operator == "+":
-                reduce_z_vals.append(n.val)
-            if n.val.operator == "//":
-                assert n.val.parts[1] == 26
-                v = n.val.parts[0].div26()
-                while v.z is not None:
-                    v = reduce_z_vals[v.z]
-                reduce_z_vals.append(v)
-                z_vals[z].val = v
-            self.debug(f"{n} = {n.val} => {reduce_z_vals[-1]}")
+            # Replace `eql` values with special eql Nodes and track them.
+            if operation == "eql":
+                node = Node(eql_idx=eql_counter, eql_val=mem[op_a])
+                mem[op_a] = node
+                eql_vals[eql_counter] = node
+                eql_counter += 1
 
-        for z, n in z_vals.items():
-            self.debug(f"{z}: {n.val}")
+        return z_vals, eql_vals
 
-        input_ranges = {}
-        for z in z_evaled:
-            if not z_evaled[z]["is_eql"]:
-                continue
-            parts = z_evaled[z]["eql"].parts
-            evaled = parts[0].eval()
-            assert evaled.operator == "+" and evaled.parts[0].is_input and evaled.parts[1].is_lit
-            offset = evaled.parts[1].lit
-            self.debug(f"{parts[1]} = {evaled} {offset=}") 
-            input_ranges[evaled.parts[0].inp] = (max(1, 1 - offset), min(9, 9 - offset))
-            input_ranges[parts[1].inp] = (max(1, 1 + offset), min(9, 9 + offset))
-        return input_ranges
-        """
-        z_00 = (Input_1 + 7)
-        z_01 = ((z_0 * 26) + (Input_2 + 8))
-        z_02 = ((z_1 * 26) + (Input_3 + 16))
-        z_03 = ((z_2 * 26) + (Input_4 + 8))
-        z_04 = (z_3 // 26)
-        z_05 = ((z_4 * 26) + (Input_6 + 12))
-        z_06 = (z_5 // 26)
-        z_07 = ((z_6 * 26) + (Input_8 + 8))
-        z_08 = (z_7 // 26)
-        z_09 = (z_8 // 26)
-        z_10 = ((z_9 * 26) + (Input_11 + 4))
-        z_11 = (z_10 // 26)
-        z_12 = (z_11 // 26)
-        z_13 = (z_12 // 26)
+    def resolve_eqls(self, eql_vals: dict[int, Node]) -> None:
+        """Resolve all eql/neq nodes to 0 or 1/.
+
+        Range check the eql Nodes to determine if they can be resolved.
+        (input_x + a != input_y for a >= 10) must be True since input < 10.
+
+        If not True, assume False and assert the counts of True and False balance.
+
+        The number of True and False neq Nodes must balance for z_13 == 0
+        because we must balance the z_n * 26 with the z_n // 26.
+
+        After resolving, the eqls where we know eql is Tue looks like:
 
         Input_5 = ((z_03 % 26) + -8)
         Input_7 = ((z_05 % 26) + -11)
@@ -328,43 +404,115 @@ class Day24(aoc.Challenge):
         Input_12 = ((z_10 % 26) + -5)
         Input_13 = ((z_11 % 26) + -4)
         Input_14 = ((z_12 % 26) + -9)
+        """
+        for node in eql_vals.values():
+            if node.eql_val.eql_range_check_true():
+                node.eql_evaled = Node(literal=1)
+            else:
+                node.eql_evaled = Node(literal=0)
+            self.debug(f"{node} {node.eql_val} {node.eql_evaled}")
+
+        count = collections.Counter(node.eql_evaled.literal for node in eql_vals.values())
+        assert count[0] == count[1]
+
+    def resolve_z_values(self, z_vals: dict[int, Node]) -> None:
+        """Resolve z values using fixed eql values.
+
+        Once all eql Nodes have a fixed 0 or 1 value, the z Nodes can be evaluated
+        using the fixed eql value.
+
+        This results in z Nodes having values like:
+
+        z_00 = (Input_1 + 7)
+        z_01 = ((z_0 * 26) + (Input_2 + 8))
+        z_02 = ((z_1 * 26) + (Input_3 + 16))
+        z_04 = (z_3 // 26)
+        z_06 = (z_5 // 26)
+
+        Next, (z // 26) can be resolved by referencing prior z values, resulting in:
 
         z_00 = Input_01 + 7
         z_01 = z_00 * 26 + Input_02 + 8
         z_02 = z_01 * 26 + Input_03 + 16
-        z_03 = z_02 * 26 + Input_04 + 8
         z_04 = z_02
-        z_05 = z_02 * 26 + Input_06 + 12
         z_06 = z_02
-        z_07 = z_02 * 26 + Input_08 + 8
-        z_08 = z_02
-        z_09 = z_01
-        z_10 = z_09 * 26 + Input_11 + 4
         z_11 = z_01
         z_12 = z_00
         z_13 = 0
-
-        Input_05 = Input_04
-        Input_07 = Input_06 + 1
-        Input_09 = Input_08 + 2
-        Input_10 = Input_03 + 7
-        Input_12 = Input_11 - 1
-        Input_13 = Input_02 + 4
-        Input_14 = Input_01 - 2
-
-        01: 3..9
-        02: 1..5
-        03: 1..2
-        04: 1..9
-        06: 1..8
-        08: 1..7
-        11: 2..9
         """
-        # 95299897999897 == p1
-        # 31111121382151 == p2
-        
+        # Update the z Nodes now that the eql Nodes have all been assigned a value.
+        for node in z_vals.values():
+            # Update z value using the fixed eql values.
+            node.z_val = node.z_val.eval_node()
+            self.debug(f"{node} = {node.z_val}")
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+        # Simplify z Nodes of the form z // 26.
+        for node in z_vals.values():
+            assert node.z_val.operator in ("add", "div"), node.z_val
+            if node.z_val.operator == "div":
+                assert node.z_val.right == 26
+                val = node.z_val.left.div26()
+                while val.is_z:
+                    val = z_vals[val.z_idx].z_val
+                node.z_val = val
+            self.debug(f"{node} = {node.z_val}")
+
+    def input_offsets(self, eql_vals: dict[int, Node]) -> dict[int, int]:
+        """Return the "offset" of each input.
+
+        For neq Nodes set to 0, ie eql is True, evaluate Nodes to find equalities
+        of the form `input_x = input_y + a`. Conversely this gives
+        `input_y = input_x + b, b = -a`. Return the "offset" for each input.
+
+        Input_01 = Input_02
+        Input_03 = Input_04 + 1
+        Input_05 = Input_06 - 3
+
+        => {1: 0, 2: 0, 3: 1, 4: -1, 5: -33, 6: 3}
+        """
+        # Discard inequalities. Only equalities can be used to assess values.
+        eql_vals = [node for node in eql_vals.values() if node.eql_evaled.literal == 0]
+
+        offsets = {}
+        for node in eql_vals:
+            # neq is True. eql is False. Cannot assign ranges.
+            left, right = [p.eval() for p in node.eql_val.parts]
+            # assert: input_x + a = input_b
+            assert left.operator == "add" and left.left.is_input and left.right.is_literal
+            assert right.is_input
+            offset = left.right.literal
+            offsets[left.left.input_idx] = offset
+            offsets[right.input_idx] = -offset
+            self.debug(f"{left} = {right}")
+        return offsets
+
+    @staticmethod
+    def ranges(offsets: dict[int, int]) -> dict[int, tuple[int, int]]:
+        """Return valid values for each input (min, max) based on the known offsets."""
+        return {
+            idx: (max(1, 1 - offset), min(9, 9 - offset))
+            for idx, offset in offsets.items()
+        }
+
+    def solve_ranges(self, monad: list[tuple[str, ...]]) -> dict[int, tuple[int, int]]:
+        """Decompose a MONAD program to derive valid input values."""
+        # Build the AST to get the z Nodes and eql Nodes.
+        z_vals, eql_vals = self.build_ast(monad)
+
+        # Assign a fixed value (0 or 1) to all eql Nodes.
+        self.resolve_eqls(eql_vals)
+
+        # Simplify z Nodes using the fixed eql values.
+        self.resolve_z_values(z_vals)
+
+        # Given the known z values and half the equalities fixed, resolve the
+        # "offset" of each input from another input. `input_x = input_y + offset`.
+        offsets = self.input_offsets(eql_vals)
+
+        # Use the known input offsets to compute the min/max value for each input.
+        return self.ranges(offsets)
+
+    def parse_input(self, puzzle_input: str) -> list[tuple[str, ...]]:
         """Parse the input data."""
         return [line.split() for line in puzzle_input.splitlines()]
 
