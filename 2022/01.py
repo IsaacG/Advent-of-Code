@@ -34,13 +34,16 @@ class Day01(aoc.Challenge):
         """Return the sum calories held by the elf with the most calories."""
         return max(sum(i) for i in parsed_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: InputType, top_n: int = 3) -> int:
         """Return the sum calories held by the top three elves with the most calories."""
-        return sum(sorted(sum(i) for i in parsed_input)[-3:])
+        return sum(sorted(sum(i) for i in parsed_input)[-top_n:])
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return [[int(j) for j in i.splitlines()] for i in  puzzle_input.split("\n\n")]
+        return [
+            [int(line) for line in block.splitlines()]
+            for block in  puzzle_input.split("\n\n")
+        ]
 
 
 if __name__ == "__main__":
