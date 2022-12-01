@@ -11,31 +11,34 @@ TODO:
 """
 
 from __future__ import annotations
+
 import dataclasses
-import os
+import functools
 import pathlib
 import time
+from typing import Any, Callable, Generator, Iterable, List, Optional
 
 from . import site
-from typing import Any, Callable, Generator, Iterable, List, Optional
 
 
 COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
 
-def print_point_set(self, board: set[complex]):
+
+def print_point_set(board: set[complex]) -> None:
     """Print out a set of points as a map."""
     min_x, max_x = int(min(p.real for p in board)), int(max(p.real for p in board))
     min_y, max_y = int(min(p.imag for p in board)), int(max(p.imag for p in board))
     for y in range(min_y, max_y+1):
         line = ""
-        for x in range(min_x, max_x+1):
-            line += "#" if complex(x,y) in board else "."
+        for x in range(min_x, max_x + 1):
+            line += "#" if complex(x, y) in board else "."
         print(line)
     print()
 
 
 class Board(dict):
+    """A Board, represented as a set of complex points."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,17 +46,21 @@ class Board(dict):
 
     @property
     def width(self):
+        """Return the width of the board."""
         return int(max(point.real for point in self)) + 1
 
     @property
     def height(self):
+        """Return the height of the board."""
         return int(max(point.imag for point in self)) + 1
 
     @property
-    def max_point(self):
-        return (self.width - 1) + (self.height - 1) * 1j
+    def max_point(self) -> complex:
+        """Return the max point in the board."""
+        return complex(self.width - 1, self.height - 1)
 
     def neighbors(self, point: complex, diagonal: bool) -> list[complex]:
+        """Return the 4/8 neighbors of a point."""
         neighbors = []
         for i in range(4):
             if (candidate := point + -1j ** i) in self:
@@ -63,9 +70,10 @@ class Board(dict):
                 if (candidate := point + (1 + 1j) * -1j ** i) in self:
                     neighbors.append(candidate)
         return neighbors
-    
+
     @classmethod
     def from_block_map(cls, block: str, transform: Callable[[str], Any]) -> Board:
+        """Return a Board from a block mapped with transform()."""
         raw_dict = {
             x + y * 1j: transform(val)
             for y, line in enumerate(block.splitlines())
@@ -75,6 +83,7 @@ class Board(dict):
 
     @classmethod
     def from_int_block(cls, block: str) -> Board:
+        """Return a Board from a block of ints."""
         return cls.from_block_map(block, int)
 
 
@@ -124,7 +133,7 @@ def render(points: set[complex]) -> str:
     for y in range(ys + 1):
         row = ''
         for x in range(xs + 1):
-            if (x + y * 1j) in points:
+            if x + y * 1j in points:
                 row += COLOR_SOLID
             else:
                 row += COLOR_EMPTY
@@ -134,13 +143,14 @@ def render(points: set[complex]) -> str:
 
 @dataclasses.dataclass
 class TestCase:
-  """Test out a solution with a known input/want."""
-  inputs: str
-  want: int
-  part: int
+    """Test out a solution with a known input/want."""
+    inputs: str
+    want: int
+    part: int
 
 
 class Helpers:
+    """A collection of helper functions."""
 
     _primes = [2, 3, 5]
     _gcd = {}
@@ -159,6 +169,7 @@ class Helpers:
         return sum(func(line) for line in lines)
 
     def primes(self) -> Generator[int, None, None]:
+        """Yield primes without end."""
         s = 0
         for s in self._primes:
             yield s
@@ -168,36 +179,39 @@ class Helpers:
                 if s % p == 0:
                     break
                 if p * p > s:
-                  self._primes.append(s)
-                  yield s
-                  break
+                    self._primes.append(s)
+                    yield s
+                    break
 
     def angle(self, c: complex) -> complex:
+        """Return the angle given by a complex number."""
         return c / self.gcd(int(c.real), int(c.imag))
 
     @staticmethod
     def sum_series(n: int) -> int:
+        """Return the sum of the series [1..n]."""
         return n * (n + 1) // 2
 
     def gcd(self, a: int, b: int) -> int:
-      a, b = abs(a), abs(b)
-      if a > b:
-          a, b = b, a
-      if a == 0:
-          return b if b else 1
-      tple = (a, b)
-      if tple not in self._gcd:
-          gcd = 1
-          p = 1
-          pgen = self.primes()
-          while p < a:
-              p = next(pgen)
-              while (a % p == 0 and b % p == 0):
-                  a //= p
-                  b //= p
-                  gcd *= p
-          self._gcd[tple] = gcd
-      return self._gcd[tple]
+        """Return the GCD of two numbers."""
+        a, b = abs(a), abs(b)
+        if a > b:
+            a, b = b, a
+        if a == 0:
+            return b if b else 1
+        tple = (a, b)
+        if tple not in self._gcd:
+            gcd = 1
+            p = 1
+            pgen = self.primes()
+            while p < a:
+                p = next(pgen)
+                while (a % p == 0 and b % p == 0):
+                    a //= p
+                    b //= p
+                    gcd *= p
+            self._gcd[tple] = gcd
+        return self._gcd[tple]
 
 
 class Challenge(Helpers):
@@ -217,17 +231,19 @@ class Challenge(Helpers):
         self._filecache = {}
         super().__init__()
 
-    def site(self):
-        if self._site is None:
-            self._site = site.Website(self.year, self.day)
-        return self._site
+    @functools.cached_property
+    def site(self) -> site.Website:
+        """Return a cached Website object."""
+        return site.Website(self.year, self.day)
 
     @property
     def data_file(self) -> pathlib.Path:
+        """Return the path to today's data file."""
         return (self.data_dir / f'{self.day:02d}').with_suffix('.txt')
 
     @property
     def data_dir(self) -> pathlib.Path:
+        """Return the directory named "data" with the inputs."""
         for p in pathlib.Path(__file__).parents:
             d = p / 'data'
             if d.exists():
@@ -267,9 +283,8 @@ class Challenge(Helpers):
             if not path.exists():
                 if filename:
                     raise RuntimeError(f'Input file {filename} does not exist.')
-                else:
-                    print(f'Input does not exist. Downloading.')
-                    path.write_text(self.site().get_input())
+                print('Input does not exist. Downloading.')
+                path.write_text(self.site.get_input())
 
             self._filecache[filename] = path.read_text().strip()
         return self._filecache[filename]
@@ -293,14 +308,14 @@ class Challenge(Helpers):
         self.testing = True
 
         for i, case in enumerate(self.TESTS):
-          self.debug(f'Running test {i + 1} (part{case.part})')
-          assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-          data = self.parse_input(case.inputs.strip())
-          start = time.clock_gettime(time.CLOCK_MONOTONIC)
-          got = self.funcs[case.part](data)
-          end = time.clock_gettime(time.CLOCK_MONOTONIC)
-          delta = int(1000 * (end - start))
-          if case.want != got:
+            self.debug(f'Running test {i + 1} (part{case.part})')
+            assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
+            data = self.parse_input(case.inputs.strip())
+            start = time.clock_gettime(time.CLOCK_MONOTONIC)
+            got = self.funcs[case.part](data)
+            end = time.clock_gettime(time.CLOCK_MONOTONIC)
+            delta = int(1000 * (end - start))
+            if case.want != got:
                 print(f'FAILED! {case.part}: want({case.want}) != got({got})')
                 break
             print(f'PASSED! Test #{i + 1} in {delta}ms')
@@ -314,7 +329,6 @@ class Challenge(Helpers):
 
     def pre_run(self):
         """Hook to run things prior to tests and actual."""
-        pass
 
     def run(
         self,
@@ -325,12 +339,13 @@ class Challenge(Helpers):
         check: bool = False,
         timeit: bool = False,
     ):
+        """Run the challenges."""
         assert any((test, solve, check, timeit, submit))
-  
+
         self.pre_run()
         if test:
             self.run_tests()
-  
+
         if solve:
             for i in (1, 2):
                 puzzle_input = self.parse_input(self.raw_data(data))
@@ -339,7 +354,7 @@ class Challenge(Helpers):
                     print(self.funcs[i](puzzle_input))
                 except NotImplementedError:
                     print(f'Part {i}: Not implemented')
-  
+
         if submit:
             answer = None
             for i in (1, 2):
@@ -355,8 +370,8 @@ class Challenge(Helpers):
             else:
                 print('Submitting answer:', answer)
                 print('Response:')
-                print(self.site().submit(answer))
-  
+                print(self.site.submit(answer))
+
         if check:
             lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
             for line in lines:
@@ -381,6 +396,7 @@ class Challenge(Helpers):
             self.time(data)
 
     def time_func(self, count: int, func: Callable) -> float:
+        """Time a callable, averaged over count runs."""
         start = time.clock_gettime(time.CLOCK_MONOTONIC)
         for _ in range(count):
             func()
@@ -388,23 +404,24 @@ class Challenge(Helpers):
         return 1000 * (end - start) / count
 
     def time(self, data):
-      """Benchmark the solution."""
-      times = []
-      times.append(self.time_func(10000, lambda: self.parse_input(self.raw_data(data))))
+        """Benchmark the solution."""
+        times = []
+        times.append(self.time_func(10000, lambda: self.parse_input(self.raw_data(data))))
 
-      for part, func in self.funcs.items():
-          r = lambda: func(self.parse_input(self.raw_data(data)))
+        for part, func in self.funcs.items():
 
-          if self.TIMER_ITERATIONS[part - 1]:
-              _count = self.TIMER_ITERATIONS[part - 1]
-          else:
-              t = self.time_func(5, r) / 1000
-              _count = min(10000, max(1, int(25 / t)))
+            r = lambda: func(self.parse_input(self.raw_data(data)))
 
-          t = self.time_func(_count, r)
-          times.append(t)
+            if self.TIMER_ITERATIONS[part - 1]:
+                _count = self.TIMER_ITERATIONS[part - 1]
+            else:
+                t = self.time_func(5, r) / 1000
+                _count = min(10000, max(1, int(25 / t)))
 
-      print(f'{self.day}: ' + '/'.join(f'{t:.3f}' for t in times) + ' ms')
+            t = self.time_func(_count, r)
+            times.append(t)
+
+        print(f'{self.day}: ' + '/'.join(f'{t:.3f}' for t in times) + ' ms')
 
 
-# vim:ts=2:sw=2:expandtab
+# vim:ts=4:sw=4:expandtab
