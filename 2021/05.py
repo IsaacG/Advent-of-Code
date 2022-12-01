@@ -9,7 +9,7 @@ import typer
 
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
@@ -21,7 +21,6 @@ SAMPLE = ["""\
 0,0 -> 8,8
 5,5 -> 8,2
 """
-]
 
 # A list of point->point pairs, delineating a line.
 InputType = list[aoc.Line]
@@ -31,8 +30,8 @@ class Day05(aoc.Challenge):
     """Map where geothermal vent clouds cross paths."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=12),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=5),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=12),
     )
 
     def part1(self, parsed_input: InputType) -> int:

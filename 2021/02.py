@@ -7,22 +7,22 @@ import typer
 from lib import aoc
 
 
-SAMPLE = ["""\
+SAMPLE = """\
 forward 5
 down 5
 forward 8
 up 3
 down 8
 forward 2
-"""]
+"""
 
 
 class Day02(aoc.Challenge):
     """Track the location of the submarine as it moves about."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=150),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=900),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=150),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=900),
     )
     INPUT_TYPES = [str, int]
 

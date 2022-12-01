@@ -6,7 +6,7 @@ from typing import Optional
 import typer
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
@@ -26,7 +26,7 @@ SAMPLE = ["""\
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7
-"""]
+"""
 
 
 class BingoCard:
@@ -72,8 +72,8 @@ class Day04(aoc.Challenge):
     """
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=4512),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=1924),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=4512),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=1924),
     )
 
     def part1(self, parsed_input: InputType) -> int:

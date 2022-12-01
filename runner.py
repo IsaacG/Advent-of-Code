@@ -284,7 +284,7 @@ def main(
     if submit:
         flags.append("--submit")
     if timeit:
-        flags.append("--time")
+        flags.append("--timeit")
     if check:
         flags.append("--check")
     assert flags

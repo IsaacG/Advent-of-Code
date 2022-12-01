@@ -7,7 +7,7 @@ import typer
 
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 00100
 11110
 10110
@@ -20,15 +20,15 @@ SAMPLE = ["""\
 11001
 00010
 01010
-"""]
+"""
 
 
 class Day03(aoc.Challenge):
     """Submarine Diagnostics Analysis."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=198),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=230),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=198),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=230),
     )
     INPUT_TYPES = str
 

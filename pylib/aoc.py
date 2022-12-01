@@ -24,6 +24,7 @@ COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
 
 def print_point_set(self, board: set[complex]):
+    """Print out a set of points as a map."""
     min_x, max_x = int(min(p.real for p in board)), int(max(p.real for p in board))
     min_y, max_y = int(min(p.imag for p in board)), int(max(p.imag for p in board))
     for y in range(min_y, max_y+1):
@@ -163,9 +164,13 @@ class Helpers:
       yield s
     while True:
       s += 2
-      if all(s % f for f in self._primes):
-        self._primes.append(s)
-        yield s
+      for p in self._primes:
+        if s % p == 0:
+          break
+        if p * p > s:
+          self._primes.append(s)
+          yield s
+          break
 
   def angle(self, c: complex) -> complex:
     return c / self.gcd(int(c.real), int(c.imag))
