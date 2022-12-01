@@ -303,7 +303,7 @@ class Challenge(Helpers):
 
         return [transform(i) for i in puzzle_input.splitlines()]
 
-    def run_tests(self):
+    def test(self, data=None):
         """Run the tests."""
         self.testing = True
 
@@ -330,6 +330,63 @@ class Challenge(Helpers):
     def pre_run(self):
         """Hook to run things prior to tests and actual."""
 
+    def solve(self, data=None) -> None:
+        for i in (1, 2):
+            puzzle_input = self.parse_input(self.raw_data(data))
+            self.debug(f'Running part {i}:')
+            try:
+                print(self.funcs[i](puzzle_input))
+            except NotImplementedError:
+                print(f'Part {i}: Not implemented')
+
+    def check(self, data=None) -> None:
+        """Check the generated solutions match the contents of solutions.txt."""
+        lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
+        for line in lines:
+            parts = line.split()
+            assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
+            if int(parts[0]) == self.day:
+                break
+        for i in (1, 2):
+            start = time.clock_gettime(time.CLOCK_MONOTONIC)
+            puzzle_input = self.parse_input(self.raw_data(data))
+            got = self.funcs[i](puzzle_input)
+            end = time.clock_gettime(time.CLOCK_MONOTONIC)
+            delta = int(1000 * (end - start))
+            want = parts[i]
+            if isinstance(got, int):
+                want = int(want)
+            if want == got:
+                print(f'Day {self.day:02d} Part {i}: PASS in {delta}ms!')
+            else:
+                print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
+
+    def submit(self, data=None) -> None:
+        """Generate a solution for the next unsolved part and submit it."""
+        answers = []
+        for i in (1, 2):
+            puzzle_input = self.parse_input(self.raw_data(data))
+            try:
+                a = self.funcs[i](puzzle_input)
+                if a:
+                    answers.append(a)
+            except NotImplementedError:
+                pass
+        if not answers:
+            print('Did not get an answer.')
+            return
+
+        print(f'Generated answers {answers}; submitting part {len(answers)}.')
+        response = self.site.submit(answers[-1])
+        if response:
+            print(f'Response: {response}')
+
+    def get_run_method(self, **kwargs: bool) -> Callable[[Challenge, Optional[str]], None]:
+        if sum(kwargs.values()) != 1:
+            raise ValueError("Must specify exactly one action.")
+        action = [k for k, v in kwargs.items() if v][0]
+        return getattr(self, action)
+
     def run(
         self,
         data: str = None,
@@ -337,63 +394,12 @@ class Challenge(Helpers):
         solve: bool = False,
         submit: bool = False,
         check: bool = False,
-        timeit: bool = False,
+        benchmark: bool = False,
     ):
         """Run the challenges."""
-        assert any((test, solve, check, timeit, submit))
-
         self.pre_run()
-        if test:
-            self.run_tests()
-
-        if solve:
-            for i in (1, 2):
-                puzzle_input = self.parse_input(self.raw_data(data))
-                self.debug(f'Running part {i}:')
-                try:
-                    print(self.funcs[i](puzzle_input))
-                except NotImplementedError:
-                    print(f'Part {i}: Not implemented')
-
-        if submit:
-            answer = None
-            for i in (1, 2):
-                puzzle_input = self.parse_input(self.raw_data(data))
-                try:
-                    a = self.funcs[i](puzzle_input)
-                    if a:
-                        answer = a
-                except NotImplementedError:
-                    pass
-            if not answer:
-                print('Did not get an answer.')
-            else:
-                print('Submitting answer:', answer)
-                print('Response:')
-                print(self.site.submit(answer))
-
-        if check:
-            lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
-            for line in lines:
-                parts = line.split()
-                assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
-                if int(parts[0]) == self.day:
-                    break
-            for i in (1, 2):
-                start = time.clock_gettime(time.CLOCK_MONOTONIC)
-                puzzle_input = self.parse_input(self.raw_data(data))
-                got = self.funcs[i](puzzle_input)
-                end = time.clock_gettime(time.CLOCK_MONOTONIC)
-                delta = int(1000 * (end - start))
-                want = parts[i]
-                if isinstance(got, int):
-                    want = int(want)
-                if want == got:
-                    print(f'Day {self.day:02d} Part {i}: PASS in {delta}ms!')
-                else:
-                    print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
-        if timeit:
-            self.time(data)
+        f = self.get_run_method(test=test, solve=solve, submit=submit, check=check, benchmark=benchmark)
+        f(data)
 
     def time_func(self, count: int, func: Callable) -> float:
         """Time a callable, averaged over count runs."""
@@ -403,7 +409,7 @@ class Challenge(Helpers):
         end = time.clock_gettime(time.CLOCK_MONOTONIC)
         return 1000 * (end - start) / count
 
-    def time(self, data):
+    def benchmark(self, data=None):
         """Benchmark the solution."""
         times = []
         times.append(self.time_func(10000, lambda: self.parse_input(self.raw_data(data))))

@@ -16,7 +16,8 @@ InputType = list[int]
 class Day${day}(aoc.Challenge):
 
     DEBUG = True
-    SUBMIT = {1: False, 2: False}
+    # Default is True. On live solve, submit one tests pass.
+    # SUBMIT = {1: False, 2: False}
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),

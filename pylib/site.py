@@ -73,7 +73,13 @@ class Website:
     resp = self.session.get(u)
     resp.raise_for_status()
     et = etree.HTML(resp.content)
-    level = et.xpath('//form/input[@name="level"]/@value')[0]
+
+    levels = et.xpath('//form/input[@name="level"]/@value')
+    if not levels:
+        print('No submission box found; is this already completed?')
+        return
+
+    level = levels[0]
     resp = self.session.post(f'{u}/answer', data={'answer': answer, 'level': level})
     resp.raise_for_status()
     et = etree.HTML(resp.content)
