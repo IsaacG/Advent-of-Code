@@ -1,75 +1,78 @@
 #!/bin/python
 """Advent of Code: Day 02."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 A Y
 B X
 C Z
-"""]
-InputType = list[int]
+"""
+InputType = list[tuple[str, str]]
+
+
+LOSE, DRAW, WIN = "XYZ"
+POINTS = {LOSE: 0, DRAW: 3, WIN: 6}
 
 
 class Day02(aoc.Challenge):
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 2: Rock Paper Scissors. Score a tournament."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=15),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=12),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=15),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=12),
     )
-
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    INPUT_TYPES = tuple[str, str]
 
     def part1(self, parsed_input: InputType) -> int:
+        """Score a tournament with the columns representing the choices."""
         score = 0
-        for a, b in parsed_input:
-            a1 = "ABC".index(a)
-            b1 = "XYZ".index(b)
-            score += b1 + 1
-            if a1 == b1:
-                score += 3 # draw
-            if b1 == a1 + 1 or a1 == 2 and b1 == 0:
-                score += 6 # win
+        for elf_move, my_move in parsed_input:
+            pos_a = "ABC".index(elf_move)
+            pos_b = "XYZ".index(my_move)
+            score += pos_b + 1
+            if pos_a == pos_b:
+                score += POINTS[DRAW]
+            elif pos_b == (pos_a + 1) % 3:
+                score += POINTS[WIN]
         return score
 
     def part2(self, parsed_input: InputType) -> int:
-        # X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win. Good luck!"
+        """Score a tournament with the second column representing the outcome."""
         score = 0
-        for a, b in parsed_input:
-            a1 = "ABC".index(a)
-            if b == "X":
-                score += {"A": 3, "B": 1, "C": 2}[a]
-            if b == "Y":
-                score += 3 # draw
-                score += a1 + 1
-            if b == "Z":
-                score += 6 # win
-                score += {"A": 2, "B": 3, "C": 1}[a]
-
+        for elf_move, outcome in parsed_input:
+            pos_a = "ABC".index(elf_move)
+            score += POINTS[outcome]
+            # The outcome determines if my move is the object before/after/same as the elf's.
+            shift = {DRAW: 0, WIN: 1, LOSE: 2}[outcome]
+            score += ((pos_a + shift) % 3) + 1
         return score
 
+    def part2_short(self, parsed_input: InputType) -> int:
+        """One liner."""
+        # Sum up the points based on the outcome.
+        # Combine the elf's move and outcome to get choice scores [0..2].
+        # Add one for each round to shift the choice scores from [0..2] to [1..3].
+        return sum(
+            POINTS[outcome] + ("ABC".index(elf_move) + {DRAW: 0, WIN: 1, LOSE: 2}[outcome]) % 3
+            for elf_move, outcome in parsed_input
+        ) + len(parsed_input)
+
+    def part2_reuse(self, parsed_input: InputType) -> int:
+        """Solve part2 by rewriting the input and reusing part1."""
+        moves = []
+        for elf_move, outcome in parsed_input:
+            pos_a = "ABC".index(elf_move)
+            shift = {DRAW: 0, WIN: 1, LOSE: 2}[outcome]
+            pos_b = (pos_a + shift) % 3
+            my_move = "XYZ"[pos_b]
+            moves.append((elf_move, my_move))
+        return self.part1(moves)
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return [i.split() for i in puzzle_input.splitlines()]
-
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
+        return [tuple(i.split()) for i in puzzle_input.splitlines()]
 
 
 if __name__ == "__main__":
