@@ -1,10 +1,7 @@
 #!/bin/python
 """Advent of Code: Day 04."""
 
-import collections
 import hashlib
-import math
-import re
 
 import typer
 from lib import aoc
@@ -14,11 +11,7 @@ InputType = list[int]
 
 
 class Day04(aoc.Challenge):
-    """Day 4: The Ideal Stocking Stuffer."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 4: The Ideal Stocking Stuffer. MD5 mine for a good hash."""
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=609043),
@@ -27,24 +20,26 @@ class Day04(aoc.Challenge):
 
     # Convert lines to type:
     INPUT_TYPES = str
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+
+    def generic(self, key: InputType, size: int) -> int:
+        """Return a suffix which generates a hash starting with a given prefix."""
+        prefix = "0" * size
+        md5 = hashlib.md5(key.encode())
+        for i in range(0, 100000000):
+            md5copy = md5.copy()
+            md5copy.update(str(i).encode())
+            if md5copy.hexdigest().startswith(prefix):
+                return i
+        raise RuntimeError("Not found")
 
     def part1(self, parsed_input: InputType) -> int:
-        key = parsed_input[0]
-        for i in range(0, 1000000):
-            data = key + str(i)
-            if hashlib.md5(data.encode()).hexdigest().startswith("00000"):
-                return i
+        """Return a suffix which generates a 5-zeroes hash."""
+        return self.generic(parsed_input[0], 5)
 
     def part2(self, parsed_input: InputType) -> int:
-        key = parsed_input[0]
-        for i in range(0, 100000000):
-            data = key + str(i)
-            if hashlib.md5(data.encode()).hexdigest().startswith("000000"):
-                return i
+        """Return a suffix which generates a 6-zeroes hash."""
+        return self.generic(parsed_input[0], 6)
+
 
 if __name__ == "__main__":
     typer.run(Day04().run)
