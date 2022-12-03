@@ -39,14 +39,19 @@ class Day02(aoc.Challenge):
         return score
 
     def part2(self, parsed_input: InputType) -> int:
+        return self.part2_readable(parsed_input)
+        # return self.part2_reuse(parsed_input)
+        # return self.part2_short(parsed_input)
+
+    def part2_readable(self, parsed_input: InputType) -> int:
         """Score a tournament with the second column representing the outcome."""
         score = 0
         for elf_move, outcome in parsed_input:
             pos_a = "ABC".index(elf_move)
-            score += POINTS[outcome]
+            pos_outcome = "XYZ".index(outcome)
+            score += 3 * pos_outcome
             # The outcome determines if my move is the object before/after/same as the elf's.
-            shift = {DRAW: 0, WIN: 1, LOSE: 2}[outcome]
-            score += ((pos_a + shift) % 3) + 1
+            score += ((pos_a + pos_outcome + 2) % 3) + 1
         return score
 
     def part2_short(self, parsed_input: InputType) -> int:
@@ -55,7 +60,7 @@ class Day02(aoc.Challenge):
         # Combine the elf's move and outcome to get choice scores [0..2].
         # Add one for each round to shift the choice scores from [0..2] to [1..3].
         return sum(
-            POINTS[outcome] + ("ABC".index(elf_move) + {DRAW: 0, WIN: 1, LOSE: 2}[outcome]) % 3
+            "XYZ".index(outcome) * 3 + ("ABC".index(elf_move) + "XYZ".index(outcome) + 2) % 3
             for elf_move, outcome in parsed_input
         ) + len(parsed_input)
 
