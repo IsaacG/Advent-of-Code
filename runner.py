@@ -80,9 +80,11 @@ class Runner:
             return
         template_file = self.base / "tmpl.py"
         template = string.Template(template_file.read_text())
+        website = site.Website(self.year, day)
         out = template.substitute(
             day=f"{day:02}",
-            sample=site.Website(self.year, day).codeblocks(),
+            sample=website.codeblocks(),
+            title=website.title().strip("- "),
         )
         filename = self.base / f"{day:02}.py"
         filename.write_text(out)

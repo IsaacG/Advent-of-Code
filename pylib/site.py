@@ -1,5 +1,6 @@
 import apsw
 import dotenv
+import functools
 import os
 import re
 import requests
@@ -12,76 +13,83 @@ from urllib import parse
 
 class Website:
 
-  BASE = 'https://adventofcode.com/'
+    BASE = 'https://adventofcode.com/'
+  
+    def __init__(self, year, day):
+        self.year = str(year)
+        self.day = str(int(day))
+        conn = apsw.Connection(os.getenv('SQL_DB'))
+        query = 'SELECT value FROM cookies WHERE key = ?'
+        cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
+    
+        self.session = requests.Session()
+        self.session.headers.update({'cookie': f'session={cookie}'})
+        self.assert_logged_in()
+        self._text = None
+  
+    def text(self) -> str:
+        if self._text is None:
+            resp = self.session.get(f'https://adventofcode.com/{self.year}/day/{self.day}')
+            resp.raise_for_status()
+            self._text = resp.text
+        return self._text
 
-  def __init__(self, year, day):
-    self.year = str(year)
-    self.day = str(int(day))
-    conn = apsw.Connection(os.getenv('SQL_DB'))
-    query = 'SELECT value FROM cookies WHERE key = ?'
-    cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
+    @property
+    def uri_day(self) -> str:
+        return parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
 
-    self.session = requests.Session()
-    self.session.headers.update({'cookie': f'session={cookie}'})
-    self.assert_logged_in()
+    def title(self) -> str:
+        et = etree.HTML(self.text())
+        return et.xpath("//main/article/h2/text()")[0]
 
-  def codeblocks(self):
-    resp = self.session.get(f'https://adventofcode.com/{self.year}/day/{self.day}')
-    et = etree.HTML(resp.content)
-    sample = [
-      '["""\\',
-      '\n""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')),
-      '"""]',
-    ]
-    return "\n".join(sample)
+    def codeblocks(self) -> str:
+        et = etree.HTML(self.text())
+        sample = [
+            '["""\\',
+            '\n""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')),
+            '"""]',
+        ]
+        return "\n".join(sample)
+  
+    def assert_logged_in(self):
+        resp = self.session.get(self.BASE)
+        resp.raise_for_status()
+        assert '[Log Out]' in etree.HTML(resp.content).xpath('//a/text()')
+  
+    def get_input(self) -> str:
+        resp = self.session.get(f"{self.uri_day}/input")
+        resp.raise_for_status()
+        return resp.text
+  
+    def part(self) -> Optional[int]:
+        m = re.search(r'name="level" value="([^"]+)"', self.text())
+        if m is None:
+            return None
+        return int(m.group(1))
 
-  def assert_logged_in(self):
-    resp = self.session.get(self.BASE)
-    resp.raise_for_status()
-    assert '[Log Out]' in etree.HTML(resp.content).xpath('//a/text()')
+    def _no_lxml_submit(self, answer) -> str:
+        m = re.search(r'name="level" value="(.*)"', self.text())
+        assert m, 'Cannot find the submit level'
+        level = m.group(1)
+        resp = self.session.post(f'{self.uri_day}/answer', data={'answer': answer, 'level': level})
+        self._text = None
+        resp.raise_for_status()
+        cmd = ['pandoc', '--from=html', '--to=markdown']
+        p = subprocess.run(cmd, text=True, capture_output=True, input=resp.text)
+        return p.stdout
 
-  def get_input(self) -> str:
-    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}/input')
-    resp = self.session.get(u)
-    resp.raise_for_status()
-    return resp.text
+    def submit(self, answer) -> str:
+        et = etree.HTML(self.text())
 
-  def part(self) -> Optional[int]:
-    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
-    resp = self.session.get(u)
-    resp.raise_for_status()
-    m = re.search(r'name="level" value="([^"]+)"', resp.text)
-    if m is None:
-      return None
-    return int(m.group(1))
+        levels = et.xpath('//form/input[@name="level"]/@value')
+        if not levels:
+            print('No submission box found; is this already completed?')
+            return
 
-  def _no_lxml_submit(self, answer) -> str:
-    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
-    resp = self.session.get(u)
-    resp.raise_for_status()
-    m = re.search(r'name="level" value="(.*)"', resp.text)
-    assert m, 'Cannot find the submit level'
-    level = m.group(1)
-    resp = self.session.post(f'{u}/answer', data={'answer': answer, 'level': level})
-    resp.raise_for_status()
-    cmd = ['pandoc', '--from=html', '--to=markdown']
-    p = subprocess.run(cmd, text=True, capture_output=True, input=resp.text)
-    return p.stdout
-
-  def submit(self, answer) -> str:
-    u = parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
-    resp = self.session.get(u)
-    resp.raise_for_status()
-    et = etree.HTML(resp.content)
-
-    levels = et.xpath('//form/input[@name="level"]/@value')
-    if not levels:
-        print('No submission box found; is this already completed?')
-        return
-
-    level = levels[0]
-    resp = self.session.post(f'{u}/answer', data={'answer': answer, 'level': level})
-    resp.raise_for_status()
-    et = etree.HTML(resp.content)
-    output = ''.join(et.xpath('//main/article//text()'))
-    return output
+        level = levels[0]
+        resp = self.session.post(f'{self.uri_day}/answer', data={'answer': answer, 'level': level})
+        self._text = None
+        resp.raise_for_status()
+        et = etree.HTML(resp.content)
+        output = ''.join(et.xpath('//main/article//text()'))
+        return output

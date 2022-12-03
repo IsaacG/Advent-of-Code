@@ -14,6 +14,7 @@ InputType = list[int]
 
 
 class Day${day}(aoc.Challenge):
+    """${title}."""
 
     DEBUG = True
     # Default is True. On live solve, submit one tests pass.
