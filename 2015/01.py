@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 01."""
 
-from typing import Generator
-
 import typer
 from lib import aoc
 
@@ -35,6 +33,7 @@ class Day01(aoc.Challenge):
             floor += MAPPING[i]
             if floor == -1:
                 return count
+        raise RuntimeError("No solution found.")
 
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
