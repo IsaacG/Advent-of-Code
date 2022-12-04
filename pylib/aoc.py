@@ -247,7 +247,7 @@ class Challenge(Helpers):
 
     INPUT_TYPES = str
     TRANSFORM = None
-    TESTS = ()
+    TESTS: list[TestCase] = []
     DEBUG = False
     TIMER_ITERATIONS = (None, None)
     SUBMIT = {1: True, 2: True}
@@ -292,11 +292,11 @@ class Challenge(Helpers):
         assert len(p) == 4 and p.isnumeric(), p
         return p
 
-    def part1(self, parsed_input: List[str]) -> int:
+    def part1(self, parsed_input: Any) -> int:
         """Solve part 1."""
         raise NotImplementedError
 
-    def part2(self, parsed_input: List[str]) -> int:
+    def part2(self, parsed_input: Any) -> int:
         """Solve part 2."""
         raise NotImplementedError
 
