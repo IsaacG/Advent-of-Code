@@ -332,6 +332,42 @@ class Day22(aoc.Challenge):
 
         return 0
 
+    def part1_overlaps(self, parsed_input: InputType) -> int:
+        add = []
+        sub = []
+        for count, (action, rect) in enumerate(parsed_input):
+            if count % 50 == 0:
+                print(count, len(add), len(sub))
+            match action:
+                case "turn on":
+                    new_add, new_sub = [rect], []
+                    for i in add:
+                        overlap = rect.overlap(i)
+                        if overlap:
+                            new_sub.append(overlap)
+                    for i in sub:
+                        overlap = rect.overlap(i)
+                        if overlap:
+                            new_add.append(overlap)
+                    add.extend(new_add)
+                    sub.extend(new_sub)
+                case "toggle":
+                    for i in add:
+                        overlap = rect.overlap(i)
+                        if overlap:
+                            sub.append(overlap)
+                            sub.append(overlap)
+                    add.append(rect)
+                case "turn off":
+                    for i in add:
+                        overlap = rect.overlap(i)
+                        if overlap:
+                            sub.append(overlap)
+        area_add = sum(i.area() for i in add) 
+        area_sub = sum(i.area() for i in sub)
+        self.debug(f"{area_add=} {area_sub=}")
+        return area_add - area_sub
+
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         instructions = []
