@@ -38,13 +38,18 @@ class Day${day}(aoc.Challenge):
     def parse_input(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return super().parse_input(puzzle_input)
-
         return puzzle_input.splitlines()
         return puzzle_input
         return [int(i) for i in puzzle_input.splitlines()]
-
         mutate = lambda x: (x[0], int(x[1])) 
         return [mutate(line.split()) for line in puzzle_input.splitlines()]
+
+    # def line_parser(self, line: str) -> InputType:
+    #     """If defined, use this to parse single lines."""
+    #     return (
+    #         int(i) if i.isdigit() else i
+    #         for i in PARSE_RE.findall(line)
+    #     )
 
 
 if __name__ == "__main__":

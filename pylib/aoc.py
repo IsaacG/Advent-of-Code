@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+import inspect
 import pathlib
 import time
 from typing import Any, Callable, Generator, Iterable, List, Optional
@@ -92,6 +93,33 @@ class Point:
     """A cartesian point."""
     x: int
     y: int
+
+
+@dataclasses.dataclass(frozen=True)
+class Rect:
+    """A rectangle formed between two cartesian points."""
+
+    start: Point
+    end: Point
+
+    @classmethod
+    def from_input(line: str) -> Rect:
+        x1, y1, x2, y2 = (int(i) for i in re.findall(r"\d+", line))
+        start = Point(min(x1, x2), min(y1, y2))
+        end = Point(max(x1, x2), max(y1, y2))
+        return Rect(start, end)
+
+    def area(self) -> int:
+        return abs(self.end.x - self.start.x + 1) * abs(self.end.y - self.start.y + 1)
+
+    def overlap(self, other: Rect) -> Optional[Rect]:
+        if other.end.x < self.start.x or other.end.y < self.start.y:
+            return None
+        if other.start.x > self.end.x or other.start.x > self.end.y:
+            return None
+        start = Point(max(self.start.x, other.start.x), max(self.start.y, other.start.y))
+        end = Point(min(self.end.x, other.end.x), min(self.end.y, other.end.y))
+        return Rect(start, end)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -293,6 +321,8 @@ class Challenge(Helpers):
         """Parse input data. Block of text -> output."""
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
+        elif f := getattr(self, "line_parser") and inspect.ismethod(self.line_parser):
+            transform = self.line_parser
         elif not isinstance(self.INPUT_TYPES, list):
             transform = self.INPUT_TYPES
         else:
