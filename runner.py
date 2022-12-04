@@ -186,6 +186,12 @@ class Runner:
                         if "That's the right answer!" in resp:
                             print(f"Solved part {part}!!")
                             part += 1
+                        elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
+                            amount = m.group(1)
+                            units = {"second": 1, "minute": 60}[m.group(2)]
+                            seconds = "zero one two three four five six seven eight nine ten".split().index(amount) * units
+                            print(f"Waiting {seconds} seconds.")
+                            time.sleep(seconds)
                         else:
                             print(f"Incorrect answer for part {part}. You're on your own :(")
                             break
