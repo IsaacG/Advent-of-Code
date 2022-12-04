@@ -333,7 +333,7 @@ class Day23(aoc.Challenge):
         else:
             return AmphipodGame(4).solve(pieces)
 
-    def parse_input(self, puzzle_input: str) -> Board:
+    def input_parser(self, puzzle_input: str) -> Board:
         """Parse the input data.
 
                    1

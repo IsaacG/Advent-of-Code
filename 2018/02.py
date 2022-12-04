@@ -46,7 +46,7 @@ class Day02(aoc.Challenge):
         return "".join(i for i, j in zip(a, b) if i == j)
     raise RuntimeError
 
-  def parse_input(self, puzzle_input: str) -> List[str]:
+  def input_parser(self, puzzle_input: str) -> List[str]:
     return puzzle_input.split('\n')
 
 

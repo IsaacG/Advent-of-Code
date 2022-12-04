@@ -44,7 +44,7 @@ class Day06(aoc.Challenge):
             counter = new
         return sum(counter.values())
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data. Comma separated ints."""
         return [int(i) for i in puzzle_input.split(",")]
 

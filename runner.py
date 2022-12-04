@@ -157,7 +157,7 @@ class Runner:
                 # Reload code and get the Challenge.
                 module = importlib.reload(module)
                 obj = getattr(module, f"Day{day:02}")()
-                puzzle_input = obj.parse_input(raw_data)
+                puzzle_input = obj.input_parser(raw_data)
                 # Run tests for this part.
                 obj.testing = True
                 tests = [t for t in obj.TESTS if t.part == part and t.want != 0]
@@ -167,7 +167,7 @@ class Runner:
                 tests_pass = True
                 for case in tests:
                     assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
-                    data = obj.parse_input(case.inputs.strip())
+                    data = obj.input_parser(case.inputs.strip())
                     got = obj.funcs[case.part](data)
                     if case.want != got:
                         print(f"FAILED! {case.part}: want({case.want}) != got({got})")
@@ -220,12 +220,12 @@ class Runner:
                 # Reload code and get the Challenge.
                 module = importlib.reload(module)
                 obj = getattr(module, f"Day{day:02}")()
-                puzzle_input = obj.parse_input(raw_data)
+                puzzle_input = obj.input_parser(raw_data)
                 # Run tests for this part.
                 obj.testing = True
                 tests = [t for t in obj.TESTS if t.want != 0]
                 for case in tests:
-                    data = obj.parse_input(case.inputs.strip())
+                    data = obj.input_parser(case.inputs.strip())
                     got = obj.funcs[case.part](data)
                     if case.want == got:
                         print(f"TEST PASSED! {case.part}")
@@ -247,7 +247,7 @@ class Runner:
         # Reload code and get the Challenge.
         module = importlib.import_module(f"{day:02}")
         obj = getattr(module, f"Day{day:02}")()
-        puzzle_input = obj.parse_input(obj.raw_data(None))
+        puzzle_input = obj.input_parser(obj.raw_data(None))
         solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
         print(solutions)
         solution_line = f"{day:02} {solutions[1]} {solutions[2]}\n"

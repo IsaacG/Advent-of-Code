@@ -91,7 +91,7 @@ class Day21(aoc.Challenge):
                 win_other += sub_win_other * count
         return win_self, win_other
 
-    def parse_input(self, puzzle_input: str) -> tuple[int, ...]:
+    def input_parser(self, puzzle_input: str) -> tuple[int, ...]:
         """Parse the input data."""
         return tuple([int(line.split(": ")[1]) for line in puzzle_input.splitlines()])
 

@@ -169,7 +169,7 @@ class Day19(aoc.Challenge):
         distances = [sum(abs(i - j) for i, j in zip(a, b)) for a in scanners for b in scanners]
         return max(distances)
 
-    def parse_input(self, puzzle_input: str) -> frozenset[frozenset[tuple[int, ...]]]:
+    def input_parser(self, puzzle_input: str) -> frozenset[frozenset[tuple[int, ...]]]:
         """Parse the input data."""
         scans = []
         for block in puzzle_input.split("\n\n"):

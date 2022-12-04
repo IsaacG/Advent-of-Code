@@ -38,7 +38,7 @@ class Day03(aoc.Challenge):
         return i
     raise RuntimeError
 
-  def parse_input(self, puzzle_input: str) -> List[List[int]]:
+  def input_parser(self, puzzle_input: str) -> List[List[int]]:
     r = re.compile(r'^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$')
     return [[int(i) for i in r.match(line).groups()] for line in puzzle_input.split('\n')]
 

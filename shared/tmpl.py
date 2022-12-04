@@ -37,9 +37,9 @@ class Day${day}(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         return 0
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return super().parse_input(puzzle_input)
+        return super().input_parser(puzzle_input)
         return puzzle_input.splitlines()
         return puzzle_input
         return [int(i) for i in puzzle_input.splitlines()]

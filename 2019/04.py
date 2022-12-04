@@ -67,7 +67,7 @@ class Day04(aoc.Challenge):
     # Or at least, it won't be in the range given by my input.
     return sum(sum_valid(num, 1) for num in range(1, 10))
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return [int(i) for i in puzzle_input.split('-')]
 
 

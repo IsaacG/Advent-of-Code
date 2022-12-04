@@ -35,7 +35,7 @@ class Day01(aoc.Challenge):
                 return count
         raise RuntimeError("No solution found.")
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return puzzle_input
 

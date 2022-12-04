@@ -102,7 +102,7 @@ class Day19(aoc.Challenge):
       if any(i.fullmatch(inp) for i in regexps)
     )
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     """Parse the two input blocks."""
     rules_raw, strings = puzzle_input.split('\n\n')
     rules = {int(line.split(': ')[0]): line.split(': ')[1] for line in rules_raw.split('\n')}

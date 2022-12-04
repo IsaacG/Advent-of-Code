@@ -64,7 +64,7 @@ class Day21(aoc.Challenge):
     solved = self.allergen_to_food(data)
     return ",".join(solved[i] for i in sorted(solved.keys()))
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     """Parse input lines into tuple(list[ingredients], list[allergens])."""
     out = []
     for line in puzzle_input.split('\n'):

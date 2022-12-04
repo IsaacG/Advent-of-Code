@@ -32,7 +32,7 @@ class Day06(aoc.Challenge):
       total += len(s)
     return total
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
 
 

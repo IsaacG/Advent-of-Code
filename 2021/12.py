@@ -115,7 +115,7 @@ class Day12(aoc.Challenge):
         self.graph = graph  # pylint:disable=W0201
         return self.paths("start", frozenset(), twice)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         graph = collections.defaultdict(list)
         # Form nodes of a non-directional graph.

@@ -36,7 +36,7 @@ class Day02(aoc.Challenge):
             total += min(perimeters) * 2 + self.mult(dims)
         return total
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return [[int(i) for i in line.split("x")] for line in puzzle_input.splitlines()]
 

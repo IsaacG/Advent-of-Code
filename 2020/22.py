@@ -105,7 +105,7 @@ class Day22(aoc.Challenge):
         return player, hand
     raise RuntimeError
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     """Split the input into two decks."""
     return [
       [int(line) for line in deck.split('\n')[1:]]

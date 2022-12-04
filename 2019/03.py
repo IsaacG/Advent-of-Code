@@ -73,7 +73,7 @@ class Day03(aoc.Challenge):
     """Wire cross cost: Manhatten distance."""
     return self.solve(parsed_input, 1)
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return [line.split(',') for line in puzzle_input.split('\n')]
 
 

@@ -57,7 +57,7 @@ class Day25(aoc.Challenge):
         """No part2 on Christmas."""
         return 0
             
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         lines = puzzle_input.splitlines()
         right = {

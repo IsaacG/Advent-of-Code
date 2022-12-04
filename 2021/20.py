@@ -88,7 +88,7 @@ class Day20(aoc.Challenge):
 
         return len(image)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         first, second = puzzle_input.split("\n\n")
         algo = {f"{i:09b}": char == "#" for i, char in enumerate(first)}

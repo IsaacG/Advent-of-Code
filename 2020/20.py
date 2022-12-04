@@ -296,7 +296,7 @@ class Day20(aoc.Challenge):
       for corner in corners
     )
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
 
 

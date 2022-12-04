@@ -48,7 +48,7 @@ class Day05(aoc.Challenge):
         )
         return sum(1 for v in count.values() if v > 1)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data.
 
         Split into lines. Split each line into a `start -> end`.

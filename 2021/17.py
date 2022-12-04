@@ -73,7 +73,7 @@ class Day17(aoc.Challenge):
 
         return velocities
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         pattern = re.compile(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
         match = pattern.match(puzzle_input)

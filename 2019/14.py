@@ -153,7 +153,7 @@ class Day14(aoc.Challenge):
 
     return want['ORE']
 
-  def parse_input(self, puzzle_input: str) -> Dict[str, Reaction]:
+  def input_parser(self, puzzle_input: str) -> Dict[str, Reaction]:
     """Build a dictionary of material produced to Reaction."""
     reactions = {}  # type: Dict[str, Reaction]
 

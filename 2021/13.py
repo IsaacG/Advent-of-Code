@@ -75,7 +75,7 @@ class Day13(aoc.Challenge):
         # Since I do not have an OCR, return an arbitrary number.
         return sum(int(point.real * point.imag) for point in points)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         # Dots on the top half, instructions below.
         dots, instructions = puzzle_input.split("\n\n")

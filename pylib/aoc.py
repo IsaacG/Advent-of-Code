@@ -317,7 +317,7 @@ class Challenge(Helpers):
             self._filecache[filename] = path.read_text().strip()
         return self._filecache[filename]
 
-    def parse_input(self, puzzle_input: str) -> Any:
+    def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
@@ -340,7 +340,7 @@ class Challenge(Helpers):
         for i, case in enumerate(self.TESTS):
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-            data = self.parse_input(case.inputs.strip())
+            data = self.input_parser(case.inputs.strip())
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
             got = self.funcs[case.part](data)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
@@ -362,7 +362,7 @@ class Challenge(Helpers):
 
     def solve(self, data=None) -> None:
         for i in (1, 2):
-            puzzle_input = self.parse_input(self.raw_data(data))
+            puzzle_input = self.input_parser(self.raw_data(data))
             self.debug(f'Running part {i}:')
             try:
                 print(self.funcs[i](puzzle_input))
@@ -379,7 +379,7 @@ class Challenge(Helpers):
                 break
         for i in (1, 2):
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
-            puzzle_input = self.parse_input(self.raw_data(data))
+            puzzle_input = self.input_parser(self.raw_data(data))
             got = self.funcs[i](puzzle_input)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
             delta = int(1000 * (end - start))
@@ -395,7 +395,7 @@ class Challenge(Helpers):
         """Generate a solution for the next unsolved part and submit it."""
         answers = []
         for i in (1, 2):
-            puzzle_input = self.parse_input(self.raw_data(data))
+            puzzle_input = self.input_parser(self.raw_data(data))
             try:
                 a = self.funcs[i](puzzle_input)
                 if a:
@@ -442,11 +442,11 @@ class Challenge(Helpers):
     def benchmark(self, data=None):
         """Benchmark the solution."""
         times = []
-        times.append(self.time_func(10000, lambda: self.parse_input(self.raw_data(data))))
+        times.append(self.time_func(10000, lambda: self.input_parser(self.raw_data(data))))
 
         for part, func in self.funcs.items():
 
-            r = lambda: func(self.parse_input(self.raw_data(data)))
+            r = lambda: func(self.input_parser(self.raw_data(data)))
 
             if self.TIMER_ITERATIONS[part - 1]:
                 _count = self.TIMER_ITERATIONS[part - 1]

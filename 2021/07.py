@@ -34,7 +34,7 @@ class Day07(aoc.Challenge):
             costs.append(sum(func(abs(i - l)) for l in positions))
         return min(costs)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data. Comma separated ints."""
         return [int(i) for i in puzzle_input.split(",")]
 

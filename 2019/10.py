@@ -72,7 +72,7 @@ class Day10(aoc.Challenge):
           return int(100 * astroid.real + astroid.imag)
     raise ValueError
 
-  def parse_input(self, puzzle_input: str) -> Set[complex]:
+  def input_parser(self, puzzle_input: str) -> Set[complex]:
     """Convert the input lines to a set of astroid coordinates."""
     locations = set()
     for row, line in enumerate(puzzle_input.split('\n')):

@@ -88,7 +88,7 @@ class Day09(aoc.Challenge):
 
         return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return aoc.Board.from_int_block(puzzle_input)
 

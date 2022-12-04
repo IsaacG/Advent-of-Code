@@ -79,7 +79,7 @@ class Day14(aoc.Challenge):
       addr = int("".join(final_addr), 2)
       self.mem[addr] = value
 
-  def parse_input(self, puzzle_input: str) -> List[Tuple[str, ...]]:
+  def input_parser(self, puzzle_input: str) -> List[Tuple[str, ...]]:
     return [tuple(line.split(' = ')) for line in puzzle_input.split('\n')]
 
 

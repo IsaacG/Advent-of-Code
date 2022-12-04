@@ -368,7 +368,7 @@ class Day22(aoc.Challenge):
         self.debug(f"{area_add=} {area_sub=}")
         return area_add - area_sub
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         instructions = []
         for line in puzzle_input.splitlines():

@@ -44,7 +44,7 @@ class Day16(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
   )
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     """Parse the input."""
     rules, your_ticket_raw, nearby_tickets_raw = puzzle_input.split('\n\n')
 

@@ -59,7 +59,7 @@ class Day18(aoc.Challenge):
     aoc.TestCase(part=2, inputs="((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2", want=23340),
   )
 
-  def parse_input(self, puzzle_input: str) -> List[str]:
+  def input_parser(self, puzzle_input: str) -> List[str]:
     """Drop whitespace."""
     return [line.replace(" ", "") for line in puzzle_input.split('\n')]
 

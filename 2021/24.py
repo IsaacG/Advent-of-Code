@@ -512,7 +512,7 @@ class Day24(aoc.Challenge):
         # Use the known input offsets to compute the min/max value for each input.
         return self.ranges(offsets)
 
-    def parse_input(self, puzzle_input: str) -> list[tuple[str, ...]]:
+    def input_parser(self, puzzle_input: str) -> list[tuple[str, ...]]:
         """Parse the input data."""
         return [line.split() for line in puzzle_input.splitlines()]
 

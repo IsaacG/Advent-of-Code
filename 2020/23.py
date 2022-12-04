@@ -109,7 +109,7 @@ class Day23(aoc.Challenge):
     vals = [i.val for i in one.nodes()]
     return int("".join(str(i) for i in vals[1:]))
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return [int(i) for i in puzzle_input]
 
 

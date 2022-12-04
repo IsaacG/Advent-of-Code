@@ -66,7 +66,7 @@ class Day11(aoc.Challenge):
                 return step
         raise RuntimeError("Could not solve in allocated steps.")
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return aoc.Board.from_int_block(puzzle_input)
 

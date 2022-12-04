@@ -95,7 +95,7 @@ class Day04(aoc.Challenge):
   def part2(self, parsed_input: List[str]) -> int:
     return len([1 for i in parsed_input if valid2(i)])
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
 
 

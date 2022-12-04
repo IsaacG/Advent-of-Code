@@ -86,7 +86,7 @@ class Day14(aoc.Challenge):
         counter[last] += 1
         return max(counter.values()) - min(counter.values())
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         # Start formula and a list of formulas.
         start, formula_block = puzzle_input.split("\n\n")

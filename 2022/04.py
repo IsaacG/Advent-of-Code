@@ -41,7 +41,7 @@ class Day04(aoc.Challenge):
             if b1 <= a1 <= b2 or a1 <= b1 <= a2
         )
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         patt = re.compile(r"[,-]")
         return [

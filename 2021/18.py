@@ -215,7 +215,7 @@ class Day18(aoc.Challenge):
         """Compute the max magnitude from adding any two numbers."""
         return max((a + b).magnitude() for a in parsed_input for b in parsed_input if a != b)
 
-    def parse_input(self, puzzle_input: str) -> list[Node]:
+    def input_parser(self, puzzle_input: str) -> list[Node]:
         """Parse the input data."""
         return [Node(json.loads(line)) for line in puzzle_input.splitlines()]
 

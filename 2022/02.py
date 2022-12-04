@@ -75,7 +75,7 @@ class Day02(aoc.Challenge):
             moves.append((elf_move, my_move))
         return self.part1(moves)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return [tuple(i.split()) for i in puzzle_input.splitlines()]
 

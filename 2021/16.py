@@ -208,7 +208,7 @@ class Day16(aoc.Challenge):
         bits_io = BitStream.from_hex(parsed_input)
         return packet_parser(bits_io).eval()
 
-    def parse_input(self, puzzle_input: str) -> str:
+    def input_parser(self, puzzle_input: str) -> str:
         """Parse the input data."""
         return puzzle_input
 

@@ -83,7 +83,7 @@ class Day24(aoc.Challenge):
         flipped.add(c)
     return flipped
 
-  def parse_input(self, puzzle_input: str):
+  def input_parser(self, puzzle_input: str):
     """Split lines into lists of directions."""
     dir_re = re.compile('[ns]?[ew]')
     return [dir_re.findall(direction) for direction in puzzle_input.split('\n')]
