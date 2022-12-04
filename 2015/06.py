@@ -1,14 +1,7 @@
 #!/bin/python
 """Advent of Code: Day 06."""
 
-from __future__ import annotations
-
-import collections
-import dataclasses
-import functools
-import math
 import re
-from typing import Optional
 
 import typer
 from lib import aoc
@@ -19,94 +12,26 @@ SAMPLE = [
     "turn on 0,0 through 999,999\ntoggle 0,0 through 999,0",
     "turn on 0,0 through 999,999\nturn off 0,0 through 999,0",
 ]
-PARSE_RE = re.compile(r"^(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)$")
+PARSE_RE = re.compile(r"turn on|turn off|toggle|\d+")
 
 
-@dataclasses.dataclass
-class Point:
-    x: int
-    y: int
-
-@dataclasses.dataclass
-class Rect:
-
-    start: Point
-    end: Point
-
-    def __post_init__(self) -> None:
-        if self.start.x > self.end.x:
-            self.start.x, self.end.x = self.end.x, self.start.x
-        if self.start.y > self.end.y:
-            self.start.y, self.end.y = self.end.y, self.start.y
-
-    def area(self) -> int:
-        return abs(self.end.x - self.start.x + 1) * abs(self.end.y - self.start.y + 1)
-
-    def overlap(self, other: Rect) -> Optional[Rect]:
-        if other.end.x < self.start.x or other.end.y < self.start.y:
-            return None
-        if other.start.x > self.end.x or other.start.x > self.end.y:
-            return None
-        start = Point(max(self.start.x, other.start.x), max(self.start.y, other.start.y))
-        end = Point(min(self.end.x, other.end.x), min(self.end.y, other.end.y))
-        return Rect(start, end)
-
-
-InputType = tuple[str, Rect]
+LineType = tuple[str, int, int, int, int]
+InputType = list[LineType]
 
 
 class Day06(aoc.Challenge):
-    """Day 6: Probably a Fire Hazard."""
+    """Day 6: Probably a Fire Hazard. Toggle lights then count them up."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=1000000),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=1000),
         aoc.TestCase(inputs=SAMPLE[2], part=1, want=1000000 - 1000),
         aoc.TestCase(inputs=SAMPLE[3], part=1, want=1000000 - 1000),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1000000),
-    )
-
-    def part1_overlaps(self, parsed_input: InputType) -> int:
-        add = []
-        sub = []
-        for count, (action, rect) in enumerate(parsed_input):
-            if count % 50 == 0:
-                print(count, len(add), len(sub))
-            match action:
-                case "turn on":
-                    new_add, new_sub = [rect], []
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            new_sub.append(overlap)
-                    for i in sub:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            new_add.append(overlap)
-                    add.extend(new_add)
-                    sub.extend(new_sub)
-                case "toggle":
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            sub.append(overlap)
-                            sub.append(overlap)
-                    add.append(rect)
-                case "turn off":
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            sub.append(overlap)
-        area_add = sum(i.area() for i in add) 
-        area_sub = sum(i.area() for i in sub)
-        self.debug(f"{area_add=} {area_sub=}")
-        return area_add - area_sub
+    ]
 
     def part1(self, parsed_input: InputType) -> int:
+        """Return how many lights are on after toggling them."""
         grid = []
         for i in range(1000):
             grid.append([False] * 1000)
@@ -122,11 +47,10 @@ class Day06(aoc.Challenge):
                             grid[x][y] = False
                         case _:
                             raise ValueError(f"Unknown {action=}")
-        t = sum(i for row in grid for i in row)
-        assert t > 322000
-        return t
+        return sum(i for row in grid for i in row)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return light levels after toggling them."""
         grid = []
         for i in range(1000):
             grid.append([0] * 1000)
@@ -144,13 +68,12 @@ class Day06(aoc.Challenge):
                             raise ValueError(f"Unknown {action=}")
         return sum(i for row in grid for i in row)
 
-    def parse_input(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        out = []
-        for i in puzzle_input.splitlines():
-            action, *nums = PARSE_RE.match(i).groups()
-            out.append((action,) + tuple(int(i) for i in nums))
-        return out
+    def line_parser(self, line: str) -> LineType:
+        """Parse lines."""
+        return tuple(
+            int(i) if i.isdigit() else i
+            for i in PARSE_RE.findall(line)
+        )
 
 
 if __name__ == "__main__":
