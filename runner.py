@@ -78,7 +78,7 @@ class Runner:
         if filename.exists():
             print(f"{filename.name} already exists")
             return
-        template_file = self.base / "tmpl.py"
+        template_file = self.base / "../shared/tmpl.py"
         template = string.Template(template_file.read_text())
         website = site.Website(self.year, day)
         out = template.substitute(
