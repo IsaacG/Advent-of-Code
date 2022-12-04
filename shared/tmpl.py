@@ -20,10 +20,10 @@ class Day${day}(aoc.Challenge):
     # Default is True. On live solve, submit one tests pass.
     # SUBMIT = {1: False, 2: False}
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
-    )
+    ]
 
     # Convert lines to type:
     INPUT_TYPES = int

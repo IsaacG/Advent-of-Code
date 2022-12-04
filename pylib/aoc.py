@@ -321,7 +321,7 @@ class Challenge(Helpers):
         """Parse input data. Block of text -> output."""
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
-        elif f := getattr(self, "line_parser") and inspect.ismethod(self.line_parser):
+        elif inspect.ismethod(getattr(self, "line_parser", None)):
             transform = self.line_parser
         elif not isinstance(self.INPUT_TYPES, list):
             transform = self.INPUT_TYPES
