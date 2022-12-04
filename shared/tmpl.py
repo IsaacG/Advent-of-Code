@@ -10,7 +10,9 @@ import typer
 from lib import aoc
 
 SAMPLE = ${sample}
-InputType = list[int]
+
+LineType = int
+InputType = list[LineType]
 
 
 class Day${day}(aoc.Challenge):
@@ -26,7 +28,7 @@ class Day${day}(aoc.Challenge):
     ]
 
     # Convert lines to type:
-    INPUT_TYPES = int
+    INPUT_TYPES = LineType
     # Split on whitespace and coerce types:
     # INPUT_TYPES = [str, int]
     # Apply a transform function
@@ -44,7 +46,7 @@ class Day${day}(aoc.Challenge):
         mutate = lambda x: (x[0], int(x[1])) 
         return [mutate(line.split()) for line in puzzle_input.splitlines()]
 
-    # def line_parser(self, line: str) -> InputType:
+    # def line_parser(self, line: str) -> LineType:
     #     """If defined, use this to parse single lines."""
     #     return (
     #         int(i) if i.isdigit() else i
