@@ -314,7 +314,7 @@ class Challenge(Helpers):
                 print('Input does not exist. Downloading.')
                 path.write_text(self.site.get_input())
 
-            self._filecache[filename] = path.read_text().strip()
+            self._filecache[filename] = path.read_text().rstrip()
         return self._filecache[filename]
 
     def input_parser(self, puzzle_input: str) -> Any:
@@ -340,7 +340,7 @@ class Challenge(Helpers):
         for i, case in enumerate(self.TESTS):
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-            data = self.input_parser(case.inputs.strip())
+            data = self.input_parser(case.inputs.rstrip())
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
             got = self.funcs[case.part](data)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)

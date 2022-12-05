@@ -167,7 +167,7 @@ class Runner:
                 tests_pass = True
                 for case in tests:
                     assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
-                    data = obj.input_parser(case.inputs.strip())
+                    data = obj.input_parser(case.inputs.rstrip())
                     got = obj.funcs[case.part](data)
                     if case.want != got:
                         print(f"FAILED! {case.part}: want({case.want}) != got({got})")
@@ -225,7 +225,7 @@ class Runner:
                 obj.testing = True
                 tests = [t for t in obj.TESTS if t.want != 0]
                 for case in tests:
-                    data = obj.input_parser(case.inputs.strip())
+                    data = obj.input_parser(case.inputs.rstrip())
                     got = obj.funcs[case.part](data)
                     if case.want == got:
                         print(f"TEST PASSED! {case.part}")
