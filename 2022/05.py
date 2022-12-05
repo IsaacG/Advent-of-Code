@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 05."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 from lib import aoc
 
@@ -51,7 +46,7 @@ class Day05(aoc.Challenge):
         stack = self.build_stacks(setup_block)
 
         for move_count, src, dst in moves:
-            for i in range(move_count):
+            for _ in range(move_count):
                 stack[dst - 1].append(stack[src - 1].pop())
         return "".join(s.pop() for s in stack)
 
@@ -62,8 +57,7 @@ class Day05(aoc.Challenge):
 
         for move_count, src, dst in moves:
             stack[dst - 1].extend(stack[src - 1][-move_count:])
-            for i in range(move_count):
-                stack[src - 1].pop()
+            del stack[src - 1][-move_count:]
 
         return "".join(s.pop() for s in stack)
 
