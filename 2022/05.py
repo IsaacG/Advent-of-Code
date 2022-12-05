@@ -21,24 +21,19 @@ move 2 from 2 to 1
 move 1 from 1 to 2
 """]
 
-InputType = tuple[str, str]
+InputType = tuple[list[str], list[tuple[int, int, int]]]
 
 
 class Day05(aoc.Challenge):
-    """Day 5: Supply Stacks."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 5: Supply Stacks. Move crates from stack to stack."""
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want="CMZ"),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want="MCD"),
     ]
 
-    def part1(self, parsed_input: InputType) -> str:
-        setup_block, moves = parsed_input.split("\n\n")
-        setup = setup_block.splitlines()
+    def build_stacks(self, setup: list[str]) -> list[list[str]]:
+        """Build the initial stacks from input."""
         stack_count = len(setup[-1].split())
         width = stack_count * 4
         stack = [[] for _ in range(stack_count)]
@@ -48,38 +43,40 @@ class Day05(aoc.Challenge):
                 crate = line[1 + i * 4]
                 if crate != " ":
                     stack[i].append(crate)
-        print(stack)
-        for line in moves.splitlines():
-            move_count, src, dst = [int(i) for i in line.split() if i.isdigit()]
+        return stack
+
+    def part1(self, parsed_input: InputType) -> str:
+        """Return crates after moving them with a CrateMover 9000."""
+        setup_block, moves = parsed_input
+        stack = self.build_stacks(setup_block)
+
+        for move_count, src, dst in moves:
             for i in range(move_count):
                 stack[dst - 1].append(stack[src - 1].pop())
         return "".join(s.pop() for s in stack)
 
     def part2(self, parsed_input: InputType) -> str:
-        setup_block, moves = parsed_input.split("\n\n")
-        setup = setup_block.splitlines()
-        stack_count = len(setup[-1].split())
-        width = stack_count * 4
-        stack = [[] for _ in range(stack_count)]
-        for line in setup[-2::-1]:
-            line = line.ljust(width)
-            for i in range(stack_count):
-                crate = line[1 + i * 4]
-                if crate != " ":
-                    stack[i].append(crate)
+        """Return crates after moving them with a CrateMover 9001."""
+        setup_block, moves = parsed_input
+        stack = self.build_stacks(setup_block)
 
-        for line in moves.splitlines():
-            move_count, src, dst = [int(i) for i in line.split() if i.isdigit()]
+        for move_count, src, dst in moves:
             stack[dst - 1].extend(stack[src - 1][-move_count:])
             for i in range(move_count):
                 stack[src - 1].pop()
 
         return "".join(s.pop() for s in stack)
 
-
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return puzzle_input
+        setup, moves = puzzle_input.split("\n\n")
+        return (
+            setup.splitlines(),
+            [
+                tuple(int(i) for i in line.split() if i.isdigit())
+                for line in moves.splitlines()
+            ]
+        )
 
 
 if __name__ == "__main__":
