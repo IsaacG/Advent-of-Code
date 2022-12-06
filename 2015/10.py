@@ -9,10 +9,26 @@ import re
 import typer
 from lib import aoc
 
-SAMPLE = ["5 1"]
+SAMPLE = "1"
 
 LineType = list[str]
 InputType = list[LineType]
+
+
+def look_say(string: str) -> str:
+    str_len = len(string)
+    out = []
+    count = 0
+    prior = string[0]
+    for char in string:
+        if char == prior:
+            count += 1
+        else:
+            out.extend((str(count), prior))
+            prior = char
+            count = 1
+    out.extend((str(count), prior))
+    return "".join(out)
 
 
 class Day10(aoc.Challenge):
@@ -23,8 +39,8 @@ class Day10(aoc.Challenge):
     # SUBMIT = {1: False, 2: False}
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=6),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=6),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=6),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=6),
     ]
 
     # Convert lines to type:
@@ -34,55 +50,20 @@ class Day10(aoc.Challenge):
     # Apply a transform function
     # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
-    def part1(self, parsed_input: InputType) -> int:
-        if len(parsed_input) == 2:
-            steps, start = parsed_input
-        else:
-            steps, start = 40, parsed_input[0]
-        inp = list(str(start))
+    def look_say_loop(self, string: str, steps: int) -> str:
+        for _ in range(5 if self.testing else steps):
+            string = look_say(string)
+        return string
 
-        for _ in range(int(steps)):
-            out = []
-            count = 0
-            prior = inp[0]
-            for char in inp:
-                if char == prior:
-                    count += 1
-                else:
-                    out.extend((str(count), prior))
-                    prior = char
-                    count = 1
-            out.extend((str(count), prior))
-            inp = out
-        return len(inp)
+    def part1(self, parsed_input: InputType) -> int:
+        return len(self.look_say_loop(parsed_input, 40))
 
     def part2(self, parsed_input: InputType) -> int:
-        if len(parsed_input) == 2:
-            steps, start = parsed_input
-        else:
-            steps, start = 50, parsed_input[0]
-        inp = list(str(start))
-
-        for _ in range(int(steps)):
-            out = []
-            count = 0
-            prior = inp[0]
-            for char in inp:
-                if char == prior:
-                    count += 1
-                else:
-                    out.extend((str(count), prior))
-                    prior = char
-                    count = 1
-            out.extend((str(count), prior))
-            inp = out
-        return len(inp)
-
-
+        return len(self.look_say_loop(parsed_input, 50))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return puzzle_input.split()
+        return puzzle_input
 
 
 if __name__ == "__main__":
