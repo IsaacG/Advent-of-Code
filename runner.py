@@ -121,8 +121,13 @@ class Runner:
         now = self.now()
         midnight = self.midnight_tomorrow()
         delay = midnight - now
+        stops = (60, 30, 15, 10, 5, 4, 3, 2, 1, 0)
         print(f"Next exercise starts in {delay.seconds} seconds.")
-        while midnight > self.now():
+        time.sleep((midnight - self.now()).seconds - stops[0])
+        for a, b in zip(stops, stops[1:]):
+            print(f"{a} seconds to go!")
+            time.sleep(a - b)
+        while midnight >= self.now():
             time.sleep((midnight - self.now()).seconds + 1)
         self.day = self.now().day
         self.live_solve()
