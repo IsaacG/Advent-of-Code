@@ -44,11 +44,15 @@ class Website:
 
     def codeblocks(self) -> str:
         et = etree.HTML(self.text())
-        sample = [
-            '["""\\',
-            '\n""","""\\\n'.join(c.strip() for c in et.xpath('//pre/code/text()')),
-            '"""]',
-        ]
+        sample = ['[']
+        blocks = [c.strip() for c in et.xpath('//code/text()')]
+        for num, block in enumerate(blocks):
+            if "\n" in block:
+                sample.append('    """\\')
+                sample.append(block + f'""",  # {num}')
+            else:
+                sample.append(f"    {block!r},  # {num}")
+        sample.append("]")
         return "\n".join(sample)
   
     def assert_logged_in(self):

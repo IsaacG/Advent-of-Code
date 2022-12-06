@@ -5,11 +5,22 @@ import typer
 from lib import aoc
 
 SAMPLE = [
-    "bvwbjplbgvbhsrlpgdmjqwftvncz",
-    "nppdvjthqldpwncqszvftbrmjlhg",
-    "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg",
-    "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",
-    "mjqjpqmgbljsphdztnvjfqwrcgsmlb",
+    "mjqjpqmgbljsphdztnvjfqwrcgsmlb",  # 0
+    "mjq",  # 1
+    "mjqj",  # 2
+    "j",  # 3
+    "jpqm",  # 4
+    "bvwbjplbgvbhsrlpgdmjqwftvncz",  # 5
+    "nppdvjthqldpwncqszvftbrmjlhg",  # 6
+    "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg",  # 7
+    "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",  # 8
+    "1598",  # 9
+    "mjqjpqmgbljsphdztnvjfqwrcgsmlb",  # 10
+    "bvwbjplbgvbhsrlpgdmjqwftvncz",  # 11
+    "nppdvjthqldpwncqszvftbrmjlhg",  # 12
+    "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg",  # 13
+    "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",  # 14
+    "2414",  # 15
 ]
 
 InputType = str
@@ -19,11 +30,11 @@ class Day06(aoc.Challenge):
     """Day 6: Tuning Trouble. Parse data streams to find the start of messages."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=6),
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=10),
-        aoc.TestCase(inputs=SAMPLE[3], part=1, want=11),
-        aoc.TestCase(inputs=SAMPLE[4], part=2, want=19),
+        aoc.TestCase(inputs=SAMPLE[5], part=1, want=5),
+        aoc.TestCase(inputs=SAMPLE[6], part=1, want=6),
+        aoc.TestCase(inputs=SAMPLE[7], part=1, want=10),
+        aoc.TestCase(inputs=SAMPLE[8], part=1, want=11),
+        aoc.TestCase(inputs=SAMPLE[10], part=2, want=19),
     ]
 
     def find_unique_n_start(self, line: str, num: int) -> int:
