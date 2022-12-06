@@ -1,11 +1,7 @@
 #!/bin/python
 """Advent of Code: Day 12."""
 
-import collections
-import functools
 import json
-import math
-import re
 
 import typer
 from lib import aoc
@@ -15,16 +11,11 @@ SAMPLE = [
     '[1, {"a": "red", "b": 2}, 3]',
 ]
 
-LineType = int
-InputType = list[LineType]
+InputType = object
 
 
 class Day12(aoc.Challenge):
-    """Day 12: JSAbacusFramework.io."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 12: JSAbacusFramework.io. Count int values in JSON."""
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=6),
@@ -33,14 +24,8 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=4),
     ]
 
-    # Convert lines to type:
-    INPUT_TYPES = LineType
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
-
     def doc_sum(self, obj, skip_red: bool) -> int:
+        """Sum integers in an object."""
         if isinstance(obj, str):
             return 0
         if isinstance(obj, int):
@@ -54,9 +39,11 @@ class Day12(aoc.Challenge):
         raise ValueError(obj)
 
     def part1(self, parsed_input: InputType) -> int:
+        """Return sum ints."""
         return self.doc_sum(parsed_input, False)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return sum ints, excluding red objects."""
         val = self.doc_sum(parsed_input, True)
         assert val < 191164
         return val

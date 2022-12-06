@@ -7,6 +7,7 @@ import importlib
 import multiprocessing
 import os
 import pathlib
+import re
 import string
 import sys
 import time
