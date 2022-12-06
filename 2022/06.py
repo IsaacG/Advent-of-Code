@@ -39,11 +39,12 @@ class Day06(aoc.Challenge):
 
     def find_unique_n_start(self, line: str, num: int) -> int:
         """Return the offset *after* a series of n different chars."""
-        parts = [line[i:] for i in range(num)]
-        for offset, chars in enumerate(zip(*parts)):
-            if len(set(chars)) == num:
-                return offset + num
-        raise RuntimeError("Not found")
+        parts = (line[i:] for i in range(num))
+        return next(
+            offset + num
+            for offset, chars in enumerate(zip(*parts))
+            if len(set(chars)) == num
+        )
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the start-of-packet marker index."""
