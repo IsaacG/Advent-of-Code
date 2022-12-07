@@ -2,6 +2,7 @@
 """Advent of Code: Day 07."""
 
 from __future__ import annotations
+import collections
 import pathlib
 
 import typer
@@ -32,23 +33,8 @@ $ ls
 5626152 d.ext
 7214296 k"""
 
-LineType = str
-InputType = list[LineType]
+InputType = dict[pathlib.Path, int]
 ROOT = pathlib.Path("/")
-
-
-class DirectoryEntry:
-    """Information about a directory."""
-
-    def __init__(self, pwd: pathlib.Path, data: dict[pathlib.Path, DirectoryEntry]):
-        self.pwd = pwd
-        self.dirs: set[str] = set()
-        self.size = 0
-        self.data = data
-
-    def rsize(self) -> int:
-        """Return the recursive directory size."""
-        return self.size + sum(self.data[self.pwd / child].rsize() for child in self.dirs)
 
 
 class Day07(aoc.Challenge):
@@ -58,53 +44,47 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=95437),
         aoc.TestCase(inputs=SAMPLE, part=2, want=24933642),
     ]
-    INPUT_TYPES = LineType
 
-    def directory_data(self, stdout: list[str]) -> dict[pathlib.Path, DirectoryEntry]:
+    def input_parser(self, puzzle_input: str) -> InputType:
         """Return the parsed filesystem details."""
-        dirs: dict[pathlib.Path, DirectoryEntry] = {}
+        dirs = collections.defaultdict(int)
         pwd = ROOT
-        for line in stdout:
-            if line == "$ cd /":
-                pwd = ROOT
-            elif line == "$ cd ..":
-                pwd = pwd.parent
-            elif line.startswith("$ cd"):
-                pwd /= line.split()[-1]
-            elif line == "$ ls":
-                dirs[pwd] = DirectoryEntry(pwd, dirs)
-            else:  # ls output
-                type_or_size, name = line.split()
-                if type_or_size == "dir":
-                    dirs[pwd].dirs.add(name)
-                else:
-                    dirs[pwd].size += int(type_or_size)
+        for line in puzzle_input.splitlines():
+            match (words := line.split()):
+                case ["$", "cd", "/"]:
+                    pwd = ROOT
+                case ["$", "cd", ".."]:
+                    pwd = pwd.parent
+                case ["$", "cd", _]:
+                    pwd /= line.split()[-1]
+                case _ if words[0].isdigit():
+                    size = int(words[0])
+                    dirs[pwd] += size
+                    for p in pwd.parents:
+                        dirs[p] += size
         return dirs
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, dirs: InputType) -> int:
         """Return the sum of all dirs over 100000 in size."""
-        dirs = self.directory_data(parsed_input)
         return sum(
-            directory.rsize()
-            for directory in dirs.values()
-            if directory.rsize() <= 100000
+            size
+            for size in dirs.values()
+            if size <= 100000
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, dirs: InputType) -> int:
         """Return the smallest directory to remove which gives the needed space."""
-        dirs = self.directory_data(parsed_input)
-
         # space_total = 70000000
         # target = 30000000
         # space_used = dirs[tuple()].rsize()
         # already_free = space_total - space_used
         # to_free = target - already_free
-        to_free = 30000000 - 70000000 + dirs[ROOT].rsize()
+        to_free = 30000000 - 70000000 + dirs[ROOT]
 
         return min(
-            directory.rsize()
-            for directory in dirs.values()
-            if directory.rsize() >= to_free
+            size
+            for size in dirs.values()
+            if size >= to_free
         )
 
 
