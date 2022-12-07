@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code: Day ${day}."""
+"""Advent of Code, ${title}."""
 
 import collections
 import functools
