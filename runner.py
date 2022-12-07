@@ -172,6 +172,8 @@ class Runner:
                     continue
                 tests_pass = True
                 for case in tests:
+                    if case.want is aoc.TEST_SKIP:
+                        continue
                     assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
                     data = obj.input_parser(case.inputs.rstrip())
                     got = obj.funcs[case.part](data)

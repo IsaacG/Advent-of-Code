@@ -24,6 +24,7 @@ from . import site
 
 COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
+TEST_SKIP = object()
 
 
 def print_point_set(board: set[complex]) -> None:
@@ -338,6 +339,8 @@ class Challenge(Helpers):
         self.testing = True
 
         for i, case in enumerate(self.TESTS):
+            if case.want is TEST_SKIP:
+                continue
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
             data = self.input_parser(case.inputs.rstrip())

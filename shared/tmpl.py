@@ -25,6 +25,7 @@ class Day${day}(aoc.Challenge):
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
+        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
     # Convert lines to type:
