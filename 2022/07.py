@@ -51,8 +51,6 @@ class Day07(aoc.Challenge):
         pwd = ROOT
         for line in puzzle_input.splitlines():
             match (words := line.split()):
-                case ["$", "cd", "/"]:
-                    pwd = ROOT
                 case ["$", "cd", ".."]:
                     pwd = pwd.parent
                 case ["$", "cd", _]:
