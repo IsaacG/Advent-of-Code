@@ -1,19 +1,14 @@
 #!/bin/python
 """Advent of Code: Day 07."""
 
-import dataclasses
+from __future__ import annotations
 import collections
-import functools
-import math
-import re
+import pathlib
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    '$ system-update --please --pretty-please-with-sugar-on-top',  # 0
-    ': No space left on device',  # 1
-    """\
+SAMPLE = """\
 $ cd /
 $ ls
 dir a
@@ -36,167 +31,94 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k""",  # 2
-    '/',  # 3
-    '$',  # 4
-    'cd',  # 5
-    'cd x',  # 6
-    'x',  # 7
-    'cd ..',  # 8
-    'cd /',  # 9
-    '/',  # 10
-    'ls',  # 11
-    '123 abc',  # 12
-    'abc',  # 13
-    '123',  # 14
-    'dir xyz',  # 15
-    'xyz',  # 16
-    """\
-- / (dir)
-  - a (dir)
-    - e (dir)
-      - i (file, size=584)
-    - f (file, size=29116)
-    - g (file, size=2557)
-    - h.lst (file, size=62596)
-  - b.txt (file, size=14848514)
-  - c.dat (file, size=8504156)
-  - d (dir)
-    - j (file, size=4060174)
-    - d.log (file, size=8033020)
-    - d.ext (file, size=5626152)
-    - k (file, size=7214296)""",  # 17
-    '/',  # 18
-    'a',  # 19
-    'd',  # 20
-    '/',  # 21
-    'e',  # 22
-    'a',  # 23
-    'e',  # 24
-    'i',  # 25
-    'a',  # 26
-    'f',  # 27
-    'g',  # 28
-    'h.lst',  # 29
-    'i',  # 30
-    'a',  # 31
-    'e',  # 32
-    'i',  # 33
-    'd',  # 34
-    '/',  # 35
-    'a',  # 36
-    'e',  # 37
-]
+7214296 k"""
 
-LineType = int
+LineType = str
 InputType = list[LineType]
+ROOT = pathlib.Path("/")
 
 
-class Dir:
-    def __init__(self, pwd):
+class DirectoryEntry:
+    """Information about a directory."""
+
+    def __init__(self, pwd: pathlib.Path, data: dir[pathlib.Path, DirectoryEntry]):
         self.pwd = pwd
         self.dirs = set()
         self.files = {}
+        self.data = data
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.pwd} {self.dirs} {self.files}"
 
-    def size(self, data):
-        t = sum(self.files.values())
-        t += sum(data[self.pwd + (i,)].size(data) for i in self.dirs)
-        return t
+    def size(self) -> int:
+        """Return the recursive directory size."""
+        size = sum(self.files.values())
+        size += sum(self.data[self.pwd / child].size() for child in self.dirs)
+        return size
+
 
 class Day07(aoc.Challenge):
-    """Day 7: No Space Left On Device."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 7: No Space Left On Device. Parse filesystem output info."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=95437),
-        aoc.TestCase(inputs=SAMPLE[2], part=2, want=24933642),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=95437),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=24933642),
     ]
 
-    # Convert lines to type:
     INPUT_TYPES = LineType
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
+    def directory_data(self, stdout: list[str]) -> dict[tuple, DirectoryEntry]:
+        """Return the parsed filesystem details."""
+        dirs = {}
+        pwd = ROOT
+        lines = collections.deque(stdout)
+        while lines:
+            words = lines.popleft().split()
+            if words[0] == "$" and words[1] == "cd":
+                if words[2] == "/":
+                    pwd = ROOT
+                elif words[2] == "..":
+                    pwd = pwd.parent
+                else:
+                    pwd /= words[2]
+            elif words[0] == "$" and words[1] == "ls":
+                if pwd not in dirs:
+                    dirs[pwd] = DirectoryEntry(pwd, dirs)
+                while lines and not lines[0].startswith("$"):
+                    type_or_size, name = lines.popleft().split()
+                    if type_or_size == "dir":
+                        dirs[pwd].dirs.add(name)
+                    else:
+                        dirs[pwd].files[name] = int(type_or_size)
+            else:
+                raise ValueError("Unrecognized command. {words}")
+        return dirs
 
     def part1(self, parsed_input: InputType) -> int:
-        dirs = {}
-        pwd = []
-        lines = collections.deque(parsed_input)
-        while lines:
-            words = lines.popleft().split()
-            if words[0] == "$":
-                if words[1] == "cd":
-                    if words[2] == "/":
-                        pwd = []
-                    elif words[2] == "..":
-                        pwd.pop()
-                    else:
-                        pwd.append(words[2])
-                    self.debug(f"{words} {pwd}")
-                elif words[1] == "ls":
-                    if tuple(pwd) not in dirs:
-                        dirs[tuple(pwd)] = Dir(tuple(pwd))
-                    while lines and not lines[0].startswith("$"):
-                        a, name = lines.popleft().split()
-                        if a == "dir":
-                            dirs[tuple(pwd)].dirs.add(name)
-                        else:
-                            dirs[tuple(pwd)].files[name] = int(a)
-        print(dirs)
-        return sum(d.size(dirs) for name, d in dirs.items() if d.size(dirs) <= 100000)
-                
+        """Return the sum of all dirs over 100000 in size."""
+        dirs = self.directory_data(parsed_input)
+        return sum(
+            directory.size()
+            for directory in dirs.values()
+            if directory.size() <= 100000
+        )
 
     def part2(self, parsed_input: InputType) -> int:
-        fs_size = 70000000
-        need = 30000000
-        dirs = {}
-        pwd = []
-        lines = collections.deque(parsed_input)
-        while lines:
-            words = lines.popleft().split()
-            if words[0] == "$":
-                if words[1] == "cd":
-                    if words[2] == "/":
-                        pwd = []
-                    elif words[2] == "..":
-                        pwd.pop()
-                    else:
-                        pwd.append(words[2])
-                    self.debug(f"{words} {pwd}")
-                elif words[1] == "ls":
-                    if tuple(pwd) not in dirs:
-                        dirs[tuple(pwd)] = Dir(tuple(pwd))
-                    while lines and not lines[0].startswith("$"):
-                        a, name = lines.popleft().split()
-                        if a == "dir":
-                            dirs[tuple(pwd)].dirs.add(name)
-                        else:
-                            dirs[tuple(pwd)].files[name] = int(a)
-        root_size = dirs[tuple()].size(dirs)
-        unused = fs_size - root_size
-        to_free = need- unused
-        return min(d.size(dirs) for name, d in dirs.items() if d.size(dirs) >= to_free)
-                
+        """Return the smallest directory to remove which gives the needed space."""
+        dirs = self.directory_data(parsed_input)
 
+        # space_total = 70000000
+        # target = 30000000
+        # space_used = dirs[tuple()].size()
+        # already_free = space_total - space_used
+        # to_free = target - already_free
+        to_free = 30000000 - 70000000 + dirs[ROOT].size()
 
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return puzzle_input.splitlines()
-
-    # def line_parser(self, line: str) -> LineType:
-    #     """If defined, use this to parse single lines."""
-    #     return (
-    #         int(i) if i.isdigit() else i
-    #         for i in PARSE_RE.findall(line)
-    #     )
+        return min(
+            directory.size()
+            for directory in dirs.values()
+            if directory.size() >= to_free
+        )
 
 
 if __name__ == "__main__":
