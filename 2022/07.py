@@ -50,13 +50,13 @@ class Day07(aoc.Challenge):
         dirs = collections.defaultdict(int)
         pwd = ROOT
         for line in puzzle_input.splitlines():
-            match (words := line.split()):
+            match line.split():
                 case ["$", "cd", ".."]:
                     pwd = pwd.parent
-                case ["$", "cd", _]:
-                    pwd /= line.split()[-1]
-                case _ if words[0].isdigit():
-                    size = int(words[0])
+                case ["$", "cd", name]:
+                    pwd /= name
+                case [maybe_size, _] if maybe_size.isdigit():
+                    size = int(maybe_size)
                     dirs[pwd] += size
                     for p in pwd.parents:
                         dirs[p] += size
