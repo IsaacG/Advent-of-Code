@@ -26,6 +26,8 @@ COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
 
 TEST_SKIP = "__DO_NOT_RUN__"
+# 4 cardinal directions
+DIRECTIONS = [-1j ** i for i in range(4)]
 
 
 def print_point_set(board: set[complex]) -> None:
