@@ -175,7 +175,7 @@ def render(points: set[complex]) -> str:
 class TestCase:
     """Test out a solution with a known input/want."""
     inputs: str
-    want: int
+    want: str | int
     part: int
 
 

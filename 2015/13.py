@@ -1,10 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 13: Knights of the Dinner Table."""
 
-import collections
 import itertools
-import functools
-import math
 import re
 
 import typer
@@ -24,65 +21,56 @@ Carol would gain 55 happiness units by sitting next to David.
 David would gain 46 happiness units by sitting next to Alice.
 David would lose 7 happiness units by sitting next to Bob.
 David would gain 41 happiness units by sitting next to Carol.""",
-    330,
 ]
 
-InputType = dict[tuple[str, str], int]
+InputType = tuple[dict[tuple[str, str], int], set[str]]
 
 
 class Day13(aoc.Challenge):
-    """Day 13: Knights of the Dinner Table."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Day 13: Compute happiness of guests sitting around a table."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=SAMPLE[1]),
+        aoc.TestCase(inputs=SAMPLE[0], part=1, want=330),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
-        people = set()
-        for person, neighbor in parsed_input:
-            people.add(person)
-            people.add(neighbor)
-
-        totals = [
+    def max_happiness(self, data: dict[tuple[str, str], int], people: set[str]) -> int:
+        """Return the max happiness which can be achieved through any seating arrangement."""
+        return max(
             sum(
-                parsed_input[person, neighbor] + parsed_input[neighbor, person]
+                data.get((person, neighbor), 0) + data.get((neighbor, person), 0)
                 for person, neighbor in zip(order, order[1:] + order[:1])
             )
             for order in itertools.permutations(people, len(people))
-        ]
-        return max(totals)
+        )
+
+    def part1(self, parsed_input: InputType) -> int:
+        """Return the max happiness for the guests."""
+        return self.max_happiness(*parsed_input)
 
     def part2(self, parsed_input: InputType) -> int:
-        people = {"__yourself__"}
-        for person, neighbor in parsed_input:
-            people.add(person)
-            people.add(neighbor)
-
-        totals = [
-            sum(
-                parsed_input.get((person, neighbor), 0) + parsed_input.get((neighbor, person), 0)
-                for person, neighbor in zip(order, order[1:] + order[:1])
-            )
-            for order in itertools.permutations(people, len(people))
-        ]
-        return max(totals)
+        """Return the max happiness for the guests and yourself."""
+        data, people = parsed_input
+        people.add("__yourself__")
+        return self.max_happiness(data, people)
 
     def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
+        """Return happiness data and the guest list from the input."""
         data = {}
-        matcher = re.compile(r"(.*) would (gain|lose) (\d+) happiness units by sitting next to (.*).")
+        people = set()
+        matcher = re.compile(
+            r"(.*) would (gain|lose) (\d+) happiness units by sitting next to (.*)."
+        )
         for line in puzzle_input.splitlines():
-            person, direction, num, neighbor = matcher.match(line).groups()
+            m = matcher.match(line)
+            assert m is not None
+            person, direction, num, neighbor = m.groups()
             num = int(num)
             if direction == "lose":
                 num *= -1
             data[person, neighbor] = num
-        return data
+            people.add(person)
+        return data, people
 
 
 if __name__ == "__main__":
