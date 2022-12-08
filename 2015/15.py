@@ -35,7 +35,10 @@ class Day15(aoc.Challenge):
         use = "capacity durability flavor texture".split()
         most = 0
         n = len(parsed_input)
-        for amounts in itertools.permutations(range(101), n - 1):
+        for amounts in itertools.permutations(range(1, 100 - n), n - 1):
+            sum_amounts = sum(amounts)
+            if sum_amounts >= 100:
+                continue
             amounts += (100 - sum(amounts),)
             total = 1
             for prop in use:
@@ -43,6 +46,8 @@ class Day15(aoc.Challenge):
                     m * d[prop]
                     for m, d in zip(amounts, parsed_input)
                 ))
+                if total == 0:
+                    continue
             if total > most:
                 most = total
         return most
@@ -52,7 +57,7 @@ class Day15(aoc.Challenge):
         calories = 500
         most = 0
         n = len(parsed_input)
-        for amounts in itertools.permutations(range(101), n - 1):
+        for amounts in itertools.permutations(range(1, 100 - n), n - 1):
             amounts += (100 - sum(amounts),)
             if sum(
                 m * d["calories"]

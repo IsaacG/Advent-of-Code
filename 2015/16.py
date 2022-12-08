@@ -1,37 +1,14 @@
 #!/bin/python
-"""Advent of Code, Day 16: Aunt Sue."""
+"""Advent of Code, Day 16: Aunt Sue. Find the aunt who matches the criteria."""
 
-import collections
-import functools
-import math
-import re
+import operator
+from typing import Callable
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    'children',  # 0
-    'cats',  # 1
-    'goldfish',  # 2
-    'trees',  # 3
-    'cars',  # 4
-    'perfumes',  # 5
-    """\
-children: 3
-cats: 7
-samoyeds: 2
-pomeranians: 3
-akitas: 0
-vizslas: 0
-goldfish: 5
-trees: 3
-cars: 2
-perfumes: 1""",  # 6
-]
-
-LineType = int
-InputType = list[LineType]
-WANT = {
+InputType = list[dict[str, int]]
+WANT_NUM = {
     "children": 3,
     "cats": 7,
     "samoyeds": 2,
@@ -43,42 +20,38 @@ WANT = {
     "cars": 2,
     "perfumes": 1,
 }
+OPS = {k: operator.eq for k in WANT_NUM}
 
 
 class Day16(aoc.Challenge):
     """Day 16: Aunt Sue."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
+    @staticmethod
+    def matches(ops: dict[str, Callable[[int], bool]], aunts: list[dict[str, int]]) -> int:
+        """Return the aunt who matches the comparisons."""
+        for i, aunt in enumerate(aunts, start=1):
+            if all(ops[k](v, WANT_NUM[k]) for k, v in aunt.items()):
+                return i
+        raise RuntimeError("Not found.")
+
     def part1(self, parsed_input: InputType) -> int:
-        for i, aunt in enumerate(parsed_input):
-            if all(WANT[k] == v for k, v in aunt.items()):
-                return i + 1
+        """Find the aunt who matches exactly."""
+        return self.matches(OPS, parsed_input)
 
     def part2(self, parsed_input: InputType) -> int:
-        comp = {
-            "children": lambda x: x == 3,
-            "cats": lambda x: x > 7,
-            "samoyeds": lambda x: x == 2,
-            "pomeranians": lambda x: x < 3,
-            "akitas": lambda x: x == 0,
-            "vizslas": lambda x: x == 0,
-            "goldfish": lambda x: x < 5,
-            "trees": lambda x: x > 3,
-            "cars": lambda x: x == 2,
-            "perfumes": lambda x: x == 1,
+        """Find the aunt who matches more fuzzy rules."""
+        ops = OPS | {
+            "cats": operator.gt,
+            "trees": operator.gt,
+            "goldfish": operator.lt,
+            "pomeranians": operator.lt,
         }
-        for i, aunt in enumerate(parsed_input):
-            if all(comp[k](v) for k, v in aunt.items()):
-                return i + 1
+        return self.matches(ops, parsed_input)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
@@ -89,7 +62,6 @@ class Day16(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
 
 
 if __name__ == "__main__":
