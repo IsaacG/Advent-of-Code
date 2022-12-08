@@ -55,6 +55,9 @@ class Day${day}(aoc.Challenge):
             for line in puzzle_input.splitlines()
         ]
 
+    # def line_parser(self, line: str):
+    #     pass
+
 
 if __name__ == "__main__":
     typer.run(Day${day}().run)
