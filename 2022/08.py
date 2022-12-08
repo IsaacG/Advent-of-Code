@@ -25,26 +25,37 @@ class Day08(aoc.Challenge):
     ]
 
     def part1(self, parsed_input: InputType) -> int:
-        """Return how many trees are visible from outside."""
+        """Return how many trees are visible from outside.
+
+        Walk the perimeter and peer into the forest.
+        Record how many trees we can see along every line.
+        """
         board = parsed_input
-        count = 0
 
-        for tree in board:
-            # Check if a tree is visible.
-            # Pick a direction. Walk in that direction until blocked or reach the edge.
-            # If we get to the edge, the tree is visible.
-            for direction in aoc.DIRECTIONS:
-                cur = tree + direction
-                while cur in board:
-                    if board[cur] >= board[tree]:
-                        break
-                    cur += direction
-                else:
-                    # Loop exited, got out to the edge.
-                    count += 1
+        visible: set[complex] = set()
+
+        edge_location = 0
+        walk_direction = 1
+
+        for _ in range(4):
+            look_direction = walk_direction * complex(0, 1)
+            while True:
+                # Look into the forest and record what can be seen.
+                viewing = edge_location
+                max_height = -1
+                while viewing in board:
+                    if board[viewing] > max_height:
+                        max_height = board[viewing]
+                        visible.add(viewing)
+                    viewing += look_direction
+                # Stop walking before exiting the forest.
+                if edge_location + walk_direction not in board:
                     break
+                edge_location += walk_direction
+            # Rotate 90 degrees.
+            walk_direction *= complex(0, 1)
 
-        return count
+        return len(visible)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return the highest scenic score in the forest."""

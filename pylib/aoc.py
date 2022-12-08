@@ -27,7 +27,7 @@ COLOR_EMPTY = ' '
 
 TEST_SKIP = "__DO_NOT_RUN__"
 # 4 cardinal directions
-DIRECTIONS = [-1j ** i for i in range(4)]
+DIRECTIONS = [1j ** i for i in range(4)]
 
 
 def print_point_set(board: set[complex]) -> None:
@@ -75,6 +75,16 @@ class Board(dict):
                 if (candidate := point + (1 + 1j) * -1j ** i) in self:
                     neighbors.append(candidate)
         return neighbors
+
+    def edges(self) -> set[complex]:
+        """Return the edges of a fully populated board."""
+        edges: set[complex] = set()
+        cur = 0
+        for direction in DIRECTIONS:
+            while cur + direction in self:
+                cur += direction
+                edges.add(cur)
+        return edges
 
     @classmethod
     def from_block_map(cls, block: str, transform: Callable[[str], Any]) -> Board:
