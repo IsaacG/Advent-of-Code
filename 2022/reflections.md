@@ -53,6 +53,11 @@ I later cleaned this up by walking the perimeter and "looking" into the forest a
 
 # Day 9: Rope Bridge. Track the movement of knots.
 
+Code:
+
+* [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/5ceeceb2a06c75d1eb11d9e7cc14e13e41faf008/2022/09.py)
+* [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/09.py)
+
 Thankfully I had recently written a `DIRECTIONS` list with the four cardinal directions as complex numbers.
 I ended up using a `case match` to map "RLUD" to complex directions but pulled the `DIRECTIONS` and diagonals from my library.
 I later changed that to a `dict[str, complex]`.
