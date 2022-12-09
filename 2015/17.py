@@ -1,22 +1,18 @@
 #!/bin/python
-"""Advent of Code, Day 17: No Such Thing as Too Much."""
+"""Advent of Code, Day 17: No Such Thing as Too Much. Count ways to fill containers."""
 
 import collections
 import itertools
-import functools
-import math
-import re
 
 import typer
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 20
 15
 10
 5
 5"""
-]
 
 LineType = int
 InputType = list[LineType]
@@ -25,69 +21,31 @@ InputType = list[LineType]
 class Day17(aoc.Challenge):
     """Day 17: No Such Thing as Too Much."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=3),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=4),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
 
-    # Convert lines to type:
     INPUT_TYPES = LineType
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
-    def part1(self, parsed_input: InputType) -> int:
+    def solver(self, containers: list[int]) -> dict[int, int]:
+        """Compute the number of ways to fill containers."""
         target = 25 if self.testing else 150
-        count = 0
-        for n in range(len(parsed_input)):
-            for combo in itertools.combinations(parsed_input, n):
+        count: dict[int, int] = collections.defaultdict(int)
+        for number in range(len(containers)):
+            for combo in itertools.combinations(containers, number):
                 if sum(combo) == target:
-                    count += 1
+                    count[number] += 1
         return count
 
+    def part1(self, parsed_input: InputType) -> int:
+        """Return the possible countainer combos which fit the eggnog."""
+        return sum(self.solver(parsed_input).values())
+
     def part2(self, parsed_input: InputType) -> int:
-        target = 25 if self.testing else 150
-        count = collections.defaultdict(int)
-        for n in range(len(parsed_input)):
-            for combo in itertools.combinations(parsed_input, n):
-                if sum(combo) == target:
-                    count[n] += 1
+        """Return the possible countainer combos which use the min number of containers."""
+        count = self.solver(parsed_input)
         return count[min(count)]
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-
-    # def line_parser(self, line: str):
-    #     pass
 
 
 if __name__ == "__main__":
