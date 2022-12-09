@@ -46,6 +46,15 @@ class Day${day}(aoc.Challenge):
         return [int(i) for i in puzzle_input.splitlines()]
         mutate = lambda x: (x[0], int(x[1])) 
         return [mutate(line.split()) for line in puzzle_input.splitlines()]
+        # Words: mixed str and int
+        return [
+            tuple(
+                int(i) if i.isdigit() else i
+                for i in line.split()
+            )
+            for line in puzzle_input.splitlines()
+        ]
+        # Regex splitting
         patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
         return [
             tuple(

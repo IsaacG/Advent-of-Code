@@ -41,7 +41,7 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=57600000),
     ]
 
-    def names_and_ranges(self, ingredients: InputType, check_calories: bool) -> int:
+    def sorted_limits(self, ingredients: InputType, check_calories: bool) -> int:
         """Generate the acceptable ranges for each ingredient.
 
         The upper limit of ingredients can be computed based on their
@@ -74,20 +74,33 @@ class Day15(aoc.Challenge):
                 mx, n = max((p[prop], n) for n, p in ingredients.items())
                 limit = (100 * mx) // (mx - val)
                 limits[name] = min(limit, limits[name])
+        return sorted((limit, name) for name, limit in limits.items())
 
-        limits_names = sorted((limit, name) for name, limit in limits.items())
-        ranges = [(name, range(limit + 1)) for limit, name in limits_names]
-        return list(zip(*ranges))
+    def combo_generator_b(self, ingredients: InputType, check_calories: bool):
+        ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
+        for amounts in itertools.product(*[range(i + 1) for i in ranges[:-1]]):
+            yield amounts + (100 - sum(amounts),)
+
+    def combo_generator(self, ingredients: InputType, check_calories: bool):
+        ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
+        n = len(ranges)
+        amounts = [0] * (n - 1)
+        while amounts[-1] <= ranges[-2]:
+            yield amounts + [100 - sum(amounts)]
+            while True:
+                amounts[0] += 1
+                for i in range(n - 2):
+                    if amounts[i] > ranges[i]:
+                        amounts[i] = 0
+                        amounts[i + 1] += 1
+                if sum(amounts) <= 100:
+                    break
 
     def solver(self, parsed_input: InputType, check_calories: bool) -> int:
         most = 0
-        names, ranges = self.names_and_ranges(parsed_input, check_calories)
+        _, names = list(zip(*self.sorted_limits(parsed_input, check_calories)))
         n = len(names)
-        for amounts in itertools.product(*ranges[:-1]):
-            sum_amounts = sum(amounts)
-            if sum_amounts >= 100:
-                continue
-            amounts += (100 - sum(amounts),)
+        for amounts in self.combo_generator(parsed_input, check_calories):
             name_amounts = list(zip(names, amounts))
             if check_calories and sum(
                 amount * parsed_input[name]["calories"]

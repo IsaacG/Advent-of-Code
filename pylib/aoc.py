@@ -28,6 +28,8 @@ COLOR_EMPTY = ' '
 TEST_SKIP = "__DO_NOT_RUN__"
 # 4 cardinal directions
 DIRECTIONS = [1j ** i for i in range(4)]
+DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
+NEIGHBORS = DIRECTIONS + DIAGONALS
 
 
 def print_point_set(board: set[complex]) -> None:
@@ -196,6 +198,19 @@ class Helpers:
 
     _primes = [2, 3, 5]
     _gcd = {}
+
+    @staticmethod
+    def cmp(a: float, b: float) -> int:
+        """Compare two numbers like Perl <=>.
+
+        Binary "<=>" returns -1, 0, or 1 depending on whether the left argument
+        is numerically less than, equal to, or greater than the right argument.
+        """
+        if a < b:
+            return -1
+        if a > b:
+            return +1
+        return 0
 
     @staticmethod
     def mult(nums: Iterable[int]) -> int:
