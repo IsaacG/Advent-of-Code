@@ -18,3 +18,8 @@ Using complex numbers always makes my life so easy.
 
 This was a bit slow to run since I did not optimize it, but it still ran fast enough.
 Then I realized that the Python `hashlib` allows you to reuse partial hashes, which helped things along.
+
+# Day 17: No Such Thing as Too Much. Count ways to fill containers.
+
+`itertools.combinations()` made this exercise relatively trivial.
+There was nothing too exciting here.
