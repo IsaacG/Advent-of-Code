@@ -34,8 +34,7 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[7], part=2, want=0),
         aoc.TestCase(inputs=SAMPLE[8], part=2, want=0),
     )
-
-    INPUT_TYPES = str
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         """Return how many lines follow rules 1."""

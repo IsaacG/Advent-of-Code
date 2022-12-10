@@ -19,6 +19,7 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=34),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=14),
     )
+    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the amount of wrapping paper needed."""
@@ -35,10 +36,6 @@ class Day02(aoc.Challenge):
             perimeters = [a + b for a, b in itertools.combinations(dims, 2)]
             total += min(perimeters) * 2 + self.mult(dims)
         return total
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return [[int(i) for i in line.split("x")] for line in puzzle_input.splitlines()]
 
 
 if __name__ == "__main__":

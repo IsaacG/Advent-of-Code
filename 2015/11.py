@@ -55,6 +55,7 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want="ghjaabcc"),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want="abcdffbb"),
     ]
+    INPUT_PARSER = aoc.parse_one_str
 
     def next_password(self, password: str) -> str:
         """Generate the next password."""
@@ -84,10 +85,6 @@ class Day11(aoc.Challenge):
         """Rotate twice."""
         password = self.next_password(parsed_input)
         return self.next_password(password)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return puzzle_input
 
 
 if __name__ == "__main__":

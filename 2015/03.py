@@ -25,9 +25,7 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=3),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=11),
     )
-
-    # Convert lines to type:
-    INPUT_TYPES = str
+    INPUT_PARSER = aoc.parse_one_str
 
     def generic(self, line: str, transform: Callable[[bool], bool]) -> int:
         """Return how many houses get presents."""
@@ -42,11 +40,11 @@ class Day03(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return how many houses get presents from just Santa."""
-        return self.generic(parsed_input[0], lambda x: x)
+        return self.generic(parsed_input, lambda x: x)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return how many houses get presents from Santa and Robo-Santa."""
-        return self.generic(parsed_input[0], lambda x: not x)
+        return self.generic(parsed_input, lambda x: not x)
 
 
 if __name__ == "__main__":

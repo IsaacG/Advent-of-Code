@@ -46,7 +46,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=6),
         aoc.TestCase(inputs=SAMPLE, part=2, want=6),
     ]
-    INPUT_TYPES = str
+    INPUT_PARSER = aoc.parse_one_str
 
     def look_say_loop(self, string: str, steps: int) -> str:
         """Return look-say length after looping."""
@@ -61,10 +61,6 @@ class Day10(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Look-say, 50 iterations."""
         return self.look_say_loop(parsed_input, 50)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return puzzle_input
 
 
 if __name__ == "__main__":

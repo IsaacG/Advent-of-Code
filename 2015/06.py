@@ -29,6 +29,7 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=1, want=1000000 - 1000),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1000000),
     ]
+    INPUT_PARSER = aoc.parse_re_findall_mixed(PARSE_RE)
 
     def part1(self, parsed_input: InputType) -> int:
         """Return how many lights are on after toggling them."""
@@ -67,13 +68,6 @@ class Day06(aoc.Challenge):
                         case _:
                             raise ValueError(f"Unknown {action=}")
         return sum(i for row in grid for i in row)
-
-    def line_parser(self, line: str) -> LineType:
-        """Parse lines."""
-        return tuple(
-            int(i) if i.isdigit() else i
-            for i in PARSE_RE.findall(line)
-        )
 
 
 if __name__ == "__main__":

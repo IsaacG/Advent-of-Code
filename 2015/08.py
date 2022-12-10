@@ -28,7 +28,7 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=6),
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=5),
     ]
-    INPUT_TYPES = LineType
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the length of escaping chars compared to decoded version."""

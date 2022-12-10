@@ -17,9 +17,7 @@ class Day04(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=609043),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=1048970),
     )
-
-    # Convert lines to type:
-    INPUT_TYPES = str
+    INPUT_PARSER = aoc.parse_one_str
 
     def generic(self, key: InputType, size: int) -> int:
         """Return a suffix which generates a hash starting with a given prefix."""
@@ -34,11 +32,11 @@ class Day04(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return a suffix which generates a 5-zeroes hash."""
-        return self.generic(parsed_input[0], 5)
+        return self.generic(parsed_input, 5)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return a suffix which generates a 6-zeroes hash."""
-        return self.generic(parsed_input[0], 6)
+        return self.generic(parsed_input, 6)
 
 
 if __name__ == "__main__":
