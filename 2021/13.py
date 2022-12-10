@@ -66,14 +66,12 @@ class Day13(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Fold the sheet many times and render the resulting points."""
         points, instructions = parsed_input
+        # TODO: Can we do all the folds in a single pass?
         for axis, position in instructions:
             points = self.fold(points, axis, position)
-        # TODO: Can we do all the folds in a single pass?
 
         # The actual solution requires OCR or visual reading.
-        self.debug(aoc.render(points))
-        # Since I do not have an OCR, return an arbitrary number.
-        return sum(int(point.real * point.imag) for point in points)
+        return str(aoc.OCR.from_point_set(points))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
