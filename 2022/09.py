@@ -36,6 +36,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=13),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=36),
     ]
+    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def solver(self, lines: list[tuple[str, int]], knot_count: int) -> int:
         """Track the movement of knots on a rope. Return the number of positions the tail visits."""
@@ -61,16 +62,6 @@ class Day09(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Return visited locations for a 10-knot rope tail."""
         return self.solver(parsed_input, 10)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
 
 
 if __name__ == "__main__":

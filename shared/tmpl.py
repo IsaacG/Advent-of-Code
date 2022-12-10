@@ -28,12 +28,21 @@ class Day${day}(aoc.Challenge):
         # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    # Convert lines to type:
-    INPUT_TYPES = LineType
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    # INPUT_PARSER = parse_one_str
+    # INPUT_PARSER = parse_one_int
+    # INPUT_PARSER = parse_one_str_per_line
+    # INPUT_PARSER = parse_one_int_per_line
+    # INPUT_PARSER = parse_multi_str_per_line
+    # INPUT_PARSER = parse_re_group_str(r"(a) .* (b) .* (c)")
+    # INPUT_PARSER = parse_re_findall_str(r"(a|b|c)")
+    # INPUT_PARSER = parse_multi_int_per_line
+    # INPUT_PARSER = parse_re_group_int(r"(\d+)")
+    # INPUT_PARSER = parse_re_findall_int(r"\d+")
+    # INPUT_PARSER = parse_multi_mixed_per_line
+    # INPUT_PARSER = parse_re_group_mixed(r"(foo) .* (\d+)")
+    # INPUT_PARSER = parse_re_findall_mixed(r"\d+|foo|bar")
+    # INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
+    # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
 
     def part1(self, parsed_input: InputType) -> int:
         return 0

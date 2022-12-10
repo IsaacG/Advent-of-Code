@@ -12,18 +12,18 @@ C Z
 InputType = list[tuple[str, str]]
 
 
-LOSE, DRAW, WIN = "XYZ"
+LOSE, DRAW, WIN = list("XYZ")
 POINTS = {LOSE: 0, DRAW: 3, WIN: 6}
 
 
 class Day02(aoc.Challenge):
     """Day 2: Rock Paper Scissors. Score a tournament."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=15),
         aoc.TestCase(inputs=SAMPLE, part=2, want=12),
-    )
-    INPUT_TYPES = tuple[str, str]
+    ]
+    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         """Score a tournament with the columns representing the choices."""
@@ -74,10 +74,6 @@ class Day02(aoc.Challenge):
             my_move = "XYZ"[pos_b]
             moves.append((elf_move, my_move))
         return self.part1(moves)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return [tuple(i.split()) for i in puzzle_input.splitlines()]
 
 
 if __name__ == "__main__":

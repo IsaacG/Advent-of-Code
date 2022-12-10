@@ -23,6 +23,7 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=21),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=8),
     ]
+    INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
 
     def part1(self, parsed_input: InputType) -> int:
         """Return how many trees are visible from outside.
@@ -34,8 +35,8 @@ class Day08(aoc.Challenge):
 
         visible: set[complex] = set()
 
-        edge_location = 0
-        walk_direction = 1
+        edge_location: complex = 0
+        walk_direction: complex = 1
 
         for _ in range(4):
             look_direction = walk_direction * complex(0, 1)
@@ -79,10 +80,6 @@ class Day08(aoc.Challenge):
             scores.append(self.mult(visible))
 
         return max(scores)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input)
 
 
 if __name__ == "__main__":

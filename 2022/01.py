@@ -25,10 +25,11 @@ InputType = list[list[int]]
 class Day01(aoc.Challenge):
     """Day 1: Calorie Counting. Count how many calories the elves have."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=24000),
         aoc.TestCase(inputs=SAMPLE, part=2, want=45000),
-    )
+    ]
+    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_int_per_line])
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the sum calories held by the elf with the most calories."""
@@ -42,7 +43,7 @@ class Day01(aoc.Challenge):
         """Parse the input data."""
         return [
             [int(line) for line in block.splitlines()]
-            for block in  puzzle_input.split("\n\n")
+            for block in puzzle_input.split("\n\n")
         ]
 
 

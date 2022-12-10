@@ -26,12 +26,13 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want="CMZ"),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want="MCD"),
     ]
+    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
 
     def build_stacks(self, setup: list[str]) -> list[list[str]]:
         """Build the initial stacks from input."""
         stack_count = len(setup[-1].split())
         width = stack_count * 4
-        stack = [[] for _ in range(stack_count)]
+        stack: list[list[str]] = [[] for _ in range(stack_count)]
         for line in setup[-2::-1]:
             line = line.ljust(width)
             for i in range(stack_count):
@@ -60,17 +61,6 @@ class Day05(aoc.Challenge):
             del stack[src - 1][-move_count:]
 
         return "".join(s.pop() for s in stack)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        setup, moves = puzzle_input.split("\n\n")
-        return (
-            setup.splitlines(),
-            [
-                tuple(int(i) for i in line.split() if i.isdigit())
-                for line in moves.splitlines()
-            ]
-        )
 
 
 if __name__ == "__main__":

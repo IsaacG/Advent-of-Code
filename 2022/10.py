@@ -1,5 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 10: Cathode-Ray Tube. Emulate a simple CPU and program with a cycle counter."""
+"""Advent of Code, Day 10: Cathode-Ray Tube.
+
+Emulate a simple CPU and program with a cycle counter.
+"""
 
 import typer
 from lib import aoc
@@ -162,6 +165,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=13140),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
+    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def run_program(self, lines: InputType) -> list[int]:
         """Run the program and store the `X` register value for each cycle."""
@@ -195,16 +199,6 @@ class Day10(aoc.Challenge):
         # Split the output into 6 rows of 40 pixels each.
         rows = [pixels[i*40:(i+1)*40] for i in range(6)]
         return aoc.OCR(rows).as_string()
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
 
 
 if __name__ == "__main__":

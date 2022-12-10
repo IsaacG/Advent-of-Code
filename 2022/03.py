@@ -1,8 +1,8 @@
 #!/bin/python
 """Advent of Code: Day 03."""
 
-import more_itertools
 import string
+import more_itertools
 
 import typer
 from lib import aoc
@@ -23,12 +23,11 @@ SCORING = " " + string.ascii_letters
 class Day03(aoc.Challenge):
     """Day 3: Rucksack Reorganization. Find common elements across groupings."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=157),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=70),
-    )
-
-    INPUT_TYPES = str
+    ]
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         """Find the common element across the first and second half of each line."""

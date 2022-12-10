@@ -1,88 +1,95 @@
 """AoC Parser collection.
 
 aoc.Challenge classes can define an INPUT_PARSER.
-That value should be a ParserBase instance.
+That value should be a BaseParser instance.
 The Parser class shall have a `parse()` method which takes the puzzle input
 and returns the parsed value.
 """
 
 import inspect
+import itertools
 import re
 from typing import Any, Callable, Iterable
 
 
-def input_to_ints(inputs: Iterable[str]) -> list[int, ...]:
+def input_to_ints(inputs: Iterable[str]) -> list[int]:
     """Return a list of int values from an iterable."""
     return [int(i) for i in inputs]
 
 
-def input_to_strs(inputs: Iterable[str]) -> list[str, ...]:
+def input_to_strs(inputs: Iterable[str]) -> list[str]:
     """Return a list of str values from an iterable."""
     return [str(i) for i in inputs]
 
 
-def input_to_mixed(inputs: Iterable[str]) -> list[int | str, ...]:
+def input_to_mixed(inputs: Iterable[str]) -> list[int | str]:
     """Return a list of int | str values from an iterable."""
     return [int(i) if i.isdigit() else str(i) for i in inputs]
 
 
-class ParserBase:
+class BaseParser:
     """Base class for input parsing."""
 
     def parse(self, puzzle_input: str) -> Any:
+        """Parse a puzzle input."""
         raise NotImplementedError
 
 
-class ParseOneWord:
+class ParseOneWord(BaseParser):
     """Parse an input which is a single line with a single word."""
 
     def __init__(self, input_type: Callable[[str], Any]):
         self.input_type = input_type
 
     def parse(self, puzzle_input: str) -> Any:
+        """Parse puzzle input as a single object and convert to a type."""
         return self.input_type(puzzle_input)
 
 
-class ParseOneWordPerLine:
+class ParseOneWordPerLine(BaseParser):
     """Parse an input which is multiple lines with a single word per line."""
 
     def __init__(self, input_type: Callable[[str], Any]):
         self.input_type = input_type
 
     def parse(self, puzzle_input: str) -> list[Any]:
+        """Parse puzzle lines, converting each line to a type."""
         return [
             self.input_type(line)
             for line in puzzle_input.splitlines()
         ]
 
 
-class BaseParseMultiPerLine(ParserBase):
+class BaseParseMultiPerLine(BaseParser):
     """Parse an input which is multiple lines with multiple words per line."""
 
     def __init__(self, convert: Callable[[Iterable[str]], Any]):
         self.convert = convert
 
-    def parse(self, puzzle_input: str) -> list[list[Any, ...]]:
+    def parse(self, puzzle_input: str) -> list[list[Any]]:
+        """Parse puzzle lines, converting each line to a list of types."""
         return [
             self.convert(line.split())
             for line in puzzle_input.splitlines()
         ]
 
 
-class BaseParseRe(ParserBase):
+class BaseParseRe(BaseParser):
     """Parse multi-line input by applying a regex to find words on each line."""
 
-    def __init__(self, regex: str, convert: Callable[[Iterable[str]], list[Any, ...]]):
+    def __init__(self, regex: str, convert: Callable[[Iterable[str]], list[Any]]):
         self.compiled = re.compile(regex)
         self.convert = convert
 
-    def parse(self, puzzle_input: str) -> list[list[Any, ...]]:
+    def parse(self, puzzle_input: str) -> list[list[Any]]:
+        """Parse puzzle lines, applying a regex to each line."""
         return [
-            self.convert(self.compiled.findall(line))
+            self.convert(self.line_to_iterable(line))
             for line in puzzle_input.splitlines()
         ]
 
     def line_to_iterable(self, line: str) -> Iterable[str]:
+        """Return an iterable of str for each line."""
         raise NotImplementedError
 
 
@@ -90,26 +97,31 @@ class BaseParseReFindall(BaseParseRe):
     """Parse an input by applying re.Pattern.findall to each line."""
 
     def line_to_iterable(self, line: str) -> Iterable[str]:
+        """Return matches on a line via re.Pattern.findall."""
         return self.compiled.findall(line)
 
 
-class BaseParseReGroups(ParserBase):
+class BaseParseReGroups(BaseParseRe):
     """Parse an input by applying re.Pattern.groups to each line."""
 
     def line_to_iterable(self, line: str) -> Iterable[str]:
-        return self.compiled.match(line).groups()
+        """Return matches on a line via re.Pattern.match().groups."""
+        if (match := self.compiled.match(line)):
+            return match.groups()
+        raise ValueError("Pattern did not match! {self.compiled.pattern=} {line=}")
 
 
-class ParseBlocks(ParserBase):
+class ParseBlocks(BaseParser):
     """Parse an input by splitting into blocks and applying a parser to each block."""
 
-    def __init__(self, block_parsers: Iterable[ParserBase]):
+    def __init__(self, block_parsers: Iterable[BaseParser]):
         for parser in block_parsers:
             if inspect.isclass(parser):
                 raise ValueError(f"{parser!r} is a class and not an instance!")
         self.block_parsers = block_parsers
 
     def parse(self, puzzle_input: str) -> list[Any]:
+        """Convert input into "blocks" and parse each block."""
         blocks = puzzle_input.split("\n\n")
         outputs = []
         for block, parser in zip(blocks, itertools.cycle(self.block_parsers)):

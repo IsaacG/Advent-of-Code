@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 04."""
 
-import re
-
 import typer
 from lib import aoc
 
@@ -14,16 +12,17 @@ SAMPLE = """\
 6-6,4-6
 2-6,4-8
 """
-InputType = tuple[int, int, int, int]
+InputType = list[list[int]]
 
 
 class Day04(aoc.Challenge):
     """Day 4: Camp Cleanup. Detect overlapping ranges."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=2),
         aoc.TestCase(inputs=SAMPLE, part=2, want=4),
-    )
+    ]
+    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the number of fully contained overlaps."""
@@ -40,14 +39,6 @@ class Day04(aoc.Challenge):
             for a1, a2, b1, b2 in parsed_input
             if b1 <= a1 <= b2 or a1 <= b1 <= a2
         )
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        patt = re.compile(r"[,-]")
-        return [
-            (int(i) for i in patt.split(line))
-            for line in puzzle_input.splitlines()
-        ]
 
 
 if __name__ == "__main__":

@@ -16,9 +16,11 @@ import dataclasses
 import functools
 import inspect
 import pathlib
+import re
 import time
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
+from .parsers import *
 from . import site
 
 
@@ -75,7 +77,6 @@ OCR_MAP = {
     0b1000010_1000010_0100100_0100100_0011000_0011000_0100100_0100100_1000010_1000010: "X",
     0b1111110_0000010_0000010_0000100_0001000_0010000_0100000_1000000_1000000_1111110: "Z",
 }
-
 
 
 def print_point_set(board: set[complex]) -> None:
@@ -228,11 +229,11 @@ class Rect:
     end: Point
 
     @classmethod
-    def from_input(line: str) -> Rect:
+    def from_input(cls, line: str) -> Rect:
         x1, y1, x2, y2 = (int(i) for i in re.findall(r"\d+", line))
         start = Point(min(x1, x2), min(y1, y2))
         end = Point(max(x1, x2), max(y1, y2))
-        return Rect(start, end)
+        return cls(start, end)
 
     def area(self) -> int:
         return abs(self.end.x - self.start.x + 1) * abs(self.end.y - self.start.y + 1)
@@ -378,6 +379,7 @@ class Challenge(Helpers):
     """Daily Challenge."""
 
     INPUT_TYPES = str
+    INPUT_PARSER: Optional[BaseParser]
     TRANSFORM = None
     TESTS: list[TestCase] = []
     DEBUG = False
@@ -451,6 +453,10 @@ class Challenge(Helpers):
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
+        if self.INPUT_PARSER is not None:
+            if inspect.isclass(self.INPUT_PARSER):
+                raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
+            return self.INPUT_PARSER.parse(puzzle_input)
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
         elif inspect.ismethod(getattr(self, "line_parser", None)):
