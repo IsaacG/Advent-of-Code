@@ -16,12 +16,12 @@ NOT_ALLOWED = {
 
 def parts(num: int) -> list[int]:
     """Return 8 places of base-26 values for a number."""
-    parts = []
-    for i in range(8):
-        num, b = divmod(num, 26)
-        parts.append(b)
-    parts.reverse()
-    return parts
+    num_parts = []
+    for _ in range(8):
+        num, remainder = divmod(num, 26)
+        num_parts.append(remainder)
+    num_parts.reverse()
+    return num_parts
 
 
 def valid(password: list[int]) -> bool:

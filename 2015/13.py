@@ -62,9 +62,9 @@ class Day13(aoc.Challenge):
             r"(.*) would (gain|lose) (\d+) happiness units by sitting next to (.*)."
         )
         for line in puzzle_input.splitlines():
-            m = matcher.match(line)
-            assert m is not None
-            person, direction, num, neighbor = m.groups()
+            match = matcher.match(line)
+            assert match is not None
+            person, direction, num, neighbor = match.groups()
             num = int(num)
             if direction == "lose":
                 num *= -1

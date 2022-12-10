@@ -2,10 +2,6 @@
 """Advent of Code, Day 15: Science for Hungry People."""
 
 import itertools
-import collections
-import functools
-import math
-import re
 
 import typer
 from lib import aoc
@@ -62,8 +58,6 @@ class Day15(aoc.Challenge):
         Tbsp_a < (100 * mx) / (-val + mx)
         ```
         """
-        names = list(ingredients)
-
         limits = {name: 100 for name in ingredients}
         for name, props in ingredients.items():
             if check_calories:
@@ -71,25 +65,27 @@ class Day15(aoc.Challenge):
             for prop, val in props.items():
                 if val >= 0:
                     continue
-                mx, n = max((p[prop], n) for n, p in ingredients.items())
-                limit = (100 * mx) // (mx - val)
+                lim, num = max((p[prop], num) for num, p in ingredients.items())
+                limit = (100 * lim) // (lim - val)
                 limits[name] = min(limit, limits[name])
         return sorted((limit, name) for name, limit in limits.items())
 
     def combo_generator_b(self, ingredients: InputType, check_calories: bool):
+        """Generate amount combinations to try."""
         ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
         for amounts in itertools.product(*[range(i + 1) for i in ranges[:-1]]):
             yield amounts + (100 - sum(amounts),)
 
     def combo_generator(self, ingredients: InputType, check_calories: bool):
+        """Generate amount combinations to try."""
         ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
-        n = len(ranges)
-        amounts = [0] * (n - 1)
+        num = len(ranges)
+        amounts = [0] * (num - 1)
         while amounts[-1] <= ranges[-2]:
             yield amounts + [100 - sum(amounts)]
             while True:
                 amounts[0] += 1
-                for i in range(n - 2):
+                for i in range(num - 2):
                     if amounts[i] > ranges[i]:
                         amounts[i] = 0
                         amounts[i + 1] += 1
@@ -97,9 +93,9 @@ class Day15(aoc.Challenge):
                     break
 
     def solver(self, parsed_input: InputType, check_calories: bool) -> int:
+        """Solve for the optimal recipe."""
         most = 0
         _, names = list(zip(*self.sorted_limits(parsed_input, check_calories)))
-        n = len(names)
         for amounts in self.combo_generator(parsed_input, check_calories):
             name_amounts = list(zip(names, amounts))
             if check_calories and sum(
@@ -135,6 +131,7 @@ class Day15(aoc.Challenge):
                 for prop in properties.split(", ")
             }
         return data
+
 
 if __name__ == "__main__":
     typer.run(Day15().run)
