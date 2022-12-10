@@ -199,7 +199,6 @@ class Day10(aoc.Challenge):
             cycle += 1
             if (cycle + 20) % 40 == 0:
                 out += regx * cycle
-                print(regx, cycle, regx * cycle, out)
             match parts:
                 case ["noop"]:
                     pass
@@ -228,11 +227,7 @@ class Day10(aoc.Challenge):
             pos = (cycle - 1) % 40
             if (cycle + 20) % 40 == 0:
                 out += regx * cycle
-                print(regx, cycle, regx * cycle, out)
-            if abs(pos - regx) > 1:
-                pixels.append(aoc.COLOR_SOLID)
-            else:
-                pixels.append(aoc.COLOR_EMPTY)
+            pixels.append(abs(pos - regx) > 1)
             match parts:
                 case ["noop"]:
                     pass
@@ -240,10 +235,8 @@ class Day10(aoc.Challenge):
                     regx += int(parts[1])
             if cycle > 320:
                 break
-        for i in range(6):
-            p = pixels[i*40:(i+1)*40]
-            print("".join(p))
-        return out
+        rows = [pixels[i*40:(i+1)*40] for i in range(6)]
+        return aoc.OCR(rows).as_string()
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
