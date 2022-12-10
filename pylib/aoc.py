@@ -31,6 +31,58 @@ DIRECTIONS = [1j ** i for i in range(4)]
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 NEIGHBORS = DIRECTIONS + DIAGONALS
 
+# V, W, X not included
+# From https://github.com/SizableShrimp/AdventOfCode2022/blob/main/src/util/java/me/sizableshrimp/adventofcode2022/helper/LetterParser.java
+OCR_MAP = {
+    0b01100_10010_10010_11110_10010_10010: 'A',
+    0b10011_01101_01101_00001_01101_01101: 'A',
+    0b11100_10010_11100_10010_10010_11100: 'B',
+    0b00011_01101_00011_01101_01101_00011: 'B',
+    0b01100_10010_10000_10000_10010_01100: 'C',
+    0b10011_01101_01111_01111_01101_10011: 'C',
+    0b11100_10010_10010_10000_10010_11100: 'D',
+    0b00011_01101_01101_01111_01101_00011: 'D',
+    0b11110_10000_11100_10000_10000_11110: 'E',
+    0b00001_01111_00011_01111_01111_00001: 'E',
+    0b11110_10000_11100_10000_10000_10000: 'F',
+    0b00001_01111_00011_01111_01111_01111: 'F',
+    0b01100_10010_10000_10110_10010_01110: 'G',
+    0b10011_01101_01111_01001_01101_10001: 'G',
+    0b10010_10010_11110_10010_10010_10010: 'H',
+    0b01101_01101_00001_01101_01101_01101: 'H',
+    0b11100_01000_01000_01000_01000_11100: 'I',
+    0b00011_10111_10111_10111_10111_00011: 'I',
+    0b00110_00010_00010_00010_10010_01100: 'J',
+    0b11001_11101_11101_11101_01101_10011: 'J',
+    0b10010_10100_11000_10100_10100_10010: 'K',
+    0b01101_01011_00111_01011_01011_01101: 'K',
+    0b10000_10000_10000_10000_10000_11110: 'L',
+    0b01111_01111_01111_01111_01111_00001: 'L',
+    0b10010_11110_11110_10010_10010_10010: 'M',
+    0b01101_00001_00001_01101_01101_01101: 'M',
+    0b10010_11010_10110_10010_10010_10010: 'N',
+    0b01101_00101_01001_01101_01101_01101: 'N',
+    0b01100_10010_10010_10010_10010_01100: 'O',
+    0b10011_01101_01101_01101_01101_10011: 'O',
+    0b11100_10010_10010_11100_10000_10000: 'P',
+    0b00011_01101_01101_00011_01111_01111: 'P',
+    0b01100_10010_10010_10010_10100_01010: 'Q',
+    0b10011_01101_01101_01101_01011_10101: 'Q',
+    0b11100_10010_10010_11100_10100_10010: 'R',
+    0b00011_01101_01101_00011_01011_01101: 'R',
+    0b01110_10000_01100_00010_00010_11100: 'S',
+    0b10001_01111_10011_11101_11101_00011: 'S',
+    0b01110_10000_01100_00010_00010_11100: 'T',
+    0b10001_01111_10011_11101_11101_00011: 'T',
+    0b10010_10010_10010_10010_10010_01100: 'U',
+    0b01101_01101_01101_01101_01101_10011: 'U',
+    0b10001_10001_01010_00100_00100_00100: 'Y',
+    0b01110_01110_10101_11011_11011_11011: 'Y',
+    0b11110_00010_00100_01000_10000_11110: 'Z',
+    0b00001_11101_11011_10111_01111_00001: 'Z',
+}
+
+
 
 def print_point_set(board: set[complex]) -> None:
     """Print out a set of points as a map."""
@@ -42,6 +94,61 @@ def print_point_set(board: set[complex]) -> None:
             line += "#" if complex(x, y) in board else "."
         print(line)
     print()
+
+
+class OCR:
+    """OCR helper for pixel displays."""
+
+    def __init__(self, output: list[list[bool]]):
+        self.output = output
+        if len(output) != 6:
+            raise ValueError(f"Must have 6 rows; found {len(output)}")
+        if any(len(l) != len(output[0]) for l in output):
+            raise ValueError("Lines are not uniform size.")
+        if len(output[0]) % 5 != 0:
+            raise ValueError(f"Lines must be a multiple of 5 in length, got {len(output[0])}.")
+
+    def as_string(self) -> str:
+        """Return the OCR text."""
+        chars = []
+        for x in range(0, len(self.output[0]), 5):
+            num = 0
+            for row in self.output:
+                for byte in row[x:x + 5]:
+                    num = num << 1 | byte
+            if num not in OCR_MAP:
+                print(f"Unknown char: {bin(num)}")
+            chars.append(OCR_MAP.get(num, "?"))
+        if "?" in chars:
+            self.render()
+        return "".join(chars)
+
+    def render(self) -> None:
+        """Print the pixels to STDOUT."""
+        pixel = {True: COLOR_SOLID, False: COLOR_EMPTY}
+        for row in self.output:
+            print("".join(pixel[i] for i in row))
+
+    @classmethod
+    def from_point_set(cls, points: set[complex]):
+        """OCR from a set of points."""
+        rows = point_set_to_lists(points)
+        for row in rows:
+            if len(row) % 5 == 4:
+                row.append(False)
+        return cls(rows)
+
+
+def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
+    """Convert a set of complex points to a 2D list of bools."""
+    xs = int(max(p.real for p in points))
+    ys = int(max(p.imag for p in points))
+
+    rows = []
+    for y in range(ys + 1):
+        row = [x + y * 1j in points for x in range(xs + 1)]
+        rows.append(row)
+    return rows
 
 
 class Board(dict):
@@ -170,18 +277,12 @@ class Line:
 
 def render(points: set[complex]) -> str:
     """Render a set of points to a string."""
-    xs = int(max(p.real for p in points))
-    ys = int(max(p.imag for p in points))
+    lines = point_set_to_lists(points)
 
     rows = []
-    for y in range(ys + 1):
-        row = ''
-        for x in range(xs + 1):
-            if x + y * 1j in points:
-                row += COLOR_SOLID
-            else:
-                row += COLOR_EMPTY
-        rows.append(row)
+    for line in lines:
+        row = [COLOR_SOLID if i else COLOR_EMPTY for i in line]
+        rows.append("".join(row))
     return "\n".join(rows)
 
 
