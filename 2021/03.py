@@ -35,7 +35,7 @@ class Day03(aoc.Challenge):
     @staticmethod
     def common(parsed_input: list[str], position: int) -> tuple[str, str]:
         """Return the most and least common values found at a given position."""
-        count = collections.Counter(l[position] for l in parsed_input)
+        count = collections.Counter(line[position] for line in parsed_input)
         return ("1", "0") if count["1"] >= count["0"] else ("0", "1")
 
     def part1(self, parsed_input: list[str]) -> int:
@@ -53,7 +53,7 @@ class Day03(aoc.Challenge):
             nums = parsed_input.copy()
             for i in range(len(parsed_input[0])):
                 want = self.common(nums, i)[most_least]
-                nums = [l for l in nums if l[i] == want]
+                nums = [num for num in nums if num[i] == want]
                 if len(nums) == 1:
                     result *= int(nums[0], base=2)
                     break

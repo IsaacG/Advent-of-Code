@@ -49,6 +49,7 @@ class BasePacket:
     def __str__(self) -> str:
         return self.packet_type.name
 
+
 @dataclasses.dataclass
 class Literal(BasePacket):
     """A Literal transmission packet. This contains a single value."""
@@ -108,6 +109,7 @@ class Operator(BasePacket):
     def __str__(self) -> str:
         sub_packets = ", ".join(str(p) for p in self.operands)
         return f"{self.packet_type.name}({sub_packets})"
+
 
 class BitStream(io.StringIO):
     """Bit stream reader."""

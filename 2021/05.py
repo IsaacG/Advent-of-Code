@@ -37,7 +37,7 @@ class Day05(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         """Find hot areas where lines overlap. Ignore diagonals."""
         # Filter for horizontal/vertical and call part 2.
-        parsed_input = [l for l in parsed_input if l.start.x == l.end.x or l.start.y == l.end.y]
+        parsed_input = [line for line in parsed_input if line.start.x == line.end.x or line.start.y == line.end.y]
         return self.part2(parsed_input)
 
     def part2(self, parsed_input: InputType) -> int:

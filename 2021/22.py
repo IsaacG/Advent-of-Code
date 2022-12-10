@@ -1,9 +1,7 @@
 #!/bin/python
 """Advent of Code: Day 22."""
 
-import collections
 import itertools
-import math
 import re
 
 import typer
@@ -14,7 +12,7 @@ on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
 off x=9..11,y=9..11,z=9..11
 on x=10..10,y=10..10,z=10..10
-""","""\
+""", """\
 on x=-20..26,y=-36..17,z=-47..7
 on x=-20..33,y=-21..23,z=-26..28
 on x=-22..28,y=-29..23,z=-38..16
@@ -37,7 +35,7 @@ off x=18..30,y=-20..-8,z=-3..13
 on x=-41..9,y=-7..43,z=-33..15
 on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682
-""","""\
+""", """\
 on x=-5..47,y=-31..22,z=-19..33
 on x=-44..5,y=-27..21,z=-14..35
 on x=-49..-1,y=-11..42,z=-10..38
@@ -120,7 +118,6 @@ class Day22(aoc.Challenge):
     # Apply a transform function
     # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
 
-
     def part1(self, parsed_input: InputType) -> int:
         points = set()
         count = 0
@@ -128,18 +125,20 @@ class Day22(aoc.Challenge):
             if count % 25 == 0:
                 print(count)
             count += 1
-            for x in range(max(-50,x0), min(x1,50)+1):
-                if not -50 <= x <= 50: continue
-                for y in range(max(-50,y0), min(50,y1)+1):
-                    if not -50 <= y <= 50: continue
-                    for z in range(max(-50,z0), min(z1,50)+1):
-                        if not -50 <= z <= 50: continue
+            for x in range(max(-50, x0), min(x1, 50) + 1):
+                if not -50 <= x <= 50:
+                    continue
+                for y in range(max(-50, y0), min(50, y1) + 1):
+                    if not -50 <= y <= 50:
+                        continue
+                    for z in range(max(-50, z0), min(z1, 50) + 1):
+                        if not -50 <= z <= 50:
+                            continue
                         if toggle:
-                            points.add((x,y,z))
-                        elif (x,y,z) in points:
-                            points.remove((x,y,z))
+                            points.add((x, y, z))
+                        elif (x, y, z) in points:
+                            points.remove((x, y, z))
         return len(points)
-
 
     def no_intersect(self, a, b):
         return any(
@@ -239,9 +238,7 @@ class Day22(aoc.Challenge):
                         break
         return len(on_cubes)
 
-
     def part2_b(self, parsed_input: InputType) -> int:
-        count = 0
         on_cubes = []
         for toggle, x0, x1, y0, y1, z0, z1 in parsed_input:
             if toggle:
@@ -257,7 +254,8 @@ class Day22(aoc.Challenge):
         on_intersections = []
         for ai, a in enumerate(on_cubes):
             for bi, b in enumerate(on_cubes):
-                if a >= b: continue
+                if a >= b:
+                    continue
                 overlap = True
                 (ax0, ax1), (ay0, ay1), (az0, az1) = a
                 (bx0, bx1), (by0, by1), (bz0, bz1) = b
@@ -266,7 +264,8 @@ class Day22(aoc.Challenge):
                     bp0, bp1 = p2
                     if ap0 > bp1 or bp0 > ap1:
                         overlap = False
-                if not overlap: continue
+                if not overlap:
+                    continue
 
                 overlap_dim = []
                 for p1, p2 in zip(a, b):
@@ -278,7 +277,8 @@ class Day22(aoc.Challenge):
         cuts = []
         for ai, a in enumerate(on_cubes):
             for bi, b in enumerate(off_cubes):
-                if ai == bi: continue
+                if ai == bi:
+                    continue
                 overlap = True
                 (ax0, ax1), (ay0, ay1), (az0, az1) = a
                 (bx0, bx1), (by0, by1), (bz0, bz1) = b
@@ -287,7 +287,8 @@ class Day22(aoc.Challenge):
                     bp0, bp1 = p2
                     if ap0 > bp1 or bp0 > ap1:
                         overlap = False
-                if not overlap: continue
+                if not overlap:
+                    continue
 
                 overlap_dim = []
                 for p1, p2 in zip(a, b):
@@ -299,7 +300,8 @@ class Day22(aoc.Challenge):
         cut_overlaps = []
         for ai, a in enumerate(cuts):
             for bi, b in enumerate(cuts):
-                if ai == bi: continue
+                if ai == bi:
+                    continue
                 overlap = True
                 (ax0, ax1), (ay0, ay1), (az0, az1) = a
                 (bx0, bx1), (by0, by1), (bz0, bz1) = b
@@ -308,7 +310,8 @@ class Day22(aoc.Challenge):
                     bp0, bp1 = p2
                     if ap0 > bp1 or bp0 > ap1:
                         overlap = False
-                if not overlap: continue
+                if not overlap:
+                    continue
 
                 overlap_dim = []
                 for p1, p2 in zip(a, b):
@@ -318,19 +321,18 @@ class Day22(aoc.Challenge):
                 cut_overlaps.append(tuple(overlap_dim))
 
         sum_on = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in on_cubes)
-        sum_on_intersections = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in on_intersections)
+        sum_on_intersections = sum(
+            (x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in on_intersections
+        )
         sum_cuts = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in cuts)
         sum_cut_overlaps = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in cut_overlaps)
 
         total = sum_on - sum_on_intersections - sum_cuts + sum_cut_overlaps
         return total
 
-
-        print(f"{len(on_cubes)=} {len(off_cubes)=}")
-        print(f"{len(intersections)=} {len(off_intersections)=}")
-
-
-        return 0
+        # print(f"{len(on_cubes)=} {len(off_cubes)=}")
+        # print(f"{len(intersections)=} {len(off_intersections)=}")
+        # return 0
 
     def part1_overlaps(self, parsed_input: InputType) -> int:
         add = []
@@ -363,7 +365,7 @@ class Day22(aoc.Challenge):
                         overlap = rect.overlap(i)
                         if overlap:
                             sub.append(overlap)
-        area_add = sum(i.area() for i in add) 
+        area_add = sum(i.area() for i in add)
         area_sub = sum(i.area() for i in sub)
         self.debug(f"{area_add=} {area_sub=}")
         return area_add - area_sub
@@ -394,7 +396,6 @@ if __name__ == "__main__":
     for i in res:
         print(i)
     print()
-
 
     typer.run(Day22().run)
 

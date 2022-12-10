@@ -36,7 +36,7 @@ class Day13(aoc.Challenge):
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=17),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=64), # Not really, but I don't OCR.
+        aoc.TestCase(inputs=SAMPLE[0], part=2, want=64),  # Not really, but I don't OCR.
     )
 
     @staticmethod

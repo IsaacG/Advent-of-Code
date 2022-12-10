@@ -177,11 +177,11 @@ class Node:
         """Divide two Nodes."""
         if other.literal == 1:
             return self
-        return Node(operator="div", parts=[self,other])
+        return Node(operator="div", parts=[self, other])
 
     def __eq__(self, other: Node) -> Node:
         """Equallity operator is always followed by a `not`. Return a != Node."""
-        return Node(operator="neq", parts=[self,other])
+        return Node(operator="neq", parts=[self, other])
 
     def div26(self) -> Node:
         """Apply Node // 26."""

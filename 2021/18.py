@@ -9,7 +9,8 @@ import typer
 from lib import aoc
 
 
-SAMPLE = ["""\
+SAMPLE = [
+    """\
 [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
 [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
 [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
@@ -20,7 +21,8 @@ SAMPLE = ["""\
 [1,[[[9,3],9],[[9,0],[0,7]]]]
 [[[5,[7,4]],7],1]
 [[[[4,2],2],6],[8,7]]
-""","""\
+""",
+    """\
 [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 [[[5,[2,8]],4],[5,[[9,9],0]]]
 [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
@@ -58,7 +60,7 @@ class Node:
             if all(isinstance(i, Node) for i in data):
                 self.subnodes = [i.copy() for i in data]
             else:
-                self.subnodes= [Node(i) for i in data]
+                self.subnodes = [Node(i) for i in data]
             self.is_number = False
         elif isinstance(data, int):
             self.number = data
@@ -184,7 +186,6 @@ class Node:
     #     return any(node.need_explode(depth + 1) for node in self.subnodes)
 
 
-
 class Day18(aoc.Challenge):
     """Solve snailfish arithmetic."""
 
@@ -196,9 +197,9 @@ class Day18(aoc.Challenge):
             part=1,
             want=3488
         ),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1,5)]), part=1, want=445),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1,6)]), part=1, want=791),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1,7)]), part=1, want=1137),
+        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 5)]), part=1, want=445),
+        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 6)]), part=1, want=791),
+        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 7)]), part=1, want=1137),
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=3488),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=4140),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=3993),

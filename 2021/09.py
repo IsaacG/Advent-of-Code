@@ -15,6 +15,7 @@ SAMPLE = ["""\
 9899965678
 """]
 
+
 class Day09(aoc.Challenge):
     """Find low points and basins in a topographic map."""
 

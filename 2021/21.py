@@ -11,6 +11,7 @@ from lib import aoc
 SAMPLE = "Player 1 starting position: 4\nPlayer 2 starting position: 8"
 DICE_COUNTS = collections.Counter(sum(vals) for vals in itertools.product(range(1, 4), repeat=3))
 
+
 class Day21(aoc.Challenge):
     """Implement Dirac Dice."""
 

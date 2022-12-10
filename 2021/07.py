@@ -10,6 +10,7 @@ InputType = list[int]
 
 SAMPLE = "16,1,2,0,4,2,7,1,2,14"
 
+
 class Day07(aoc.Challenge):
     """Solve the optimal positioning for crab-submarine blasting."""
 
@@ -31,7 +32,7 @@ class Day07(aoc.Challenge):
         """Find the location where it is cheapest for all the crabs to move."""
         costs = []
         for i in range(min(positions), max(positions) + 1):
-            costs.append(sum(func(abs(i - l)) for l in positions))
+            costs.append(sum(func(abs(i - pos)) for pos in positions))
         return min(costs)
 
     def input_parser(self, puzzle_input: str) -> InputType:

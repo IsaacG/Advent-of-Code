@@ -22,6 +22,7 @@ SAMPLE = """\
 """
 BRACKETS = "()[]{}<>"
 
+
 class Day10(aoc.Challenge):
     """Solve bracket matching."""
 

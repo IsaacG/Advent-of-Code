@@ -378,7 +378,7 @@ class Challenge(Helpers):
     """Daily Challenge."""
 
     INPUT_TYPES = str
-    INPUT_PARSER: Optional[BaseParser]
+    INPUT_PARSER: Optional[BaseParser] = None
     TRANSFORM = None
     TESTS: list[TestCase] = []
     DEBUG = False

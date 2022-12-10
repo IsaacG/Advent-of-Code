@@ -343,7 +343,7 @@ class Day23(aoc.Challenge):
         1 ###C#C#B#D###
         2   #D#A#B#A#
             #########
-             2 4 6 8 
+             2 4 6 8
         """
         locations = []
         room_lines = puzzle_input.splitlines()[2:4]
