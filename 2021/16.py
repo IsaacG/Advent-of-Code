@@ -199,6 +199,7 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs="9C005AC2F8F0", part=2, want=0),
         aoc.TestCase(inputs="9C0141080250320F1802104A08", part=2, want=1),
     )
+    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, parsed_input: str) -> int:
         """Parse the packets and sum up all the versions."""
@@ -209,10 +210,6 @@ class Day16(aoc.Challenge):
         """Parse the packets and evaluate."""
         bits_io = BitStream.from_hex(parsed_input)
         return packet_parser(bits_io).eval()
-
-    def input_parser(self, puzzle_input: str) -> str:
-        """Parse the input data."""
-        return puzzle_input
 
 
 if __name__ == "__main__":

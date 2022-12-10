@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 17."""
 
-import re
 import typer
 from lib import aoc
 
@@ -16,10 +15,11 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=45),
         aoc.TestCase(inputs=SAMPLE, part=2, want=112),
     )
+    INPUT_PARSER = aoc.parse_re_group_int(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
 
     def part1(self, parsed_input: InputType) -> int:
         """Compute the highest height that can be reached while hitting the target."""
-        y_max = max(y for x, y in self.find_velocities(*parsed_input))
+        y_max = max(y for x, y in self.find_velocities(*parsed_input[0]))
         # At an upwards speed of y and a constant deceleration of 1,
         # the height after each step is [y, y + (y-1), y + (y-1) + (y-2), ...]
         # until y-velocity = 0. The distance travelled is sum(1..y). This is also
@@ -28,7 +28,7 @@ class Day17(aoc.Challenge):
 
     def part2(self, parsed_input: InputType) -> int:
         """Compute how many velocities would work to hit the target."""
-        return len(self.find_velocities(*parsed_input))
+        return len(self.find_velocities(*parsed_input[0]))
 
     @staticmethod
     def find_velocities(x0, x1, y0, y1) -> list[tuple[int, int]]:
@@ -72,14 +72,6 @@ class Day17(aoc.Challenge):
                         break
 
         return velocities
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        pattern = re.compile(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
-        match = pattern.match(puzzle_input)
-        assert match is not None
-        nums = [int(i) for i in match.groups()]
-        return nums
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=198),
         aoc.TestCase(inputs=SAMPLE, part=2, want=230),
     )
-    INPUT_TYPES = str
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     @staticmethod
     def common(parsed_input: list[str], position: int) -> tuple[str, str]:
