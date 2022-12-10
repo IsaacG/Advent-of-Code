@@ -1,16 +1,10 @@
 #!/bin/python
-"""Advent of Code, Day 10: Cathode-Ray Tube."""
-
-import collections
-import functools
-import math
-import re
+"""Advent of Code, Day 10: Cathode-Ray Tube. Emulate a simple CPU and program with a cycle counter."""
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 addx 15
 addx -11
 addx 6
@@ -156,85 +150,49 @@ addx -6
 addx -11
 noop
 noop
-noop""",  # 30
-]
+noop"""
 
-LineType = int
-InputType = list[LineType]
+InputType = list[tuple[int | str, ...]]
 
 
 class Day10(aoc.Challenge):
     """Day 10: Cathode-Ray Tube."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=13140),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=13140),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    # Convert lines to type:
-    INPUT_TYPES = LineType
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    def run_program(self, lines: InputType) -> list[int]:
+        """Run the program and store the `X` register value for each cycle."""
+        regx = 1
+        regx_values = []
+        size = {"addx": 2, "noop": 1}
+        for parts in lines:
+            for _ in range(size[str(parts[0])]):
+                regx_values.append(regx)
+            if parts[0] == "addx":
+                regx += int(parts[1])
+        return regx_values
 
     def part1(self, parsed_input: InputType) -> int:
-        inst = []
-        for parts in parsed_input:
-            match parts:
-                case ["noop"]:
-                    inst.append(parts)
-                case ["addx", _]:
-                    inst.append(["noop"])
-                    inst.append(parts)
-        cycle = 0
-        regx = 1
+        """Return the X value at various cycles."""
+        regx_values = self.run_program(parsed_input)
         out = 0
-        for parts in inst:
-            cycle += 1
-            if (cycle + 20) % 40 == 0:
-                out += regx * cycle
-            match parts:
-                case ["noop"]:
-                    pass
-                case ["addx", _]:
-                    regx += int(parts[1])
-            if cycle > 220:
-                break
+        for cycle in range(20, 240, 40):
+            out += regx_values[cycle - 1] * cycle
         return out
 
+    def part2(self, parsed_input: InputType) -> str:
+        """Return the word drawn on the screen."""
+        regx_values = self.run_program(parsed_input)
 
-    def part2(self, parsed_input: InputType) -> int:
-        inst = []
-        for parts in parsed_input:
-            match parts:
-                case ["noop"]:
-                    inst.append(parts)
-                case ["addx", _]:
-                    inst.append(["noop"])
-                    inst.append(parts)
-        cycle = 0
-        regx = 1
-        out = 0
         pixels = []
-        for parts in inst:
-            cycle += 1
-            pos = (cycle - 1) % 40
-            if (cycle + 20) % 40 == 0:
-                out += regx * cycle
-            pixels.append(abs(pos - regx) > 1)
-            match parts:
-                case ["noop"]:
-                    pass
-                case ["addx", _]:
-                    regx += int(parts[1])
-            if cycle > 320:
-                break
+        for cycle, regx in enumerate(regx_values):
+            horizontal_position = cycle % 40
+            pixels.append(abs(horizontal_position - regx) <= 1)
+
+        # Split the output into 6 rows of 40 pixels each.
         rows = [pixels[i*40:(i+1)*40] for i in range(6)]
         return aoc.OCR(rows).as_string()
 
@@ -247,18 +205,6 @@ class Day10(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-
-    # def line_parser(self, line: str):
-    #     pass
 
 
 if __name__ == "__main__":

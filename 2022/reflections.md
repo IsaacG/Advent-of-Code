@@ -53,10 +53,12 @@ I later cleaned this up by walking the perimeter and "looking" into the forest a
 
 # Day 9: Rope Bridge. Track the movement of knots.
 
-Code:
+## Code
 
 * [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/5ceeceb2a06c75d1eb11d9e7cc14e13e41faf008/2022/09.py)
 * [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/09.py)
+
+## Musings
 
 Thankfully I had recently written a `DIRECTIONS` list with the four cardinal directions as complex numbers.
 I ended up using a `case match` to map "RLUD" to complex directions but pulled the `DIRECTIONS` and diagonals from my library.
@@ -69,3 +71,25 @@ Same for y.
 I ended up with a bunch of tests to generate the movements of `-1, 0, 1`.
 Perl has a `a cmp b` (strings) and `a <=> b` which returns `-1, 0, 1` so I added `aoc.comp(a: float, b: float) -> int` which does that.
 Now, the movement is `complex(cmp(a.real, b.real), cmp(a.imag, b.imag))`.
+
+# Day 10: Cathode-Ray Tube. Emulate a simple CPU and program with a cycle counter.
+
+## Code
+
+* [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/691664c8409c98addeedab3de6cfbf8713377b12/2022/10.py)
+* [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/10.py)
+
+## Musings
+
+This was a tricky puzzle to solve.
+My immediately approach to handling the cycles was to pre-process the inputs and translate `addx` instructions into `noop, addx` so I can treat each instruction as a single cycle.
+This worked out quite well!
+
+Part two involves pixel art, similar to 2021/13.
+Last year, I shrugged it off.
+This year, I used bitmaps from GitHub to build an "OCR" mapping.
+([6x4 map](https://github.com/SizableShrimp/AdventOfCode2022/blob/main/src/util/java/me/sizableshrimp/adventofcode2022/helper/LetterParser.java#L44) for this year and [10x7 map](https://github.com/mstksg/advent-of-code-ocr/blob/main/src/Advent/OCR/LetterMap.hs#L210) for 2018.)
+Rather than translating the `bool` values to on/off pixels, they can be converted to bits and constructed into a number.
+This number can be used as a `dict[int, str]` key which maps bits to a letter.
+
+I'm happy I finally have an AOC OCR!

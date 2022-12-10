@@ -424,11 +424,11 @@ class Challenge(Helpers):
         assert len(p) == 4 and p.isnumeric(), p
         return p
 
-    def part1(self, parsed_input: Any) -> int:
+    def part1(self, parsed_input: Any) -> int | str:
         """Solve part 1."""
         raise NotImplementedError
 
-    def part2(self, parsed_input: Any) -> int:
+    def part2(self, parsed_input: Any) -> int | str:
         """Solve part 2."""
         raise NotImplementedError
 
