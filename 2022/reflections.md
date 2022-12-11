@@ -51,12 +51,20 @@ I got there eventually.
 I initially checked each tree in the map for a direct line of sight to the edge.
 I later cleaned this up by walking the perimeter and "looking" into the forest along each row/column and recording what trees are visible.
 
+## Library Changes
+
+* New `aoc.Board.edges`
+
 # Day 9: Rope Bridge. Track the movement of knots.
 
 ## Code
 
 * [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/5ceeceb2a06c75d1eb11d9e7cc14e13e41faf008/2022/09.py)
 * [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/09.py)
+
+## Library Changes
+
+* Added `cmp(a, b)` which returns `-1 | 0 | 1` if `a < b | a == b | a > b`.
 
 ## Musings
 
@@ -93,6 +101,10 @@ Rather than translating the `bool` values to on/off pixels, they can be converte
 This number can be used as a `dict[int, str]` key which maps bits to a letter.
 
 I'm happy I finally have an AOC OCR!
+
+## Library Changes
+
+* New `aoc.OCR`
 
 # Day 11: Monkey in the Middle.  Track items thrown between monkeys."""
 

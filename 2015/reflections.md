@@ -33,3 +33,9 @@ Thoughts:
 * It took me a while to realize I wasn't turning on the corners in the last case.
 * Tracking every cell is slow; switch to just tracking the lights which are on.
   That brings runtime down from 12s to 2s.
+
+Library changes:
+
+* New `BitmapParser`
+* New `Board.corners`
+* New `Board.neighbor_vals`
