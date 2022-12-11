@@ -23,3 +23,11 @@ Then I realized that the Python `hashlib` allows you to reuse partial hashes, wh
 
 `itertools.combinations()` made this exercise relatively trivial.
 There was nothing too exciting here.
+
+# Day 18: Like a GIF For Your Yard. Conway's Game of Life.
+
+Thoughts:
+
+* I should add maps to the parsing lib.
+* This was relatively straight forward.
+* It took me a while to realize I wasn't turning on the corners in the last case.
