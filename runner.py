@@ -46,7 +46,12 @@ class ChallengeRunner:
 
     def run_code(self, run_args: dict[str, bool | None], timeout: int) -> None:
         """Run the challenge code, with a timeout."""
-        proc = multiprocessing.Process(target=self.challenge().run, kwargs=run_args)
+        try:
+            target = self.challenge()
+        except SyntaxError:
+            traceback.print_exc()
+            return
+        proc = multiprocessing.Process(target=target.run, kwargs=run_args)
 
         proc.start()
         proc.join(timeout=timeout)
