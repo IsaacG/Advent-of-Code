@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 18: Like a GIF For Your Yard. Conway's Game of Life."""
 
-import collections
-import functools
-import math
-import re
-
 import typer
 from lib import aoc
 
@@ -17,86 +12,57 @@ SAMPLE = """\
 #.#..#
 ####.."""
 
-LineType = int
-InputType = list[LineType]
+InputType = aoc.Board
 
 
 class Day18(aoc.Challenge):
     """Day 18: Like a GIF For Your Yard."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=2, want=17),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
+    INPUT_PARSER = aoc.ParseBitmap(lambda x: x == "#")
+
+    def solver(self, bitmap: dict[complex, bool], cycles: int, corners: bool) -> int:
+        """Run Conway's Game of Life and return number of lights on at end."""
+        # The number of neighbors which will turn a light on.
+        want = {True: (2, 3), False: (3,)}
+        # Track just the lights which are on.
+        on = {p for p, v in bitmap.items() if v}
+        corner_points = aoc.Board(bitmap).corners
+
+        for _ in range(cycles):
+            if corners:
+                on.update(corner_points)
+            # Consider cells which are on or adjacent to an on.
+            candidates = {
+                point + direction
+                for point in on
+                for direction in aoc.NEIGHBORS
+                if point + direction in bitmap
+            } | on
+
+            new = set()
+            for point in candidates:
+                count = sum(point + direction in on for direction in aoc.NEIGHBORS)
+                if count in want[point in on]:
+                    new.add(point)
+            on = new
+
+        if corners:
+            on.update(corner_points)
+        return len(on)
 
     def part1(self, parsed_input: InputType) -> int:
-        b = aoc.Board.from_block_map(parsed_input, lambda x: x == "#")
+        """Return the number of lights on, with corners not stuck."""
         cycles = 4 if self.testing else 100
-        for step in range(cycles):
-            print(step, sum(b.values()))
-            new = aoc.Board()
-            for point, on in b.items():
-                if on:
-                    new[point] = sum(b[p] for p in b.neighbors(point, True)) in (2, 3)
-                else:
-                    new[point] = sum(b[p] for p in b.neighbors(point, True)) == 3
-            b = new
-        return sum(b.values())
+        return self.solver(parsed_input, cycles, False)
 
     def part2(self, parsed_input: InputType) -> int:
-        b = aoc.Board.from_block_map(parsed_input, lambda x: x == "#")
+        """Return the number of lights on, with corners stuck on."""
         cycles = 5 if self.testing else 100
-        for step in range(cycles):
-            for i in (0, complex(0, b.height - 1), complex(b.width - 1, 0), complex(b.width - 1, b.height - 1)):
-                b[i] = True
-            print(step, sum(b.values()))
-            new = aoc.Board()
-            for point, on in b.items():
-                if on:
-                    new[point] = sum(b[p] for p in b.neighbors(point, True)) in (2, 3)
-                else:
-                    new[point] = sum(b[p] for p in b.neighbors(point, True)) == 3
-            b = new
-        for i in (0, complex(0, b.height - 1), complex(b.width - 1, 0), complex(b.width - 1, b.height - 1)):
-            b[i] = True
-        return sum(b.values())
-
-
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-
-    # def line_parser(self, line: str):
-    #     pass
+        return self.solver(parsed_input, cycles, True)
 
 
 if __name__ == "__main__":

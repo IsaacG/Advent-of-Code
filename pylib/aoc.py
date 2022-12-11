@@ -177,6 +177,15 @@ class Board(dict):
         """Return the max point in the board."""
         return complex(self.width - 1, self.height - 1)
 
+    @property
+    def corners(self) -> tuple[complex, complex, complex, complex]:
+        return (
+            0,
+            complex(0, self.height - 1),
+            complex(self.width - 1, 0),
+            complex(self.width - 1, self.height - 1)
+        )
+
     def neighbors(self, point: complex, diagonal: bool) -> list[complex]:
         """Return the 4/8 neighbors of a point."""
         neighbors = []
@@ -188,6 +197,10 @@ class Board(dict):
                 if (candidate := point + (1 + 1j) * -1j ** i) in self:
                     neighbors.append(candidate)
         return neighbors
+
+    def neighbor_vals(self, point: complex, diagonal: bool) -> list[Any]:
+        """Return the values of the neighboring points."""
+        return [self[p] for p in self.neighbors(point, diagonal)]
 
     def edges(self) -> set[complex]:
         """Return the edges of a fully populated board."""

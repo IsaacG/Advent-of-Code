@@ -129,6 +129,21 @@ class ParseBlocks(BaseParser):
         return outputs
 
 
+class ParseBitmap(BaseParser):
+    """Parse a map of on/off values, generating a set[complex]."""
+
+    def __init__(self, transform: Callable[[str], Any]):
+        self.transform = transform
+
+    def parse(self, puzzle_input: str) -> set[complex]:
+        """Parse a map."""
+        out: dict[complex, Any] = {}
+        for y, line in enumerate(puzzle_input.splitlines()):
+            for x, char in enumerate(line):
+                out[complex(x, y)] = self.transform(char)
+        return out
+
+
 # Convert the entire input into one str.
 parse_one_str = ParseOneWord(str)
 # Convert the entire input into one int.

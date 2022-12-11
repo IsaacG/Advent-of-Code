@@ -116,3 +116,5 @@ When tidying up my code, I reverted the `functools.partial`s with `lambda`s and 
 
 Adding dictionaries to the `dataclass` has a noticeable impact on performance.
 Using `slots=True` has a noticeable improvement.
+
+I don't usually use multi-line regexes, but for this exercise, I feel it's cleaner to do so.
