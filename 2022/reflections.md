@@ -93,3 +93,10 @@ Rather than translating the `bool` values to on/off pixels, they can be converte
 This number can be used as a `dict[int, str]` key which maps bits to a letter.
 
 I'm happy I finally have an AOC OCR!
+
+# Day 11: Monkey in the Middle.
+
+Mistake: I fell into [the `lambda` late binding trap](https://medium.com/skiller-whale/late-binding-variables-its-a-trap-c17af980164f).
+It took a lot of puzzling to realize my `lambda` functions were not functioning correctly.
+I fixed the "Operation" `lambda` ... but the "Test" `lambda` still had that issue.
+Once I fixed the second late binding issue, my code was in the clear.
