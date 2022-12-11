@@ -1,10 +1,10 @@
 #!/bin/python
-"""Advent of Code, Day 11: Monkey in the Middle."""
+"""Advent of Code, Day 11: Monkey in the Middle. Track items thrown between monkeys."""
 
 import dataclasses
 import math
 import re
-from typing import Callable
+from typing import Any, Callable
 
 import typer
 from lib import aoc
@@ -41,9 +41,10 @@ Monkey 3:
 ]
 
 
-
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Monkey:
+    """Details about each monkey."""
+
     number: int
     items: list[int]
     op: Callable[[int], int]
@@ -66,27 +67,34 @@ class Day11(aoc.Challenge):
     ]
 
     def solver(self, monkeys: list[Monkey], rounds: int, div: bool) -> int:
+        """Simulate rounds of monkeys inspecting and throwing items."""
+        # Use the LCM to keep the item size low.
         lcm = math.lcm(*[m.test_num for m in monkeys])
-        for step in range(rounds):
+
+        # Cycle through rounds and monkeys.
+        for _ in range(rounds):
             for monkey in monkeys:
+                # Track how many items the monkey inspected.
                 monkey.inspected += len(monkey.items)
+                # For each item, update values and throw it to another monkey.
                 for item in monkey.items:
                     item = monkey.op(item)
                     if div:
                         item = item // 3
                     item %= lcm
-                    if monkey.test(item):
-                        monkeys[monkey.true].items.append(item)
-                    else:
-                        monkeys[monkey.false].items.append(item)
+                    # Throw the item to the next monkey.
+                    next_monkey = monkey.true if monkey.test(item) else monkey.false
+                    monkeys[next_monkey].items.append(item)
                 monkey.items = []
         inspected = sorted(monkey.inspected for monkey in monkeys)
         return self.mult(inspected[-2:])
 
     def part1(self, parsed_input: InputType) -> int:
+        """Return the most troublesome monkeys after 20 rounds with div-by-three."""
         return self.solver(parsed_input, 20, True)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return the most troublesome monkeys after 10000 rounds without div-by-three."""
         return self.solver(parsed_input, 10000, False)
 
     def input_parser(self, puzzle_input: str) -> InputType:
@@ -95,7 +103,7 @@ class Day11(aoc.Challenge):
         monkeys = []
         num_re = re.compile(r"\d+")
         for block in blocks:
-            data = {}
+            data: dict[str, Any] = {}
             for line in block.splitlines():
                 line = line.strip()
                 nums = [int(i) for i in num_re.findall(line)]
