@@ -10,8 +10,7 @@ from typing import Any, Callable, Optional
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 Monkey 0:
   Starting items: 79, 98
   Operation: new = old * 19
@@ -38,8 +37,7 @@ Monkey 3:
   Operation: new = old + 3
   Test: divisible by 17
     If true: throw to monkey 0
-    If false: throw to monkey 1""",  # 0
-]
+    If false: throw to monkey 1"""
 
 # Regex to parse the inputs
 MONKEY_RE = re.compile(r"""
@@ -73,8 +71,8 @@ class Day11(aoc.Challenge):
     """Day 11: Monkey in the Middle."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=10605),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=2713310158),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=10605),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=2713310158),
     ]
 
     def solver(self, monkeys: list[Monkey], rounds: int, div: bool) -> int:
