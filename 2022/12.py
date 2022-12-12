@@ -30,11 +30,9 @@ class Day12(aoc.Challenge):
         step_count = {start: 0}
 
         todo = collections.deque([start])
-        visited = set()
 
         while todo:
             point = todo.popleft()
-            visited.add(point)
             for n in board.neighbors(point, False):
                 if board[n] - 1 > board[point]:
                     continue
@@ -51,25 +49,26 @@ class Day12(aoc.Challenge):
         start, end, board = parsed_input
 
         options = []
-        for start in board:
-            if board[start] != 0:
-                continue
+        starts = [
+            point
+            for point, height in board.items()
+            if height == 0
+        ]
 
-            step_count = {start: 0}
+        step_count = {point: 0 for point in starts}
+        todo = collections.deque(starts)
 
-            todo = collections.deque([start])
-            visited = set()
-
-            while todo:
-                point = todo.popleft()
-                visited.add(point)
-                for n in board.neighbors(point, False):
-                    if board[n] - 1 > board[point]:
-                        continue
-                    if n in step_count and step_count[n] <= step_count[point] + 1:
-                        continue
-                    step_count[n] = step_count[point] + 1
-                    todo.append(n)
+        while todo:
+            point = todo.popleft()
+            for n in board.neighbors(point, False):
+                if board[n] - 1 > board[point]:
+                    continue
+                if n in step_count and step_count[n] <= step_count[point] + 1:
+                    continue
+                if n == end:
+                    return step_count[point] + 1
+                step_count[n] = step_count[point] + 1
+                todo.append(n)
 
             if end in step_count:
                 options.append(step_count[end])
