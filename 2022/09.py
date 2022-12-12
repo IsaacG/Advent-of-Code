@@ -47,7 +47,7 @@ class Day09(aoc.Challenge):
             for _ in range(unit):
                 knots[0] += movement[direction]
                 for i, (a, b) in enumerate(zip(knots, knots[1:])):
-                    if a - b in aoc.NEIGHBORS:
+                    if a - b in aoc.EIGHT_DIRECTIONS:
                         continue
                     x = self.cmp(a.real, b.real)
                     y = self.cmp(a.imag, b.imag)
