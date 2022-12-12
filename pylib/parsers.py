@@ -108,7 +108,7 @@ class BaseParseReGroups(BaseParseRe):
         """Return matches on a line via re.Pattern.match().groups."""
         if (match := self.compiled.match(line)):
             return match.groups()
-        raise ValueError("Pattern did not match! {self.compiled.pattern=} {line=}")
+        raise ValueError(f"Pattern did not match! {self.compiled.pattern=} {line=}")
 
 
 class ParseBlocks(BaseParser):
