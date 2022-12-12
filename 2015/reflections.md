@@ -55,3 +55,9 @@ That approach wasn't working great so I switched to something akin to the [Sieve
 
 Todo: [read this Reddit comment](https://www.reddit.com/r/adventofcode/comments/po1zel/comment/hd1esc2/) for a faster approach.
 Maybe read other comments on that post for other ideas.
+
+# Day 21: RPG Simulator 20XX. Compute the costs to win a battle.
+
+This exercise was relatively straight forward.
+It involved simply trying all combinations of items.
+The hardest bit might be parsing the items or figuring out how to add "None" items.
