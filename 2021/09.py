@@ -33,7 +33,7 @@ class Day09(aoc.Challenge):
             point
             for point, depth in depths.items()
             if all(
-                depth < depths[n] for n in depths.neighbors(point, diagonal=False)
+                depth < v for v in depths.neighbors(point).values()
             )
         ]
 
@@ -56,7 +56,7 @@ class Day09(aoc.Challenge):
             while queue:
                 point = queue.pop()
                 in_basin.add(point)
-                for neighbor in parsed_input.neighbors(point, diagonal=False):
+                for neighbor in parsed_input.neighbors(point):
                     if neighbor not in unexplored:
                         continue
                     queue.add(neighbor)
@@ -91,7 +91,7 @@ class Day09(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input)
+        return aoc.Board.from_int_block(puzzle_input, diagonal=False)
 
 
 if __name__ == "__main__":

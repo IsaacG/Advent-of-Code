@@ -45,7 +45,7 @@ class Day15(aoc.Challenge):
         #     for x in range(5) for y in range(5) for point, val in graph.items()
         # }
 
-        full_graph = aoc.Board()
+        full_graph = aoc.Board(diagonal=False)
         for x in range(5):
             for y in range(5):
                 for point, val in graph.items():
@@ -75,10 +75,10 @@ class Day15(aoc.Challenge):
             # Mark it visited.
             visited.add(current)
             # Update neighbors with min(existing cost, cost through current)
-            for neighbor in node_weights.neighbors(current, diagonal=False):
+            for neighbor, ncost in node_weights.neighbors(current).items():
                 if neighbor in visited:
                     continue
-                cost_through_current = cost[current] + node_weights[neighbor]
+                cost_through_current = cost[current] + ncost
                 if neighbor not in cost or cost[neighbor] > cost_through_current:
                     cost[neighbor] = cost_through_current
                     # Add unvisited neighbors to the todo list.
@@ -87,7 +87,7 @@ class Day15(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input)
+        return aoc.Board.from_int_block(puzzle_input, diagonal=False)
 
 
 if __name__ == "__main__":

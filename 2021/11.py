@@ -31,7 +31,7 @@ class Day11(aoc.Challenge):
     def step(self, octopuses: dict[complex, int]) -> dict[complex, int]:
         """Apply one clock step to the octopuses."""
         # Add one energy to each octopus.
-        new = aoc.Board({point: energy + 1 for point, energy in octopuses.items()})
+        new = aoc.Board({point: energy + 1 for point, energy in octopuses.items()}, diagonal=True)
         # Handle octopus flashing, updating neighbors as needed, until all
         # octopuses are done flashing.
         to_flash = set(point for point, energy in new.items() if energy == 10)
@@ -39,7 +39,7 @@ class Day11(aoc.Challenge):
         while to_flash:
             point = to_flash.pop()
             flashed.add(point)
-            for neighbor in octopuses.neighbors(point, diagonal=True):
+            for neighbor in octopuses.neighbors(point):
                 new[neighbor] += 1
                 if new[neighbor] == 10:
                     to_flash.add(neighbor)
@@ -68,7 +68,7 @@ class Day11(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input)
+        return aoc.Board.from_int_block(puzzle_input, diagonal=True)
 
 
 if __name__ == "__main__":

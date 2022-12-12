@@ -141,7 +141,7 @@ For some reason I got it in my head that I need a PriorityQueue for this.
 (See the rough code.)
 Six minutes and rewriting it using a `set` and `min()`, and I got it to work.
 
-Todo:
+Updates:
 
 * Run BFS only once with multiple starting nodes.
 * Replace `todo: set` with `todo: dequeue`.

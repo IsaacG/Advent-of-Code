@@ -32,9 +32,9 @@ class Day12(aoc.Challenge):
 
         while to_visit:
             point = to_visit.popleft()
-            for neighbor in board.neighbors(point, False):
+            for neighbor, height in board.neighbors(point).items():
                 # Cannot climb a steep hill.
-                if board[neighbor] - 1 > board[point]:
+                if height - 1 > board[point]:
                     continue
                 if neighbor in step_count:
                     continue
@@ -75,7 +75,7 @@ class Day12(aoc.Challenge):
 
         if start is None or end is None:
             raise ValueError("Failed to find start and end.")
-        return start, end, aoc.Board(heights)
+        return start, end, aoc.Board(heights, diagonal=False)
 
 
 if __name__ == "__main__":

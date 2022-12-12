@@ -39,13 +39,13 @@ class Day18(aoc.Challenge):
             candidates = {
                 point + direction
                 for point in on
-                for direction in aoc.NEIGHBORS
+                for direction in aoc.EIGHT_DIRECTIONS
                 if point + direction in bitmap
             } | on
 
             new = set()
             for point in candidates:
-                count = sum(point + direction in on for direction in aoc.NEIGHBORS)
+                count = sum(point + direction in on for direction in aoc.EIGHT_DIRECTIONS)
                 if count in want[point in on]:
                     new.add(point)
             on = new

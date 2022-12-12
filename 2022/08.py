@@ -68,7 +68,7 @@ class Day08(aoc.Challenge):
             # Walk in every direction until the edge of the board or blocked.
             # Count steps. Multiply.
             visible = []
-            for direction in aoc.DIRECTIONS:
+            for direction in aoc.FOUR_DIRECTIONS:
                 cur = tree + direction
                 num = 0
                 while cur in board:

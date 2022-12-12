@@ -29,9 +29,11 @@ COLOR_EMPTY = ' '
 
 TEST_SKIP = "__DO_NOT_RUN__"
 # 4 cardinal directions
-DIRECTIONS = [1j ** i for i in range(4)]
+FOUR_DIRECTIONS = [1j ** i for i in range(4)]
+STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
-NEIGHBORS = DIRECTIONS + DIAGONALS
+EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
+ALL_NEIGHBORS = EIGHT_DIRECTIONS
 
 OCR_MAP = {
     # 2022/10: 6x5
@@ -158,8 +160,9 @@ def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
 class Board(dict):
     """A Board, represented as a set of complex points."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, diagonal=False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.diagonal = diagonal
         assert all(isinstance(point, complex) for point in self.keys())
 
     @property
@@ -186,21 +189,17 @@ class Board(dict):
             complex(self.width - 1, self.height - 1)
         )
 
-    def neighbors(self, point: complex, diagonal: bool) -> list[complex]:
+    def neighbors(self, point: complex) -> dict[complex, Any]:
         """Return the 4/8 neighbors of a point."""
-        neighbors = []
+        neighbors = {}
         for i in range(4):
             if (candidate := point + -1j ** i) in self:
-                neighbors.append(candidate)
-        if diagonal:
+                neighbors[candidate] = self[candidate]
+        if self.diagonal:
             for i in range(4):
                 if (candidate := point + (1 + 1j) * -1j ** i) in self:
-                    neighbors.append(candidate)
+                    neighbors[candidate] = self[candidate]
         return neighbors
-
-    def neighbor_vals(self, point: complex, diagonal: bool) -> list[Any]:
-        """Return the values of the neighboring points."""
-        return [self[p] for p in self.neighbors(point, diagonal)]
 
     def edges(self) -> set[complex]:
         """Return the edges of a fully populated board."""
@@ -213,19 +212,24 @@ class Board(dict):
         return edges
 
     @classmethod
-    def from_block_map(cls, block: str, transform: Callable[[str], Any]) -> Board:
+    def from_block_map(
+        cls,
+        block: str,
+        transform: Callable[[str], Any],
+        diagonal: bool = False,
+    ) -> Board:
         """Return a Board from a block mapped with transform()."""
         raw_dict = {
             x + y * 1j: transform(val)
             for y, line in enumerate(block.splitlines())
             for x, val in enumerate(line)
         }
-        return cls(raw_dict)
+        return cls(raw_dict, diagonal=diagonal)
 
     @classmethod
-    def from_int_block(cls, block: str) -> Board:
+    def from_int_block(cls, block: str, diagonal: bool = False) -> Board:
         """Return a Board from a block of ints."""
-        return cls.from_block_map(block, int)
+        return cls.from_block_map(block, int, diagonal)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -541,9 +545,9 @@ class Challenge(Helpers):
             if isinstance(got, int):
                 want = int(want)
             if want == got:
-                print(f'Day {self.day:02d} Part {i}: PASS in {delta}ms!')
+                print(f'{self.year}/{self.day:02d} Part {i}: PASS in {delta}ms!')
             else:
-                print(f'Day {self.day:02d} Part {i}: want({want}) != got({got})')
+                print(f'{self.year}/{self.day:02d} Part {i}: want({want}) != got({got})')
 
     def submit(self, data=None) -> None:
         """Generate a solution for the next unsolved part and submit it."""
