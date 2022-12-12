@@ -530,18 +530,23 @@ class Challenge(Helpers):
     def check(self, data=None) -> None:
         """Check the generated solutions match the contents of solutions.txt."""
         lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
+        solution = None
         for line in lines:
             parts = line.split()
             assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
             if int(parts[0]) == self.day:
+                solution = parts[1:]
                 break
+        if not solution:
+            print(f'{self.year}/{self.day:02d} No solution found!')
+            return
         for i in (1, 2):
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
             puzzle_input = self.input_parser(self.raw_data(data))
             got = self.funcs[i](puzzle_input)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
             delta = int(1000 * (end - start))
-            want = parts[i]
+            want = solution[i - 1]
             if isinstance(got, int):
                 want = int(want)
             if want == got:
