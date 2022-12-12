@@ -146,3 +146,4 @@ Todo:
 * Run BFS only once with multiple starting nodes.
 * Replace `todo: set` with `todo: dequeue`.
 * Move the diagonal setting in `aoc.Board` into the `__init__`.
+* Change `aoc.Board.neighbors` from `list` to `dict`

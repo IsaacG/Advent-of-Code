@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 12: Hill Climbing Algorithm."""
+"""Advent of Code, Day 12: Hill Climbing Algorithm. Solve for the shortest path through a maze."""
 
 import string
 import collections
@@ -25,54 +25,39 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=29),
     ]
 
+    def solver(self, starts: list[complex], end: complex, board: aoc.Board) -> int:
+        """Return the min steps from start to end."""
+        step_count = {point: 0 for point in starts}
+        to_visit = collections.deque(starts)
+
+        while to_visit:
+            point = to_visit.popleft()
+            for neighbor in board.neighbors(point, False):
+                # Cannot climb a steep hill.
+                if board[neighbor] - 1 > board[point]:
+                    continue
+                if neighbor in step_count:
+                    continue
+                if neighbor == end:
+                    return step_count[point] + 1
+                step_count[neighbor] = step_count[point] + 1
+                to_visit.append(neighbor)
+        raise RuntimeError("Not found.")
+
     def part1(self, parsed_input: InputType) -> int:
+        """Return steps from start to end."""
         start, end, board = parsed_input
-        step_count = {start: 0}
-
-        todo = collections.deque([start])
-
-        while todo:
-            point = todo.popleft()
-            for n in board.neighbors(point, False):
-                if board[n] - 1 > board[point]:
-                    continue
-                if n in step_count and step_count[n] <= step_count[point] + 1:
-                    continue
-                step_count[n] = step_count[point] + 1
-                todo.append(n)
-
-        if end in step_count:
-            return step_count[end]
-        raise RuntimeError
+        return self.solver([start], end, board)
 
     def part2(self, parsed_input: InputType) -> int:
-        start, end, board = parsed_input
-
-        options = []
+        """Return steps from any low point to end."""
+        _, end, board = parsed_input
         starts = [
             point
             for point, height in board.items()
             if height == 0
         ]
-
-        step_count = {point: 0 for point in starts}
-        todo = collections.deque(starts)
-
-        while todo:
-            point = todo.popleft()
-            for n in board.neighbors(point, False):
-                if board[n] - 1 > board[point]:
-                    continue
-                if n in step_count and step_count[n] <= step_count[point] + 1:
-                    continue
-                if n == end:
-                    return step_count[point] + 1
-                step_count[n] = step_count[point] + 1
-                todo.append(n)
-
-            if end in step_count:
-                options.append(step_count[end])
-        return min(options)
+        return self.solver(starts, end, board)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
@@ -88,6 +73,8 @@ class Day12(aoc.Challenge):
                     char = "z"
                 heights[complex(x, y)] = string.ascii_lowercase.index(char)
 
+        if start is None or end is None:
+            raise ValueError("Failed to find start and end.")
         return start, end, aoc.Board(heights)
 
 
