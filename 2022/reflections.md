@@ -130,3 +130,19 @@ Adding dictionaries to the `dataclass` has a noticeable impact on performance.
 Using `slots=True` has a noticeable improvement.
 
 I don't usually use multi-line regexes, but for this exercise, I feel it's cleaner to do so.
+
+# Day 12: Hill Climbing Algorithm.
+
+## Musings
+
+I managed to recognize this one pretty quickly as a BFS graph traversal problem.
+For some reason I got it in my head that I need a PriorityQueue for this.
+24 minutes in, I had to accept my code was not working, so I dropped my solution and restarted.
+(See the rough code.)
+Six minutes and rewriting it using a `set` and `min()`, and I got it to work.
+
+Todo:
+
+* Run BFS only once with multiple starting nodes.
+* Replace `todo: set` with `todo: dequeue`.
+* Move the diagonal setting in `aoc.Board` into the `__init__`.

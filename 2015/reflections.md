@@ -52,3 +52,6 @@ I first attempted to generate the first million primes and use those to generate
 By taking all combinations of factors, multiplying then summing, you can derive the number of items at a house.
 
 That approach wasn't working great so I switched to something akin to the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) which solves part 1 is 5.8s and part 2 in 2.9s using arbitrary upper limits.
+
+Todo: [read this Reddit comment](https://www.reddit.com/r/adventofcode/comments/po1zel/comment/hd1esc2/) for a faster approach.
+Maybe read other comments on that post for other ideas.
