@@ -39,3 +39,16 @@ Library changes:
 * New `BitmapParser`
 * New `Board.corners`
 * New `Board.neighbor_vals`
+
+# Day 19: Medicine for Rudolph.
+
+For part 1, it's simple enough to use sets and simply brute force it.
+
+Part 2 has me stumped.
+
+# Day 20: Infinite Elves and Infinite Houses.
+
+I first attempted to generate the first million primes and use those to generate all the factors of every house.
+By taking all combinations of factors, multiplying then summing, you can derive the number of items at a house.
+
+That approach wasn't working great so I switched to something akin to the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) which solves part 1 is 5.8s and part 2 in 2.9s using arbitrary upper limits.
