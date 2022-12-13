@@ -3,12 +3,7 @@
 from __future__ import annotations
 
 import queue
-import collections
 import dataclasses
-import functools
-import itertools
-import math
-import re
 from typing import Any
 
 import typer
@@ -18,34 +13,48 @@ SAMPLE = """\
 Hit Points: 51
 Damage: 9"""
 
-LineType = int
+LineType = list[int | str]
 InputType = list[LineType]
 
 # Lowest to highest mana cost
 MISSILE, DRAIN, SHIELD, POISON, RECHARGE = range(5)
-DURATION = {i: n for i, n in enumerate([0, 0, 6, 6, 5])}
-COST = {i: n for i, n in enumerate([53, 73, 113, 173, 229])}
+DURATION = {
+    MISSILE: 0,
+    DRAIN: 0,
+    SHIELD: 6,
+    POISON: 6,
+    RECHARGE: 5,
+}
+COST = {
+    MISSILE: 53,
+    DRAIN: 73,
+    SHIELD: 113,
+    POISON: 173,
+    RECHARGE: 229,
+}
 
 
 @dataclasses.dataclass(slots=True, frozen=True)
 class GameState:
+    """State of a game at a given turn."""
 
     player_hp: int
     boss_hp: int
     boss_damage: int
     player_mana: int
     mana_spent: int
-    effects: tuple[int]
+    effects: tuple[int, int, int, int, int]
     hard: bool
-    # moves: list[int]
     win: bool = False
     lose: bool = False
 
     def __lt__(self, other: GameState) -> bool:
+        """Provide sorting for the priority queue; only care about mana spent."""
         return self.mana_spent < other.mana_spent
 
     @staticmethod
     def apply_effects(data: dict[str, Any]) -> None:
+        """Update state with the effects."""
         if not any(effect for effect in data["effects"]):
             return
         if data["effects"][POISON]:
@@ -70,9 +79,8 @@ class GameState:
         ]
 
     def move(self, move: int) -> GameState:
-        """Apply a move and return win|lose|next state."""
+        """Apply a move and return next turn state."""
         data = dataclasses.asdict(self)
-        # data["moves"] = self.moves.copy() + [move]
         # At start of player's turn, on hard mode, drop 1HP.
         if self.hard:
             data["player_hp"] -= 1
@@ -89,9 +97,6 @@ class GameState:
             if is_player:
                 # Player turn. Player casts spell.
                 cost = COST[move]
-                # Player loses if they cannot cast.
-                # if self.player_mana < cost:
-                #     return GameState(**data | {"lose": True})
                 data["mana_spent"] += cost
                 data["player_mana"] -= cost
 
@@ -101,7 +106,6 @@ class GameState:
                     data["boss_hp"] -= 2
                     data["player_hp"] += 2
                 else:
-                    assert data["effects"][move] == 0
                     effects = list(data["effects"])
                     effects[move] = DURATION[move]
                     data["effects"] = tuple(effects)
@@ -122,22 +126,17 @@ class GameState:
         return GameState(**data)
 
 
-
 class Day22(aoc.Challenge):
     """Day 22: Wizard Simulator 20XX."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=aoc.TEST_SKIP),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
 
     def solver(self, boss: dict[str, int], hard: bool) -> int:
+        """Return the min mana needed to beat the boss."""
         start = GameState(
             player_hp=50,
             player_mana=500,
@@ -146,38 +145,35 @@ class Day22(aoc.Challenge):
             mana_spent=0,
             effects=(0, 0, 0, 0, 0),
             hard=hard,
-            # moves=[],
         )
-        todo = queue.PriorityQueue()
-        todo.put(start)
-        costs = []
 
-        step = 0
+        todo: queue.Queue[GameState] = queue.PriorityQueue()
+        todo.put(start)
+
         seen = set()
-        while todo and step < 70000:
-            step += 1
+        while todo:
             state = todo.get()
             # State checking: reduce runtime significantly!
             if state in seen:
                 continue
             seen.add(state)
-            # if step and step % 5000 == 0:
-            #     print(f"{step=} {state}")
+            # Terminate on first win.
             if state.win:
-                print("Moves to get here:")
-                # print(state.moves)
                 return state.mana_spent
-            # print(state)
+            # Add future states.
             for move in state.valid_moves():
                 outcome = state.move(move)
                 if not outcome.lose:
                     todo.put(outcome)
+
         raise RuntimeError("No solution found.")
 
     def part1(self, parsed_input: InputType) -> int:
+        """Return mana to win, easy mode."""
         return self.solver(dict(parsed_input), False)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return mana to win, hard mode."""
         got = self.solver(dict(parsed_input), True)
         assert got > 900   # Attempt 1
         assert got < 1242  # Attempt 2
