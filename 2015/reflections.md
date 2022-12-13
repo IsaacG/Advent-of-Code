@@ -62,6 +62,19 @@ This exercise was relatively straight forward.
 It involved simply trying all combinations of items.
 The hardest bit might be parsing the items or figuring out how to add "None" items.
 
+# Day 22: Wizard Simulator 20XX. Pick the best spells to cast to beat the boss.
+
+Part one was fun and slightly challenging but not too bad.
+Part two gave me a very rough time.
+I ended up asking for help and glguy noticed my `valid_moves` had a bug.
+I was checking if effects timers are zero to exclude certain spells.
+However, if the timer is at 1, the timer will become 0 at the start of the turn and the spell would be a valid move!
+
+I also naively assumed states aren't likely to repeat.
+leftylink questioned that assumption, which I failed to do.
+Adding state checking reduced solve times from 8s/18ms to 500ms/750ms!
+State checking didn't even require a whole lot of code change.
+
 # Day 23: Opening the Turing Lock. Emulate a simple CPU.
 
 Pretty straight forward.

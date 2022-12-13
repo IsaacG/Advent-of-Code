@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 22: Wizard Simulator 20XX."""
+"""Advent of Code, Day 22: Wizard Simulator 20XX. Pick the best spells to cast to beat the boss."""
 from __future__ import annotations
 
 import queue
@@ -35,8 +35,9 @@ class GameState:
     boss_damage: int
     player_mana: int
     mana_spent: int
-    effects: list[int]
+    effects: tuple[int]
     hard: bool
+    # moves: list[int]
     win: bool = False
     lose: bool = False
 
@@ -45,24 +46,33 @@ class GameState:
 
     @staticmethod
     def apply_effects(data: dict[str, Any]) -> None:
+        if not any(effect for effect in data["effects"]):
+            return
         if data["effects"][POISON]:
             data["boss_hp"] -= 3
         if data["effects"][RECHARGE]:
             data["player_mana"] += 101
-        for effect in (SHIELD, POISON, RECHARGE):
-            if data["effects"][effect]:
-                data["effects"][effect] -= 1
+        data["effects"] = tuple(
+            max(0, effect - 1)
+            for effect in data["effects"]
+        )
 
     def valid_moves(self) -> list[int]:
+        """Return valid player moves.
+
+        Note, if effect timer == 1, it will expire at the start of the move
+        and the player will be able to cast it again.
+        """
         return [
             move
             for move in range(5)
-            if COST[move] <= self.player_mana and self.effects[move] == 0
+            if COST[move] <= self.player_mana and self.effects[move] <= 1
         ]
 
     def move(self, move: int) -> GameState:
         """Apply a move and return win|lose|next state."""
         data = dataclasses.asdict(self)
+        # data["moves"] = self.moves.copy() + [move]
         # At start of player's turn, on hard mode, drop 1HP.
         if self.hard:
             data["player_hp"] -= 1
@@ -92,7 +102,9 @@ class GameState:
                     data["player_hp"] += 2
                 else:
                     assert data["effects"][move] == 0
-                    data["effects"][move] = DURATION[move]
+                    effects = list(data["effects"])
+                    effects[move] = DURATION[move]
+                    data["effects"] = tuple(effects)
 
                 # Player wins if boss dies.
                 if data["boss_hp"] <= 0:
@@ -132,20 +144,28 @@ class Day22(aoc.Challenge):
             boss_hp=boss["Hit Points"],
             boss_damage=boss["Damage"],
             mana_spent=0,
-            effects=[0] * 5,
+            effects=(0, 0, 0, 0, 0),
             hard=hard,
+            # moves=[],
         )
         todo = queue.PriorityQueue()
         todo.put(start)
         costs = []
 
         step = 0
-        while todo and step < 50000:
+        seen = set()
+        while todo and step < 70000:
             step += 1
             state = todo.get()
-            if step and step % 5000 == 0:
-                print(f"{step=} {state}")
+            # State checking: reduce runtime significantly!
+            if state in seen:
+                continue
+            seen.add(state)
+            # if step and step % 5000 == 0:
+            #     print(f"{step=} {state}")
             if state.win:
+                print("Moves to get here:")
+                # print(state.moves)
                 return state.mana_spent
             # print(state)
             for move in state.valid_moves():
