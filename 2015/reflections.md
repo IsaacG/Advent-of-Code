@@ -61,3 +61,9 @@ Maybe read other comments on that post for other ideas.
 This exercise was relatively straight forward.
 It involved simply trying all combinations of items.
 The hardest bit might be parsing the items or figuring out how to add "None" items.
+
+# Day 23: Opening the Turing Lock. Emulate a simple CPU.
+
+Pretty straight forward.
+`match case` is handy for this.
+Part 2 held nothing surprising.
