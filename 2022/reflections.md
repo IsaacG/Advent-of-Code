@@ -147,3 +147,23 @@ Updates:
 * Replace `todo: set` with `todo: dequeue`.
 * Move the diagonal setting in `aoc.Board` into the `__init__`.
 * Change `aoc.Board.neighbors` from `list` to `dict`
+
+# Day 13: Distress Signal. Sort packets of types int and nested lists.
+
+Input parsing was simple with my parsing lib.
+Originally I used `aoc.ParseBlocks([aoc.parse_one_str_per_line])` then ran the inputs through `eval()`.
+When cleaning up, I switched to `aoc.ParseBlocks([aoc.ParseOneWordPerLine(json.loads)])` which does it all in one go.
+
+Writing the `cmp()` code wasn't too bad.
+I originally started with returning a `bool` before realizing I needed three return values.
+
+When I saw part two, I realized I needed to use `sort(key=func)` which is supposed to return `True` when `a < b`.
+To make that happen, I (incorrectly) attempted to switch all my `return <x>` to `return <x> == 1` (negating the logic).
+I then didn't know how to make this work with `cmp` and a single value, but I thankfully found `sort(key=cmp_to_key)` which takes a `cmp(a, b)` function.
+I switch to using `sort(key=cmp_to_key(cmp))` ... but forgot to revert from `bool` to `-1 | 0 | 1`.
+I then spent 20-25 minutes trying to understand why `sort()` was not changing the list order, and trying to write a bubble sort (with the incorrect bool logic).
+Once I realized that `cmp_to_key()` expects `-1 | 0 | 1`, the solution came quickly.
+
+This got me wondering how `cmp_to_key()` even works and how I'm supposed to sort things.
+I looks up [the `cmp_to_key()` source](https://github.com/python/cpython/blob/0e081a089ec969c9a34f5ff25886205616ef4dd3/Lib/functools.py#L206) and it's much simpler than I expected!
+The "Sorting HOW TO" also suggests a [Decorate-Sort-Undecorate pattern](https://docs.python.org/3/howto/sorting.html#decorate-sort-undecorate).

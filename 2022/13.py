@@ -1,6 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 13: Distress Signal."""
-from __future__ import annotations
+"""Advent of Code, Day 13: Distress Signal. Sort packets of types int and nested lists."""
 
 import functools
 import json
