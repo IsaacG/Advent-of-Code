@@ -1,5 +1,6 @@
 #!/bin/python
 """Advent of Code, ${title}."""
+from __future__ import annotations
 
 import collections
 import functools

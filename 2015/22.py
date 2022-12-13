@@ -36,6 +36,9 @@ class GameState:
     player_mana: int
     mana_spent: int
     effects: list[int]
+    hard: bool
+    win: bool = False
+    lose: bool = False
 
     def __lt__(self, other: GameState) -> bool:
         return self.mana_spent < other.mana_spent
@@ -57,22 +60,28 @@ class GameState:
             if COST[move] <= self.player_mana and self.effects[move] == 0
         ]
 
-    def move(self, move: int) -> bool | GameState:
+    def move(self, move: int) -> GameState:
         """Apply a move and return win|lose|next state."""
         data = dataclasses.asdict(self)
+        # At start of player's turn, on hard mode, drop 1HP.
+        if self.hard:
+            data["player_hp"] -= 1
+            if data["player_hp"] < 1:
+                return GameState(**data | {"lose": True})
+
         for is_player in (True, False):
             # Effects occur.
             self.apply_effects(data)
             # Player wins if boss dies.
             if data["boss_hp"] <= 0:
-                return True
+                return GameState(**data | {"win": True})
 
             if is_player:
-                # Player casts spell.
+                # Player turn. Player casts spell.
                 cost = COST[move]
                 # Player loses if they cannot cast.
-                if self.player_mana < cost:
-                    return False
+                # if self.player_mana < cost:
+                #     return GameState(**data | {"lose": True})
                 data["mana_spent"] += cost
                 data["player_mana"] -= cost
 
@@ -82,21 +91,21 @@ class GameState:
                     data["boss_hp"] -= 2
                     data["player_hp"] += 2
                 else:
-                    assert self.effects[move] == 0
+                    assert data["effects"][move] == 0
                     data["effects"][move] = DURATION[move]
 
                 # Player wins if boss dies.
                 if data["boss_hp"] <= 0:
-                    return True
+                    return GameState(**data | {"win": True})
             else:
                 # Boss turn
-                damage = self.boss_damage
+                damage = data["boss_damage"]
                 if data["effects"][SHIELD]:
                     damage -= 7
                 damage = max(damage, 1)
                 data["player_hp"] -= damage
                 if data["player_hp"] < 1:
-                    return False
+                    return GameState(**data | {"lose": True})
 
         return GameState(**data)
 
@@ -110,16 +119,13 @@ class Day22(aoc.Challenge):
     # SUBMIT = {1: False, 2: False}
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=900),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=0),
         aoc.TestCase(inputs=SAMPLE, part=1, want=aoc.TEST_SKIP),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
     INPUT_PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
 
-    def part1(self, parsed_input: InputType) -> int:
-        boss = dict(parsed_input)
+    def solver(self, boss: dict[str, int], hard: bool) -> int:
         start = GameState(
             player_hp=50,
             player_mana=500,
@@ -127,26 +133,36 @@ class Day22(aoc.Challenge):
             boss_damage=boss["Damage"],
             mana_spent=0,
             effects=[0] * 5,
+            hard=hard,
         )
         todo = queue.PriorityQueue()
         todo.put(start)
+        costs = []
 
-        steps = 0
-        while todo and steps < 50000:
-            steps += 1
+        step = 0
+        while todo and step < 50000:
+            step += 1
             state = todo.get()
+            if step and step % 5000 == 0:
+                print(f"{step=} {state}")
+            if state.win:
+                return state.mana_spent
             # print(state)
             for move in state.valid_moves():
                 outcome = state.move(move)
-                # Player wins
-                if outcome is True:
-                    return state.mana_spent + COST[move]
-                # Player loses
-                if outcome is False:
-                    continue
-                # Game continues
-                todo.put(outcome)
+                if not outcome.lose:
+                    todo.put(outcome)
+        raise RuntimeError("No solution found.")
 
+    def part1(self, parsed_input: InputType) -> int:
+        return self.solver(dict(parsed_input), False)
+
+    def part2(self, parsed_input: InputType) -> int:
+        got = self.solver(dict(parsed_input), True)
+        assert got > 900   # Attempt 1
+        assert got < 1242  # Attempt 2
+        assert got > 1189  # Attempt 3
+        return got
 
 
 if __name__ == "__main__":
