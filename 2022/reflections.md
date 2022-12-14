@@ -167,3 +167,29 @@ Once I realized that `cmp_to_key()` expects `-1 | 0 | 1`, the solution came quic
 This got me wondering how `cmp_to_key()` even works and how I'm supposed to sort things.
 I looks up [the `cmp_to_key()` source](https://github.com/python/cpython/blob/0e081a089ec969c9a34f5ff25886205616ef4dd3/Lib/functools.py#L206) and it's much simpler than I expected!
 The "Sorting HOW TO" also suggests a [Decorate-Sort-Undecorate pattern](https://docs.python.org/3/howto/sorting.html#decorate-sort-undecorate).
+
+# Day 14:
+
+Fun little puzzle!
+I got part one mostly working ... but I was getting the wrong results.
+I spent a whole lot of time debugging and staring at outputs until I caught the bug.
+
+```python
+# What I meant to do:
+while can_move and cur.imag < max_y:
+    for d in directions:
+        if cur + d not in rocks and (cur + d).imag < max_y:
+            cur += d
+            break
+    else:
+        can_move = False
+
+# What I did do:
+while can_move and cur.imag < max_y:
+    for d in directions:
+        if cur + d not in rocks and (cur + d).imag < max_y:
+            cur += d
+            break
+        else:
+            can_move = False
+```
