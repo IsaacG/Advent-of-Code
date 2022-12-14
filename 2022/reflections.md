@@ -193,3 +193,8 @@ while can_move and cur.imag < max_y:
         else:
             can_move = False
 ```
+
+Todo:
+
+* Use backtracking to optimize speed
+* Add point parsing to parser lib

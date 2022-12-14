@@ -239,6 +239,13 @@ class Point:
     x: int
     y: int
 
+    def __complex__(self) -> complex:
+        return complex(self.x, self.y)
+
+    @classmethod
+    def from_complex(cls, point: complex) -> Point:
+        return cls(int(point.real), int(point.imag))
+
 
 @dataclasses.dataclass(frozen=True)
 class Rect:
@@ -295,6 +302,11 @@ class Line:
             Point(self.start.x + dir_x * i, self.start.y + dir_y * i)
             for i in range(steps + 1)
         ]
+
+    @classmethod
+    def from_complex(cls, start: complex, end: complex) -> Line:
+        return cls(Point.from_complex(start), Point.from_complex(end))
+
 
 
 def render(points: set[complex]) -> str:

@@ -1,125 +1,70 @@
 #!/bin/python
-"""Advent of Code, Day 14: Regolith Reservoir."""
-from __future__ import annotations
+"""Advent of Code, Day 14: Regolith Reservoir. Count how many grains fit in a reservoir."""
 
-import collections
-import functools
 import itertools
-import math
-import re
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 498,4 -> 498,6 -> 496,6
-503,4 -> 502,4 -> 502,9 -> 494,9""",
-]
+503,4 -> 502,4 -> 502,9 -> 494,9"""
 
-LineType = int
+LineType = list[complex]
 InputType = list[LineType]
 
 
 class Day14(aoc.Challenge):
     """Day 14: Regolith Reservoir."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=24),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=93),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=24),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=93),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
-        rocks = set()
-        max_y = 0
-        for line in parsed_input:
-            for point in line:
-                max_y = max(max_y, point.imag)
+    def solver(self, rocks: InputType, first_to_the_floor: bool) -> int:
+        """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
+        # Sand moves in these directions, in this order of preference.
+        movement_directions = (complex(0, 1), complex(-1, 1), complex(1, 1))
+        starting_point = complex(500, 0)
 
-        for line in parsed_input:
-            for start, end in zip(line, line[1:]):
-                if start.real == end.real:
-                    direction = complex(0, 1)
-                    if start.imag > end.imag:
-                        end, start = start, end
-                else:
-                    direction = complex(1, 0)
-                    if start.real > end.real:
-                        end, start = start, end
-                cur = start
-                while cur != end:
-                    rocks.add(cur)
-                    cur += direction
-                rocks.add(end)
+        # Use the input to build a set of rock points and compute the lowest points.
+        rocks_and_sand = set()
+        lowest_rock = 0
+        for points in rocks:
+            lowest_rock = max(lowest_rock, max(p.imag for p in points))
+            for start, end in zip(points[:-1], points[1:]):
+                for point in aoc.Line.from_complex(start, end).points():
+                    rocks_and_sand.add(complex(point))
+        # The lowest position a grain may occupy.
+        lowest_position = lowest_rock + 1
 
-        directions = (complex(0, 1), complex(-1, 1), complex(1, 1))
-        for grain in range(26000):
-            cur = complex(500, 0)
-            can_move = True
-            while can_move and cur.imag < max_y:
-                for d in directions:
-                    if cur + d not in rocks:
+        # Simulate the grains.
+        for grain in itertools.count():
+            cur = starting_point
+            # Grains can drop until they hit the lowest_position.
+            while cur.imag < lowest_position:
+                for d in movement_directions:
+                    if cur + d not in rocks_and_sand:
                         cur += d
                         break
                 else:
-                    can_move = False
-                if grain == 4:
-                    for d in directions:
-                        # print(f"{cur=} {cur+d=} {cur+d in rocks}")
-                        pass
-            if cur.imag >= max_y:
+                    break
+            rocks_and_sand.add(cur)
+            if first_to_the_floor and cur.imag == lowest_position:
+                # Part 1: return the grain prior to the first to pass the lowest rock.
                 return grain
-            # print(f"{grain=} landed at {cur}")
-            rocks.add(cur)
+            elif cur == starting_point:
+                # Part 2: return the grain which stops at the starting_point.
+                return grain + 1
+
+    def part1(self, parsed_input: InputType) -> int:
+        """Return the last grain to rest on the lowest rock."""
+        return self.solver(parsed_input, True)
 
     def part2(self, parsed_input: InputType) -> int:
-        rocks = set()
-        max_y = 0
-        for line in parsed_input:
-            for point in line:
-                max_y = max(max_y, point.imag)
-        max_y += 2
-
-        for line in parsed_input:
-            for start, end in zip(line, line[1:]):
-                if start.real == end.real:
-                    direction = complex(0, 1)
-                    if start.imag > end.imag:
-                        end, start = start, end
-                else:
-                    direction = complex(1, 0)
-                    if start.real > end.real:
-                        end, start = start, end
-                cur = start
-                while cur != end:
-                    rocks.add(cur)
-                    cur += direction
-                rocks.add(end)
-
-        directions = (complex(0, 1), complex(-1, 1), complex(1, 1))
-        for grain in range(2600000):
-            cur = complex(500, 0)
-            can_move = True
-            while can_move and cur.imag < max_y:
-                for d in directions:
-                    if cur + d not in rocks and (cur + d).imag < max_y:
-                        cur += d
-                        break
-                else:
-                    can_move = False
-                if grain == 4:
-                    for d in directions:
-                        # print(f"{cur=} {cur+d=} {cur+d in rocks}")
-                        pass
-            if cur == complex(500, 0):
-                return grain + 1
-            # print(f"{grain=} landed at {cur}")
-            rocks.add(cur)
+        """Return the grain which stops at the starting_point."""
+        return self.solver(parsed_input, False)
 
     def line_parser(self, line: str):
         out = []
