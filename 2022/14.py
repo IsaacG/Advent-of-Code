@@ -21,6 +21,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=24),
         aoc.TestCase(inputs=SAMPLE, part=2, want=93),
     ]
+    INPUT_PARSER = aoc.parse_re_findall_points
 
     def solver(self, rocks: InputType, first_to_the_floor: bool) -> int:
         """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
@@ -65,14 +66,6 @@ class Day14(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Return the grain which stops at the starting_point."""
         return self.solver(parsed_input, False)
-
-    def line_parser(self, line: str):
-        out = []
-        for pair in line.split(" -> "):
-            x, y = pair.split(",")
-            out.append(complex(int(x), int(y)))
-        return out
-
 
 
 if __name__ == "__main__":

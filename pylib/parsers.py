@@ -11,10 +11,22 @@ import itertools
 import re
 from typing import Any, Callable, Iterable
 
+RE_INT = re.compile(r"[+-]?\d+")
+RE_POINT = re.compile(r"[+-]?\d+,[+-]?\d+")
+
 
 def input_to_ints(inputs: Iterable[str]) -> list[int]:
     """Return a list of int values from an iterable."""
     return [int(i) for i in inputs]
+
+
+def input_to_complex(inputs: Iterable[str]) -> list[int]:
+    """Return a list of complex values from an iterable."""
+    out = []
+    for pair in inputs:
+        x, y = pair.split(",")
+        out.append(complex(int(x), int(y)))
+    return out
 
 
 def input_to_strs(inputs: Iterable[str]) -> list[str]:
@@ -167,3 +179,4 @@ parse_re_findall_int = lambda x: BaseParseReFindall(x, input_to_ints)
 parse_multi_mixed_per_line = BaseParseMultiPerLine(input_to_mixed)
 parse_re_group_mixed = lambda x: BaseParseReGroups(x, input_to_mixed)
 parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
+parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)

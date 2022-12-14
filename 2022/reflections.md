@@ -196,5 +196,5 @@ while can_move and cur.imag < max_y:
 
 Todo:
 
+* (DONE) Add point parsing to parser lib
 * Use backtracking to optimize speed
-* Add point parsing to parser lib
