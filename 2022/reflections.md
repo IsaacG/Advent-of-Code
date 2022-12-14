@@ -196,5 +196,6 @@ while can_move and cur.imag < max_y:
 
 Todo:
 
-* (DONE) Add point parsing to parser lib
-* Use backtracking to optimize speed
+* (DONE) Add point parsing to parser lib. `INPUT_PARSER = aoc.parse_re_findall_points`
+* (DONE) Use backtracking to optimize speed. 88ms/2501ms to 38ms/109ms.
+

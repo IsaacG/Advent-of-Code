@@ -40,14 +40,19 @@ class Day14(aoc.Challenge):
         # The lowest position a grain may occupy.
         lowest_position = lowest_rock + 1
 
+        # Track the path taken by grains for backtracking.
+        # This allows me to compute the next grain from a "prior position" without
+        # needing to start from the top again.
+        path = []
+        cur = starting_point
         # Simulate the grains.
         for grain in itertools.count():
-            cur = starting_point
             # Grains can drop until they hit the lowest_position.
             while cur.imag < lowest_position:
                 for d in movement_directions:
                     if cur + d not in rocks_and_sand:
                         cur += d
+                        path.append(d)
                         break
                 else:
                     break
@@ -58,6 +63,9 @@ class Day14(aoc.Challenge):
             elif cur == starting_point:
                 # Part 2: return the grain which stops at the starting_point.
                 return grain + 1
+
+            # Backtrack the position by one movement and resume from the prior location:
+            cur -= path.pop()
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the last grain to rest on the lowest rock."""
