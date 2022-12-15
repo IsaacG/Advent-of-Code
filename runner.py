@@ -51,6 +51,9 @@ class ChallengeRunner:
         except SyntaxError:
             traceback.print_exc()
             return
+        if target.TIMEOUT and target.TIMEOUT > timeout:
+            print(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
+            timeout = target.TIMEOUT
         proc = multiprocessing.Process(target=target.run, kwargs=run_args)
 
         proc.start()

@@ -32,6 +32,7 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=26),
         aoc.TestCase(inputs=SAMPLE, part=2, want=56000011),
     ]
+    TIMEOUT = 60
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the number of coordinates on a given row which cannot contain the beacon.
