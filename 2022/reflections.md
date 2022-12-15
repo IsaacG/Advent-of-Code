@@ -199,3 +199,14 @@ Todo:
 * (DONE) Add point parsing to parser lib. `INPUT_PARSER = aoc.parse_re_findall_points`
 * (DONE) Use backtracking to optimize speed. 88ms/2501ms to 38ms/109ms.
 
+
+# Day 15: Beacon Exclusion Zone. Locate a beacon based on knowing where it is not.
+
+I was hanging out with friends (lights in the park!) so I started this one 35-45 minutes late.
+I solved both parts in roughly 45 minutes.
+
+* Take 1, using the NUC and `dataclass` for the Sensor: 110s
+* Take 2, using the NUC and a `tuple` for the Sensor, reducing function calls: 53s
+* Take 3, same code as take 2 but on the desktop: 37s.
+* Take 4, same code and hardware as take 3, switching cython for mypy3: 1.5s.
+

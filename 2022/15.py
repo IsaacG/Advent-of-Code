@@ -1,12 +1,6 @@
 #!/bin/python
-"""Advent of Code, Day 15: Beacon Exclusion Zone."""
-from __future__ import annotations
+"""Advent of Code, Day 15: Beacon Exclusion Zone. Locate a beacon based on knowing where it is not."""
 
-import dataclasses
-import collections
-import functools
-import itertools
-import math
 import re
 
 import typer
@@ -28,115 +22,65 @@ Sensor at x=16, y=7: closest beacon is at x=15, y=3
 Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3"""
 
-LineType = int
-InputType = list[LineType]
-
-
-def mdist(ax, ay, bx, by) -> int:
-    return abs(ax - bx) + abs(ay - by)
-
-
-@dataclasses.dataclass
-class Sensor:
-    sx: int
-    sy: int
-    bx: int
-    by: int
-
-    def __post_init__(self):
-        self.dist = abs(self.sx - self.bx) + abs(self.sy - self.by)
-
-    def __lt__(self, other):
-        return self.sx < other.sx
-
-    def add(self, px, py):
-        pdist = mdist(self.sx, self.sy, px, py)
-        if pdist > self.dist:
-            return px, False
-        ydist = abs(self.sy - py)
-        right_edge = self.sx + self.dist - ydist
-        # print(f"{point} is within {self.sx, self.sy} d:{self.dist} ==> {right_edge}")
-        return right_edge + 1, True
+InputType = list[tuple[int, int, int]]
 
 
 class Day15(aoc.Challenge):
     """Day 15: Beacon Exclusion Zone."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=26),
         aoc.TestCase(inputs=SAMPLE, part=2, want=56000011),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    INPUT_PARSER = aoc.parse_re_findall_int(r"-?\d+")
-
     def part1(self, parsed_input: InputType) -> int:
+        """Return the number of coordinates on a given row which cannot contain the beacon.
+
+        For each sensor, find the x-range the sensor covers on the given row.
+        """
         row = 10 if self.testing else 2000000
-        positions = set()
-        for sx, sy, bx, by in parsed_input:
-            dist = mdist(sx, sy, bx, by)
-            ydist = abs(row - sy)
-            if ydist > dist:
+
+        x_positions = set()
+        for sensor_x, sensor_y, sensor_range in parsed_input:
+            y_dist = abs(row - sensor_y)
+            if y_dist > sensor_range:
                 continue
-            startx = sx - (dist - ydist)
-            endx = sx + (dist - ydist)
-            for i in range(startx, endx):
-                positions.add(i)
-        return len(positions)
+            covered_x_range_start = sensor_x - (sensor_range - y_dist)
+            covered_x_range_end = sensor_x + (sensor_range - y_dist)
+            x_positions.update(range(covered_x_range_start, covered_x_range_end))
+        return len(x_positions)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Locate the distress beacon.
+
+        For each row, start a cursor at the left.
+        Iterate through sensors in order, and move the cursor to just past the right
+        edge of the sensor (if the cursor is within sensor range).
+        When all sensors were applied, if the cursor is within the boundaries of the board,
+        that is where the distress beacon is located.
+        """
         dims = 20 if self.testing else 4000000
-        sensors = []
-        for sx, sy, bx, by in parsed_input:
-            sensors.append(Sensor(sx, sy, bx, by))
-        sensors.sort()
+        sensor_tuples = parsed_input
+        # Sort sensors, left to right.
+        sensor_tuples.sort()
 
-        # s = Sensor(8, 7, 2, 10)
-        # print(s, s + (5, 0), s + (6, 0))
+        # Test each row until we find the beacon.
+        for candidate_y in range(dims + 1):
+            candidate_x = 0
+            # For each sensor, move the cursor to just past the right end, if it is in sensor range.
+            for sensor_x, sensor_y, sensor_range in sensor_tuples:
+                y_dist = abs(sensor_y - candidate_y)
+                point_dist = abs(sensor_x - candidate_x) + y_dist
+                if point_dist <= sensor_range:
+                    candidate_x = sensor_x + sensor_range - y_dist + 1
+            if candidate_x <= dims:
+                self.debug(f"Solved!!! {candidate_x, candidate_y}")
+                return candidate_x * 4000000 + candidate_y
 
-        for cury in range(dims + 1):
-            if cury % 100000 == 0:
-                print(f"Row {cury}")
-            curx = 0
-            for s in sensors:
-                curx, changed = s.add(curx, cury)
-            if curx <= dims:
-                print(f"Solved!!! {curx, cury}")
-                return curx * 4000000 + cury
-
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-
-    # def line_parser(self, line: str):
-    #     pass
+    def line_parser(self, line: str) -> tuple[int, int, int]:
+        """Parse a line into a tuple of sensor's coordinates and range."""
+        a, b, c, d = (int(i) for i in aoc.RE_INT.findall(line))
+        return a, b, abs(a - c) + abs(b - d)
 
 
 if __name__ == "__main__":
