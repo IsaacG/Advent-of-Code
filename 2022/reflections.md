@@ -210,3 +210,29 @@ I solved both parts in roughly 45 minutes.
 * Take 3, same code as take 2 but on the desktop: 37s.
 * Take 4, same code and hardware as take 3, switching cython for mypy3: 1.5s.
 
+The distress beacon exists at a point either along the edge or just along the edge of the range of two sensors.
+By finding sensors whose edges are 2 units apart, we can reduce the bounds which need checking from `(0, 4_000_000)^2` to a box bound by those sensors.
+This optimization reduces my runtime from 56s to 5.0s (reducing just along the y-axis) or 4.7s (reducing along both axes).
+Solving this "properly" would require adding checks to search the edges since the beacon may exist at an edge and not fenced in by four sensors.
+
+Follow up: `W` solved this by intersecting diagonal lines formed by sensor detection edges.
+What if I used the above sensor-pairs to form diagonals and then intersected just those?
+Doing so gets me a near-instant result for part 2.
+
+Approach:
+
+* Store sensors as their coordinate `(x, y)` and a "sensor range", i.e. distance to beacon, yielding `tuple[int, int, int]`.
+* Sensors can be sorted (on `x`) to process them from left to right.
+* For each (sorted) sensor combination, check if their distance is one more than their combined range, i.e. they have space for exactly one width of space between them.
+* Based on the relative `y` positions, this is either a 45 degree line up-and-right or down-and-right.
+  The slope is either `+1` or `-1`.
+  These lines can be stored as `y = mx + b` or just `b` if using two containers for the different slopes.
+* For each combination of `m = +1` and `m = -1` lines, compute the intersection.
+  Filter out intersections outside the bounding box, `(0, 4,000,000) x (0, 4,000,000)` (optional if there are multiple lines).
+* The intersection gives the coordinates of the distress beacon.
+
+I revisted part 1 to reduce the runtime.
+Instead of tracking points, I opted to track ranges.
+Initially, I attempted to update overlapping ranges on the fly, but latter ranges can replace multiple prior ranges and the code got tricky.
+Instead, I collected all the ranges then sorted and walked the ranges to produce a flattened set of ranges.
+This reduced my part 1 runtime to under 0ms.
