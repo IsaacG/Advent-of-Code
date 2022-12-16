@@ -32,6 +32,7 @@ def solve(parsed_input) -> int:
         for room, rate, leads_to in parsed_input
     ]
     room_num = {room: i for i, (room, _, _) in enumerate(data)}
+    room_name = {i: room for i, (room, _, _) in enumerate(data)}
     tunnels = {i: [room_num[dest] for dest in leads_to] for i, (_, _, leads_to) in enumerate(data)}
     rates = {i: rate for i, (_, rate, _) in enumerate(data)}
     rooms_with_rates = {i for i, rate in rates.items() if rate}
@@ -47,27 +48,58 @@ def solve(parsed_input) -> int:
         for dest in leads_to:
             dist[room][dest] = 1
 
-    for k in rooms:
-        for i in rooms:
-            for j in rooms:
-                if k in dist[i] and j in dist[k]:
-                    if j not in dist[i] or dist[i][j] > dist[i][k] + dist[k][j]:
-                        dist[i][j] = dist[i][k] + dist[k][j]
+    for shortcut, src, dest in itertools.permutations(rooms, 3):
+        if shortcut in dist[src] and dest in dist[shortcut]:
+            dist_via_shortcut = dist[src][shortcut] + dist[shortcut][dest]
+            if dest not in dist[src] or dist[src][dest] > dist_via_shortcut:
+                dist[src][dest] = dist_via_shortcut
+
     t2 = time.perf_counter()
     print("Setup (ns):", int((t2 - t1) * 1000))
+
+    def check_dist(src, dst):
+        explore = [(0, src)]
+        added = {src,}
+        while explore:
+            steps, cur = explore.pop(0)
+            if cur == dst:
+                return steps
+            for candidate in tunnels[cur]:
+                if candidate not in added:
+                    added.add(candidate)
+                    explore.append((steps + 1, candidate))
+
+    def validate_distances():
+        for src in dist:
+            for dst in dist[src]:
+                if check_dist(src, dst) != dist[src][dst]:
+                    raise RuntimeError
+        print("Distances seem right.")
 
     def releases(valve_order):
         turns = 26
         release = 0
         location = start_room
         for valve in valve_order:
+            prior_turns = turns
             # move to valve
             turns -= dist[location][valve]
             # open valve
             turns -= 1
+            print(f"{location}=>{valve} {dist[location][valve]} moves => {turns}")
+            print(f"{room_name[location]}=>{room_name[valve]} {dist[location][valve]} moves => {turns}")
+
+            fl_dist = dist[location][valve]
+            bf_dist = check_dist(location, valve)
+
+            # assert fl_dist == bf_dist, f"{fl_dist=} != {bf_dist=}"
+            print(f"{release} + {rates[valve]} * {turns} ({rates[valve] * turns}) => {release + rates[valve] * turns}")
             if turns <= 0:
+                print(f"Out of moves trying to visit {room_name[valve]}")
                 break
             release += rates[valve] * turns
+            location = valve
+        # print()
         return release
 
     def dfs(human_order, elephant_order):
@@ -92,13 +124,15 @@ def solve(parsed_input) -> int:
         )
 
     def human_vs_elephant_valves():
+        valves_to_use = {0, 3, 4, 5, 18, 30, 36, 40, 42}
         answer = 0
         for valve_count in range(0, 9):
-            for human_valves in itertools.combinations(rooms_with_rates, valve_count):
+            for human_valves in itertools.combinations(valves_to_use, valve_count):
                 human_order = max(itertools.permutations(human_valves), key=releases)
                 human_release = releases(human_order)
-                elephant_valve_candidates = rooms_with_rates - set(human_valves)
-                for elephant_valves in itertools.combinations(elephant_valve_candidates, min(len(elephant_valve_candidates), valve_count)):
+                elephant_valve_candidates = valves_to_use - set(human_valves)
+                elephant_count = len(valves_to_use) - valve_count
+                for elephant_valves in itertools.combinations(elephant_valve_candidates, elephant_count):
                     elephant_order = max(itertools.permutations(elephant_valves), key=releases)
                     elephant_release = releases(elephant_order)
                     answer = max(answer, human_release + elephant_release)
@@ -107,17 +141,25 @@ def solve(parsed_input) -> int:
     def dijsktra():
         answer = 0
         priors = {}
-        to_explore = set([tuple([0, start_room, start_room, tuple()])])
-        seen_at_moves = {tuple([0, start_room, start_room, tuple()]): 25}
+        to_explore = set([tuple([0, start_room, start_room, tuple(), tuple(), tuple(), 0, 0])])
+        seen_at_moves = {tuple([0, start_room, start_room, tuple(), tuple(), tuple(), 0, 0]): 25}
+        flow_for_opened = {}
         while to_explore:
             p = max(to_explore)
-            released, cur, ele, opened = p
+            released, cur, ele, opened, human_moves, elephant_moves, h_rel, e_rel = p
             to_explore.remove(p)
             moves = seen_at_moves[p]
+            if opened not in flow_for_opened:
+                flow_for_opened[opened] = released
+            elif flow_for_opened[opened] > released:
+                continue
 
             if moves <= 1 or set(opened) == rooms_with_rates:
                 if released > answer:
                     answer = released
+                    if answer == 3015:
+                        print(answer, human_moves, elephant_moves)
+                        break
                 continue
 
             # 2250
@@ -131,39 +173,50 @@ def solve(parsed_input) -> int:
                 if ele not in opened and cur != ele and ele in rooms_with_rates:
                     # both open
                     new_released = released + (rates[cur] + rates[ele]) * moves
+                    h_rel += rates[cur] * moves
+                    e_rel += rates[ele] * moves
                     new_open = add_to_tuple(opened, cur, ele)
-                    options.append((new_released, cur, ele, new_open))
+                    options.append((new_released, cur, ele, new_open, add_to_tuple(human_moves, cur), add_to_tuple(elephant_moves, ele), h_rel, e_rel))
                 # you open, ele moves
                 else:
                     for loc in sorted(tunnels[ele], reverse=True, key=lambda x: 0 if x in opened else rates[x]):
                         new_released = released + rates[cur] * moves
                         new_open = add_to_tuple(opened, cur)
-                        options.append((new_released, cur, loc, new_open))
+                        h_rel += rates[cur] * moves
+                        options.append((new_released, cur, loc, new_open, add_to_tuple(human_moves, cur), elephant_moves, h_rel, e_rel))
             elif ele not in opened and ele in rooms_with_rates:
-                # you move, ele opnes
+                # you move, ele opens
                 for loc in sorted(tunnels[cur], reverse=True, key=lambda x: 0 if x in opened else rates[x]):
                     new_released = released + rates[ele] * moves
                     new_open = add_to_tuple(opened, ele)
-                    options.append((new_released, loc, ele, new_open))
+                    e_rel += rates[ele] * moves
+                    options.append((new_released, loc, ele, new_open, human_moves, add_to_tuple(elephant_moves, ele), h_rel, e_rel))
             # both move
             else:
                 for you_loc in sorted(tunnels[cur], reverse=True, key=lambda x: 0 if x in opened else rates[x]):
                     for ele_loc in sorted(tunnels[ele], reverse=True, key=lambda x: 0 if x in opened else rates[x]):
-                        options.append((released, you_loc, ele_loc, opened))
+                        options.append((released, you_loc, ele_loc, opened, human_moves, elephant_moves, h_rel, e_rel))
             for option in options:
                 if option[1] > option[2]:
-                    option = tuple([option[0], option[2], option[1], option[3]])
+                    option = tuple([option[0], option[2], option[1]]) + option[3:]
                 if seen_at_moves.get(option, -1) < moves - 1:
                     seen_at_moves[option] = moves - 1
                     to_explore.add(option)
         return answer
 
-    a = [36, 18, 0, 30, 5, 3]
-    b = [40, 4, 33, 38, 42]
+    a = ([0, 3, 5, 30, 36])
+    b = ([4, 18, 33, 38, 40, 42])
     print(releases(a))
-    print(releases(b))
-    print(releases(a) + releases(b))
+    print()
     return
+    # print(releases(b))
+    # print()
+    # print(releases(a) + releases(b))
+    # return
+    # c = [next(n for n, m in room_num.items() if m == i) for i in a + b]
+    # print(c)
+
+    # validate_distances()
 
 
     dij, hve, df = True, False, False
@@ -181,12 +234,12 @@ def solve(parsed_input) -> int:
 
     if df:
         t1 = time.perf_counter()
-        answer = dfs()
+        answer = dfs([], [])
         t2 = time.perf_counter()
         print(answer, "dfs", (t2 - t1) * 1000000)
     
     
-    assert answer > 2903
+    assert answer == 3015
     return answer
 
 
