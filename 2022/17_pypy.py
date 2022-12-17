@@ -8,102 +8,101 @@ def parse():
     with open("data/17.txt") as f:
         return next(f).strip()
 
+def shiftadd(vals):
+    out = 0
+    for v in vals:
+        out <<= 3
+        out |= v
+    return out
+
 def solve(parsed_input, n) -> int:
-        # n=2022
-        direction = {"<": -1, ">": +1}
         rocks = [
-            {0, 1, 2, 3},
-            {complex(1, 0), complex(0, 1),complex(1, 1),  complex(2, 1), complex(1, 2)},
-            {complex(0, 0), complex(1, 0), complex(2,0), complex(2,1), complex(2,2)},
-            {complex(0,0), complex(0,1), complex(0,2), complex(0,3)},
-            {complex(0,0), complex(0,1), complex(1,0), complex(1,1)},
+            {complex(0, 0), complex(1, 0), complex(2, 0), complex(3, 0)},
+            {complex(1, 0), complex(0, 1), complex(1, 1), complex(2, 1), complex(1, 2)},
+            {complex(0, 0), complex(1, 0), complex(2, 0), complex(2, 1), complex(2,2)},
+            {complex(0, 0), complex(0, 1), complex(0, 2), complex(0, 3)},
+            {complex(0, 0), complex(0, 1), complex(1, 0), complex(1, 1)},
         ]
-        heights = [0, 2, 2, 3, 1]
+        heights = [int(max(i.imag for i in r)) for r in rocks]
         stream_size = len(parsed_input)
-        stream = itertools.cycle(parsed_input)
-        fall = complex(0, -1)
+        stream = parsed_input
+        gravity = complex(0, -1)
 
         landed = set()
         height = 0
-        flats_at = {}
+        seen = {}
 
         # SHOW = 20
-        i = cycle_offset = 0
         cycle_detection = None
-        for j in range(n):
-            i = j + cycle_offset
-            rock = rocks[i % 5]
-            offset = complex(2, height + 4)
-            # print(f"{i+1} starts at {offset}")
-            falling = True
-            while falling:
-                wind = -1 if next(stream) == "<" else +1
-                o2 = wind + offset
-                r2 = {r + o2 for r in rock}
-                # if i == SHOW and offset == (4+4j):
-                    # print(f"{offset=} {o2=} {landed=}")
-                if all(0 <= r.real < 7 for r in r2) and landed.isdisjoint(r2):
-                    offset = o2
-                # if i == SHOW:
-                    # print(f"Rock {i+1}: wind => {offset}")
+        height_deltas = collections.deque([0] * 40)
 
-                o2 = fall + offset
-                r2 = {r + o2 for r in rock}
+        wind_idx = -1
+        rock_cnt = -1
+
+        while rock_cnt + 1 < n:
+            rock_cnt += 1
+            if rock_cnt and rock_cnt % 1000000 == 0:
+                print(f"Step {rock_cnt}")
+            rock_shape = rocks[rock_cnt % 5]
+            bottom_left_corner = complex(2, height + 4)
+
+            while True:
+                wind_idx = (wind_idx + 1) % stream_size
+                wind = -1 if stream[wind_idx] == "<" else +1
+                o2 = wind + bottom_left_corner
+                r2 = {r + o2 for r in rock_shape}
+                if all(0 <= r.real < 7 for r in r2) and landed.isdisjoint(r2):
+                    bottom_left_corner = o2
+
+                o2 = gravity + bottom_left_corner
+                r2 = {r + o2 for r in rock_shape}
                 if all(0 < r.imag for r in r2) and landed.isdisjoint(r2):
-                    offset = o2
-                    # if i == SHOW:
-                        # print(f"Rock {i+1}: gravity => {offset}")
+                    bottom_left_corner = o2
                 else:
                     break
-                    # if i == SHOW:
-                        # print(f"Rock {i+1}: rest => {offset}")
-            landed.update({offset + r for r in rock})
-            # if i == SHOW: print(f"{i+2} landed. New landed: {landed}")
-            height = max(height, int(offset.imag) + heights[i%5])
-            # print(f"{i+1} lands at {offset}; {height=}")
 
+            landed.update({bottom_left_corner + r for r in rock_shape})
+            new_height = max(height, int(bottom_left_corner.imag) + heights[rock_cnt%5])
+            height_deltas.append(new_height - height)
+            height_deltas.popleft()
+            height = new_height
 
-            if not cycle_offset and all(complex(x, height) in landed for x in range(7)):
-                t = (i % 5, i % stream_size)
-                if t not in flats_at:
-                    flats_at[t] = (i, height)
+            if rock_cnt < 10000000 and all(complex(x, height) in landed for x in range(7)):
+                t = ((((wind_idx) << 4) | (rock_cnt % 5)), shiftadd(height_deltas))
+                if t not in seen:
+                    seen[t] = (rock_cnt, height)
                 else:
-                    prior_i, prior_height = flats_at[t]
+                    prior_rock_cnt, prior_height = seen[t]
+                    print(f"Cycle found {prior_rock_cnt, prior_height} -> {rock_cnt, height}.")
+                    print(height_deltas, shiftadd(height_deltas))
 
-                    assert prior_i == 1610
-                    assert prior_height == 2524
+                    # assert prior_rock_cnt == 1610, prior_rock_cnt
+                    # assert prior_height == 2524
 
-                    cycle_size = i - prior_i
-                    height_diff = height - prior_height
+                    if True:
+                        cycle_size = rock_cnt - prior_rock_cnt
+                        height_diff = height - prior_height
 
-                    cycle_count = (n - i) // cycle_size
-                    cycle_offset = cycle_count * cycle_size
-                    height += cycle_count * height_diff
-                    landed.update(complex(x, height) for x in range(7))
+                        cycle_count = (n - rock_cnt) // cycle_size
+                        rock_cnt += cycle_count * cycle_size
+                        height += cycle_count * height_diff
+                        landed.update(complex(x, height) for x in range(7))
 
-                    assert n - cycle_size < i + cycle_offset < n
+                        assert n - cycle_count < rock_cnt < n
 
             if True:
                 cut = 0
-                if i % 100000 == 0:
+                if rock_cnt % 100000 == 0:
                     for h in range(height, height - 1000, -1):
                         if all(complex(x, h) in landed for x in range(7)):
                             landed = {i for i in landed if i.imag >= h}
                             # print(f"{i=} {h=} {len(landed)=}")
                             break
-            if i + 1 == n:
-                break
 
-        assert i == n - 1, f"{i=} {cycle_offset=} {n=}"
-        if n == 1000000000000:
-            assert height  > 1569051119345, height
-            assert height != 1569051119351, height
-            assert height  < 1569057275920, height
-        if n == 2022:
-            assert height == 3135, height
-        return int(height)
+        return height
 
 if __name__ == "__main__":
-    print(solve(parse(), 2022))
-    print(solve(parse(), 1000000000000))
+    height = solve('>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>', 1000000000000)
+    print(height)
+    assert height == 1514285714288
 
