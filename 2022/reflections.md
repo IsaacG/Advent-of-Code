@@ -237,6 +237,47 @@ Initially, I attempted to update overlapping ranges on the fly, but latter range
 Instead, I collected all the ranges then sorted and walked the ranges to produce a flattened set of ranges.
 This reduced my part 1 runtime to under 0ms.
 
-# Day 16: Proboscidea Volcanium.
+# Day 16: Proboscidea Volcanium. Open valves to release pressure.
 
 One of the harder days in a while. 
+
+I spent about 2.5 hours trying to solve this using Dijkstra's.
+When that did not bear fruit, I spent 2.5 hours working out a solution using DFS and combination-testing.
+5 hours in, I revisited Dijkstra's and found a silly bug in my code (`added_release = rate[human_valve] * cycles + rate[elephant_valve]`).
+Using some arbitrary pruning, I got this to eventually work with Dijkstra's.
+Using the valves opened by Dijkstra's, I got the combination testing to work.
+I'm still debugging the combination testing and trying to make it work with all the valves as input.
+I found Floyd Warshall very useful for computing room distances, though I also wrote a DFS to validate the distances while debugging.
+
+Todo:
+
+* Clean code.
+* Make combination testing work.
+
+# Day 17: Pyroclastic Flow. Compute the height of a Tetris-like rock pile after rocks have landed.
+
+Part one had a whole lot of bugs and off-by-ones.
+I manually entered the rock sizes vs parsing them, thinking it would save me time.
+I thought I was tracking the rock's top left corner but was tracking the bottom left corner, since I defined the rocks as starting at `(0, 0)` and sizing up, not down.
+I had an off-by-one in my "add height" logic.
+I had a whole slow of off by ones.
+
+Part two, I realized pretty quickly I needed to find a cycle.
+My input leads to occasionally "flat tops" which I can use as a nice break point, at which to check for a cycle.
+I believe the example and other inputs do not have any flat tops, so my solution would not work for many other inputs.
+This can be solved by looking for a solid non-flat top (assuming one exists) or using other heuristics to detect a "stable" top, e.g. hashing the landed blocks for the last N rows or checking the landing position of the last N rocks.
+(N likely needs to be 10-50 or suchlike, based on discussions.)
+Not relying on a flat top would allow detecting cycles sooner but require storing more state.
+
+Some silly things I did:
+
+* Confuse my loop counter `i` as the counter used for both the rock size and stream index.
+  I actually thought I could use `(i % types_of_rocks, i % stream_length)` for my cycle counter.
+  What is needed is `(rock_idx % types_of_rocks, stream_idx % stream_length)`.
+* I used a loop to "add" cycles. I added cycles until *at least* `target` rocks have fallen, which took me too far.
+* I add cycles, add a new flat top and then run the simulator until `target` rocks have fallen.
+  Instead, I should save height values and just compute the height using prior cycle data.
+
+To do:
+* do not assume flat top; use landing position data for the last N cycles for cycle detection.
+* do not continue the sim once a cycle is found; use cached height data.
