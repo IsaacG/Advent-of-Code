@@ -11,24 +11,25 @@ import re
 import typer
 from lib import aoc
 
-ROCKS = [
-    "####",
-    """\
-.#.
-###
-.#.""",
-    """\
-..#
-..#
-###""", """\
-#
-#
-#
-#""",
-    """\
-##
-##"""
-]
+ROCKS = """
+    ####
+
+    .#.
+    ###
+    .#.
+
+    ..#
+    ..#
+    ###
+
+    #
+    #
+    #
+    #
+
+    ##
+    ##
+    """
 SAMPLE = '>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>'
 
 
@@ -45,14 +46,21 @@ class Day17(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
+    def pre_run(self):
+        # Parse the rock shapes from ASCII art.
+        rocks = []
+        for block in ROCKS.strip().split("\n\n"):
+            block = block.replace(" ", "")
+            # Flip rocks upside down so Y increases from the bottom to the top.
+            # Most my parsing assumes Y increases as you move down through text.
+            block = "\n".join(reversed(block.splitlines()))
+            block_map = aoc.Board.from_block_map(block, lambda x: x == "#")
+            block_points = {k for k, v in block_map.items() if v}
+            rocks.append(block_points)
+        self.rocks = rocks
+
     def solver(self, parsed_input: InputType, n) -> int:
-        rocks = [
-            {complex(0, 0), complex(1, 0), complex(2, 0), complex(3, 0)},
-            {complex(1, 0), complex(0, 1), complex(1, 1), complex(2, 1), complex(1, 2)},
-            {complex(0, 0), complex(1, 0), complex(2, 0), complex(2, 1), complex(2,2)},
-            {complex(0, 0), complex(0, 1), complex(0, 2), complex(0, 3)},
-            {complex(0, 0), complex(0, 1), complex(1, 0), complex(1, 1)},
-        ]
+        rocks = self.rocks
         heights = [int(max(i.imag for i in r)) for r in rocks]
         stream_size = len(parsed_input)
         stream = parsed_input

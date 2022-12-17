@@ -281,3 +281,4 @@ Some silly things I did:
 To do:
 * do not assume flat top; use landing position data for the last N cycles for cycle detection.
 * do not continue the sim once a cycle is found; use cached height data.
+* parse rocks from image
