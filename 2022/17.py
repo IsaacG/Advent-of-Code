@@ -32,31 +32,17 @@ ROCKS = [
 SAMPLE = '>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>'
 
 
-def shiftadd(vals):
-    out = 0
-    for v in vals:
-        out <<= 3
-        out |= v
-    return out
-
-
-LineType = int
-InputType = list[LineType]
+InputType = str
 
 
 class Day17(aoc.Challenge):
     """Day 17: Pyroclastic Flow."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
+    DEBUG = False
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=3068),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, parsed_input: InputType, n) -> int:
@@ -111,17 +97,13 @@ class Day17(aoc.Challenge):
             height_deltas.popleft()
             height = new_height
 
-            if rock_cnt < 10000000 and all(complex(x, height) in landed for x in range(7)):
-                t = ((((wind_idx) << 4) | (rock_cnt % 5)), shiftadd(height_deltas))
+            if all(complex(x, height) in landed for x in range(7)):
+                t = ((((wind_idx) << 4) | (rock_cnt % 5)), tuple(height_deltas))
                 if t not in seen:
                     seen[t] = (rock_cnt, height)
                 else:
                     prior_rock_cnt, prior_height = seen[t]
-                    print(f"Cycle found {prior_rock_cnt, prior_height} -> {rock_cnt, height}.")
-                    print(height_deltas, shiftadd(height_deltas))
-
-                    # assert prior_rock_cnt == 1610, prior_rock_cnt
-                    # assert prior_height == 2524
+                    self.debug(f"Cycle found {prior_rock_cnt, prior_height} -> {rock_cnt, height}.")
 
                     if True:
                         cycle_size = rock_cnt - prior_rock_cnt
@@ -131,8 +113,6 @@ class Day17(aoc.Challenge):
                         rock_cnt += cycle_count * cycle_size
                         height += cycle_count * height_diff
                         landed.update(complex(x, height) for x in range(7))
-
-                        assert n - cycle_count < rock_cnt < n
 
 
         return height
