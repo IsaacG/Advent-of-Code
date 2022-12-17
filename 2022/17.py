@@ -49,14 +49,13 @@ class Day17(aoc.Challenge):
     def pre_run(self):
         # Parse the rock shapes from ASCII art.
         rocks = []
+        parser = aoc.parse_ascii_bool_map("#")
         for block in ROCKS.strip().split("\n\n"):
             block = block.replace(" ", "")
             # Flip rocks upside down so Y increases from the bottom to the top.
             # Most my parsing assumes Y increases as you move down through text.
             block = "\n".join(reversed(block.splitlines()))
-            block_map = aoc.Board.from_block_map(block, lambda x: x == "#")
-            block_points = {k for k, v in block_map.items() if v}
-            rocks.append(block_points)
+            rocks.append(parser.parse(block))
         self.rocks = rocks
 
     def solver(self, parsed_input: InputType, n) -> int:

@@ -156,6 +156,23 @@ class ParseBitmap(BaseParser):
         return out
 
 
+class AsciiBoolMapParser:
+    """Parse a map of on/off values to build a set of "on" points."""
+
+    def __init__(self, on_char: str):
+        self.on_char = on_char
+
+    def parse(self, puzzle_input: str) -> set[complex]:
+        """Parse ASCII to find points in a map which are "on"."""
+        return {
+            complex(x, y)
+            for y, line in enumerate(puzzle_input.splitlines())
+            for x, char in enumerate(line)
+            if char == self.on_char
+        }
+
+
+
 # Convert the entire input into one str.
 parse_one_str = ParseOneWord(str)
 # Convert the entire input into one int.
@@ -180,3 +197,5 @@ parse_multi_mixed_per_line = BaseParseMultiPerLine(input_to_mixed)
 parse_re_group_mixed = lambda x: BaseParseReGroups(x, input_to_mixed)
 parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
 parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
+
+parse_ascii_bool_map = AsciiBoolMapParser

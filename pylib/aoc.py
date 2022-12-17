@@ -221,9 +221,9 @@ class Board(dict):
     ) -> Board:
         """Return a Board from a block mapped with transform()."""
         raw_dict = {
-            x + y * 1j: transform(val)
+            x + y * 1j: transform(char)
             for y, line in enumerate(block.splitlines())
-            for x, val in enumerate(line)
+            for x, char in enumerate(line)
         }
         return cls(raw_dict, diagonal=diagonal)
 
