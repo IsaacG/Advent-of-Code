@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 17: Pyroclastic Flow."""
+"""Advent of Code, Day 17: Pyroclastic Flow. Compute the height of a Tetris-like rock pile after rocks have landed."""
 from __future__ import annotations
 
 import collections
@@ -134,14 +134,6 @@ class Day17(aoc.Challenge):
 
                         assert n - cycle_count < rock_cnt < n
 
-            if True:
-                cut = 0
-                if rock_cnt % 100000 == 0:
-                    for h in range(height, height - 1000, -1):
-                        if all(complex(x, h) in landed for x in range(7)):
-                            landed = {i for i in landed if i.imag >= h}
-                            # print(f"{i=} {h=} {len(landed)=}")
-                            break
 
         return height
 
