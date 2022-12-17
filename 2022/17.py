@@ -1,12 +1,36 @@
-import functools
-import collections
-import itertools
-import re
-import time
+#!/bin/python
+"""Advent of Code, Day 17: Pyroclastic Flow."""
+from __future__ import annotations
 
-def parse():
-    with open("data/17.txt") as f:
-        return next(f).strip()
+import collections
+import functools
+import itertools
+import math
+import re
+
+import typer
+from lib import aoc
+
+ROCKS = [
+    "####",
+    """\
+.#.
+###
+.#.""",
+    """\
+..#
+..#
+###""", """\
+#
+#
+#
+#""",
+    """\
+##
+##"""
+]
+SAMPLE = '>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>'
+
 
 def shiftadd(vals):
     out = 0
@@ -15,7 +39,27 @@ def shiftadd(vals):
         out |= v
     return out
 
-def solve(parsed_input, n) -> int:
+
+LineType = int
+InputType = list[LineType]
+
+
+class Day17(aoc.Challenge):
+    """Day 17: Pyroclastic Flow."""
+
+    DEBUG = True
+    # Default is True. On live solve, submit one tests pass.
+    # SUBMIT = {1: False, 2: False}
+
+    TESTS = [
+        aoc.TestCase(inputs=SAMPLE, part=1, want=3068),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
+        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+    ]
+
+    INPUT_PARSER = aoc.parse_one_str
+
+    def solver(self, parsed_input: InputType, n) -> int:
         rocks = [
             {complex(0, 0), complex(1, 0), complex(2, 0), complex(3, 0)},
             {complex(1, 0), complex(0, 1), complex(1, 1), complex(2, 1), complex(1, 2)},
@@ -101,15 +145,14 @@ def solve(parsed_input, n) -> int:
 
         return height
 
+    def part1(self, parsed_input: InputType) -> int:
+        return self.solver(parsed_input, 2022)
+
+    def part2(self, parsed_input: InputType) -> int:
+        return self.solver(parsed_input, 1000000000000)
+
+
 if __name__ == "__main__":
-    # height = solve('>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>', 1000000000000)
-    # print(height)
-    # assert height == 1514285714288
+    typer.run(Day17().run)
 
-    height = solve(parse(), 1000000000000)
-    print(height)
-    assert height  > 1569051119345, height
-    assert height != 1569051119351, height
-    assert height  < 1569057275920, height
-    assert height % 100 == 43  # discord solution
-
+# vim:expandtab:sw=4:ts=4

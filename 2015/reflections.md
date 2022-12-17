@@ -45,6 +45,8 @@ Library changes:
 For part 1, it's simple enough to use sets and simply brute force it.
 
 Part 2 has me stumped.
+[Reddit](https://www.reddit.com/r/adventofcode/comments/3xflz8/comment/cy4etju/) has a simple formula which can be used to solve the puzzle.
+CYK may help.
 
 # Day 20: Infinite Elves and Infinite Houses.
 

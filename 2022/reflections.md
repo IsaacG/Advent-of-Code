@@ -236,3 +236,7 @@ Instead of tracking points, I opted to track ranges.
 Initially, I attempted to update overlapping ranges on the fly, but latter ranges can replace multiple prior ranges and the code got tricky.
 Instead, I collected all the ranges then sorted and walked the ranges to produce a flattened set of ranges.
 This reduced my part 1 runtime to under 0ms.
+
+# Day 16: Proboscidea Volcanium.
+
+One of the harder days in a while. 

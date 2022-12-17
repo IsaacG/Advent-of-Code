@@ -225,7 +225,7 @@ class Runner:
         if not solutions:
             solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
 
-        stop_at = self.now().replace(hour=4, minute=0, second=0, microsecond=0)
+        stop_at = self.now() + datetime.timedelta(hours=6)
         while self.now() < stop_at:
             timeout = (stop_at - self.now()).seconds
             events = inotify.read(timeout=timeout)
