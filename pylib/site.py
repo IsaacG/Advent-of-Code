@@ -1,6 +1,4 @@
 import apsw
-import dotenv
-import functools
 import os
 import re
 import requests
@@ -14,19 +12,19 @@ from urllib import parse
 class Website:
 
     BASE = 'https://adventofcode.com/'
-  
+
     def __init__(self, year, day):
         self.year = str(year)
         self.day = str(int(day))
         conn = apsw.Connection(os.getenv('SQL_DB'))
         query = 'SELECT value FROM cookies WHERE key = ?'
         cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
-    
+
         self.session = requests.Session()
         self.session.headers.update({'cookie': f'session={cookie}'})
         self.assert_logged_in()
         self._text = None
-  
+
     def text(self) -> str:
         if self._text is None:
             resp = self.session.get(f'https://adventofcode.com/{self.year}/day/{self.day}')
@@ -54,17 +52,17 @@ class Website:
                 sample.append(f"    {block!r},  # {num}")
         sample.append("]")
         return "\n".join(sample)
-  
+
     def assert_logged_in(self):
         resp = self.session.get(self.BASE)
         resp.raise_for_status()
         assert '[Log Out]' in etree.HTML(resp.content).xpath('//a/text()')
-  
+
     def get_input(self) -> str:
         resp = self.session.get(f"{self.uri_day}/input")
         resp.raise_for_status()
         return resp.text
-  
+
     def part(self) -> Optional[int]:
         m = re.search(r'name="level" value="([^"]+)"', self.text())
         if m is None:

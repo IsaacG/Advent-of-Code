@@ -172,7 +172,6 @@ class AsciiBoolMapParser:
         }
 
 
-
 # Convert the entire input into one str.
 parse_one_str = ParseOneWord(str)
 # Convert the entire input into one int.

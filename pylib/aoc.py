@@ -15,12 +15,14 @@ from __future__ import annotations
 import dataclasses
 import functools
 import inspect
+import itertools
 import pathlib
 import re
 import time
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
 from .parsers import *
+from . import parsers
 from . import site
 
 
@@ -105,7 +107,7 @@ class OCR:
             raise ValueError(f"Must have 6 or 10 rows; found {len(output)}")
         # 6x5 or 10x7
         self.width = {6: 5, 10: 7}[self.height]
-        if any(len(l) != len(output[0]) for l in output):
+        if any(len(line) != len(output[0]) for line in output):
             raise ValueError("Lines are not uniform size.")
         # Zero-pad rows if needed with a space.
         if len(output[0]) % self.width == self.width - 1:
@@ -206,7 +208,7 @@ class Board(dict):
         """Return the edges of a fully populated board."""
         edges: set[complex] = set()
         cur = 0
-        for direction in DIRECTIONS:
+        for direction in FOUR_DIRECTIONS:
             while cur + direction in self:
                 cur += direction
                 edges.add(cur)
@@ -325,7 +327,6 @@ class Line:
         return cls(Point.from_complex(start), Point.from_complex(end))
 
 
-
 def render(points: set[complex]) -> str:
     """Render a set of points to a string."""
     lines = point_set_to_lists(points)
@@ -427,7 +428,7 @@ class Challenge(Helpers):
     """Daily Challenge."""
 
     INPUT_TYPES = str
-    INPUT_PARSER: Optional[BaseParser] = None
+    INPUT_PARSER: Optional[parsers.BaseParser] = None
     POST_PROCESS: Callable[[Any], Any] = lambda _, x: x
     TRANSFORM = None
     TESTS: list[TestCase] = []
@@ -532,7 +533,6 @@ class Challenge(Helpers):
     def test(self, data=None):
         """Run the tests."""
         self.testing = True
-        functions = {1: self.part1, 2: self.part2}
 
         for i, case in enumerate(self.TESTS):
             if case.want == TEST_SKIP:
