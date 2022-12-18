@@ -282,7 +282,9 @@ Follow up:
 
 * (DONE) do not continue the sim once a cycle is found; use cached height data.
 * (DONE) parse rocks from image
-* (TODO) fix the off-by-one that makes the corner (0, 1)
+* (DEBATING) fix the off-by-one that makes the corner (0, 1).
+  The height 1 means the tower is 1 high after the last rock falls.
+  I could shift everything right and make it (1,1) but I'm not sure that's better.
 * (TODO) do not assume flat top; use landing position data for the last N cycles for cycle detection.
 
 # Compute the surface area of 3D bubbles.
@@ -292,3 +294,8 @@ However, I first solved for grouping points of lava into lava-groups of touching
 I managed to solve part 1 with this grouping, but it was entirely unnecessary.
 I attemted to use the grouping in part 2 to compute bubble interiors but the grouping did not check diagonals so that didn't work out.
 Turns out, the brute-force flood fill approach works plenty fine in about 170ms.
+
+
+# TODO
+
+* Day 16
