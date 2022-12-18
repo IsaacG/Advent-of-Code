@@ -77,7 +77,7 @@ class Day19(aoc.Challenge):
         parens = elements.count("Rn") + elements.count("Ar")
         commas = elements.count("Y")
         # https://www.reddit.com/r/adventofcode/comments/3xflz8/comment/cy4etju/
-        return num_elements - parens - 2 * commas
+        return num_elements - parens - 2 * commas - 1
 
         for a, _, b in mappings:
             if len(a) > len(b):

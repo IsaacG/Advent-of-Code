@@ -87,3 +87,9 @@ Part 2 held nothing surprising.
 
 Relatively straight forward, asking for a `combinations()` which meets constraints.
 The only tricky bit might be to increment the group sizes sequentially.
+
+# TODO:
+
+* Day 19
+* Day 24
+* Day 25
