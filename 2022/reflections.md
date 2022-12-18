@@ -278,7 +278,17 @@ Some silly things I did:
 * I add cycles, add a new flat top and then run the simulator until `target` rocks have fallen.
   Instead, I should save height values and just compute the height using prior cycle data.
 
-To do:
-* do not assume flat top; use landing position data for the last N cycles for cycle detection.
-* do not continue the sim once a cycle is found; use cached height data.
-* parse rocks from image
+Follow up:
+
+* (DONE) do not continue the sim once a cycle is found; use cached height data.
+* (DONE) parse rocks from image
+* (TODO) fix the off-by-one that makes the corner (0, 1)
+* (TODO) do not assume flat top; use landing position data for the last N cycles for cycle detection.
+
+# Compute the surface area of 3D bubbles.
+
+Relatively simple and straight forward puzzle.
+However, I first solved for grouping points of lava into lava-groups of touching points.
+I managed to solve part 1 with this grouping, but it was entirely unnecessary.
+I attemted to use the grouping in part 2 to compute bubble interiors but the grouping did not check diagonals so that didn't work out.
+Turns out, the brute-force flood fill approach works plenty fine in about 170ms.

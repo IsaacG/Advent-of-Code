@@ -247,6 +247,23 @@ class Point:
         return cls(int(point.real), int(point.imag))
 
 
+def n_dim_directions(dims: int, diagonal=False):
+    """Return all the directions of a point for an n-dimensional point."""
+    if diagonal:
+        return [i for i in itertools.product([-1, 0, 1], repeat=dims) if sum(val == 0 for val in i) != dims]
+    return [i for i in itertools.product([-1, 0, 1], repeat=dims) if sum(val == 0 for val in i) == dims - 1]
+
+
+def n_dim_add(p1: tuple[int, ...], p2: tuple[int, ...]) -> tuple[int, ...]:
+    """Add two n-dimensional points."""
+    return tuple(a + b for a, b in zip(p1, p2, strict=True))
+
+
+def n_dim_neighbors(point: tuple[int, ...], diagonal=False) -> set[tuple[int, ...]]:
+    """Return all the neighbors of a point for an n-dimensional point."""
+    return {n_dim_add(point, direction) for direction in n_dim_directions(len(point), diagonal)}
+
+
 @dataclasses.dataclass(frozen=True)
 class Rect:
     """A rectangle formed between two cartesian points."""
@@ -411,6 +428,7 @@ class Challenge(Helpers):
 
     INPUT_TYPES = str
     INPUT_PARSER: Optional[BaseParser] = None
+    POST_PROCESS: Callable[[Any], Any] = lambda _, x: x
     TRANSFORM = None
     TESTS: list[TestCase] = []
     DEBUG = False
@@ -488,7 +506,7 @@ class Challenge(Helpers):
         if self.INPUT_PARSER is not None:
             if inspect.isclass(self.INPUT_PARSER):
                 raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
-            return self.INPUT_PARSER.parse(puzzle_input)
+            return self.POST_PROCESS(self.INPUT_PARSER.parse(puzzle_input))
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
         elif inspect.ismethod(getattr(self, "line_parser", None)):
@@ -501,7 +519,7 @@ class Challenge(Helpers):
                 parts = line.split(maxsplit=len(self.INPUT_TYPES) - 1)
                 return [func(piece) for func, piece in zip(self.INPUT_TYPES, parts)]
 
-        return [transform(i) for i in puzzle_input.splitlines()]
+        return self.POST_PROCESS([transform(i) for i in puzzle_input.splitlines()])
 
     def test(self, data=None):
         """Run the tests."""

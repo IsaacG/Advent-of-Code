@@ -121,20 +121,24 @@ def solve(parsed_input) -> int:
 
     def partitioning():
         valves_to_use = {36, 0, 30, 5, 3, 40, 18, 4, 33, 38, 42}
+        valves_to_use = list(sorted(rooms_with_rates, reverse=True))
         answer = 0
-        for human_count in range(0, 9):
+        for human_count in range(5, 8):
             for human_valves in itertools.combinations(valves_to_use, human_count):
                 human_order = max(itertools.permutations(human_valves), key=releases)
                 human_release = releases(human_order)
-                elephant_valve_candidates = valves_to_use - set(human_valves)
-                elephant_count = len(valves_to_use) - human_count
-                for elephant_valves in itertools.combinations(elephant_valve_candidates, elephant_count):
-                    if sum(elephant_valves) < sum(human_valves):
-                        break
-                    elephant_order = max(itertools.permutations(elephant_valves), key=releases)
-                    elephant_release = releases(elephant_order)
-                    if elephant_release + human_release == 3015: print(answer, human_order, elephant_order)
-                    answer = max(answer, human_release + elephant_release)
+                if human_release < answer // 2:
+                    continue
+                elephant_valve_candidates = set(valves_to_use) - set(human_valves)
+                for elephant_count in range(max(5, human_count), min(8, len(elephant_valve_candidates))):
+                    for elephant_valves in itertools.combinations(elephant_valve_candidates, elephant_count):
+                        if elephant_valves[0] < human_valves[0]:
+                            break
+                        elephant_order = max(itertools.permutations(elephant_valves), key=releases)
+                        combined_release = releases(elephant_order) + human_release
+                        if combined_release == 3015:
+                            print(combined_release, human_order, elephant_order)
+                        answer = max(answer, combined_release)
         return answer
 
     def dijsktra():
@@ -199,15 +203,11 @@ def solve(parsed_input) -> int:
                     to_explore.add(option)
         return answer
 
-    a, b = [36, 0, 30, 5, 3], [40, 18, 4, 33, 38, 42]
-    # print(releases(a), releases(b), releases(a) + releases(b))
-    # print()
     # print([room_name[i] for i in a])
     # print([room_name[i] for i in b])
     # print(releases(b))
     # print()
     # print(releases(a) + releases(b))
-    # return
     # c = [next(n for n, m in room_num.items() if m == i) for i in a + b]
     # print(c)
     # validate_distances()

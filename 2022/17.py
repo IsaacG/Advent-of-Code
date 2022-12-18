@@ -70,6 +70,7 @@ class Day17(aoc.Challenge):
 
         # My input luckily gives flat tops every so often.
         # I rely on flat tops to avoid parsing topologies.
+        # TODO: stop relying on this property.
         def top_is_flat() -> bool:
             """Return if the top is flat."""
             return all(complex(x, tower_height) in landed for x in range(7))
