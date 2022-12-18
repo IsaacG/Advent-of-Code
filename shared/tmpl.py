@@ -23,6 +23,7 @@ class Day${day}(aoc.Challenge):
     DEBUG = True
     # Default is True. On live solve, submit one tests pass.
     # SUBMIT = {1: False, 2: False}
+    # PARAMETERIZED_INPUTS = [5, 50]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),

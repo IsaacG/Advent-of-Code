@@ -37,6 +37,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=36),
     ]
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
+    PARAMETERIZED_INPUTS = [2, 10]
 
     def solver(self, lines: list[tuple[str, int]], knot_count: int) -> int:
         """Track the movement of knots on a rope. Return the number of positions the tail visits."""
@@ -54,14 +55,6 @@ class Day09(aoc.Challenge):
                     knots[i + 1] += complex(x, y)
                 points.add(knots[-1])
         return len(points)
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Return visited locations for a 2-knot rope tail."""
-        return self.solver(parsed_input, 2)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return visited locations for a 10-knot rope tail."""
-        return self.solver(parsed_input, 10)
 
 
 if __name__ == "__main__":

@@ -22,6 +22,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=93),
     ]
     INPUT_PARSER = aoc.parse_re_findall_points
+    PARAMETERIZED_INPUTS = [True, False]
 
     def solver(self, rocks: InputType, first_to_the_floor: bool) -> int:
         """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
@@ -66,14 +67,6 @@ class Day14(aoc.Challenge):
 
             # Backtrack the position by one movement and resume from the prior location:
             cur -= path.pop()
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Return the last grain to rest on the lowest rock."""
-        return self.solver(parsed_input, True)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the grain which stops at the starting_point."""
-        return self.solver(parsed_input, False)
 
 
 if __name__ == "__main__":

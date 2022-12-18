@@ -435,6 +435,7 @@ class Challenge(Helpers):
     TIMER_ITERATIONS = (None, None)
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
+    PARAMETERIZED_INPUTS = None
 
     def __init__(self):
         self.funcs = {1: self.part1, 2: self.part2}
@@ -521,9 +522,17 @@ class Challenge(Helpers):
 
         return self.POST_PROCESS([transform(i) for i in puzzle_input.splitlines()])
 
+    def run_solver(self, part: int, data: Any) -> Any:
+        """Run a solver for one part."""
+        func = {1: self.part1, 2: self.part2}
+        if inspect.ismethod(getattr(self, "solver", None)) and self.PARAMETERIZED_INPUTS is not None:
+            return self.solver(data, self.PARAMETERIZED_INPUTS[part - 1])
+        return func[part](data)
+
     def test(self, data=None):
         """Run the tests."""
         self.testing = True
+        functions = {1: self.part1, 2: self.part2}
 
         for i, case in enumerate(self.TESTS):
             if case.want == TEST_SKIP:
@@ -532,7 +541,7 @@ class Challenge(Helpers):
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
             data = self.input_parser(case.inputs.rstrip())
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
-            got = self.funcs[case.part](data)
+            got = self.run_solver(case.part, data)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
             delta = int(1000 * (end - start))
             if case.want != got:
@@ -551,13 +560,14 @@ class Challenge(Helpers):
         """Hook to run things prior to tests and actual."""
 
     def solve(self, data=None) -> None:
-        for i in (1, 2):
+        for part in (1, 2):
             puzzle_input = self.input_parser(self.raw_data(data))
-            self.debug(f'Running part {i}:')
+            self.debug(f'Running part {part}:')
             try:
-                print(self.funcs[i](puzzle_input))
+                got = self.run_solver(part, puzzle_input)
+                print(got)
             except NotImplementedError:
-                print(f'Part {i}: Not implemented')
+                print(f'Part {part}: Not implemented')
 
     def check(self, data=None) -> None:
         """Check the generated solutions match the contents of solutions.txt."""
@@ -572,29 +582,29 @@ class Challenge(Helpers):
         if not solution:
             print(f'{self.year}/{self.day:02d} No solution found!')
             return
-        for i in (1, 2):
+        for part in (1, 2):
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
             puzzle_input = self.input_parser(self.raw_data(data))
-            got = self.funcs[i](puzzle_input)
+            got = self.run_solver(part, puzzle_input)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
             delta = int(1000 * (end - start))
-            want = solution[i - 1]
+            want = solution[part - 1]
             if isinstance(got, int):
                 want = int(want)
             if want == got:
-                print(f'{self.year}/{self.day:02d} Part {i}: PASS in {delta}ms!')
+                print(f'{self.year}/{self.day:02d} Part {part}: PASS in {delta}ms!')
             else:
-                print(f'{self.year}/{self.day:02d} Part {i}: want({want}) != got({got})')
+                print(f'{self.year}/{self.day:02d} Part {part}: want({want}) != got({got})')
 
     def submit(self, data=None) -> None:
         """Generate a solution for the next unsolved part and submit it."""
         answers = []
-        for i in (1, 2):
+        for part in (1, 2):
             puzzle_input = self.input_parser(self.raw_data(data))
             try:
-                a = self.funcs[i](puzzle_input)
-                if a:
-                    answers.append(a)
+                got = self.run_solver(part, puzzle_input)
+                if got:
+                    answers.append(got)
             except NotImplementedError:
                 pass
         if not answers:

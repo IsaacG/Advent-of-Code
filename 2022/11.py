@@ -74,9 +74,11 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=10605),
         aoc.TestCase(inputs=SAMPLE, part=2, want=2713310158),
     ]
+    PARAMETERIZED_INPUTS = [(20, True), (10000, False)]
 
-    def solver(self, monkeys: list[Monkey], rounds: int, div: bool) -> int:
+    def solver(self, monkeys: list[Monkey], rounds_div: tuple[int,  bool]) -> int:
         """Simulate rounds of monkeys inspecting and throwing items."""
+        rounds, div = rounds_div
         # Use the LCM to keep the item size low.
         lcm = math.lcm(*[m.test for m in monkeys])
 
@@ -97,14 +99,6 @@ class Day11(aoc.Challenge):
                 monkey.items = []
         inspected = sorted(monkey.inspected for monkey in monkeys)
         return self.mult(inspected[-2:])
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Return the most troublesome monkeys after 20 rounds with div-by-three."""
-        return self.solver(parsed_input, 20, True)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the most troublesome monkeys after 10000 rounds without div-by-three."""
-        return self.solver(parsed_input, 10000, False)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

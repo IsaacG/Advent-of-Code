@@ -40,6 +40,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
     ]
     INPUT_PARSER = aoc.parse_one_str
+    PARAMETERIZED_INPUTS = [2022, 1000000000000]
 
     def pre_run(self) -> None:
         """Parse the rock shapes from ASCII art."""
@@ -123,14 +124,6 @@ class Day17(aoc.Challenge):
                 seen[fingerprint] = (rock_cnt, tower_height)
 
         return tower_height
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Return the tower height after N rocks."""
-        return self.solver(parsed_input, 2022)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the tower height after N rocks."""
-        return self.solver(parsed_input, 1000000000000)
 
 
 if __name__ == "__main__":

@@ -26,8 +26,9 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=19),
     ]
     INPUT_PARSER = aoc.parse_one_str
+    PARAMETERIZED_INPUTS = [4, 14]
 
-    def find_unique_n_start(self, line: str, num: int) -> int:
+    def solver(self, line: str, num: int) -> int:
         """Return the offset *after* a series of n different chars."""
         parts = (line[i:] for i in range(num))
         return next(
@@ -35,14 +36,6 @@ class Day06(aoc.Challenge):
             for offset, chars in enumerate(zip(*parts))
             if len(set(chars)) == num
         )
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Return the start-of-packet marker index."""
-        return self.find_unique_n_start(parsed_input, 4)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the start-of-message marker marker index."""
-        return self.find_unique_n_start(parsed_input, 14)
 
 
 if __name__ == "__main__":
