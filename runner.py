@@ -288,6 +288,7 @@ class Runner:
 @click.option("--benchmark", is_flag=True, help="Time the solution.")
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
+@click.option("--file", type=str, default=None, help="Alternative input file.")
 def main(
     day: Optional[int],
     waitlive,
@@ -300,6 +301,7 @@ def main(
     watch: bool,
     benchmark: bool,
     all_days: bool,
+    file: Optional[str],
     timeout: int,
     year: Optional[int],
 ):
@@ -318,7 +320,14 @@ def main(
     if live:
         return runner.live_solve()
 
-    run_args = {"data": None, "test": test, "solve": solve, "submit": submit, "check": check, "benchmark": benchmark}
+    run_args = {
+        "data": file,
+        "test": test,
+        "solve": solve,
+        "submit": submit,
+        "check": check,
+        "benchmark": benchmark,
+    }
 
     if not watch or all_days:
         if all_days:

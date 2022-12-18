@@ -629,11 +629,18 @@ class Challenge(Helpers):
         solve: bool = False,
         submit: bool = False,
         check: bool = False,
+        input_file: Optional[str] = None,
         benchmark: bool = False,
     ):
         """Run the challenges."""
         self.pre_run()
-        f = self.get_run_method(test=test, solve=solve, submit=submit, check=check, benchmark=benchmark)
+        f = self.get_run_method(
+            test=test,
+            solve=solve,
+            submit=submit,
+            check=check,
+            benchmark=benchmark,
+        )
         f(data)
 
     def time_func(self, count: int, func: Callable) -> float:
