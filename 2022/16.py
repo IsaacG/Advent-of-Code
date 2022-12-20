@@ -22,7 +22,7 @@ Valve FF has flow rate=0; tunnels lead to valves EE, GG
 Valve GG has flow rate=0; tunnels lead to valves FF, HH
 Valve HH has flow rate=22; tunnel leads to valve GG
 Valve II has flow rate=0; tunnels lead to valves AA, JJ
-Valve JJ has flow rate=21; tunnel leads to valve II""",  # 1
+Valve JJ has flow rate=21; tunnel leads to valve II""",
 ]
 
 LineType = int
@@ -317,36 +317,6 @@ class Day16(aoc.Challenge):
 
 
         return max(solve("AA", tuple(), 0, 29))
-
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-
-    # def line_parser(self, line: str):
-    #     pass
 
 
 if __name__ == "__main__":

@@ -80,22 +80,12 @@ def solve(parsed_input) -> int:
         turns = 26
         release = 0
         for src, dst in zip([start_room] + list(valve_order), valve_order):
-            # move to valve
+            # move to valve then open valve
             turns -= dist[src][dst]
-            # open valve
             turns -= 1
-            # print(f"{src}->{dst} {dist[src][dst]} moves => {turns}")
-            # print(f"{room_name[src]}->{room_name[dst]} {dist[src][dst]} moves => {turns}")
-
-            # fl_dist = dist[src][dst]
-            # bf_dist = check_dist(src, dst)
-            # assert fl_dist == bf_dist, f"{fl_dist=} != {bf_dist=}"
-            # print(f"{release} + {rates[dst]} * {turns} ({rates[dst] * turns}) => {release + rates[dst] * turns}")
             if turns <= 0:
-                # print(f"Out of moves trying to visit {room_name[dst]}")
                 break
             release += rates[dst] * turns
-        # print()
         return release
 
     def dfs(human_order, elephant_order):

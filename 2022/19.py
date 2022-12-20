@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 19: Not Enough Minerals."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import math
 import re
 
 import typer
@@ -35,115 +30,23 @@ TYPES = {
 class Day19(aoc.Challenge):
     """Day 19: Not Enough Minerals."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=aoc.TEST_SKIP),
-        # aoc.TestCase(inputs=SAMPLE[0], part=1, want=33),
+        aoc.TestCase(inputs=SAMPLE[0], part=1, want=33),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=56 * 62),
     ]
+    TIMEOUT = 75
 
-    def part1(self, parsed_input: InputType) -> int:
-        return 1
-        score = 0
+    def solver(self, parsed_input: InputType, minutes: int) -> int:
+        scores = []
         for idx, blueprint in enumerate(parsed_input, start=1):
-            print(f"Testing blueprint {idx}")
-            # turns, robots, inventory
-            seen = set()
-            todo = {(-24, 0, 0, 0, 0, 0, 0, 1, 0)}
-            highest = 0
-            highest_rg_at_step = {i: 0 for i in range(-24, 1)}
-            highest_ig_at_step = {i: 0 for i in range(-24, 1)}
-            while todo:
-                cur = max(todo)
-                if len(seen) % 50000 == 0:
-                    print(f"{highest=} {len(seen)=} {len(todo)=} {cur=}")
-                todo.remove(cur)
-                turns, rg, ig, rb, ib, rc, ic, rr, ir = cur
-                if turns == 0:
-                    highest = max(highest, ig)
-                    continue
-                elif turns > 0:
-                    raise RuntimeError
-
-                if rg + 1 < highest_rg_at_step[turns] and ig + 1 < highest_ig_at_step[turns]:
-                    continue
-
-                highest_ig_at_step[turns] = max(highest_ig_at_step[turns], ig)
-                highest_rg_at_step[turns] = max(highest_rg_at_step[turns], rg)
-                # Build possibly
-                for robotype in (3, 2, 1, 0):
-                    cb, cc, cr = blueprint[robotype]
-                    if cr <= ir and cc <= ic and cb <= ib:
-                        nrr, nrc, nrb, nrg = rr, rc, rb, rg
-                        if robotype == ORE: nrr += 1
-                        elif robotype == CLAY: nrc += 1
-                        elif robotype == OBSIDIAN: nrb += 1
-                        elif robotype == GEODE: nrg += 1
-                        next_state = (
-                            turns + 1,
-                            nrg, ig + rg,
-                            nrb, ib + rb - cb,
-                            nrc, ic + rc - cc,
-                            nrr, ir + rr - cr,
-                        )
-                        if next_state not in seen:
-                            seen.add(next_state)
-                            todo.add(next_state)
-                # Produce ore
-                next_state = (
-                    turns + 1,
-                    rg, ig + rg,
-                    rb, ib + rb,
-                    rc, ic + rc,
-                    rr, ir + rr,
-                )
-                if next_state not in seen:
-                    seen.add(next_state)
-                    todo.add(next_state)
-            print(f"{idx} scores {highest}")
-            score += idx * highest
-        return score
-
-    def part2(self, parsed_input: InputType) -> int:
-        """
-        score = 1
-        STEPS = 32
-
-        for idx, blueprint in [(2, parsed_input[1])]:
-
-            max_prodution = {rock: {} for rock in ROCKS}
-
-            for material in ORE, CLAY, OBSIDIAN, GEODE:
-                if material == ORE:
-                    todo = set(STEPS, 0, 1)
-                    
-                for nturn in range(turns, 0):
-                    max_prodution[ore] = cur_i
-                    cur_i += cur_r
-                    cur_r += 1
-                    
-
-
-        return
-        """
-
-        score = 1
-        for idx, blueprint in enumerate(parsed_input[:3], start=1):
-            print(f"Testing blueprint {idx}")
+            self.debug(f"Testing blueprint {idx}")
             max_spend = {rock: max(cost[rock] for cost in blueprint.values()) for rock in (ORE, CLAY, OBSIDIAN)}
-            # turns, robots, inventory
             seen = set()
-            todo = {(-32, 0, 0, 0, 0, 0, 0, 1, 0)}
-            turns_to_bots = {1: -32}
+            todo = {(-minutes, 0, 0, 0, 0, 0, 0, 1, 0)}
+            turns_to_bots = {1: -minutes}
             highest = 0
             while todo:
                 cur = max(todo)
-                if len(seen) % 500000 == 0:
-                    print(f"{highest=} {len(seen)=} {len(todo)=} {cur=}")
                 todo.remove(cur)
                 turns, rg, ig, rb, ib, rc, ic, rr, ir = cur
                 if turns == 0:
@@ -155,7 +58,7 @@ class Day19(aoc.Challenge):
                 # stop early if we haven't built enough obsidian robots to reach our goal of geode robots before we need to switch to making only geode robots (as many as we need to hit our geode goal)
                 # didn't do the stop early's exactly, just close enough to ensure super dead branches weren't explored. some dead branches still got through but not very many (eg assume we have resources to make a geode bot each minute, assume that we'll have the full output of the obsidian miners in the whole 30 minutes at the time we start building geode bots)
 
-                if ig + rg * -turns + sum(range(-turns)) < highest:
+                if ig + rg * -turns + (turns * (turns + 1)) // 2 < highest:
                     continue
 
                 candidates = []
@@ -229,9 +132,16 @@ class Day19(aoc.Challenge):
 
                     seen.add(hsh)
                     todo.add(next_state)
-            print(f"{idx} scores {highest}")
-            score *= highest
-        return score
+            self.debug(f"{idx} scores {highest}")
+            scores.append(highest)
+        return scores
+
+    def part1(self, parsed_input: InputType) -> int:
+        scores = self.solver(parsed_input, 24)
+        return sum(idx * score for idx, score in enumerate(scores, start=1))
+
+    def part2(self, parsed_input: InputType) -> int:
+        return self.mult(self.solver(parsed_input[:3], 32))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

@@ -1,27 +1,21 @@
 #!/bin/python
-"""Advent of Code, Day 20: Grove Positioning System."""
+"""Advent of Code, Day 20: Grove Positioning System. Decrypt position data by doing list mixing."""
 from __future__ import annotations
 
-import collections
 import dataclasses
-import functools
-import itertools
-import math
-import re
+from typing import Iterable, Optional
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 1
 2
 -3
 3
 -2
 0
-4""",  # 12
-]
+4"""
 
 LineType = int
 InputType = list[LineType]
@@ -29,21 +23,25 @@ InputType = list[LineType]
 
 @dataclasses.dataclass
 class Node:
+    """Node in a double linked list."""
     val: Optional[int]
     prev: Optional[Node] = None
     next: Optional[Node] = None
 
     def __post_init__(self):
+        """Update any neighboring nodes."""
         if self.next:
             self.next.prev = self
         if self.prev:
             self.prev.next = self
 
-    def __str__(self):
-        return f"{self.prev.val}-{self.val}-{self.next.val}"
 
-@dataclasses.dataclass
 class LinkedList:
+    """Double linked list."""
+
+    first: Node
+    last: Node
+    len: int
 
     def __init__(self):
         """Create a double linked list."""
@@ -51,7 +49,7 @@ class LinkedList:
         self.tail = Node(None, prev=self.head)
         self.nodes = []
 
-    def seal(self):
+    def seal(self) -> None:
         """Convert the list to a circular list."""
         self.first = self.head.next
         self.last = self.tail.prev
@@ -59,23 +57,32 @@ class LinkedList:
         self.last.next = self.first
         self.len = len(self.nodes)
 
-    def add(self, val):
+    @classmethod
+    def circular_list(cls, values: Iterable[int]) -> LinkedList:
+        """Return a circular list from inputs."""
+        nodelist = LinkedList()
+        for value in values:
+            nodelist.add(value)
+        nodelist.seal()
+        return nodelist
+
+    def add(self, val: int) -> None:
         """Insert a new value at the end of the list."""
         self.nodes.append(Node(val, prev=self.tail.prev, next=self.tail))
 
-    def find_p1(self):
+    def find_thousandths(self) -> list[int]:
         """Return the 1000th, 2000th, 3000th value after 0."""
-        out = []
+        out: list[int] = []
         cur = self.first
         while cur.val != 0:
             cur = cur.next
         for _ in range(3):
-            for i in range(1000):
+            for _ in range(1000):
                 cur = cur.next
             out.append(cur.val)
         return out
 
-    def move_after(self, node, insert_after):
+    def move_after(self, node: Node, insert_after: Node) -> None:
         """Move a node from its current location to the postion after insert_after."""
         if node == insert_after:
             return
@@ -87,90 +94,45 @@ class LinkedList:
         node.prev, node.next = insert_after, insert_after.next
         node.prev.next, node.next.prev = node, node
 
-    def move(self, node):
-        insert_after = node
-        movement = node.val
-        if movement >= 0:
-            movement = movement % (self.len - 1)
-            for _ in range(movement):
-                insert_after = insert_after.next
-                if insert_after == node:
+    def mix_nodes(self) -> None:
+        """Move nodes by positions equal to its value."""
+        for node in self.nodes:
+            insert_after = node
+            movement = node.val
+            if movement >= 0:
+                movement = movement % (self.len - 1)
+                for _ in range(movement):
                     insert_after = insert_after.next
-        if movement < 0:
-            movement = -(abs(movement) % (self.len - 1))
-            for _ in range(abs(movement) + 1):
-                insert_after = insert_after.prev
-                if insert_after == node:
+            if movement < 0:
+                movement = -(abs(movement) % (self.len - 1))
+                for _ in range(abs(movement) + 1):
                     insert_after = insert_after.prev
-        self.move_after(node, insert_after)
-
-    def validate(self):
-        rev_rev = self.rev()
-        rev_rev.reverse()
-        assert self.list() == rev_rev, f"not valid"
-
-    def list(self):
-        out = []
-        cur = self.head.next
-        for i in range(self.len):
-            out.append(cur.val)
-            cur = cur.next
-        return out
-
-    def rev(self):
-        out = []
-        cur = self.head.next.prev
-        for i in range(self.len):
-            out.append(cur.val)
-            cur = cur.prev
-        return out
+            self.move_after(node, insert_after)
 
 
 class Day20(aoc.Challenge):
     """Day 20: Grove Positioning System."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=3),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=1623178306),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=3),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=1623178306),
     ]
-    DECRYPTION_KEY = 811589153
-
     INPUT_PARSER = aoc.parse_one_int_per_line
+    PARAMETERIZED_INPUTS = ((1, 1), (811589153, 10))
+    TIMEOUT = 300
 
-    def part1(self, parsed_input: InputType) -> int:
-        nodelist = LinkedList()
-        for i in parsed_input:
-            nodelist.add(i)
-        nodelist.seal()
-        nodelist.validate()
-
-        self.debug(f"Node count: {len(nodelist.nodes)} == {nodelist.len}")
-        for node in nodelist.nodes:
-            nodelist.move(node)
-        nodelist.validate()
-
-        out = nodelist.find_p1()
-        res = sum(out)
-        self.debug(f"{out} => {res}")
-        return res
-
-    def part2(self, parsed_input: InputType) -> int:
-        nodelist = LinkedList()
-        for i in parsed_input:
-            nodelist.add(i * self.DECRYPTION_KEY)
-        nodelist.seal()
-        nodelist.validate()
+    def solver(self, parsed_input: InputType, args: tuple[int, int]) -> int:
+        """Return the 1000th, 2000th, 3000th digit after mixing the list."""
+        decryption_key, rounds = args
+        nodelist = LinkedList.circular_list(i * decryption_key for i in parsed_input)
 
         self.debug(f"Node count: {len(nodelist.nodes)} == {nodelist.len}")
-        for _ in range(10):
-            for node in nodelist.nodes:
-                nodelist.move(node)
-        nodelist.validate()
+        for _ in range(rounds):
+            nodelist.mix_nodes()
 
-        out = nodelist.find_p1()
+        out = nodelist.find_thousandths()
         res = sum(out)
-        self.debug(f"{out} => {res}")
+        self.debug(f"Got {out} => {res}")
         return res
 
 
