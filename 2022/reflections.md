@@ -299,3 +299,17 @@ Turns out, the brute-force flood fill approach works plenty fine in about 170ms.
 # TODO
 
 * Day 16
+
+# Day 20: Grove Positioning System. Decrypt position data by doing list mixing.
+
+Initially I started off with a list.
+That quickly failed hard.
+I quickly pivoted to a double linked list.
+I spent two hours debugging part two.
+I used a `dict[int, Node]` to map a node's value to the node, to find nodes quickly.
+I failed to verify that the values are unique (which they aren't).
+Once I got that working, I had a hard time with the off-by-one errors when nodes get moved one full loop.
+The `self` location needs to be skipped when moving.
+With modulo, it needs to use `movement %= len(list) - 1`.
+That took a while to figure out.
+Part two was easy enough with a working part one.
