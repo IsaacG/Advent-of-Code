@@ -21,7 +21,7 @@ LineType = int
 InputType = list[LineType]
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Node:
     """Node in a double linked list."""
     val: Optional[int]
@@ -96,15 +96,15 @@ class LinkedList:
 
     def mix_nodes(self) -> None:
         """Move nodes by positions equal to its value."""
+        modulo = self.len - 1
         for node in self.nodes:
             insert_after = node
             movement = node.val
+            movement = movement % modulo if movement >= 0 else -(-movement % modulo)
             if movement >= 0:
-                movement = movement % (self.len - 1)
                 for _ in range(movement):
                     insert_after = insert_after.next
             if movement < 0:
-                movement = -(abs(movement) % (self.len - 1))
                 for _ in range(abs(movement) + 1):
                     insert_after = insert_after.prev
             self.move_after(node, insert_after)
@@ -119,7 +119,6 @@ class Day20(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_int_per_line
     PARAMETERIZED_INPUTS = ((1, 1), (811589153, 10))
-    TIMEOUT = 300
 
     def solver(self, parsed_input: InputType, args: tuple[int, int]) -> int:
         """Return the 1000th, 2000th, 3000th digit after mixing the list."""
