@@ -128,6 +128,13 @@ TRANSITIONS_INPUT = {
         1j: (1, 1j),
     },
 }
+# Map movement direction to the relative "left" corner on face egress.
+# Up: top_left, Right: top_right, Down: bottom_right, Left: bottom_left
+EGRESS_TO_CORNER = {-1j * 1j ** i: i for i in range(4)}
+# Map ingress direction to corner and offset vector.
+# Right: top_left, Down: top_right, Left: bottom_right, Up: bottom_left
+INGRESS_TO_CORNER = {1 * 1j ** i: i for i in range(4)}
+DIRECTION_SCORE = {1j ** i: i for i in range(4)}
 
 
 # TODO: validate face transitions: each face needs 4 unique ingress/egress face/directions
@@ -141,137 +148,88 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=5031),
     ]
     DEBUG = False
+    PARAMETERIZED_INPUTS = [1, 2]
 
-    def part1(self, parsed_input: InputType) -> int:
-        points, dirs = parsed_input
-        instructions = re.findall(r"(L|R|\d+)", dirs)
-        x = min(p.real for p in points if p.imag == 0 and points[p] == OPEN)
-        idx = 0
-
-        @functools.cache
-        def get_next(cur_position, gndir):
-            next_position = cur_position + gndir
-            if next_position in points:
-                if points[next_position] == WALL:
-                    return cur_position
-                elif points[next_position] == OPEN:
-                    return next_position
-
-            gndir *= -1
-            next_position = cur_position
-            while next_position in points and points[next_position] != EMPTY:
-                next_position += gndir
-            if next_position not in points or points[next_position] == EMPTY:
-                next_position -= gndir
+    @functools.cache
+    def get_next_flat(self, cur_position: complex, cur_dir: complex) -> tuple[complex, complex]:
+        """Return the next position and direction for a flat-map."""
+        points = self.points
+        next_position = cur_position + cur_dir
+        # If we do not run off the edge...
+        if next_position in points:
+            # If we hit a wall, stay in place.
             if points[next_position] == WALL:
-                return cur_position
-            return next_position
+                return cur_position, cur_dir
+            # If the next position is open, move there.
+            elif points[next_position] == OPEN:
+                return next_position, cur_dir
 
-        pos = complex(x, 0)
-        direction = 1
-        self.debug(f"start, {pos=}, {direction=}")
-        for idx, instruction in enumerate(instructions):
-            if instruction.isdigit():
-                for i in range(int(instruction)):
-                    pos = get_next(pos, direction)
-            elif instruction == "R":
-                direction *= 1j
-            elif instruction == "L":
-                direction *= -1j
-            else:
-                raise ValueError(instruction)
-            self.debug(f"{idx=}, {instruction}, {pos=}, {direction=}")
-        x = int(pos.real) + 1
-        y = int(pos.imag) + 1
-        d = {1: 0, 1j: 1, -1: 2, -1j: 3}[direction]
-        score = 1000 * y + 4 * x + d
-        self.debug(f"Final location (base-1): {x=}, {y=}, {direction=}, {d=}, {score=}")
-        return score
+        # We ran off the edge of the map or into EMPTY.
+        # Flip directions and try to move to the far edge.
+        rev_dir = -1 * cur_dir
+        next_position = cur_position
+        while next_position + rev_dir in points and points[next_position + rev_dir] != EMPTY:
+            next_position += rev_dir
+        # If we hit a wall, stay in place.
+        if points[next_position] == WALL:
+            return cur_position, cur_dir
+        return next_position, cur_dir
 
-    def pre_run(self):
+    @functools.cache
+    def get_next_cube(self, cur_position, cur_dir):
+        """Return the next position and direction for a cube-map."""
+        points = self.points
+        cur_face = self.face_map[cur_position]
+        next_position = cur_position + cur_dir
+        next_face = self.face_map.get(next_position)
+
+        # If we remain on the same face, try moving in the direction one unit.
+        if cur_face == next_face and next_position in points:
+            if cur_face == next_face:
+                if points[next_position] == WALL:
+                    return cur_position, cur_dir
+                elif points[next_position] == OPEN:
+                    return next_position, cur_dir
+
+        # We're moving from one face to another!
+        next_face, next_dir = self.transitions[cur_face][cur_dir]
+        self.debug(f"Moving from face {cur_face} to {next_face}, old_dir={cur_dir}, new_dir={next_dir}")
+
+        # Find the offset from the egress corner, 1j from the egress direction.
+        egress_corner = self.corners[cur_face][EGRESS_TO_CORNER[cur_dir]]
+        offset = abs(egress_corner - cur_position)
+
+        # Compute the position use the offset from an ingress corner.
+        ingress_corner = self.corners[next_face][INGRESS_TO_CORNER[next_dir]]
+        new_position = ingress_corner + offset * next_dir * 1j
+
+        if points[new_position] == WALL:
+            return cur_position, cur_dir
+        return new_position, next_dir
+
+    def pre_run(self, parsed_input: InputType) -> None:
+        """Set up some class attribs which are shared across methods."""
+        points, _ = parsed_input
+        self.points = points
         self.faces = FACES_EXAMPLE if self.testing else FACES_INPUT
+        self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
         self.corners = {}
+        self.face_map = {}
         for number, (top_left, bottom_right) in self.faces.items():
             top_right = complex(bottom_right.real, top_left.imag)
             bottom_left = complex(top_left.real, bottom_right.imag)
             self.corners[number] = (top_left, top_right, bottom_right, bottom_left)
+            for x in range(int(top_left.real), int(bottom_right.real) + 1):
+                for y in range(int(top_left.imag), int(bottom_right.imag) + 1):
+                    self.face_map[complex(x, y)] = number
 
-    def get_face(self, position: complex) -> int:
-        """Given a position, return which cube face it is on."""
-        faces = self.faces
-        for face_number, (top_left, bottom_right) in faces.items():
-            if (
-                top_left.real <= position.real <= bottom_right.real
-                and top_left.imag <= position.imag <= bottom_right.imag
-            ):
-                return face_number
-        raise ValueError(f"{position} not valid")
+    def solver(self, parsed_input: InputType, part: int) -> int:
+        """Return the final location after wandering the map."""
+        points, instructions = parsed_input
+        get_next = self.get_next_flat if part == 1 else self.get_next_cube
+        start_x = min(p.real for p in points if p.imag == 0 and points[p] == OPEN)
 
-    def part2(self, parsed_input: InputType) -> int:
-        points, dirs = parsed_input
-        instructions = re.findall(r"(L|R|\d+)", dirs)
-        x = min(p.real for p in points if p.imag == 0 and points[p] == OPEN)
-        idx = 0
-
-        faces = self.faces
-        if self.testing:
-            transitions = TRANSITIONS_EXAMPLE
-        else:
-            transitions = TRANSITIONS_INPUT
-
-        @functools.cache
-        def get_next(cur_position, gndir):
-            next_position = cur_position + gndir
-            if next_position in points and points[next_position] != EMPTY:
-                cur_face, next_face = self.get_face(cur_position), self.get_face(next_position)
-                if cur_face == next_face:
-                    if points[next_position] == WALL:
-                        return cur_position, gndir
-                    elif points[next_position] == OPEN:
-                        return next_position, gndir
-
-            cur_face = self.get_face(cur_position)
-            next_face, next_dir = transitions[cur_face][gndir]
-    
-            top_left, top_right, bottom_right, bottom_left = self.corners[cur_face]
-            # Map movement direction to the relative "left" corner.
-            direction_to_left_corner = {
-                -1: bottom_left,   # Left
-                -1j: top_left,     # Up
-                1: top_right,      # Right
-                1j: bottom_right,  # Down
-            }
-            offset_v2 = abs(direction_to_left_corner[gndir] - cur_position)
-
-            self.debug(f"Moving from face {cur_face} to {next_face}, old_dir={gndir}, new_dir={next_dir}")
-
-            top_left, top_right, bottom_right, bottom_left = self.corners[next_face]
-            ingress_mapping = {
-                False: {
-                    -1:  (bottom_right, -1j),  # Left
-                    -1j: (bottom_left,   +1),  # Up
-                    1:   (top_left,     +1j), # Right
-                    1j:  (top_right,     -1), # Down
-                },
-                True: {
-                    -1:  (bottom_right, -1j),  # Left
-                    -1j: (bottom_left,   +1),  # Up
-                    1:   (top_left,     +1j), # Right
-                    1j:  (top_right,     -1), # Down
-                }
-            }
-            flip = (gndir == -next_dir or gndir * -1j == next_dir)
-            corner, mult = ingress_mapping[flip][next_dir]
-            new_position = corner + offset_v2 * mult
-
-
-            if points[new_position] == WALL:
-                return cur_position, gndir
-            return new_position, next_dir
-
-
-
-        pos = complex(x, 0)
+        pos = complex(start_x, 0)
         direction = 1
         self.debug(f"start, {pos=}, {direction=}")
         for idx, instruction in enumerate(instructions):
@@ -284,23 +242,26 @@ class Day22(aoc.Challenge):
                 direction *= -1j
             else:
                 raise ValueError(instruction)
-            from_face = self.get_face(pos)
-            self.debug(f"{idx=}, {instruction}, {pos=}, {from_face=}, {direction=}")
-        x = int(pos.real) + 1
-        y = int(pos.imag) + 1
-        d = {1: 0, 1j: 1, -1: 2, -1j: 3}[direction]
-        score = 1000 * y + 4 * x + d
-        self.debug(f"Final location (base-1): {x=}, {y=}, {direction=}, {d=}, {score=}")
+            if part == 2:
+                from_face = self.face_map[pos]
+                self.debug(f"{idx=}, {instruction}, {pos=}, {from_face=}, {direction=}")
+
+        final_x = int(pos.real) + 1
+        final_y = int(pos.imag) + 1
+        final_d = DIRECTION_SCORE[direction]
+        score = 1000 * final_y + 4 * final_x + final_d
+        self.debug(f"Final location (base-1): {final_x=}, {final_y=}, {direction=}, {final_d=}, {score=}")
         return score
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        blockmap, instructions = puzzle_input.split("\n\n")
+        blockmap, instruction_line = puzzle_input.split("\n\n")
         points = {}
-        for y, row in enumerate(blockmap.splitlines()):
-            for x, char in enumerate(row):
-                points[complex(x, y)] = char
-        self.points = points
+        for y_offset, row in enumerate(blockmap.splitlines()):
+            for x_offset, char in enumerate(row):
+                points[complex(x_offset, y_offset)] = char
+
+        instructions = re.findall(r"(L|R|\d+)", instruction_line)
         return points, instructions
 
 

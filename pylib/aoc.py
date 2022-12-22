@@ -530,7 +530,7 @@ class Challenge(Helpers):
             return self.solver(data, self.PARAMETERIZED_INPUTS[part - 1])
         return func[part](data)
 
-    def test(self, data=None):
+    def test(self, puzzle_input: Any):
         """Run the tests."""
         self.testing = True
 
@@ -559,9 +559,8 @@ class Challenge(Helpers):
     def pre_run(self):
         """Hook to run things prior to tests and actual."""
 
-    def solve(self, data=None) -> None:
+    def solve(self, puzzle_input: Any) -> None:
         for part in (1, 2):
-            puzzle_input = self.input_parser(self.raw_data(data))
             self.debug(f'Running part {part}:')
             try:
                 got = self.run_solver(part, puzzle_input)
@@ -569,7 +568,7 @@ class Challenge(Helpers):
             except NotImplementedError:
                 print(f'Part {part}: Not implemented')
 
-    def check(self, data=None) -> None:
+    def check(self, puzzle_input: Any) -> None:
         """Check the generated solutions match the contents of solutions.txt."""
         lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
         solution = None
@@ -584,7 +583,6 @@ class Challenge(Helpers):
             return
         for part in (1, 2):
             start = time.clock_gettime(time.CLOCK_MONOTONIC)
-            puzzle_input = self.input_parser(self.raw_data(data))
             got = self.run_solver(part, puzzle_input)
             end = time.clock_gettime(time.CLOCK_MONOTONIC)
             delta = int(1000 * (end - start))
@@ -596,11 +594,10 @@ class Challenge(Helpers):
             else:
                 print(f'{self.year}/{self.day:02d} Part {part}: want({want}) != got({got})')
 
-    def submit(self, data=None) -> None:
+    def submit(self, puzzle_input: Any) -> None:
         """Generate a solution for the next unsolved part and submit it."""
         answers = []
         for part in (1, 2):
-            puzzle_input = self.input_parser(self.raw_data(data))
             try:
                 got = self.run_solver(part, puzzle_input)
                 if got:
@@ -633,7 +630,8 @@ class Challenge(Helpers):
         benchmark: bool = False,
     ):
         """Run the challenges."""
-        self.pre_run()
+        puzzle_input = self.input_parser(self.raw_data(data))
+        self.pre_run(puzzle_input)
         f = self.get_run_method(
             test=test,
             solve=solve,
@@ -641,7 +639,7 @@ class Challenge(Helpers):
             check=check,
             benchmark=benchmark,
         )
-        f(data)
+        f(puzzle_input)
 
     def time_func(self, count: int, func: Callable) -> float:
         """Time a callable, averaged over count runs."""
@@ -651,14 +649,14 @@ class Challenge(Helpers):
         end = time.clock_gettime(time.CLOCK_MONOTONIC)
         return 1000 * (end - start) / count
 
-    def benchmark(self, data=None):
+    def benchmark(self, puzzle_input: Any):
         """Benchmark the solution."""
         times = []
         times.append(self.time_func(10000, lambda: self.input_parser(self.raw_data(data))))
 
         for part, func in self.funcs.items():
 
-            r = lambda: func(self.input_parser(self.raw_data(data)))
+            r = lambda: func(puzzle_input)
 
             if self.TIMER_ITERATIONS[part - 1]:
                 _count = self.TIMER_ITERATIONS[part - 1]
