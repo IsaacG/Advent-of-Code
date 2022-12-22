@@ -313,3 +313,30 @@ The `self` location needs to be skipped when moving.
 With modulo, it needs to use `movement %= len(list) - 1`.
 That took a while to figure out.
 Part two was easy enough with a working part one.
+
+
+# Day 22: Monkey Map. Wander a wrapped map to find a final location.
+
+Solve for `humn`.
+Part one was relatively simple and straight forward.
+Part two was interesting.
+For my initial solution, I resolved any equation which had all-numeric inputs.
+Equations with non-numeric inputs were kept as strings but expanded.
+I hand-reversed the resulting equation in `vim` to isolate `humn`.
+
+Todo:
+
+* Solve this in code. Linear interpolation, sympy or simply reversing all the operations.
+
+
+# Day 22: Monkey Map. Wander a wrapped map to find a final location.
+
+This was a wild ride.
+Complex numbers proved useful again here.
+Cut-out folded cubes also proved invaluable.
+I initially hard coded the corners of each face and the face-to-face transitions.
+I have changed the corner computation to be done in code.
+
+Todo:
+
+* Try to write code to compute face-to-face transitions.
