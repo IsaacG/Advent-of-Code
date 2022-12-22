@@ -34,15 +34,6 @@ OPEN = "."
 WALL = "#"
 EMPTY = " "
 
-# Coordinates of the top-left and bottom-right of each face.
-FACES_EXAMPLE = {
-    1: (8 + 0j, 11 + 3j),
-    2: (0 + 4j, 3 + 7j),
-    3: (4 + 4j, 7 + 7j),
-    4: (8 + 4j, 11 + 7j),
-    5: (8 + 8j, 11 + 11j),
-    6: (12 + 8j, 15 + 11j),
-}
 # For each face, map exit direction to new face and new direction.
 TRANSITIONS_EXAMPLE = {
     1: {
@@ -81,14 +72,6 @@ TRANSITIONS_EXAMPLE = {
         1: (1, -1),
         1j: (2, 1),
     },
-}
-FACES_INPUT = {
-    1: (100 + 0j, 149 + 49j),
-    2: (50 + 0j, 99 + 49j),
-    3: (50 + 50j, 99 + 99j),
-    4: (50 + 100j, 99 + 149j),
-    5: (0 + 100j, 49 + 149j),
-    6: (0 + 150j, 49 + 199j),
 }
 TRANSITIONS_INPUT = {
     1: {
@@ -211,17 +194,32 @@ class Day22(aoc.Challenge):
         """Set up some class attribs which are shared across methods."""
         points, _ = parsed_input
         self.points = points
-        self.faces = FACES_EXAMPLE if self.testing else FACES_INPUT
+        self.faces = []
+        # The grid is 3x4 faces. Use the min to find the size of each face.
+        size = min(self.max_x, self.max_y) // 3
+        width = size - 1
+        # Find which of the 3x4 has a face on it.
+        for y in range(0, self.max_y, size):
+            for x_offset in range(0, self.max_x + 1, size):
+                x = self.max_x - x_offset
+                if points.get(complex(x, y), EMPTY) != EMPTY:
+                    self.faces.append(complex(x, y))
+
         self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
         self.corners = {}
         self.face_map = {}
-        for number, (top_left, bottom_right) in self.faces.items():
-            top_right = complex(bottom_right.real, top_left.imag)
-            bottom_left = complex(top_left.real, bottom_right.imag)
-            self.corners[number] = (top_left, top_right, bottom_right, bottom_left)
-            for x in range(int(top_left.real), int(bottom_right.real) + 1):
-                for y in range(int(top_left.imag), int(bottom_right.imag) + 1):
-                    self.face_map[complex(x, y)] = number
+        for number, top_left in enumerate(self.faces, start=1):
+            self.corners[number] = (
+                top_left,
+                top_left + width,  # top right
+                top_left + complex(width, width),  # bottom right
+                top_left + width * 1j,  # bottom left
+            )
+            self.face_map.update({
+                top_left + complex(x, y): number
+                for x in range(size)
+                for y in range(size)
+            })
 
     def solver(self, parsed_input: InputType, part: int) -> int:
         """Return the final location after wandering the map."""
@@ -260,6 +258,8 @@ class Day22(aoc.Challenge):
         for y_offset, row in enumerate(blockmap.splitlines()):
             for x_offset, char in enumerate(row):
                 points[complex(x_offset, y_offset)] = char
+        self.max_x = len(blockmap.splitlines()[0])
+        self.max_y = len(blockmap.splitlines())
 
         instructions = re.findall(r"(L|R|\d+)", instruction_line)
         return points, instructions
