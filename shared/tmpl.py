@@ -46,6 +46,7 @@ class Day${day}(aoc.Challenge):
     # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")
     # INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
     # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
+    # INPUT_PARSER = aoc.parse_ascii_bool_map("#")
     # POST_PROCESS = set
 
     def part1(self, parsed_input: InputType) -> int:

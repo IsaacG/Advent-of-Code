@@ -340,3 +340,12 @@ I have changed the corner computation to be done in code.
 Todo:
 
 * Try to write code to compute face-to-face transitions.
+
+# Day 23: Unstable Diffusion. Spread elves out across a field to plant trees.
+
+Cellular automata day (Game of Life)!
+I like these.
+I started 55 minutes late (Peruvian dinner) but completed within about an hour.
+I got slowed down because I missed the rule about elves without neighbors doing nothing.
+Overall, relatively simple and straight forward.
+It was a nice break after yesterday.

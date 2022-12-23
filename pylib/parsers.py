@@ -156,7 +156,7 @@ class ParseBitmap(BaseParser):
         return out
 
 
-class AsciiBoolMapParser:
+class AsciiBoolMapParser(BaseParser):
     """Parse a map of on/off values to build a set of "on" points."""
 
     def __init__(self, on_char: str):
