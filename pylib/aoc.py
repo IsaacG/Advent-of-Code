@@ -327,13 +327,13 @@ class Line:
         return cls(Point.from_complex(start), Point.from_complex(end))
 
 
-def render(points: set[complex]) -> str:
+def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) -> str:
     """Render a set of points to a string."""
     lines = point_set_to_lists(points)
 
     rows = []
     for line in lines:
-        row = [COLOR_SOLID if i else COLOR_EMPTY for i in line]
+        row = [on if i else off for i in line]
         rows.append("".join(row))
     return "\n".join(rows)
 
@@ -528,7 +528,11 @@ class Challenge(Helpers):
         func = {1: self.part1, 2: self.part2}
         if inspect.ismethod(getattr(self, "solver", None)) and self.PARAMETERIZED_INPUTS is not None:
             return self.solver(data, self.PARAMETERIZED_INPUTS[part - 1])
-        return func[part](data)
+        result = func[part](data)
+        if isinstance(result, float):
+            print("=== WARNING!! Casting float to int. ===")
+            result = int(result)
+        return result
 
     def test(self, puzzle_input: Any):
         """Run the tests."""
@@ -556,7 +560,7 @@ class Challenge(Helpers):
         if self.DEBUG:
             print(msg)
 
-    def pre_run(self):
+    def pre_run(self, puzzle_input: Any) -> None:
         """Hook to run things prior to tests and actual."""
 
     def solve(self, puzzle_input: Any) -> None:

@@ -196,6 +196,7 @@ class Runner:
                 if obj.SUBMIT[part] and not submitted[part]:
                     if answer := obj.funcs[part](puzzle_input):
                         submitted[part] = True
+                        assert not isinstance(answer, float)
                         print("Submitting answer:", answer)
                         resp = obj.site.submit(answer)
                         print(f"Response: {resp}")
