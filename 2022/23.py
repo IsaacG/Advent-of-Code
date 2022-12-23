@@ -40,24 +40,37 @@ class Day23(aoc.Challenge):
     def solver(self, parsed_input: InputType, part: int) -> int:
         """Simulate cycles of elves spreading out."""
         positions = parsed_input
-        for step in range(1000000):
+        for step in range(10_000):
             # Propose moves, check for conflicts.
-            proposed: dict[complex, int] = collections.defaultdict(int)
+            proposed = set()
+            conflicted = set()
             choices = {}
             for elf in positions:
-                if not any(elf + direction in positions for direction in aoc.EIGHT_DIRECTIONS):
+                # Check if the elf is stationary due to no neighbors.
+                for direction in aoc.EIGHT_DIRECTIONS:
+                    if elf + direction in positions:
+                        break
+                else:
                     continue
-                for option in range(4):
+                for option in (0, 1, 2, 3):  # a bit faster than range(4)
                     move, checks = DIRECTIONS[(step + option) % 4]
-                    if all(elf + check not in positions for check in checks):
+                    if (
+                        elf + checks[0] not in positions
+                        and elf + checks[1] not in positions
+                        and elf + checks[2] not in positions
+                    ):  # unroll to avoid calling all() or any() repeatedly.
                         choice = elf + move
-                        proposed[choice] += 1
-                        choices[elf] = choice
+                        if choice in proposed:
+                            conflicted.add(choice)
+                        else:
+                            proposed.add(choice)
+                            choices[elf] = choice
                         break
             # Execute moves when no conflict.
             new_positions = set()
             for elf in positions:
-                if elf in choices and proposed[choices[elf]] == 1:
+                choice = choices.get(elf)
+                if choice is not None and choice not in conflicted:
                     new_positions.add(choices[elf])
                 else:
                     new_positions.add(elf)
