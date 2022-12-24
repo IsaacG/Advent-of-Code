@@ -12,6 +12,7 @@ TODO:
 
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import functools
 import inspect
@@ -672,6 +673,21 @@ class Challenge(Helpers):
             times.append(t)
 
         print(f'{self.day}: ' + '/'.join(f'{t:.3f}' for t in times) + ' ms')
+
+    @contextlib.contextmanager
+    def context_timer(self, description: str) -> Generator[None, None, None]:
+        start = time.perf_counter_ns()
+        try:
+            yield
+        finally:
+            end = time.perf_counter_ns()
+            delta = float(end - start)
+            units = ["ns", "us", "ms", "s"]
+            for unit in units:
+                if delta < 1000:
+                    break
+                delta /= 1000
+            self.debug(f"{description}: {int(delta)}{unit}")
 
 
 # vim:ts=4:sw=4:expandtab
