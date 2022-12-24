@@ -133,6 +133,115 @@ class Day22(aoc.Challenge):
     DEBUG = False
     PARAMETERIZED_INPUTS = [1, 2]
 
+    def pre_run(self, parsed_input: InputType) -> None:
+        """Set up some class attribs which are shared across methods."""
+        points, _ = parsed_input
+        self.points = points
+        face_corners = {}
+        # The grid is 3x4 faces. Use the min to find the size of each face.
+        size = min(self.max_x, self.max_y) // 3
+        width = size - 1
+        # Find which of the 3x4 has a face on it.
+        number = 1
+        for y in range(0, self.max_y, size):
+            for x_offset in range(0, self.max_x + 1, size):
+                x = self.max_x - x_offset
+                if points.get(complex(x, y), EMPTY) != EMPTY:
+                    face_corners[number] = complex(x, y)
+                    number += 1
+
+        self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
+        corners_to_face = {top_left: number for number, top_left in face_corners.items()}
+        transitions = {i: {} for i in face_corners}
+
+
+        extended_corners = collections.defaultdict(set)
+        for number, top_left in face_corners.items():
+            for offset in (0, size, size * 1j, size + size * 1j):
+                extended_corners[top_left + offset].add(number)
+
+        edges = set()
+        connected = collections.defaultdict(set)
+        rotation = 1
+        for number, top_left in face_corners.items():
+            for direction in (1, -1, 1j, -1j):
+                if top_left + size * direction in corners_to_face:
+                    other = corners_to_face[top_left + size * direction]
+                    transitions[number][direction] = (other, direction * rotation)
+                    edges.add((number, other, direction, rotation))
+                    connected[number].add(other)
+
+        direction_to_corner_offsets = {
+            -1j: (0, size),
+            1: (size, size + size * 1j),
+            1j: (size + size * 1j, size * 1j),
+            -1: (size * 1j, 0),
+        }
+        while edges:
+            number, _, direction, rotation = edges.pop()
+            offsets = direction_to_corner_offsets[direction]
+            for offset, rotation in zip(offsets, (1j, -1j)):
+                corner = face_corners[number] + offset
+                others = extended_corners[corner] - set([number])
+                unattached = others - connected[number]
+                attached = others & connected[number]
+                if unattached:
+                    print(f"{number=} {corner=} {attached=} {unattached=}")
+                    a = unattached.pop()
+                    b = attached.pop()
+                    print(f"{connected[b]=}")
+                    connected[b]
+
+
+
+
+
+
+
+        """
+            for direction in (complex(-1, -1), complex(-1, 1), complex(1, -1), complex(1, 1)):
+                if top_left + size * direction in corners_to_face:
+                    egress, ingress = int(direction.real), int(direction.imag) * 1j
+                    if egress in transitions[number]:
+                        egress, ingress = ingress, egress
+                    transitions[number][egress] = (corners_to_face[top_left + size * direction], ingress)
+
+                    one_further = direction + egress
+                    next_egress = egress * -1j
+                    if next_egress in transitions[number]:
+                        next_egress = egress * 1j
+                    if number == 1:
+                        print(f"{number=}, {one_further=}, {top_left + size * one_further in corners_to_face=}")
+                        print(f"{egress=} {next_egress=} {next_egress not in transitions[number]=}")
+
+                    if top_left + size * one_further in corners_to_face and next_egress not in transitions[number]:
+                        transitions[number][next_egress] = (corners_to_face[top_left + size * one_further], ingress)
+        """
+
+        for number in transitions:
+            print(f"{number}: {transitions[number]} ({len(transitions[number])})")
+            print(f"{number}: {self.transitions[number]} ({len(self.transitions[number])})")
+
+
+
+
+
+
+        self.corners = {}
+        self.face_map = {}
+        for number, top_left in face_corners.items():
+            self.corners[number] = (
+                top_left,
+                top_left + width,  # top right
+                top_left + complex(width, width),  # bottom right
+                top_left + width * 1j,  # bottom left
+            )
+            self.face_map.update({
+                top_left + complex(x, y): number
+                for x in range(size)
+                for y in range(size)
+            })
+
     @functools.cache
     def get_next_flat(self, cur_position: complex, cur_dir: complex) -> tuple[complex, complex]:
         """Return the next position and direction for a flat-map."""
@@ -190,39 +299,9 @@ class Day22(aoc.Challenge):
             return cur_position, cur_dir
         return new_position, next_dir
 
-    def pre_run(self, parsed_input: InputType) -> None:
-        """Set up some class attribs which are shared across methods."""
-        points, _ = parsed_input
-        self.points = points
-        self.faces = []
-        # The grid is 3x4 faces. Use the min to find the size of each face.
-        size = min(self.max_x, self.max_y) // 3
-        width = size - 1
-        # Find which of the 3x4 has a face on it.
-        for y in range(0, self.max_y, size):
-            for x_offset in range(0, self.max_x + 1, size):
-                x = self.max_x - x_offset
-                if points.get(complex(x, y), EMPTY) != EMPTY:
-                    self.faces.append(complex(x, y))
-
-        self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
-        self.corners = {}
-        self.face_map = {}
-        for number, top_left in enumerate(self.faces, start=1):
-            self.corners[number] = (
-                top_left,
-                top_left + width,  # top right
-                top_left + complex(width, width),  # bottom right
-                top_left + width * 1j,  # bottom left
-            )
-            self.face_map.update({
-                top_left + complex(x, y): number
-                for x in range(size)
-                for y in range(size)
-            })
-
     def solver(self, parsed_input: InputType, part: int) -> int:
         """Return the final location after wandering the map."""
+        return 0
         points, instructions = parsed_input
         get_next = self.get_next_flat if part == 1 else self.get_next_cube
         start_x = min(p.real for p in points if p.imag == 0 and points[p] == OPEN)
