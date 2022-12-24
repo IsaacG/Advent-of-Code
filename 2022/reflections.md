@@ -315,7 +315,7 @@ That took a while to figure out.
 Part two was easy enough with a working part one.
 
 
-# Day 22: Monkey Map. Wander a wrapped map to find a final location.
+# Day 21
 
 Solve for `humn`.
 Part one was relatively simple and straight forward.
@@ -349,3 +349,10 @@ I started 55 minutes late (Peruvian dinner) but completed within about an hour.
 I got slowed down because I missed the rule about elves without neighbors doing nothing.
 Overall, relatively simple and straight forward.
 It was a nice break after yesterday.
+
+# Day 24: Blizzard Basin. Navigate across a basic, avoiding storms.
+
+I kept the walls in my data, making the valid "edges" one less than normal, which introduced a bunch of off-by-one errors which took a while to debug.
+I got my part two solution initially by repeatedly updating my code with the move count from the prior leg.
+My runtime was pretty bad at 120s.
+Switching a `set[complex]` with `min(key=...)` to a PriorityQueue changed my runtime to 5s.
