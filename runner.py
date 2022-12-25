@@ -44,23 +44,27 @@ class ChallengeRunner:
         """Return a Challenge instance."""
         return getattr(self.module(), f"Day{self.day:02}")()
 
-    def run_code(self, run_args: dict[str, bool | None], timeout: int) -> None:
+    def run_code(self, run_args: dict[str, bool | None], file: Optional[str], timeout: int) -> None:
         """Run the challenge code, with a timeout."""
-        try:
-            target = self.challenge()
-        except SyntaxError:
-            traceback.print_exc()
-            return
-        if target.TIMEOUT and target.TIMEOUT > timeout:
-            print(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
-            timeout = target.TIMEOUT
-        proc = multiprocessing.Process(target=target.run, kwargs=run_args)
+        for mode, run in run_args.items():
+            if not run:
+                continue
 
-        proc.start()
-        proc.join(timeout=timeout)
-        if proc.is_alive():
-            print("Timed out waiting for Challenge.")
-            proc.terminate()
+            try:
+                target = self.challenge()
+            except SyntaxError:
+                traceback.print_exc()
+                return
+            if target.TIMEOUT and target.TIMEOUT > timeout:
+                print(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
+                timeout = target.TIMEOUT
+            proc = multiprocessing.Process(target=target.run, kwargs={"data": file, mode: True})
+
+            proc.start()
+            proc.join(timeout=timeout)
+            if proc.is_alive():
+                print("Timed out waiting for Challenge.")
+                proc.terminate()
 
 
 @dataclasses.dataclass
@@ -322,7 +326,6 @@ def main(
         return runner.live_solve()
 
     run_args = {
-        "data": file,
         "test": test,
         "solve": solve,
         "submit": submit,
@@ -337,7 +340,7 @@ def main(
             days = [day]
 
         for day in days:
-            ChallengeRunner(year, day).run_code(run_args, timeout)
+            ChallengeRunner(year, day).run_code(run_args, file, timeout)
         return
 
     # Set up inotify watches and run a Challenge in a loop.
@@ -351,7 +354,7 @@ def main(
             continue
         day = int(pathlib.Path(events[0].name).stem)
         print(datetime.datetime.now().strftime("%H:%M:%S"))
-        ChallengeRunner(year, day).run_code(run_args, timeout)
+        ChallengeRunner(year, day).run_code(run_args, file, timeout)
         print("Done.")
         print()
     return
