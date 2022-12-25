@@ -47,6 +47,7 @@ class Day16(aoc.Challenge):
     ]
 
     INPUT_PARSER = aoc.parse_re_group_mixed(r"Valve (.*) has flow rate=(\d+); tunnels? leads? to valves? (.*)")
+    TIMEOUT = 300
 
     def part2(self, parsed_input: InputType) -> int:
         data = [
