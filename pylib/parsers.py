@@ -141,8 +141,8 @@ class ParseBlocks(BaseParser):
         return outputs
 
 
-class ParseBitmap(BaseParser):
-    """Parse a map of on/off values, generating a set[complex]."""
+class ParseCharMap(BaseParser):
+    """Parse a map of values, generating a set[complex]."""
 
     def __init__(self, transform: Callable[[str], Any]):
         self.transform = transform
@@ -198,3 +198,4 @@ parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
 parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
 
 parse_ascii_bool_map = AsciiBoolMapParser
+parse_ascii_char_map = ParseCharMap

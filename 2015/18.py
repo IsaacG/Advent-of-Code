@@ -22,7 +22,7 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=2, want=17),
     ]
-    INPUT_PARSER = aoc.ParseBitmap(lambda x: x == "#")
+    INPUT_PARSER = aoc.ParseCharMap(lambda x: x == "#")
 
     def solver(self, bitmap: dict[complex, bool], cycles: int, corners: bool) -> int:
         """Run Conway's Game of Life and return number of lights on at end."""
