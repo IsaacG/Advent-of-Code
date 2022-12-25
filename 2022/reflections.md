@@ -30,26 +30,28 @@ Day       Time   Rank  Score       Time   Rank  Score       Time   Rank  Score
   1   00:04:20   2131      0   00:05:36   1622      0   00:01:16   -509      0
 ```
 
-# Day 1: Calorie Counting. Count how many calories the elves have.
+# Thoughts
+
+## Day 1: Calorie Counting. Count how many calories the elves have.
 
 I spend the first three minutes trying to create a file since my template generator was broken.
 
-# Day 2: Rock Paper Scissors. Score a tournament.
+## Day 2: Rock Paper Scissors. Score a tournament.
 
-# Day 3: Rucksack Reorganization. Find common elements across groupings.
+## Day 3: Rucksack Reorganization. Find common elements across groupings.
 
-# Day 4: Camp Cleanup. Detect overlapping ranges.
+## Day 4: Camp Cleanup. Detect overlapping ranges.
 
-# Day 5: Supply Stacks. Move crates from stack to stack.
+## Day 5: Supply Stacks. Move crates from stack to stack.
 
 Medical emergency. I got to this an hour or two after it started.
 
-# Day 6: Tuning Trouble. Parse data streams to find the start of messages.
+## Day 6: Tuning Trouble. Parse data streams to find the start of messages.
 
 I started out with a byte generator, but then switched to a `collections.dequeue` to support peeking.
 This may be the first time I used a `dequeue`.
 
-# Day 7: No Space Left On Device. Parse filesystem output info.
+## Day 7: No Space Left On Device. Parse filesystem output info.
 
 Initially I created a `DirEntry` which would store the children directories and filesizes of all nodes within each directory.
 I used a `dict[pathlib.Path, DirEntry]` to traverse entries.
@@ -58,7 +60,7 @@ I also replaced the recursive directory size computation by updating parent dire
 
 This may be the first time I used Python's new `match case`.
 
-# Day 8: Treetop Tree House.
+## Day 8: Treetop Tree House.
 
 I had Dijkstra on my mind, so when this puzzle dropped, I immediately tried to use Dijkstra.
 That didn't work too well.
@@ -87,18 +89,18 @@ I later cleaned this up by walking the perimeter and "looking" into the forest a
 
 * New `aoc.Board.edges`
 
-# Day 9: Rope Bridge. Track the movement of knots.
+## Day 9: Rope Bridge. Track the movement of knots.
 
-## Code
+### Code
 
 * [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/5ceeceb2a06c75d1eb11d9e7cc14e13e41faf008/2022/09.py)
 * [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/09.py)
 
-## Library Changes
+### Library Changes
 
 * Added `cmp(a, b)` which returns `-1 | 0 | 1` if `a < b | a == b | a > b`.
 
-## Musings
+### Musings
 
 Thankfully I had recently written a `DIRECTIONS` list with the four cardinal directions as complex numbers.
 I ended up using a `case match` to map "RLUD" to complex directions but pulled the `DIRECTIONS` and diagonals from my library.
@@ -112,14 +114,14 @@ I ended up with a bunch of tests to generate the movements of `-1, 0, 1`.
 Perl has a `a cmp b` (strings) and `a <=> b` which returns `-1, 0, 1` so I added `aoc.comp(a: float, b: float) -> int` which does that.
 Now, the movement is `complex(cmp(a.real, b.real), cmp(a.imag, b.imag))`.
 
-# Day 10: Cathode-Ray Tube. Emulate a simple CPU and program with a cycle counter.
+## Day 10: Cathode-Ray Tube. Emulate a simple CPU and program with a cycle counter.
 
-## Code
+### Code
 
 * [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/691664c8409c98addeedab3de6cfbf8713377b12/2022/10.py)
 * [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/10.py)
 
-## Musings
+### Musings
 
 This was a tricky puzzle to solve.
 My immediately approach to handling the cycles was to pre-process the inputs and translate `addx` instructions into `noop, addx` so I can treat each instruction as a single cycle.
@@ -134,18 +136,18 @@ This number can be used as a `dict[int, str]` key which maps bits to a letter.
 
 I'm happy I finally have an AOC OCR!
 
-## Library Changes
+### Library Changes
 
 * New `aoc.OCR`
 
-# Day 11: Monkey in the Middle.  Track items thrown between monkeys."""
+## Day 11: Monkey in the Middle.  Track items thrown between monkeys."""
 
-## Code
+### Code
 
 * [Initial rough solution](https://github.com/IsaacG/Advent-of-Code/blob/390ef4ba4749638975fce78ff6bc9c01d8e29f17/2022/11.py)
 * [Latest](https://github.com/IsaacG/Advent-of-Code/blob/main/2022/11.py)
 
-## Musings
+### Musings
 
 This exercise was very heavy on the input parsing.
 I feel like Python and my skillset is typically up for that challenge.
@@ -163,9 +165,9 @@ Using `slots=True` has a noticeable improvement.
 
 I don't usually use multi-line regexes, but for this exercise, I feel it's cleaner to do so.
 
-# Day 12: Hill Climbing Algorithm.
+## Day 12: Hill Climbing Algorithm.
 
-## Musings
+### Musings
 
 I managed to recognize this one pretty quickly as a BFS graph traversal problem.
 For some reason I got it in my head that I need a PriorityQueue for this.
@@ -180,7 +182,7 @@ Updates:
 * Move the diagonal setting in `aoc.Board` into the `__init__`.
 * Change `aoc.Board.neighbors` from `list` to `dict`
 
-# Day 13: Distress Signal. Sort packets of types int and nested lists.
+## Day 13: Distress Signal. Sort packets of types int and nested lists.
 
 Input parsing was simple with my parsing lib.
 Originally I used `aoc.ParseBlocks([aoc.parse_one_str_per_line])` then ran the inputs through `eval()`.
@@ -200,14 +202,14 @@ This got me wondering how `cmp_to_key()` even works and how I'm supposed to sort
 I looks up [the `cmp_to_key()` source](https://github.com/python/cpython/blob/0e081a089ec969c9a34f5ff25886205616ef4dd3/Lib/functools.py#L206) and it's much simpler than I expected!
 The "Sorting HOW TO" also suggests a [Decorate-Sort-Undecorate pattern](https://docs.python.org/3/howto/sorting.html#decorate-sort-undecorate).
 
-# Day 14:
+## Day 14:
 
 Fun little puzzle!
 I got part one mostly working ... but I was getting the wrong results.
 I spent a whole lot of time debugging and staring at outputs until I caught the bug.
 
 ```python
-# What I meant to do:
+## What I meant to do:
 while can_move and cur.imag < max_y:
     for d in directions:
         if cur + d not in rocks and (cur + d).imag < max_y:
@@ -216,7 +218,7 @@ while can_move and cur.imag < max_y:
     else:
         can_move = False
 
-# What I did do:
+## What I did do:
 while can_move and cur.imag < max_y:
     for d in directions:
         if cur + d not in rocks and (cur + d).imag < max_y:
@@ -232,7 +234,7 @@ Todo:
 * (DONE) Use backtracking to optimize speed. 88ms/2501ms to 38ms/109ms.
 
 
-# Day 15: Beacon Exclusion Zone. Locate a beacon based on knowing where it is not.
+## Day 15: Beacon Exclusion Zone. Locate a beacon based on knowing where it is not.
 
 I was hanging out with friends (lights in the park!) so I started this one 35-45 minutes late.
 I solved both parts in roughly 45 minutes.
@@ -269,7 +271,7 @@ Initially, I attempted to update overlapping ranges on the fly, but latter range
 Instead, I collected all the ranges then sorted and walked the ranges to produce a flattened set of ranges.
 This reduced my part 1 runtime to under 0ms.
 
-# Day 16: Proboscidea Volcanium. Open valves to release pressure.
+## Day 16: Proboscidea Volcanium. Open valves to release pressure.
 
 One of the harder days in a while. 
 
@@ -286,7 +288,7 @@ Todo:
 * Clean code.
 * Make combination testing work.
 
-# Day 17: Pyroclastic Flow. Compute the height of a Tetris-like rock pile after rocks have landed.
+### Day 17: Pyroclastic Flow. Compute the height of a Tetris-like rock pile after rocks have landed.
 
 Part one had a whole lot of bugs and off-by-ones.
 I manually entered the rock sizes vs parsing them, thinking it would save me time.
@@ -319,7 +321,7 @@ Follow up:
   I could shift everything right and make it (1,1) but I'm not sure that's better.
 * (TODO) do not assume flat top; use landing position data for the last N cycles for cycle detection.
 
-# Compute the surface area of 3D bubbles.
+## Compute the surface area of 3D bubbles.
 
 Relatively simple and straight forward puzzle.
 However, I first solved for grouping points of lava into lava-groups of touching points.
@@ -328,11 +330,11 @@ I attemted to use the grouping in part 2 to compute bubble interiors but the gro
 Turns out, the brute-force flood fill approach works plenty fine in about 170ms.
 
 
-# TODO
+## TODO
 
 * Day 16
 
-# Day 20: Grove Positioning System. Decrypt position data by doing list mixing.
+## Day 20: Grove Positioning System. Decrypt position data by doing list mixing.
 
 Initially I started off with a list.
 That quickly failed hard.
@@ -347,7 +349,7 @@ That took a while to figure out.
 Part two was easy enough with a working part one.
 
 
-# Day 21
+## Day 21
 
 Solve for `humn`.
 Part one was relatively simple and straight forward.
@@ -361,19 +363,32 @@ Todo:
 * Solve this in code. Linear interpolation, sympy or simply reversing all the operations.
 
 
-# Day 22: Monkey Map. Wander a wrapped map to find a final location.
+## Day 22: Monkey Map. Wander a wrapped map to find a final location.
 
 This was a wild ride.
 Complex numbers proved useful again here.
 Cut-out folded cubes also proved invaluable.
 I initially hard coded the corners of each face and the face-to-face transitions.
 I have changed the corner computation to be done in code.
+I managed to write a cube folding algorithm so the solution no longer hard codes edges.
 
-Todo:
+### Tile finding
 
-* Try to write code to compute face-to-face transitions.
+I assume the board is always three faces wide or three faces long.
+Select the narrower dimension, divide by three and you have the face dimensions.
+Split the board up into a grid and check each cell if a non-empty value;
+if that grad has a non-empty value, it is a face tile.
 
-# Day 23: Unstable Diffusion. Spread elves out across a field to plant trees.
+### Cube folding
+
+Initialize the edges by checking all tiles for adjacencies on the flat map.
+For each adjacency, add the transition details and push the edge to a queue.
+Use the queue to explore, discover and add additional edges:
+* for edge `A -> B`, take the two `B` corners which make up the edge
+* for each `B` corner, check the flat map for other tiles which share that corner
+* if an additional tile `C` is found on that corner, which is not attached to `A`, add the transition details and add edge `A -> C` to the edge queue
+
+## Day 23: Unstable Diffusion. Spread elves out across a field to plant trees.
 
 Cellular automata day (Game of Life)!
 I like these.
@@ -382,14 +397,14 @@ I got slowed down because I missed the rule about elves without neighbors doing 
 Overall, relatively simple and straight forward.
 It was a nice break after yesterday.
 
-# Day 24: Blizzard Basin. Navigate across a basic, avoiding storms.
+## Day 24: Blizzard Basin. Navigate across a basic, avoiding storms.
 
 I kept the walls in my data, making the valid "edges" one less than normal, which introduced a bunch of off-by-one errors which took a while to debug.
 I got my part two solution initially by repeatedly updating my code with the move count from the prior leg.
 My runtime was pretty bad at 120s.
 Switching a `set[complex]` with `min(key=...)` to a PriorityQueue changed my runtime to 5s.
 
-# Day 25: Full of Hot Air. Convert from base 4 to 10 and back again!
+## Day 25: Full of Hot Air. Convert from base 4 to 10 and back again!
 
 Exercism's [All Your Base](https://exercism.org/tracks/python/exercises/all-your-base) rather prepared me for this.
 Handling the negatives took a moment to figure out.
