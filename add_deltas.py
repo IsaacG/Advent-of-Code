@@ -5,11 +5,15 @@ import sys
 
 
 def time_to_sec(timestr: str) -> int:
+    if timestr == ">24h":
+        return 0
     parts = timestr.split(":")
     return int(parts[0]) * 60 * 60 + int(parts[1]) * 60 + int(parts[2])
 
 
 def fmt_time(seconds: int) -> str:
+    if seconds == 0:
+        return ">24h"
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
@@ -24,6 +28,6 @@ for line in lines[2:]:
     td = fmt_time(time_to_sec(t2) - time_to_sec(t1))
     rd = int(r2) - int(r1)
     ss = int(s1) + int(s2)
-    print(f"{d:>3}   {t1}  {r1:>5}  {s1:>5}   {t2}  {r2:>5}  {s2:>5}   {td}  {rd:>5}  {ss:>5}")
+    print(f"{d:>3}   {t1:>8}  {r1:>5}  {s1:>5}   {t2:>8}  {r2:>5}  {s2:>5}   {td:>8} {rd:>6}  {ss:>5}")
 
 
