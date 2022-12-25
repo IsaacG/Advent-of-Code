@@ -153,6 +153,7 @@ class Day22(aoc.Challenge):
         self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
         corners_to_face = {top_left: number for number, top_left in face_corners.items()}
         transitions = {i: {} for i in face_corners}
+        attachment_direction = {i: {} for i in face_corners}
 
 
         extended_corners = collections.defaultdict(set)
@@ -168,6 +169,7 @@ class Day22(aoc.Challenge):
                 if top_left + size * direction in corners_to_face:
                     other = corners_to_face[top_left + size * direction]
                     transitions[number][direction] = (other, direction * rotation)
+                    attachment_direction[number][other] = direction
                     edges.add((number, other, direction, rotation))
                     connected[number].add(other)
 
@@ -178,49 +180,36 @@ class Day22(aoc.Challenge):
             -1: (size * 1j, 0),
         }
         while edges:
-            number, _, direction, rotation = edges.pop()
-            offsets = direction_to_corner_offsets[direction]
-            for offset, rotation in zip(offsets, (1j, -1j)):
-                corner = face_corners[number] + offset
+            number, other, direction, rotation = edges.pop()
+            offsets = direction_to_corner_offsets[-(direction*rotation)]
+            for offset in offsets:
+                corner = face_corners[other] + offset
                 others = extended_corners[corner] - set([number])
-                unattached = others - connected[number]
-                attached = others & connected[number]
-                if unattached:
-                    print(f"{number=} {corner=} {attached=} {unattached=}")
-                    a = unattached.pop()
-                    b = attached.pop()
-                    print(f"{connected[b]=}")
-                    connected[b]
+                unattached = list(others - connected[number])
+                attached = list(others & connected[number])
+                if not unattached:
+                    continue
+
+                print(f"{number=} {corner=} {attached=} {unattached=}")
+                other = unattached.pop()
+                via = attached.pop()
+                print(f"{connected[via]=}")
+                print(f"{attachment_direction[number][via]} => {attachment_direction[via][other]}")
+                other_dir = attachment_direction[number][via]
+
+                assert transitions[number][other_dir][0] == other, f"{transitions[number][other_dir][0]} != {other}"
+                transitions[number][attachment_direction[via][other]] = (other, other_dir)
+                attachment_direction[number][other] = attachment_direction[via][other]
+                attachment_direction[number][other] = attachment_direction[via][other]
+                edges.add((number, other, attachment_direction[via][other], attachment_direction[number][via]))
+                connected[number].add(other)
+                assert transitions[number][attachment_direction[via][other]] == self.transitions[number][attachment_direction[via][other]]
 
 
-
-
-
-
-
-        """
-            for direction in (complex(-1, -1), complex(-1, 1), complex(1, -1), complex(1, 1)):
-                if top_left + size * direction in corners_to_face:
-                    egress, ingress = int(direction.real), int(direction.imag) * 1j
-                    if egress in transitions[number]:
-                        egress, ingress = ingress, egress
-                    transitions[number][egress] = (corners_to_face[top_left + size * direction], ingress)
-
-                    one_further = direction + egress
-                    next_egress = egress * -1j
-                    if next_egress in transitions[number]:
-                        next_egress = egress * 1j
-                    if number == 1:
-                        print(f"{number=}, {one_further=}, {top_left + size * one_further in corners_to_face=}")
-                        print(f"{egress=} {next_egress=} {next_egress not in transitions[number]=}")
-
-                    if top_left + size * one_further in corners_to_face and next_egress not in transitions[number]:
-                        transitions[number][next_egress] = (corners_to_face[top_left + size * one_further], ingress)
-        """
 
         for number in transitions:
             print(f"{number}: {transitions[number]} ({len(transitions[number])})")
-            print(f"{number}: {self.transitions[number]} ({len(self.transitions[number])})")
+            # print(f"{number}: {self.transitions[number]} ({len(self.transitions[number])})")
 
 
 
