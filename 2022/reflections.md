@@ -356,3 +356,9 @@ I kept the walls in my data, making the valid "edges" one less than normal, whic
 I got my part two solution initially by repeatedly updating my code with the move count from the prior leg.
 My runtime was pretty bad at 120s.
 Switching a `set[complex]` with `min(key=...)` to a PriorityQueue changed my runtime to 5s.
+
+# Day 25: Full of Hot Air. Convert from base 4 to 10 and back again!
+
+Exercism's [All Your Base](https://exercism.org/tracks/python/exercises/all-your-base) rather prepared me for this.
+Handling the negatives took a moment to figure out.
+Trying to skim the prose for gotchas slowed me down.
