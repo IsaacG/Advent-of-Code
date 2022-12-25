@@ -98,6 +98,17 @@ def print_point_set(board: set[complex]) -> None:
     print()
 
 
+def format_ns(ns: int) -> str:
+    units = [("ns", 1000), ("µs", 1000), ("ms", 1000), ("s", 60), ("mn", 60)]
+    for unit, shift in units:
+        if ns < shift:
+            break
+        ns /= shift
+    else:
+        unit = "hr"
+    return f"{ns:>7.3f} {unit:>2}"
+
+
 class OCR:
     """OCR helper for pixel displays."""
 
@@ -545,14 +556,13 @@ class Challenge(Helpers):
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
             data = self.input_parser(case.inputs.rstrip())
-            start = time.clock_gettime(time.CLOCK_MONOTONIC)
+            start = time.perf_counter_ns()
             got = self.run_solver(case.part, data)
-            end = time.clock_gettime(time.CLOCK_MONOTONIC)
-            delta = int(1000 * (end - start))
+            end = time.perf_counter_ns()
             if case.want != got:
                 print(f'FAILED! {case.part}: want({case.want}) != got({got})')
                 break
-            print(f'PASSED! Test #{i + 1} in {delta}ms')
+            print(f'{self.year}/{self.day:02d} Test {i + 1}: PASS in {format_ns(end - start)}! (part {case.part})')
         self.debug('=====')
         self.testing = False
 
@@ -587,15 +597,14 @@ class Challenge(Helpers):
             print(f'{self.year}/{self.day:02d} No solution found!')
             return
         for part in (1, 2):
-            start = time.clock_gettime(time.CLOCK_MONOTONIC)
+            start = time.perf_counter_ns()
             got = self.run_solver(part, puzzle_input)
-            end = time.clock_gettime(time.CLOCK_MONOTONIC)
-            delta = int(1000 * (end - start))
+            end = time.perf_counter_ns()
             want = solution[part - 1]
             if isinstance(got, int):
                 want = int(want)
             if want == got:
-                print(f'{self.year}/{self.day:02d} Part {part}: PASS in {delta}ms!')
+                print(f'{self.year}/{self.day:02d} Part {part}: PASS in {format_ns(end - start)}!')
             else:
                 print(f'{self.year}/{self.day:02d} Part {part}: want({want}) != got({got})')
 
@@ -681,13 +690,7 @@ class Challenge(Helpers):
             yield
         finally:
             end = time.perf_counter_ns()
-            delta = float(end - start)
-            units = ["ns", "us", "ms", "s"]
-            for unit in units:
-                if delta < 1000:
-                    break
-                delta /= 1000
-            self.debug(f"{description}: {int(delta)}{unit}")
+            self.debug(f"{description}: {format_ns(end - start)}")
 
 
 # vim:ts=4:sw=4:expandtab
