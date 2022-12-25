@@ -42,7 +42,7 @@ class Day17(aoc.Challenge):
     INPUT_PARSER = aoc.parse_one_str
     PARAMETERIZED_INPUTS = [2022, 1000000000000]
 
-    def pre_run(self) -> None:
+    def pre_run(self, parsed_input: InputType) -> None:
         """Parse the rock shapes from ASCII art."""
         rocks = []
         parser = aoc.parse_ascii_bool_map("#")
