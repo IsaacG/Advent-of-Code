@@ -11,8 +11,7 @@ import re
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
         ...#
         .#..
         #...
@@ -26,8 +25,7 @@ SAMPLE = [
         .#......
         ......#.
 
-10R5L5R10L4R5L5""",  # 0
-]
+10R5L5R10L4R5L5"""
 
 InputType = tuple[dict[complex, str], str]
 OPEN = "."
@@ -120,22 +118,18 @@ INGRESS_TO_CORNER = {1 * 1j ** i: i for i in range(4)}
 DIRECTION_SCORE = {1j ** i: i for i in range(4)}
 
 
-# TODO: validate face transitions: each face needs 4 unique ingress/egress face/directions
-# TODO: validate when moving to a new face, if we spin 180 deg and move one, we return to the prior spot
-
 class Day22(aoc.Challenge):
     """Day 22: Monkey Map."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=6032),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=5031),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=6032),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=5031),
     ]
     DEBUG = False
     PARAMETERIZED_INPUTS = [1, 2]
 
-    def pre_run(self, parsed_input: InputType) -> None:
+    def fold_cube(self, points) -> None:
         """Set up some class attribs which are shared across methods."""
-        points, _ = parsed_input
         self.points = points
         face_corners = {}
         # The grid is 3x4 faces. Use the min to find the size of each face.
@@ -144,11 +138,17 @@ class Day22(aoc.Challenge):
         # Find which of the 3x4 has a face on it.
         number = 1
         for y in range(0, self.max_y, size):
-            for x_offset in range(0, self.max_x + 1, size):
-                x = self.max_x - x_offset
-                if points.get(complex(x, y), EMPTY) != EMPTY:
-                    face_corners[number] = complex(x, y)
-                    number += 1
+            if self.testing:
+                for x in range(0, self.max_x + 1, size):
+                    if points.get(complex(x, y), EMPTY) != EMPTY:
+                        face_corners[number] = complex(x, y)
+                        number += 1
+            else:
+                for x_offset in range(0, self.max_x + 1, size):
+                    x = self.max_x - x_offset
+                    if points.get(complex(x, y), EMPTY) != EMPTY:
+                        face_corners[number] = complex(x, y)
+                        number += 1
 
         self.transitions = TRANSITIONS_EXAMPLE if self.testing else TRANSITIONS_INPUT
         corners_to_face = {top_left: number for number, top_left in face_corners.items()}
@@ -168,9 +168,9 @@ class Day22(aoc.Challenge):
             for direction in (1, -1, 1j, -1j):
                 if top_left + size * direction in corners_to_face:
                     other = corners_to_face[top_left + size * direction]
-                    transitions[number][direction] = (other, direction * rotation)
+                    transitions[number][direction] = (other, direction)
                     attachment_direction[number][other] = direction
-                    edges.add((number, other, direction, rotation))
+                    edges.add((number, other, direction, direction))
                     connected[number].add(other)
 
         direction_to_corner_offsets = {
@@ -179,41 +179,61 @@ class Day22(aoc.Challenge):
             1j: (size + size * 1j, size * 1j),
             -1: (size * 1j, 0),
         }
+
         while edges:
-            number, other, direction, rotation = edges.pop()
-            offsets = direction_to_corner_offsets[-(direction*rotation)]
+            number, via, direction, dir_face_via_ingress = edges.pop()
+            offsets = direction_to_corner_offsets[-dir_face_via_ingress]
             for offset in offsets:
-                corner = face_corners[other] + offset
+                corner = face_corners[via] + offset
                 others = extended_corners[corner] - set([number])
                 unattached = list(others - connected[number])
                 attached = list(others & connected[number])
                 if not unattached:
                     continue
 
-                print(f"{number=} {corner=} {attached=} {unattached=}")
+                assert via in extended_corners[corner]
+                assert [via] == attached
+
                 other = unattached.pop()
                 via = attached.pop()
-                print(f"{connected[via]=}")
-                print(f"{attachment_direction[number][via]} => {attachment_direction[via][other]}")
-                other_dir = attachment_direction[number][via]
+                print(f"Face {number=} -> {via=} -> {other=}")
+                print(f"Dir {attachment_direction[number][via]} => {attachment_direction[via][other]}")
 
-                assert transitions[number][other_dir][0] == other, f"{transitions[number][other_dir][0]} != {other}"
-                transitions[number][attachment_direction[via][other]] = (other, other_dir)
-                attachment_direction[number][other] = attachment_direction[via][other]
-                attachment_direction[number][other] = attachment_direction[via][other]
-                edges.add((number, other, attachment_direction[via][other], attachment_direction[number][via]))
+                dir_face_via = attachment_direction[number][via]
+                assert via == self.transitions[number][dir_face_via][0]
+                rot_face_via = transitions[number][dir_face_via][1]
+                assert rot_face_via == self.transitions[number][dir_face_via][1]
+
+                dir_via_other_egress = attachment_direction[via][other]
+                assert other == self.transitions[via][dir_via_other_egress][0]
+                dir_via_other_ingress = transitions[via][dir_via_other_egress][1]
+                assert dir_via_other_ingress == self.transitions[via][dir_via_other_egress][1]
+
+                dir_via_ingress = transitions[number][dir_face_via][1]
+                rot_face_other = (dir_via_other_egress / dir_via_ingress)
+                dir_face_other_egress = dir_face_via * rot_face_other
+                assert self.transitions[number][dir_face_other_egress][0] == other
+                rot_via_other = dir_via_other_ingress / dir_via_other_egress
+                dir_face_other_ingress = rot_via_other * dir_via_ingress
+                assert self.transitions[number][dir_face_other_egress][1] == dir_face_other_ingress
+
+                transitions[number][dir_face_other_egress] = (other, dir_face_other_ingress)
+                attachment_direction[number][other] = dir_face_other_egress
+                edges.add((number, other, dir_face_other_egress, dir_face_other_ingress))
                 connected[number].add(other)
-                assert transitions[number][attachment_direction[via][other]] == self.transitions[number][attachment_direction[via][other]]
+
+                transitions[other][-dir_face_other_ingress] = (number, -dir_face_other_egress)
+                attachment_direction[other][number] = -dir_face_other_ingress
+                edges.add((other, number, -dir_face_other_ingress, -dir_face_other_egress))
+                connected[other].add(number)
+
+                print(f"Transitions: {sum(len(t) for t in transitions.values())}")
+                for face, t in transitions.items():
+                    for direction, val in t.items():
+                        assert self.transitions[face][direction] == val
 
 
-
-        for number in transitions:
-            print(f"{number}: {transitions[number]} ({len(transitions[number])})")
-            # print(f"{number}: {self.transitions[number]} ({len(self.transitions[number])})")
-
-
-
-
+        assert transitions == self.transitions
 
 
         self.corners = {}
@@ -290,8 +310,10 @@ class Day22(aoc.Challenge):
 
     def solver(self, parsed_input: InputType, part: int) -> int:
         """Return the final location after wandering the map."""
-        return 0
         points, instructions = parsed_input
+        if part == 1:
+            self.fold_cube(points)
+        return 0
         get_next = self.get_next_flat if part == 1 else self.get_next_cube
         start_x = min(p.real for p in points if p.imag == 0 and points[p] == OPEN)
 
