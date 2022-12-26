@@ -357,10 +357,12 @@ Part two was interesting.
 For my initial solution, I resolved any equation which had all-numeric inputs.
 Equations with non-numeric inputs were kept as strings but expanded.
 I hand-reversed the resulting equation in `vim` to isolate `humn`.
+I later came back and wrote Symbols which can be used to store the steps.
+Once one side is resolved, the operations on the other side can be inverted and applied to both sides to isolate `humn`.
 
 Todo:
 
-* Solve this in code. Linear interpolation, sympy or simply reversing all the operations.
+* Try linear interpolation, sympy.
 
 
 ## Day 22: Monkey Map. Wander a wrapped map to find a final location.

@@ -7,6 +7,7 @@ import functools
 import itertools
 import math
 import re
+import time
 
 import typer
 from lib import aoc
@@ -71,6 +72,7 @@ class Day16(aoc.Challenge):
             for dest in leads_to:
                 dist[room][dest] = 1
 
+        t1 = time.perf_counter()
         for shortcut, src, dest in itertools.permutations(rooms, 3):
             if shortcut in dist[src] and dest in dist[shortcut]:
                 dist_via_shortcut = dist[src][shortcut] + dist[shortcut][dest]
