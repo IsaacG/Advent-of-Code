@@ -34,7 +34,7 @@ class Day19(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=33),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=56 * 62),
     ]
-    TIMEOUT = 75
+    TIMEOUT = 300
 
     def solver(self, parsed_input: InputType, minutes: int) -> int:
         scores = []
