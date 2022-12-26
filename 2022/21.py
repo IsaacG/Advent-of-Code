@@ -1,18 +1,13 @@
 #!/bin/python
 """Advent of Code, Day 21: Monkey Math."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import math
-import re
+import operator
+from typing import Any
 
 import typer
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 root: pppw + sjmn
 dbpl: 5
 cczh: sllz + lgvd
@@ -27,101 +22,109 @@ sllz: 4
 pppw: cczh / lfqf
 lgvd: ljgn * ptdq
 drzm: hmdt - zczc
-hmdt: 32""",  # 1
-]
+hmdt: 32"""
 
-LineType = int
+LineType = Any
 InputType = list[LineType]
+OPS = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.floordiv}
+REV = {"+": operator.sub, "-": operator.add, "*": operator.floordiv, "/": operator.mul}
+
+
+class Symbol:
+    """Symbol in a symbolic equation."""
+
+
+class Variable(Symbol):
+    """Variable symbol; an unknown."""
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def __eq__(self, other: Any) -> bool:
+        """Return if this is the same as other."""
+        return isinstance(other, Variable) and self.name == other.name
+
+
+class BinaryOp(Symbol):
+    """A binary operator. Expected one int, one symbol and one operation."""
+
+    def __init__(self, left: int | Symbol, operation: str, right: int | Symbol):
+        assert (
+            isinstance(left, Symbol) and isinstance(right, int)
+            or isinstance(left, int) and isinstance(right, Symbol)
+        )
+        self.left = left
+        self.operation = operation
+        self.right = right
+
+    def reverse(self, other: int) -> tuple[Symbol, int]:
+        """Reverse an operation, applying the inverse to both sides."""
+        if isinstance(self.right, int):
+            return self.left, REV[self.operation](other, self.right)  # type: ignore
+
+        assert isinstance(self.left, int)
+        if self.operation == "+":
+            # a + x = b   =>   x = b - a
+            return self.right, other - self.left
+        if self.operation == "-":
+            # a - x = b   =>   x = a - b
+            return self.right, self.left - other
+        if self.operation == "*":
+            # a * x = b   =>   x = b / a
+            return self.right, other // self.left
+        if self.operation == "/":
+            # a / x = b   =>   x = a / b
+            return self.right, self.left // other
+        raise ValueError
 
 
 class Day21(aoc.Challenge):
     """Day 21: Monkey Math."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=152),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=301),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=152),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=301),
     ]
+    INPUT_PARSER = aoc.parse_re_findall_mixed(r"[^ :]+")
+    PARAMETERIZED_INPUTS = [False, True]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def solver(self, parsed_input: InputType, part2: bool) -> int:
+        """Solve for the root value of an equation."""
+        monkeys = {monkey: job for monkey, *job in parsed_input}
         solved = {}
-        for monkey, job in parsed_input.items():
-            if job.isdigit():
-                solved[monkey] = int(job)
-        unsolved = set(parsed_input) - set(solved)
-        print(f"{len(parsed_input)=} {len(solved)=} {len(unsolved)=}")
-        while unsolved:
-            new_solved = set()
-            for monkey in unsolved:
-                a, op, b = parsed_input[monkey].split()
-                if a in solved and b in solved:
-                    match op:
-                        case "+":
-                            solved[monkey] = solved[a] + solved[b]
-                        case "-":
-                            solved[monkey] = solved[a] - solved[b]
-                        case "/":
-                            solved[monkey] = solved[a] // solved[b]
-                        case "*":
-                            solved[monkey] = solved[a] * solved[b]
-                    new_solved.add(monkey)
-                    if monkey == "root":
-                        return solved[monkey]
-            unsolved -= new_solved
-        raise RuntimeError
-        
 
-    def part2(self, parsed_input: InputType) -> int:
-        solved = {}
-        for monkey, job in parsed_input.items():
-            if job.isdigit():
-                solved[monkey] = int(job)
-        solved["humn"] = "humn"
-        unsolved = set(parsed_input) - set(solved)
-        print(f"{len(parsed_input)=} {len(solved)=} {len(unsolved)=}")
-        while unsolved:
-            new_solved = set()
-            for monkey in unsolved:
-                a, op, b = parsed_input[monkey].split()
-                if a in solved and b in solved:
-                    match solved[a], op, solved[b]:
-                        case [int(x), "+", int(y)]:
-                            solved[monkey] = x + y
-                        case [int(x), "-", int(y)]:
-                            solved[monkey] = x - y
-                        case [int(x), "*", int(y)]:
-                            solved[monkey] = x * y
-                        case [int(x), "/", int(y)]:
-                            solved[monkey] = x // y
-                        case [_, "+", _]:
-                            solved[monkey] = f"({solved[a]})+({solved[b]})"
-                        case [_, "-", _]:
-                            solved[monkey] = f"({solved[a]})-({solved[b]})"
-                        case [_, "*", _]:
-                            solved[monkey] = f"({solved[a]})*({solved[b]})"
-                        case [_, "/", _]:
-                            solved[monkey] = f"({solved[a]})//({solved[b]})"
-                    new_solved.add(monkey)
-                    if monkey == "root":
-                        solved[monkey] = f"({solved[a]}) == ({solved[b]})"
-                        print(solved[monkey])
-            unsolved -= new_solved
-        raise RuntimeError
-        
+        # Resolve the integer literals.
+        for monkey, job in monkeys.items():
+            if len(job) == 1:
+                solved[monkey] = job[0]
 
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        out = {}
-        for line in puzzle_input.splitlines():
-            monkey, job = line.split(": ")
-            out[monkey] = job
-        return out
+        if part2:
+            solved["humn"] = Variable("humn")
 
+        # Resolve until "root" is solved.
+        unsolved = set(monkeys) - set(solved)
+        while "root" not in solved:
+            for monkey in list(unsolved):
+                left, operation, right = monkeys[monkey]
+                if left not in solved or right not in solved:
+                    continue
+                if isinstance(solved[left], int) and isinstance(solved[right], int):
+                    solved[monkey] = OPS[operation](solved[left], solved[right])
+                else:
+                    solved[monkey] = BinaryOp(solved[left], operation, solved[right])
+                unsolved.remove(monkey)
+
+        if not part2:
+            return solved["root"]
+        # Part 2: unwind operators to isolate humn.
+        left, right = solved[monkeys["root"][0]], solved[monkeys["root"][2]]
+        if isinstance(left, int):
+            left, right = right, left
+        while isinstance(left, BinaryOp):
+            assert isinstance(right, int)
+            left, right = left.reverse(right)
+        assert left == Variable("humn")
+        return right
 
 
 if __name__ == "__main__":
