@@ -56,7 +56,7 @@ class ChallengeRunner:
                 traceback.print_exc()
                 return
             if target.TIMEOUT and target.TIMEOUT > timeout:
-                print(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
+                target.debug(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
                 timeout = target.TIMEOUT
             proc = multiprocessing.Process(target=target.run, kwargs={"data": file, mode: True})
 
