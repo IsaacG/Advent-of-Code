@@ -98,7 +98,7 @@ def print_point_set(board: set[complex]) -> None:
     print()
 
 
-def format_ns(ns: int) -> str:
+def format_ns(ns: float) -> str:
     units = [("ns", 1000), ("µs", 1000), ("ms", 1000), ("s", 60), ("mn", 60)]
     for unit, shift in units:
         if ns < shift:
@@ -219,7 +219,7 @@ class Board(dict):
     def edges(self) -> set[complex]:
         """Return the edges of a fully populated board."""
         edges: set[complex] = set()
-        cur = 0
+        cur = complex(0, 0)
         for direction in FOUR_DIRECTIONS:
             while cur + direction in self:
                 cur += direction
@@ -330,7 +330,7 @@ class Line:
         dir_x = (self.end.x - self.start.x) / steps
         dir_y = (self.end.y - self.start.y) / steps
         return [
-            Point(self.start.x + dir_x * i, self.start.y + dir_y * i)
+            Point(int(self.start.x + dir_x * i), int(self.start.y + dir_y * i))
             for i in range(steps + 1)
         ]
 
@@ -362,7 +362,7 @@ class Helpers:
     """A collection of helper functions."""
 
     _primes = [2, 3, 5]
-    _gcd = {}
+    _gcd: dict[tuple[int, int], int] = {}
 
     @staticmethod
     def cmp(a: float, b: float) -> int:
@@ -441,7 +441,7 @@ class Challenge(Helpers):
 
     INPUT_TYPES = str
     INPUT_PARSER: Optional[parsers.BaseParser] = None
-    POST_PROCESS: Callable[[Any], Any] = lambda _, x: x
+    POST_PROCESS: Callable[[Any, Any], Any] = lambda _, x: x
     TRANSFORM = None
     TESTS: list[TestCase] = []
     DEBUG = False
@@ -474,7 +474,7 @@ class Challenge(Helpers):
             d = p / 'data'
             if d.exists():
                 return d
-        return RuntimeError('No data dir found')
+        raise RuntimeError('No data dir found')
 
     @property
     def day(self) -> int:
@@ -484,7 +484,7 @@ class Challenge(Helpers):
         return int(name[3:])
 
     @property
-    def year(self) -> int:
+    def year(self) -> str:
         """Return the year of this class."""
         p = pathlib.Path(__file__).parent.parent.name
         assert len(p) == 4 and p.isnumeric(), p
@@ -635,7 +635,7 @@ class Challenge(Helpers):
 
     def run(
         self,
-        data: str = None,
+        data: Optional[str] = None,
         test: bool = False,
         solve: bool = False,
         submit: bool = False,
