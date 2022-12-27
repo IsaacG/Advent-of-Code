@@ -37,25 +37,10 @@ class Day20(aoc.Challenge):
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=8),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
     INPUT_PARSER = aoc.parse_one_int
-
-    def pre_run(self) -> None:
-        return
-        global primes
-        self.debug("Start prime generator")
-        primes = [2, 3, 5, 7]
-        for num in range(11, 1000_000, 2):
-            for p in primes:
-                if p * p > num:
-                    primes.append(num)
-                    break
-                if num % p == 0:
-                    break
-        self.debug("Done prime generator")
 
     def part1(self, parsed_input: InputType) -> int:
         target = parsed_input // 10

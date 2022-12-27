@@ -157,6 +157,8 @@ class OCR:
     def from_point_set(cls, points: set[complex]):
         """OCR from a set of points."""
         rows = point_set_to_lists(points)
+        if len(rows) == 6 and len(rows[0]) % 5 == 4:
+            rows = [row + [False] for row in rows]
         return cls(rows)
 
 

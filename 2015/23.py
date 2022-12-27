@@ -19,8 +19,8 @@ class Day23(aoc.Challenge):
     """Day 23: Opening the Turing Lock."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=2),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=2),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
     def solver(self, instructions: InputType, start_a: int) -> int:

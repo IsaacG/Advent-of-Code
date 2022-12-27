@@ -6,7 +6,7 @@ import typer
 from lib import aoc
 
 InputType = tuple[set[complex], list[tuple[str, int]]]
-SAMPLE = ["""\
+SAMPLE = """\
 6,10
 0,14
 9,10
@@ -28,15 +28,15 @@ SAMPLE = ["""\
 
 fold along y=7
 fold along x=5
-"""]
+"""
 
 
 class Day13(aoc.Challenge):
     """Fold a piece of transparent paper a bunch of times to reveal a pattern."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=17),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=64),  # Not really, but I don't OCR.
+        aoc.TestCase(inputs=SAMPLE, part=1, want=17),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     )
 
     @staticmethod
@@ -71,7 +71,7 @@ class Day13(aoc.Challenge):
             points = self.fold(points, axis, position)
 
         # The actual solution requires OCR or visual reading.
-        return str(aoc.OCR.from_point_set(points))
+        return aoc.OCR.from_point_set(points).as_string()
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
