@@ -535,18 +535,20 @@ class Challenge(Helpers):
 
         return self.POST_PROCESS([transform(i) for i in puzzle_input.splitlines()])
 
-    def run_solver(self, part: int, data: Any) -> Any:
+    def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""
         func = {1: self.part1, 2: self.part2}
+        parsed_input = self.input_parser(puzzle_input.rstrip())
+        self.pre_run(parsed_input)
         if inspect.ismethod(getattr(self, "solver", None)) and self.PARAMETERIZED_INPUTS is not None:
-            return self.solver(data, self.PARAMETERIZED_INPUTS[part - 1])
-        result = func[part](data)
+            return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
+        result = func[part](parsed_input)
         if isinstance(result, float):
             print("=== WARNING!! Casting float to int. ===")
             result = int(result)
         return result
 
-    def test(self, puzzle_input: Any):
+    def test(self, input_file: Optional[str] = None) -> None:
         """Run the tests."""
         self.testing = True
 
@@ -555,9 +557,8 @@ class Challenge(Helpers):
                 continue
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-            data = self.input_parser(case.inputs.rstrip())
             start = time.perf_counter_ns()
-            got = self.run_solver(case.part, data)
+            got = self.run_solver(case.part, case.inputs.rstrip())
             end = time.perf_counter_ns()
             if case.want != got:
                 print(f'FAILED! {case.part}: want({case.want}) != got({got})')
@@ -574,16 +575,16 @@ class Challenge(Helpers):
     def pre_run(self, puzzle_input: Any) -> None:
         """Hook to run things prior to tests and actual."""
 
-    def solve(self, puzzle_input: Any) -> None:
+    def solve(self, input_file: Optional[str]) -> None:
         for part in (1, 2):
             self.debug(f'Running part {part}:')
             try:
-                got = self.run_solver(part, puzzle_input)
+                got = self.run_solver(part, self.raw_data(input_file))
                 print(got)
             except NotImplementedError:
                 print(f'Part {part}: Not implemented')
 
-    def check(self, puzzle_input: Any) -> None:
+    def check(self, input_file: Optional[str] = None) -> None:
         """Check the generated solutions match the contents of solutions.txt."""
         lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
         solution = None
@@ -598,7 +599,7 @@ class Challenge(Helpers):
             return
         for part in (1, 2):
             start = time.perf_counter_ns()
-            got = self.run_solver(part, puzzle_input)
+            got = self.run_solver(part, self.raw_data(input_file))
             end = time.perf_counter_ns()
             want = solution[part - 1]
             if isinstance(got, int):
@@ -608,12 +609,12 @@ class Challenge(Helpers):
             else:
                 print(f'{self.year}/{self.day:02d} Part {part}: want({want}) != got({got})')
 
-    def submit(self, puzzle_input: Any) -> None:
+    def submit(self, input_file: Optional[str] = None) -> None:
         """Generate a solution for the next unsolved part and submit it."""
         answers = []
         for part in (1, 2):
             try:
-                got = self.run_solver(part, puzzle_input)
+                got = self.run_solver(part, self.raw_data(input_file))
                 if got:
                     answers.append(got)
             except NotImplementedError:
@@ -635,17 +636,14 @@ class Challenge(Helpers):
 
     def run(
         self,
-        data: Optional[str] = None,
+        input_file: Optional[str] = None,
         test: bool = False,
         solve: bool = False,
         submit: bool = False,
         check: bool = False,
-        input_file: Optional[str] = None,
         benchmark: bool = False,
     ):
         """Run the challenges."""
-        puzzle_input = self.input_parser(self.raw_data(data))
-        self.pre_run(puzzle_input)
         f = self.get_run_method(
             test=test,
             solve=solve,
@@ -653,7 +651,7 @@ class Challenge(Helpers):
             check=check,
             benchmark=benchmark,
         )
-        f(puzzle_input)
+        f(input_file)
 
     def time_func(self, count: int, func: Callable) -> float:
         """Time a callable, averaged over count runs."""

@@ -44,7 +44,7 @@ class ChallengeRunner:
         """Return a Challenge instance."""
         return getattr(self.module(), f"Day{self.day:02}")()
 
-    def run_code(self, run_args: dict[str, bool | None], file: Optional[str], timeout: int) -> None:
+    def run_code(self, run_args: dict[str, bool | None], input_file: Optional[str], timeout: int) -> None:
         """Run the challenge code, with a timeout."""
         for mode, run in run_args.items():
             if not run:
@@ -58,7 +58,7 @@ class ChallengeRunner:
             if target.TIMEOUT and target.TIMEOUT > timeout:
                 target.debug(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
                 timeout = target.TIMEOUT
-            proc = multiprocessing.Process(target=target.run, kwargs={"data": file, mode: True})
+            proc = multiprocessing.Process(target=target.run, kwargs={"input_file": input_file, mode: True})
 
             proc.start()
             proc.join(timeout=timeout)
@@ -293,7 +293,7 @@ class Runner:
 @click.option("--benchmark", is_flag=True, help="Time the solution.")
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
-@click.option("--file", type=str, default=None, help="Alternative input file.")
+@click.option("--input-file", "--input", "--file", type=str, default=None, help="Alternative input file.")
 def main(
     day: Optional[int],
     waitlive,
@@ -306,7 +306,7 @@ def main(
     watch: bool,
     benchmark: bool,
     all_days: bool,
-    file: Optional[str],
+    input_file: Optional[str],
     timeout: int,
     year: Optional[int],
 ):
@@ -340,7 +340,7 @@ def main(
             days = [day]
 
         for day in days:
-            ChallengeRunner(year, day).run_code(run_args, file, timeout)
+            ChallengeRunner(year, day).run_code(run_args, input_file, timeout)
         return
 
     # Set up inotify watches and run a Challenge in a loop.
@@ -354,7 +354,7 @@ def main(
             continue
         day = int(pathlib.Path(events[0].name).stem)
         print(datetime.datetime.now().strftime("%H:%M:%S"))
-        ChallengeRunner(year, day).run_code(run_args, file, timeout)
+        ChallengeRunner(year, day).run_code(run_args, input_file, timeout)
         print("Done.")
         print()
     return

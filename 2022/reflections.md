@@ -140,7 +140,7 @@ I'm happy I finally have an AOC OCR!
 
 * New `aoc.OCR`
 
-## Day 11: Monkey in the Middle.  Track items thrown between monkeys."""
+## Day 11: Monkey in the Middle. Track items thrown between monkeys.
 
 ### Code
 
