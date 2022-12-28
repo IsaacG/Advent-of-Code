@@ -452,8 +452,9 @@ class Challenge(Helpers):
     TIMEOUT: Optional[int] = None
     PARAMETERIZED_INPUTS: Any = None
 
-    def __init__(self):
+    def __init__(self, parts_to_run: tuple[int, ...] = (1, 2)):
         self.funcs = {1: self.part1, 2: self.part2}
+        self.parts_to_run = parts_to_run
         self.testing = False
         self._site = None
         self._filecache = {}
@@ -557,6 +558,8 @@ class Challenge(Helpers):
         for i, case in enumerate(self.TESTS):
             if case.want == TEST_SKIP:
                 continue
+            if case.part not in self.parts_to_run:
+                continue
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
             start = time.perf_counter_ns()
@@ -578,7 +581,7 @@ class Challenge(Helpers):
         """Hook to run things prior to tests and actual."""
 
     def solve(self, input_file: Optional[str]) -> None:
-        for part in (1, 2):
+        for part in self.parts_to_run:
             self.debug(f'Running part {part}:')
             try:
                 got = self.run_solver(part, self.raw_data(input_file))
@@ -599,7 +602,7 @@ class Challenge(Helpers):
         if not solution:
             print(f'{self.year}/{self.day:02d} No solution found!')
             return
-        for part in (1, 2):
+        for part in self.parts_to_run:
             start = time.perf_counter_ns()
             got = self.run_solver(part, self.raw_data(input_file))
             end = time.perf_counter_ns()
@@ -614,7 +617,7 @@ class Challenge(Helpers):
     def submit(self, input_file: Optional[str] = None) -> None:
         """Generate a solution for the next unsolved part and submit it."""
         answers = []
-        for part in (1, 2):
+        for part in self.parts_to_run:
             try:
                 got = self.run_solver(part, self.raw_data(input_file))
                 if got:

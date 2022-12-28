@@ -28,6 +28,7 @@ EST = zoneinfo.ZoneInfo("America/New_York")
 @dataclasses.dataclass
 class ChallengeRunner:
     """Manage the challenge for a single, specific day."""
+
     year: int
     day: int
 
@@ -40,18 +41,24 @@ class ChallengeRunner:
         self._module = importlib.reload(self._module)
         return self._module
 
-    def challenge(self) -> aoc.Challenge:
+    def challenge(self, *args, **kwargs) -> aoc.Challenge:
         """Return a Challenge instance."""
-        return getattr(self.module(), f"Day{self.day:02}")()
+        return getattr(self.module(), f"Day{self.day:02}")(*args, **kwargs)
 
-    def run_code(self, run_args: dict[str, bool | None], input_file: Optional[str], timeout: int) -> None:
+    def run_code(
+        self,
+        run_args: dict[str, bool | None],
+        input_file: Optional[str],
+        part: tuple[int, ...],
+        timeout: int,
+    ) -> None:
         """Run the challenge code, with a timeout."""
         for mode, run in run_args.items():
             if not run:
                 continue
 
             try:
-                target = self.challenge()
+                target = self.challenge(parts_to_run=part)
             except SyntaxError:
                 traceback.print_exc()
                 return
@@ -289,6 +296,7 @@ class Runner:
 @click.option("--solve", is_flag=True, help="Generate the solution.")
 @click.option("--check", is_flag=True, help="Check if the results in solution.txt match with the generated solution.")
 @click.option("--submit", is_flag=True, help="Submit the next part on AoC website.")
+@click.option("--part", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
 @click.option("--watch", is_flag=True, help="If set, loop and repeat the action when the file is saved.")
 @click.option("--benchmark", is_flag=True, help="Time the solution.")
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
@@ -303,6 +311,7 @@ def main(
     solve: bool,
     check: bool,
     submit: bool,
+    part: tuple[int, ...],
     watch: bool,
     benchmark: bool,
     all_days: bool,
@@ -340,7 +349,7 @@ def main(
             days = [day]
 
         for day in days:
-            ChallengeRunner(year, day).run_code(run_args, input_file, timeout)
+            ChallengeRunner(year, day).run_code(run_args, input_file, part, timeout)
         return
 
     # Set up inotify watches and run a Challenge in a loop.
@@ -354,7 +363,7 @@ def main(
             continue
         day = int(pathlib.Path(events[0].name).stem)
         print(datetime.datetime.now().strftime("%H:%M:%S"))
-        ChallengeRunner(year, day).run_code(run_args, input_file, timeout)
+        ChallengeRunner(year, day).run_code(run_args, input_file, part, timeout)
         print("Done.")
         print()
     return
