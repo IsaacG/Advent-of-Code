@@ -58,12 +58,16 @@ class Day17(aoc.Challenge):
     def solver(self, parsed_input: InputType, target_rock_count: int) -> int:
         """Compute the height of the tower after n rocks have fallen."""
         rocks = self.rocks
-        stream_size = len(parsed_input)
         stream = parsed_input
+        if len(stream) < 50:
+            stream *= 3 * 5 * 7
+        stream_size = len(stream)
 
         landed = set()
         tower_height = 0
+        seen2 = collections.defaultdict[list]
         seen = {}
+        landing_position = collections.deque(maxlen=10)
         height_deltas = []
 
         # Index counter which wraps around.
@@ -77,7 +81,7 @@ class Day17(aoc.Challenge):
             return all(complex(x, tower_height) in landed for x in range(7))
 
         # Drop rocks.
-        for rock_cnt in range(target_rock_count):
+        for rock_cnt in range(min(5000, target_rock_count)):
             rock_shape = rocks[rock_cnt % 5]
             bottom_left_corner = complex(2, tower_height + 4)
 
@@ -102,28 +106,35 @@ class Day17(aoc.Challenge):
             # Update data.
             landed.update({bottom_left_corner + r for r in rock_shape})
             next_height = max(tower_height, int(bottom_left_corner.imag) + self.rock_heights[rock_cnt%5])
+            height_delta = next_height - tower_height
+            # Used to track the position of the last N rocks which landed, for cycle detection.
+            landing_position.append(height_delta * 7 + int(bottom_left_corner.real))
+            # Store the heights to replay N steps after applying cyclic growth.
             height_deltas.append(next_height - tower_height)
             tower_height = next_height
 
-            # If the top is flat, check for cycles.
-            if top_is_flat():
-                fingerprint = (wind_idx, rock_cnt % 5)
-                # We have been here before!
-                if fingerprint in seen:
-                    prior_rock_cnt, prior_height = seen[fingerprint]
-                    self.debug(f"Cycle found {prior_rock_cnt, prior_height} -> {rock_cnt, tower_height}.")
+            # Mark this setup to detect a repeat for cycle detection.
+            fingerprint = (wind_idx, rock_cnt % 5, tuple(landing_position))
+            # We have b
+            if fingerprint in seen:
+                prior_rock_cnt, prior_height = seen[fingerprint]
+                cycle_size = rock_cnt - prior_rock_cnt
+                # if cycle_size < 1500: continue
 
-                    cycle_size = rock_cnt - prior_rock_cnt
-                    height_diff = tower_height - prior_height
+                self.debug(f"Cycle found {prior_rock_cnt, prior_height} -> {rock_cnt, tower_height} {rock_cnt - prior_rock_cnt, tower_height - prior_height})")
 
-                    # Apply N cycles of changes plus the remainder of rocks needed.
-                    cycle_count, remaining = divmod(target_rock_count - rock_cnt, cycle_size)
-                    tower_height += cycle_count * height_diff
-                    tower_height += sum(height_deltas[prior_rock_cnt:prior_rock_cnt + remaining])
-                    return tower_height
-                seen[fingerprint] = (rock_cnt, tower_height)
+                height_diff = tower_height - prior_height
 
-        return tower_height
+                # Apply N cycles of changes plus the remainder of rocks needed.
+                cycle_count, remaining = divmod(target_rock_count - rock_cnt, cycle_size)
+                tower_height += cycle_count * height_diff
+                tower_height += sum(height_deltas[prior_rock_cnt + 1:prior_rock_cnt + remaining])
+                return tower_height
+            seen[fingerprint] = (rock_cnt, tower_height)
+
+        if rock_cnt + 1 == target_rock_count:
+            return tower_height
+        return 0
 
 
 if __name__ == "__main__":
