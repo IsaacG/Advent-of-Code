@@ -26,8 +26,8 @@ class Day09(intcode.Challenge):
     aoc.TestCase(inputs=SAMPLE[2], part=0, want='1125899906842624'),
   )
 
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.funcs[0] = self.test_part
 
   def test_part(self, computer: intcode.Computer) -> str:

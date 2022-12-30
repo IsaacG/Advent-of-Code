@@ -40,6 +40,7 @@ class Day23(aoc.Challenge):
     aoc.TestCase(inputs='389125467', part=1, want=67384529),
     aoc.TestCase(inputs='389125467', part=2, want=149245887792),
   )
+  TIMEOUT = 60
 
   def solve(self, cups: List[int], rounds: int) -> Cup:
     """Solve the cups game.

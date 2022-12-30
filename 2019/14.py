@@ -161,7 +161,7 @@ class Day14(aoc.Challenge):
       a, b = pair.split()
       return (int(a), b)
 
-    for line in puzzle_input.split('\n'):
+    for line in puzzle_input.splitlines():
       reactants, product = line.split('=>')
       reaction = Reaction(
         to_tuple(product),

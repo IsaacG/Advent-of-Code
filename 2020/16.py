@@ -19,7 +19,7 @@ nearby tickets:
 40,4,50
 55,2,20
 38,6,12
-""", """
+""", """\
 departure class: 0-1 or 4-19
 departure row: 0-5 or 8-19
 seat: 0-13 or 16-19

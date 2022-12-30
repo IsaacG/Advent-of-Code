@@ -68,14 +68,12 @@ class Moon:
 
 class Day12(aoc.Challenge):
 
-  # Return a tuple of ints for each line.
-  TRANSFORM = lambda _, s: tuple(int(p.split('=')[-1]) for p in s[1:-1].split(', '))
-
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=1940),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=2772),
     aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
   )
+  INPUT_PARSER = aoc.parse_re_findall_int("-?\d+")
 
   def part1(self, positions: List[Tuple[int]]) -> int:
     """Run the similation for N cycles and return total energy at the end."""

@@ -108,8 +108,9 @@ class Day11(aoc.Challenge):
     aoc.TestCase(inputs=S1[0], part=1, want=37),
     aoc.TestCase(inputs=S2[0], part=2, want=26),
   )
+  TIMEOUT = 60
 
-  def pre_run(self):
+  def pre_run(self, *args, **kwargs):
     """Walk through the examples, frame by frame, and validate."""
     self.debug('Validate frames.')
     board = Seating.from_str(S1[0])
