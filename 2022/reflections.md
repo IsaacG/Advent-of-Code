@@ -312,6 +312,13 @@ Some silly things I did:
 * I add cycles, add a new flat top and then run the simulator until `target` rocks have fallen.
   Instead, I should save height values and just compute the height using prior cycle data.
 
+2022/12/29: Finally found my bug in day 17!
+After finding the cycle and adding those all up, I had an off-by-one in selecting the range of height-change-steps I needed to add up to top up to 1e9. 
+`tower_height += cycle_count * height_diff +  sum(height_deltas[prior_rock_cnt + X:prior_rock_cnt + remaining])`  ==> I had `X = 0` which double-counted that n'th step. I needed `X = 1`.
+
+Initially, I replaced the flat-top check with the x-and-y offsets of the last N rocks which landed.
+However, for the example input and my real input, it appears using just the x-offset is sufficient.
+
 Follow up:
 
 * (DONE) do not continue the sim once a cycle is found; use cached height data.
@@ -319,7 +326,7 @@ Follow up:
 * (DEBATING) fix the off-by-one that makes the corner (0, 1).
   The height 1 means the tower is 1 high after the last rock falls.
   I could shift everything right and make it (1,1) but I'm not sure that's better.
-* (TODO) do not assume flat top; use landing position data for the last N cycles for cycle detection.
+* (DONE) do not assume flat top; use landing position data for the last N cycles for cycle detection.
 
 ## Compute the surface area of 3D bubbles.
 
