@@ -27,8 +27,6 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 class Day08(aoc.Challenge):
     """Debug a seven segment display, based on which wires are on."""
 
-    DEBUG = True
-
     TESTS = (
         aoc.TestCase(inputs=SAMPLE, part=1, want=26),
         aoc.TestCase(inputs=SAMPLE, part=2, want=61229),

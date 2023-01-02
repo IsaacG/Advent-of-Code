@@ -26,6 +26,7 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=40),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=315),
     )
+    TIMEOUT = 90
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the lowest cost path from start to end."""

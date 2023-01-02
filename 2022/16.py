@@ -51,6 +51,7 @@ class Day16(aoc.Challenge):
     TIMEOUT = 300
 
     def part2(self, parsed_input: InputType) -> int:
+        return 0
         data = [
             [room, rate, leads_to.split(", ")]
             for room, rate, leads_to in parsed_input

@@ -15,8 +15,6 @@ SAMPLE = input_data.D19_SAMPLE
 class Day19(aoc.Challenge):
     """Merge disperate sensor maps of beacons into one unified map."""
 
-    DEBUG = True
-
     TESTS = (
         aoc.TestCase(inputs=SAMPLE, part=1, want=79),
         aoc.TestCase(inputs=SAMPLE, part=2, want=3621),

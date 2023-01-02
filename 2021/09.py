@@ -19,8 +19,6 @@ SAMPLE = ["""\
 class Day09(aoc.Challenge):
     """Find low points and basins in a topographic map."""
 
-    DEBUG = True
-
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=15),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),

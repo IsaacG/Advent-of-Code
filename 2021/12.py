@@ -55,8 +55,6 @@ InputType = dict[str, list[str]]
 class Day12(aoc.Challenge):
     """Find all the paths through a maze/graph."""
 
-    DEBUG = True
-
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=10),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=19),
