@@ -15,7 +15,6 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import functools
-import inspect
 import itertools
 import pathlib
 import re
@@ -520,15 +519,21 @@ class Challenge(Helpers):
             self._filecache[filename] = path.read_text().rstrip()
         return self._filecache[filename]
 
+    def solver(self, parsed_input: Any, *args, **kwargs) -> Any:
+        raise NotImplementedError
+
+    def line_parser(self, line: str) -> Any:
+        raise NotImplementedError
+
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
         if self.INPUT_PARSER is not None:
-            if inspect.isclass(self.INPUT_PARSER):
+            if not isinstance(self.INPUT_PARSER, BaseParser):
                 raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
             return self.POST_PROCESS(self.INPUT_PARSER.parse(puzzle_input))
         if self.TRANSFORM is not None:
             transform = self.TRANSFORM
-        elif inspect.ismethod(getattr(self, "line_parser", None)):
+        elif self.line_parser.__func__ is not Challenge.line_parser:
             transform = self.line_parser
         elif not isinstance(self.INPUT_TYPES, list):
             transform = self.INPUT_TYPES
@@ -545,7 +550,7 @@ class Challenge(Helpers):
         func = {1: self.part1, 2: self.part2}
         parsed_input = self.input_parser(puzzle_input.rstrip())
         self.pre_run(parsed_input)
-        if inspect.ismethod(getattr(self, "solver", None)) and self.PARAMETERIZED_INPUTS is not None:
+        if self.solver.__func__ is not Challenge.solver and self.PARAMETERIZED_INPUTS is not None:
             return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
         if func[part].__func__ is getattr(Challenge, f"part{part}"):
             return None
