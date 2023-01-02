@@ -7,6 +7,10 @@ from typing import Any
 import typer
 from lib import aoc
 
+USE_SYMPY = False
+if USE_SYMPY:
+    import sympy
+
 SAMPLE = """\
 root: pppw + sjmn
 dbpl: 5
@@ -26,8 +30,9 @@ hmdt: 32"""
 
 LineType = Any
 InputType = list[LineType]
-OPS = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.floordiv}
-REV = {"+": operator.sub, "-": operator.add, "*": operator.floordiv, "/": operator.mul}
+DIV = operator.truediv if USE_SYMPY else operator.floordiv
+OPS = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": DIV}
+REV = {"+": operator.sub, "-": operator.add, "*": DIV, "/": operator.mul}
 
 
 class Symbol:
@@ -99,7 +104,7 @@ class Day21(aoc.Challenge):
                 solved[monkey] = job[0]
 
         if part2:
-            solved["humn"] = Variable("humn")
+            solved["humn"] = sympy.symbols("humn") if USE_SYMPY else Variable("humn")
 
         # Resolve until "root" is solved.
         unsolved = set(monkeys) - set(solved)
@@ -108,16 +113,19 @@ class Day21(aoc.Challenge):
                 left, operation, right = monkeys[monkey]
                 if left not in solved or right not in solved:
                     continue
-                if isinstance(solved[left], int) and isinstance(solved[right], int):
+                if USE_SYMPY or isinstance(solved[left], int) and isinstance(solved[right], int):
                     solved[monkey] = OPS[operation](solved[left], solved[right])
                 else:
                     solved[monkey] = BinaryOp(solved[left], operation, solved[right])
                 unsolved.remove(monkey)
 
         if not part2:
-            return solved["root"]
-        # Part 2: unwind operators to isolate humn.
+            return int(solved["root"])
+        # Part 2: Isolate humn
         left, right = solved[monkeys["root"][0]], solved[monkeys["root"][2]]
+        if USE_SYMPY:
+            return int(sympy.solve(left - right)[0].round())
+        # Unwind operators to isolate humn.
         if isinstance(left, int):
             left, right = right, left
         while isinstance(left, BinaryOp):
