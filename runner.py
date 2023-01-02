@@ -1,8 +1,10 @@
 #!/bin/python3
 """Run AoC code in various flavors."""
+from __future__ import annotations
 
 import dataclasses
 import datetime
+import functools
 import importlib
 import multiprocessing
 import os
@@ -74,7 +76,7 @@ class ChallengeRunner:
                 proc.terminate()
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class Runner:
     """Code runner."""
 
@@ -84,13 +86,19 @@ class Runner:
     timeout: int
 
     def __post_init__(self) -> None:
-        self.day = self.day or self.now().day
-        self.year = self.year or self.now().year
-        self.base = pathlib.Path(__file__).parent / str(self.year)
-
         cwd = pathlib.Path(os.getcwd())
         if cwd.name != str(self.year) and (cwd / str(self.year)).exists():
             sys.path.append(str(cwd / str(self.year)))
+
+    @classmethod
+    def build(klass, year: Optional[int], day: Optional[int], watch: bool, timeout: int) -> Runner:
+        day = day or klass.now().day
+        year = year or klass.now().year
+        return klass(year, day, watch, timeout)
+
+    @property
+    def base(self):
+        return pathlib.Path(__file__).parent / str(self.year)
 
     def from_template(self, day: int) -> None:
         """Create a new exercise file from template."""
@@ -194,8 +202,7 @@ class Runner:
                     if case.want == aoc.TEST_SKIP:
                         continue
                     assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
-                    data = obj.input_parser(case.inputs.rstrip())
-                    got = obj.funcs[case.part](data)
+                    got = obj.run_solver(part, case.inputs.rstrip())
                     if case.want != got:
                         print(f"FAILED! {case.part}: want({case.want}) != got({got})")
                         tests_pass = False
@@ -213,6 +220,7 @@ class Runner:
                         print(f"Response: {resp}")
                         if "That's the right answer!" in resp:
                             print(f"Solved part {part}!!")
+                            self.update_solutions(day, {part: answer})
                             part += 1
                         elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
                             amount = m.group(1)
@@ -231,7 +239,6 @@ class Runner:
             except Exception:
                 traceback.print_exc()
 
-        self.update_solutions(day)
         print("Updated Solutions. Watch and run test/check.")
 
         if not solutions:
@@ -253,8 +260,7 @@ class Runner:
                 obj.testing = True
                 tests = [t for t in obj.TESTS if t.want != 0]
                 for case in tests:
-                    data = obj.input_parser(case.inputs.rstrip())
-                    got = obj.funcs[case.part](data)
+                    got = obj.run_solver(part, case.inputs.rstrip())
                     if case.want == got:
                         print(f"TEST PASSED! {case.part}")
                     else:
@@ -271,19 +277,49 @@ class Runner:
                 traceback.print_exc()
         print("Done for the day.")
 
-    def update_solutions(self, day):
-        # Reload code and get the Challenge.
-        module = importlib.import_module(f"{day:02}")
-        obj = getattr(module, f"Day{day:02}")()
-        puzzle_input = obj.input_parser(obj.raw_data(None))
-        solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
-        print(solutions)
-        solution_line = f"{day:02} {solutions[1]} {solutions[2]}\n"
+    @functools.cache
+    def read_solutions(self) -> dict[int, dict[int, int | str]]:
+        solutions = {}
+        for line in (self.base / "solutions.txt").read_text().splitlines():
+            if not line:
+                continue
+            parts = line.split()
+            solutions[int(parts[0])] = {
+                part: int(val) if val.isdigit() else val
+                for part, val in enumerate(parts[1:], start=1)
+            }
+        return solutions
+
+    def update_solutions(self, day: int, solutions: Optional[dict[int, int | str]] = None) -> None:
+        if not solutions:
+            # Reload code and get the Challenge.
+            module = importlib.import_module(f"{day:02}")
+            obj = getattr(module, f"Day{day:02}")()
+            parts = [1] if day == 25 else [1, 2]
+            solutions = {}
+            for part in parts:
+                got = obj.run_solver(part, obj.raw_data(None))
+                if got:
+                    solutions[part] = got
+
+        existing = self.read_solutions()
+        new = existing | {day: solutions}
+        if new == existing:
+            print("Existing solutions up to date.")
+            return
+
+        print(f"Writing solutions to file. {new[day]}")
+        self.read_solutions.cache_clear()
+        lines = [
+            " ".join(
+                [f"{line_day:02}"]
+                + [str(new[line_day][p]) for p in (1, 2) if p in new[line_day]]
+            )
+            for line_day in sorted(new)
+        ]
+
         solution_file = self.base / "solutions.txt"
-        solution_values = solution_file.read_text()
-        if solution_line not in solution_values:
-            solution_values += f"{day:02} {solutions[1]} {solutions[2]}\n"
-            solution_file.write_text(solution_values)
+        solution_file.write_text("\n".join(lines))
 
 
 @click.command()
@@ -326,7 +362,7 @@ def main(
     day = day or now.day
     year_dir = pathlib.Path(__file__).parent / str(year)
 
-    runner = Runner(year, day, watch, timeout)
+    runner = Runner.build(year, day, watch, timeout)
     if december:
         return runner.december()
     if waitlive:

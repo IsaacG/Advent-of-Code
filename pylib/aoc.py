@@ -453,6 +453,8 @@ class Challenge(Helpers):
     PARAMETERIZED_INPUTS: Any = None
 
     def __init__(self, parts_to_run: tuple[int, ...] = (1, 2)):
+        if self.day == 25:
+            parts_to_run = tuple(set(parts_to_run) - {2, })
         self.funcs = {1: self.part1, 2: self.part2}
         self.parts_to_run = parts_to_run
         self.testing = False
@@ -545,6 +547,8 @@ class Challenge(Helpers):
         self.pre_run(parsed_input)
         if inspect.ismethod(getattr(self, "solver", None)) and self.PARAMETERIZED_INPUTS is not None:
             return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
+        if func[part].__func__ is getattr(Challenge, f"part{part}"):
+            return None
         result = func[part](parsed_input)
         if isinstance(result, float):
             print("=== WARNING!! Casting float to int. ===")
@@ -595,7 +599,7 @@ class Challenge(Helpers):
         solution = None
         for line in lines:
             parts = line.split()
-            assert len(parts) == 3, f'Line does not have 3 parts: {line!r}.'
+            assert len(parts) in {2, 3}, f'Line does not have 2-3 parts: {line!r}.'
             if int(parts[0]) == self.day:
                 solution = parts[1:]
                 break
@@ -606,6 +610,9 @@ class Challenge(Helpers):
             start = time.perf_counter_ns()
             got = self.run_solver(part, self.raw_data(input_file))
             end = time.perf_counter_ns()
+            if part == 2 and len(solution) == 1:
+                print("No part2 solution in solutions.txt; skipping.")
+                return
             want = solution[part - 1]
             if isinstance(got, int):
                 want = int(want)
