@@ -118,7 +118,7 @@ class Runner:
         filename.write_text(out)
         filename.chmod(0o700)
 
-    def december(self):
+    def december(self, timeout: int) -> None:
         """Run live wait-solve for all of December."""
         year = self.now().year
         start = datetime.datetime(year, 11, 30, tzinfo=EST)
@@ -127,7 +127,7 @@ class Runner:
             solved = [int(line.split()[0]) for line in (self.base / "solutions.txt").read_text().splitlines()]
             if self.now().day in solved:
                 print("Wait for tomorrow's problem to start and solve it.")
-                self.wait_solve()
+                self.wait_solve(timeout)
             else:
                 print("Today's problem is not yet solved. Solve it now.")
                 self.live_solve()
@@ -137,27 +137,32 @@ class Runner:
         """Return datetime now."""
         return datetime.datetime.now(EST)
 
-    def midnight_tomorrow(self) -> datetime.datetime:
+    @classmethod
+    def midnight_tomorrow(klass) -> datetime.datetime:
         """Return the next midnight."""
-        now = self.now()
+        now = klass.now()
         one_day = datetime.timedelta(days=1)
         return now.replace(hour=0, minute=0, second=0, microsecond=0) + one_day
 
-    def wait_solve(self) -> None:
+    @classmethod
+    def wait_solve(klass, timeout: int) -> None:
         """Wait for the clock to tick down then live solve."""
-        now = self.now()
-        midnight = self.midnight_tomorrow()
-        delay = midnight - now
+        now = klass.now()
+        midnight = klass.midnight_tomorrow()
+        print(f"Next exercise starts in {(midnight - now).seconds} seconds.")
+
         stops = (60, 30, 15, 10, 5, 4, 3, 2, 1, 0)
-        print(f"Next exercise starts in {delay.seconds} seconds.")
-        time.sleep((midnight - self.now()).seconds - stops[0])
-        for a, b in zip(stops, stops[1:]):
-            print(f"{a} seconds to go!")
-            time.sleep(a - b)
-        while midnight >= self.now():
-            time.sleep((midnight - self.now()).seconds + 1)
-        self.day = self.now().day
-        self.live_solve()
+        for offset, nxt in zip(stops, stops[1:]):
+            delay = (midnight - klass.now()).seconds - offset
+            if delay <= 0:
+                continue
+            print(f"{delay + offset} seconds to go!")
+            time.sleep(delay)
+        while midnight >= klass.now():
+            delay = (midnight - klass.now()).seconds + 0.1
+            time.sleep(delay)
+        print("Solve!!!")
+        return klass.build(year=None, day=None, watch=False, timeout=timeout).live_solve()
 
     def live_solve(self) -> None:
         """Solve a day live.
@@ -364,9 +369,9 @@ def main(
 
     runner = Runner.build(year, day, watch, timeout)
     if december:
-        return runner.december()
+        return Runner.december(timeout)
     if waitlive:
-        return runner.wait_solve()
+        return Runner.wait_solve(timeout)
     if live:
         return runner.live_solve()
 
