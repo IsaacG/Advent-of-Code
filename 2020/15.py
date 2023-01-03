@@ -10,8 +10,8 @@ from lib import aoc
 class Day15(aoc.Challenge):
   """Solve for the n'th value in a Van Eck sequence."""
 
-  TRANSFORM = lambda _, s: [int(i) for i in s.split(',')]
   TIMER_ITERATIONS = (10000, 10)
+  INPUT_PARSER = aoc.ParseOneWord(lambda s: [int(i) for i in s.split(',')])
 
   TESTS = (
     aoc.TestCase(inputs='0,3,6', part=1, want=436),
@@ -20,10 +20,10 @@ class Day15(aoc.Challenge):
   )
 
   def part1(self, parsed_input: List[List[int]]) -> int:
-    return self.solve(parsed_input[0], 2020)
+    return self.solve(parsed_input, 2020)
 
   def part2(self, parsed_input: List[List[int]]) -> int:
-    return self.solve(parsed_input[0], 30000000)
+    return self.solve(parsed_input, 30000000)
 
   def solve(self, starting: List[int], end: int) -> int:
     """Solve Van Eck's n'th digit.

@@ -31,6 +31,7 @@ class Day${day}(aoc.Challenge):
         # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
+    INPUT_PARSER = aoc.parse_one_str_per_line
     # INPUT_PARSER = aoc.parse_one_str
     # INPUT_PARSER = aoc.parse_one_int
     # INPUT_PARSER = aoc.parse_one_str_per_line
@@ -77,9 +78,6 @@ class Day${day}(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
-    # def line_parser(self, line: str):
-    #     pass
 
 
 if __name__ == "__main__":

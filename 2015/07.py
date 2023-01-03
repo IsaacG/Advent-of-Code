@@ -27,6 +27,19 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=492),
     ]
 
+    @staticmethod
+    def line_parser(line: str) -> LineType:
+        """Parse one line."""
+        inp, out = line.split(" -> ")
+        parts = inp.split()
+        if len(parts) == 1:
+            return (out, "VAL", parts[0], "0")
+        if len(parts) == 2:
+            return (out, "NOT", parts[1], "0")
+        return (out, parts[1], parts[0], parts[2])
+
+    INPUT_PARSER = aoc.ParseOneWordPerLine(line_parser)
+
     def part1(self, parsed_input: InputType) -> int:
         """Solve for wire a."""
         unresolved_parts = set(parsed_input)
@@ -83,16 +96,6 @@ class Day07(aoc.Challenge):
                 a = str(val_a)
             v2.append((out, op, a, b))
         return self.part1(v2)
-
-    def line_parser(self, line: str) -> LineType:
-        """Parse one line."""
-        inp, out = line.split(" -> ")
-        parts = inp.split()
-        if len(parts) == 1:
-            return (out, "VAL", parts[0], "0")
-        if len(parts) == 2:
-            return (out, "NOT", parts[1], "0")
-        return (out, parts[1], parts[0], parts[2])
 
 
 if __name__ == "__main__":

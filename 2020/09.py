@@ -34,12 +34,11 @@ SAMPLE = """\
 class Day09(aoc.Challenge):
   """Day 9."""
 
-  INPUT_TYPES = int
-
   TESTS = (
     aoc.TestCase(inputs=SAMPLE, part=1, want=127),
     aoc.TestCase(inputs=SAMPLE, part=2, want=62),
   )
+  INPUT_PARSER = aoc.parse_one_int_per_line
 
   def is_valid(self, pool: List[int], num: int):
     """Return if `num` is the sum of two values from the pool."""

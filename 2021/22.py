@@ -110,13 +110,7 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=590784),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=2758514936282235),
     )
-
-    # Convert lines to type:
-    INPUT_TYPES = int
-    # Split on whitespace and coerce types:
-    # INPUT_TYPES = [str, int]
-    # Apply a transform function
-    # TRANSFORM = lambda _, l: (l[0], int(l[1:]))
+    INPUT_PARSER = aoc.parse_one_int_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         points = set()

@@ -21,7 +21,7 @@ class Day01(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=1, want=514579),
     aoc.TestCase(inputs=SAMPLE, part=2, want=241861950),
   )
-  INPUT_TYPES = int
+  INPUT_PARSER = aoc.parse_one_int_per_line
 
   def prod_of_pair(self, pair_sum: int, data: Iterable[int]) -> int:
     vals = [i for i in data if (pair_sum - i) in data]

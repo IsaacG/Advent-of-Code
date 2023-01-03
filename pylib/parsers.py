@@ -123,22 +123,37 @@ class BaseParseReGroups(BaseParseRe):
         raise ValueError(f"Pattern did not match! {self.compiled.pattern=} {line=}")
 
 
-class ParseBlocks(BaseParser):
-    """Parse an input by splitting into blocks and applying a parser to each block."""
+class BaseMultiParser(BaseParser):
+    """Base for using multiple parsers."""
 
-    def __init__(self, block_parsers: Iterable[BaseParser]):
-        for parser in block_parsers:
+    def __init__(self, parsers: Iterable[BaseParser]):
+        for parser in parsers:
             if inspect.isclass(parser):
                 raise ValueError(f"{parser!r} is a class and not an instance!")
-        self.block_parsers = block_parsers
+        self.parsers = parsers
+
+
+class ParseBlocks(BaseMultiParser):
+    """Parse an input by splitting into blocks and applying a parser to each block."""
 
     def parse(self, puzzle_input: str) -> list[Any]:
         """Convert input into "blocks" and parse each block."""
         blocks = puzzle_input.split("\n\n")
         outputs = []
-        for block, parser in zip(blocks, itertools.cycle(self.block_parsers)):
+        for block, parser in zip(blocks, itertools.cycle(self.parsers)):
             outputs.append(parser.parse(block))
         return outputs
+
+
+class ParseChain(BaseMultiParser):
+    """Parse an input via a chain of serial parser steps."""
+
+    def parse(self, puzzle_input: str) -> list[Any]:
+        """Convert input into "blocks" and parse each block."""
+        parsed = puzzle_input
+        for parser in self.parsers:
+            parsed = parser.parse(parsed)
+        return parsed
 
 
 class ParseCharMap(BaseParser):

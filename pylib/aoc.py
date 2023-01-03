@@ -440,10 +440,7 @@ class Helpers:
 class Challenge(Helpers):
     """Daily Challenge."""
 
-    INPUT_TYPES = str
     INPUT_PARSER: Optional[parsers.BaseParser] = None
-    POST_PROCESS: Callable[[Any, Any], Any] = lambda _, x: x
-    TRANSFORM = None
     TESTS: list[TestCase] = []
     DEBUG = False
     TIMER_ITERATIONS = (None, None)
@@ -522,28 +519,13 @@ class Challenge(Helpers):
     def solver(self, parsed_input: Any, *args, **kwargs) -> Any:
         raise NotImplementedError
 
-    def line_parser(self, line: str) -> Any:
-        raise NotImplementedError
-
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-        if self.INPUT_PARSER is not None:
-            if not isinstance(self.INPUT_PARSER, BaseParser):
-                raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
-            return self.POST_PROCESS(self.INPUT_PARSER.parse(puzzle_input))
-        if self.TRANSFORM is not None:
-            transform = self.TRANSFORM
-        elif self.line_parser.__func__ is not Challenge.line_parser:
-            transform = self.line_parser
-        elif not isinstance(self.INPUT_TYPES, list):
-            transform = self.INPUT_TYPES
-        else:
+        assert self.INPUT_PARSER is not None
+        if not isinstance(self.INPUT_PARSER, BaseParser):
+            raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
 
-            def transform(line: str) -> list:
-                parts = line.split(maxsplit=len(self.INPUT_TYPES) - 1)
-                return [func(piece) for func, piece in zip(self.INPUT_TYPES, parts)]
-
-        return self.POST_PROCESS([transform(i) for i in puzzle_input.splitlines()])
+        return self.INPUT_PARSER.parse(puzzle_input)
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""

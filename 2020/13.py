@@ -19,6 +19,7 @@ class Day13(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=295),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=1068781),
   )
+  INPUT_PARSER = aoc.parse_one_str_per_line
 
   def part1(self, parsed_input: List[str]) -> int:
     """Find which bus will first arrive once we are at the bus terminal."""

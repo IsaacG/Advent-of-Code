@@ -19,18 +19,16 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=168),
     )
     INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    PARAMETERIZED_INPUTS = [
+        # Return the optimal blast position with constant movement cost.
+        lambda x: x,
+        # Return the optimal blast position with linear movement cost.
+        lambda x: x * (x + 1) // 2,
+    ]
 
-    def part1(self, parsed_input: InputType) -> int:
-        """Return the optimal blast position with constant movement cost."""
-        return self.solver(parsed_input[0], lambda x: x)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the optimal blast position with linear movement cost."""
-        return self.solver(parsed_input[0], lambda x: x * (x + 1) // 2)
-
-    @staticmethod
-    def solver(positions: list[int], func: Callable[[int], int]) -> int:
+    def solver(self, parsed_input: list[int], func: Callable[[int], int]) -> int:
         """Find the location where it is cheapest for all the crabs to move."""
+        positions = parsed_input[0]
         costs = []
         for i in range(min(positions), max(positions) + 1):
             costs.append(sum(func(abs(i - pos)) for pos in positions))

@@ -25,8 +25,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
-
-    INPUT_TYPES = LineType
+    INPUT_PARSER = aoc.parse_one_int_per_line
 
     def solver(self, containers: list[int]) -> dict[int, int]:
         """Compute the number of ways to fill containers."""

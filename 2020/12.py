@@ -36,9 +36,8 @@ F11
 class Day12(aoc.Challenge):
   """Day 12."""
 
-  # Parse the input at load time. Split into char + num.
-  TRANSFORM = lambda _, l: (l[0], int(l[1:]))
   DEBUG = False
+  INPUT_PARSER = aoc.ParseOneWordPerLine(lambda l: (l[0], int(l[1:])))
 
   TESTS = (
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=25),

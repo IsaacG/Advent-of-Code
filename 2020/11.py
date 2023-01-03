@@ -108,6 +108,7 @@ class Day11(aoc.Challenge):
     aoc.TestCase(inputs=S1[0], part=1, want=37),
     aoc.TestCase(inputs=S2[0], part=2, want=26),
   )
+  INPUT_PARSER = aoc.parse_one_str_per_line
   TIMEOUT = 60
 
   def pre_run(self, *args, **kwargs):

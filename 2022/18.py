@@ -34,8 +34,10 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=64),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=58),
     ]
-    INPUT_PARSER = aoc.ParseOneWordPerLine(lambda line: tuple(int(i) for i in line.split(",")))
-    POST_PROCESS = set
+    INPUT_PARSER = aoc.ParseChain([
+        aoc.ParseOneWordPerLine(lambda line: tuple(int(i) for i in line.split(","))),
+        aoc.ParseOneWord(set),
+    ])
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the number of lava surfaces which are not touching another lava."""

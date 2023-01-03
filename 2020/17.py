@@ -124,6 +124,7 @@ class Day17(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=112),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=848),
   )
+  INPUT_PARSER = aoc.parse_one_str_per_line
 
   def solve_game_of_life(self, parsed_input: List[str], dimensions: int) -> int:
     board = GameOfLife(dimensions, parsed_input)

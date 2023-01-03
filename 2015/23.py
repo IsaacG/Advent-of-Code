@@ -23,6 +23,13 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
+    @staticmethod
+    def line_parser(line: str):
+        """Parse one line of input."""
+        return [int(i) if aoc.RE_INT.match(i) else i for i in line.replace(",", "").split()]
+
+    INPUT_PARSER = aoc.ParseOneWordPerLine(line_parser)
+
     def solver(self, instructions: InputType, start_a: int) -> int:
         """Emulate a program and return register "b"."""
         ptr = 0
@@ -58,10 +65,6 @@ class Day23(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Return reg b, starting with a=1."""
         return self.solver(parsed_input, 1)
-
-    def line_parser(self, line: str):
-        """Parse one line of input."""
-        return [int(i) if aoc.RE_INT.match(i) else i for i in line.replace(",", "").split()]
 
 
 if __name__ == "__main__":
