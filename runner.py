@@ -328,14 +328,15 @@ class Runner:
 
 
 @click.command()
+@click.option("--date", "-d", type=str, required=False, help="YYYY/dd")
 @click.option("--day", type=int, required=False, help="AoC day")
 @click.option("--year", type=int, required=False, help="AoC year")
 @click.option("--waitlive", is_flag=True, help="Wait for midnight then live solve.")
 @click.option("--december", is_flag=True, help="Live solve all days.")
 @click.option("--live", is_flag=True, help="Live solve one day: setup, watch, test, submit.")
-@click.option("--test", is_flag=True, help="Test if the sample input/solution works.")
+@click.option("--test", "-t", is_flag=True, help="Test if the sample input/solution works.")
 @click.option("--solve", is_flag=True, help="Generate the solution.")
-@click.option("--check", is_flag=True, help="Check if the results in solution.txt match with the generated solution.")
+@click.option("--check", "-c", is_flag=True, help="Check if the results in solution.txt match with the generated solution.")
 @click.option("--submit", is_flag=True, help="Submit the next part on AoC website.")
 @click.option("--part", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
 @click.option("--watch", is_flag=True, help="If set, loop and repeat the action when the file is saved.")
@@ -344,6 +345,7 @@ class Runner:
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
 @click.option("--input-file", "--input", "--file", type=str, default=None, help="Alternative input file.")
 def main(
+    date: Optional[str],
     day: Optional[int],
     waitlive,
     december,
@@ -362,6 +364,13 @@ def main(
 ):
     """Run the code in some fashion."""
     dotenv.load_dotenv()
+    if date:
+        assert year is None and day is None
+        m = re.match(r"^(\d{2}|\d{4}).??(\d{1,2})$", date)
+        year = int(m.group(1))
+        if year < 2000:
+            year += 2000
+        day = int(m.group(2))
     now = datetime.datetime.now(EST).date()
     year = int(year or os.getenv("YEAR") or now.year)
     day = day or now.day
