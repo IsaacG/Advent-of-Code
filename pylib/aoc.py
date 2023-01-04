@@ -557,9 +557,10 @@ class Challenge(Helpers):
             got = self.run_solver(case.part, case.inputs.rstrip())
             end = time.perf_counter_ns()
             if case.want != got:
-                print(f'FAILED! {case.part}: want({case.want}) != got({got})')
+                print(f'{self.year}/{self.day:02d} Test {i + 1}: FAILED! {case.part}: want({case.want}) != got({got})')
                 break
-            print(f'{self.year}/{self.day:02d} Test {i + 1}: PASS in {format_ns(end - start)}! (part {case.part})')
+            else:
+                print(f'{self.year}/{self.day:02d} Test {i + 1}: PASS in {format_ns(end - start)}! (part {case.part})')
         self.debug('=====')
         self.testing = False
 

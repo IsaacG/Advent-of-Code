@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code: Day 20."""
+"""Advent of Code: Day 20. Image enhancing algorithm."""
 
 import functools
 import typer
@@ -11,21 +11,14 @@ InputType = tuple[dict[str, bool], set[complex]]
 
 
 class Day20(aoc.Challenge):
-    """Image enhancing algorithm."""
+    """Image enhancing algorithm. Apply enhancement rules to an input image."""
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=35),
         aoc.TestCase(inputs=SAMPLE[2], part=1, want=1),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=3351),
     )
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Enhance the image twice and return pixels enabled."""
-        return self.enhance(parsed_input, 2)
-
-    def part2(self, parsed_input: InputType) -> int:
-        """Enhance the image 50 times and return pixels enabled."""
-        return self.enhance(parsed_input, 50)
+    PARAMETERIZED_INPUTS = [2, 50]
 
     @staticmethod
     @functools.cache  # 2x faster
@@ -33,7 +26,7 @@ class Day20(aoc.Challenge):
         """Return the 3x3 points centered around `point`."""
         return [point + complex(x, y) for y in range(-1, 2) for x in range(-1, 2)]
 
-    def enhance(self, parsed_input: InputType, steps: int) -> int:
+    def solver(self, parsed_input: InputType, steps: int) -> int:
         """Enhance the image N times.
 
         For every iteration, expand the area of interest by expanding outwards
