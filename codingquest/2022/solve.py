@@ -198,11 +198,11 @@ def heatshield(data: str) -> int:
     If we know which tiles are in play for a row, we can sort tiles by x-value and
     walk the row by jumping from row-start to tile-start to tile-end.
     """
-    squares = []
+    squares = set()
     for line in data.splitlines():
         xstart, ystart, width, height = [int(i) for i in line.split()]
         # Covert width/height to end column/row.
-        squares.append((xstart, ystart, xstart + width, ystart + height))
+        squares.add((xstart, ystart, xstart + width, ystart + height))
 
     # Different grids for different inputs.
     if len(squares) == 3:
@@ -239,15 +239,16 @@ def heatshield(data: str) -> int:
             exposed = 0
             cur = 0
             for square in sorted(in_use, key=lambda square: square[0]):
-                if cur < square[0]:
-                    exposed += square[0] - cur
-                cur = square[2]
+                xstart, _, xend, _ = square
+                if cur < xstart:
+                    exposed += xstart - cur
+                if cur < xend:
+                    cur = xend
             if cur < xmax:
                 exposed += xmax - cur
-            # brute = sum((x, y) not in covered for x in range(xmax))
-            # assert brute == exposed, f"Row {y}: {exposed=} {brute=}"
 
         total += exposed
+
     return total
 
 
