@@ -2,14 +2,20 @@
 
 ```
 Day  Runtime
- 1      67us
- 2      23us
- 3     562ns
+ 1      67ms
+ 2      23ms
+ 3     550us
  4       3ms
- 5   7.4 min
- 6       1us
- 7     356us
- 8       1us
- 9     453us
-10     395us 
+ 5     7 min
+ 6       1ms
+ 7      80ms
+ 8       1ms
+ 9     450ms
+10     400ms
+
+13       1ms
+14      20ms
+15      25ms
+16     425us
+17       1ms
 ```
