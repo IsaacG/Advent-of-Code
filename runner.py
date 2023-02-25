@@ -182,72 +182,73 @@ class Runner:
         if part is None:
             print("It looks like you completed this day.")
             self.update_solutions(day)
-            return
-
-        # Watch the file.
-        inotify = inotify_simple.INotify()
-        inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
-        while events := inotify.read():
-            if not any(i.name == f"{day:02}.py" for i in events):
-                continue
-            print(datetime.datetime.now().strftime("%H:%M:%S"))
-            try:
-                # Reload code and get the Challenge.
-                module = importlib.reload(module)
-                obj = getattr(module, f"Day{day:02}")()
-                puzzle_input = obj.input_parser(raw_data)
-                # Run tests for this part.
-                obj.testing = True
-                tests = [t for t in obj.TESTS if t.part == part and t.want != 0]
-                if not tests:
-                    print(f"No tests found for part {part}")
+        else:
+            # Watch the file.
+            inotify = inotify_simple.INotify()
+            inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
+            while events := inotify.read():
+                if not any(i.name == f"{day:02}.py" for i in events):
                     continue
-                tests_pass = True
-                for case in tests:
-                    if case.want == aoc.TEST_SKIP:
+                print(datetime.datetime.now().strftime("%H:%M:%S"))
+                try:
+                    # Reload code and get the Challenge.
+                    module = importlib.reload(module)
+                    obj = getattr(module, f"Day{day:02}")()
+                    puzzle_input = obj.input_parser(raw_data)
+                    # Run tests for this part.
+                    obj.testing = True
+                    tests = [t for t in obj.TESTS if t.part == part and t.want != 0]
+                    if not tests:
+                        print(f"No tests found for part {part}")
                         continue
-                    assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
-                    got = obj.run_solver(part, case.inputs.rstrip())
-                    if case.want != got:
-                        print(f"FAILED! {case.part}: want({case.want}) != got({got})")
-                        tests_pass = False
-                obj.testing = False
-                # If tests pass, try to submit.
-                if not tests_pass:
-                    print("Test failed")
-                    continue
-                if obj.SUBMIT[part] and not submitted[part]:
-                    if answer := obj.funcs[part](puzzle_input):
-                        submitted[part] = True
-                        assert not isinstance(answer, float)
-                        print("Submitting answer:", answer)
-                        resp = obj.site.submit(answer)
-                        print(f"Response: {resp}")
-                        if "That's the right answer!" in resp:
-                            print(f"Solved part {part}!!")
-                            self.update_solutions(day, {part: answer})
-                            part += 1
-                        elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
-                            amount = m.group(1)
-                            units = {"second": 1, "minute": 60}[m.group(2)]
-                            seconds = "zero one two three four five six seven eight nine ten".split().index(amount) * units
-                            print(f"Waiting {seconds} seconds.")
-                            time.sleep(seconds)
+                    tests_pass = True
+                    for case in tests:
+                        if case.want == aoc.TEST_SKIP:
+                            continue
+                        assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
+                        got = obj.run_solver(part, case.inputs.rstrip())
+                        if case.want != got:
+                            print(f"FAILED! {case.part}: want({case.want}) != got({got})")
+                            tests_pass = False
+                    obj.testing = False
+                    # If tests pass, try to submit.
+                    if not tests_pass:
+                        print("Test failed")
+                        continue
+                    if obj.SUBMIT[part] and not submitted[part]:
+                        if answer := obj.funcs[part](puzzle_input):
+                            submitted[part] = True
+                            assert not isinstance(answer, float)
+                            print("Submitting answer:", answer)
+                            resp = obj.site.submit(answer)
+                            print(f"Response: {resp}")
+                            if "That's the right answer!" in resp:
+                                print(f"Solved part {part}!!")
+                                self.update_solutions(day, {part: answer})
+                                part += 1
+                            elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
+                                amount = m.group(1)
+                                units = {"second": 1, "minute": 60}[m.group(2)]
+                                seconds = "zero one two three four five six seven eight nine ten".split().index(amount) * units
+                                print(f"Waiting {seconds} seconds.")
+                                time.sleep(seconds)
+                            else:
+                                print(f"Incorrect answer for part {part}. You're on your own :(")
+                                break
                         else:
-                            print(f"Incorrect answer for part {part}. You're on your own :(")
-                            break
-                    else:
-                        print("No answer found")
-                if part == 3:
-                    print("Congrats!")
-                    break
-            except Exception:
-                traceback.print_exc()
+                            print("No answer found")
+                    if part == 3:
+                        print("Congrats!")
+                        break
+                except Exception:
+                    traceback.print_exc()
 
         print("Updated Solutions. Watch and run test/check.")
-
+        puzzle_input = obj.input_parser(raw_data)
         if not solutions:
             solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
+        inotify = inotify_simple.INotify()
+        inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
 
         stop_at = self.now() + datetime.timedelta(hours=6)
         while self.now() < stop_at:
@@ -265,7 +266,7 @@ class Runner:
                 obj.testing = True
                 tests = [t for t in obj.TESTS if t.want != 0]
                 for case in tests:
-                    got = obj.run_solver(part, case.inputs.rstrip())
+                    got = obj.run_solver(case.part, case.inputs.rstrip())
                     if case.want == got:
                         print(f"TEST PASSED! {case.part}")
                     else:
