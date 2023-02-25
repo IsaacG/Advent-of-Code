@@ -455,7 +455,7 @@ class Challenge(Helpers):
         self.parts_to_run = parts_to_run
         self.testing = False
         self._site = None
-        self._filecache = {}
+        self._filecache: dict[pathlib.Path, str] = {}
         super().__init__()
 
     @functools.cached_property
@@ -501,20 +501,16 @@ class Challenge(Helpers):
 
     def raw_data(self, filename: Optional[str]) -> str:
         """Read puzzle data from file."""
-        if filename not in self._filecache:
-            if filename is None:
-                path = self.data_file
-            else:
-                path = pathlib.Path(filename)
-
+        path = pathlib.Path(filename) if filename else self.data_file
+        if path not in self._filecache:
             if not path.exists():
                 if filename:
                     raise RuntimeError(f'Input file {filename} does not exist.')
                 print('Input does not exist. Downloading.')
                 path.write_text(self.site.get_input())
 
-            self._filecache[filename] = path.read_text().rstrip()
-        return self._filecache[filename]
+            self._filecache[path] = path.read_text().rstrip()
+        return self._filecache[path]
 
     def solver(self, parsed_input: Any, *args, **kwargs) -> Any:
         raise NotImplementedError
@@ -601,7 +597,7 @@ class Challenge(Helpers):
             if part == 2 and len(solution) == 1:
                 print("No part2 solution in solutions.txt; skipping.")
                 return
-            want = solution[part - 1]
+            want: int | str = solution[part - 1]
             if isinstance(got, int):
                 want = int(want)
             if want == got:
@@ -628,7 +624,7 @@ class Challenge(Helpers):
         if response:
             print(f'Response: {response}')
 
-    def get_run_method(self, **kwargs: bool) -> Callable[[Challenge, Optional[str]], None]:
+    def get_run_method(self, **kwargs: bool) -> Callable[[Optional[str]], None]:
         if sum(kwargs.values()) != 1:
             raise ValueError("Must specify exactly one action.")
         action = [k for k, v in kwargs.items() if v][0]
@@ -664,7 +660,7 @@ class Challenge(Helpers):
     def benchmark(self, puzzle_input: Any):
         """Benchmark the solution."""
         times = []
-        times.append(self.time_func(10000, lambda: self.input_parser(self.raw_data(data))))
+        times.append(self.time_func(10000, lambda: self.input_parser(self.raw_data(puzzle_input))))
 
         for part, func in self.funcs.items():
 

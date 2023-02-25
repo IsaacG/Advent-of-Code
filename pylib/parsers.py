@@ -20,7 +20,7 @@ def input_to_ints(inputs: Iterable[str]) -> list[int]:
     return [int(i) for i in inputs]
 
 
-def input_to_complex(inputs: Iterable[str]) -> list[int]:
+def input_to_complex(inputs: Iterable[str]) -> list[complex]:
     """Return a list of complex values from an iterable."""
     out = []
     for pair in inputs:
@@ -162,7 +162,7 @@ class ParseCharMap(BaseParser):
     def __init__(self, transform: Callable[[str], Any]):
         self.transform = transform
 
-    def parse(self, puzzle_input: str) -> set[complex]:
+    def parse(self, puzzle_input: str) -> dict[complex, Any]:
         """Parse a map."""
         out: dict[complex, Any] = {}
         for y, line in enumerate(puzzle_input.splitlines()):

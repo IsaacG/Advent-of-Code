@@ -1,10 +1,10 @@
 import apsw
 import os
 import re
-import requests
+import requests  # type: ignore
 import subprocess
 
-from lxml import etree
+from lxml import etree  # type: ignore
 from typing import Optional
 from urllib import parse
 
@@ -80,13 +80,13 @@ class Website:
         p = subprocess.run(cmd, text=True, capture_output=True, input=resp.text)
         return p.stdout
 
-    def submit(self, answer) -> str:
+    def submit(self, answer) -> Optional[str]:
         et = etree.HTML(self.text())
 
         levels = et.xpath('//form/input[@name="level"]/@value')
         if not levels:
             print('No submission box found; is this already completed?')
-            return
+            return None
 
         level = levels[0]
         resp = self.session.post(f'{self.uri_day}/answer', data={'answer': answer, 'level': level})
