@@ -1,7 +1,6 @@
 #!/bin/python
-"""Advent of Code: Day 22."""
+"""Advent of Code: Day 22. Reactor Reboot. Compute cuboid overlaps."""
 
-import itertools
 import re
 
 import typer
@@ -97,299 +96,95 @@ off x=-70369..-16548,y=22648..78696,z=-1892..86821
 on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 """]
-InputType = list[int]
+
+InputType = list[tuple[bool, int, int, int, int, int, int]]
+Cube = tuple[int, int, int, int, int, int]
 
 
 class Day22(aoc.Challenge):
+    """Day 22. Reactor Reboot."""
 
-    DEBUG = True
-    SUBMIT = {1: True, 2: False}
-
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=39),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=590784),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=2758514936282235),
-    )
-    INPUT_PARSER = aoc.parse_one_int_per_line
+    ]
+    PARAMETERIZED_INPUTS = [True, False]
 
-    def part1(self, parsed_input: InputType) -> int:
-        points = set()
-        count = 0
-        for toggle, x0, x1, y0, y1, z0, z1 in parsed_input:
-            if count % 25 == 0:
-                print(count)
-            count += 1
-            for x in range(max(-50, x0), min(x1, 50) + 1):
-                if not -50 <= x <= 50:
-                    continue
-                for y in range(max(-50, y0), min(50, y1) + 1):
-                    if not -50 <= y <= 50:
-                        continue
-                    for z in range(max(-50, z0), min(z1, 50) + 1):
-                        if not -50 <= z <= 50:
-                            continue
-                        if toggle:
-                            points.add((x, y, z))
-                        elif (x, y, z) in points:
-                            points.remove((x, y, z))
-        return len(points)
+    @staticmethod
+    def overlaps(
+        others: list[Cube],
+        ax0: int, ax1: int, ay0: int, ay1: int, az0: int, az1: int,
+    ) -> list[Cube]:
+        """Return the overlapping sections of one cube with others."""
+        out = []
+        for bx0, bx1, by0, by1, bz0, bz1 in others:
+            if (
+                bx1 < ax0 or bx0 > ax1 or
+                by1 < ay0 or by0 > ay1 or
+                bz1 < az0 or bz0 > az1
+            ):
+                continue
+            out.append((
+                max(ax0, bx0), min(ax1, bx1),
+                max(ay0, by0), min(ay1, by1),
+                max(az0, bz0), min(az1, bz1),
+            ))
+        return out
 
-    def no_intersect(self, a, b):
-        return any(
-            (a0 > b1 or b0 > a1)
-            for (a0, a1), (b0, b1) in zip(a, b)
+    @staticmethod
+    def volume(cubes: list[Cube]) -> int:
+        """Return the sum volume of cubes."""
+        return sum(
+            (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1)
+            for x0, x1, y0, y1, z0, z1 in cubes
         )
 
-    def intersect(self, a, b):
-        return not self.no_intersect(a, b)
+    def restrict(self, parsed_input: InputType) -> InputType:
+        """Filter the input to a -50..50 volume."""
+        modified: InputType = []
+        for on, x0, x1, y0, y1, z0, z1 in parsed_input:
+            if (x1 < -50 or y1 < -50 or z1 < -50):
+                continue
+            if (x0 > 50 or y0 > 50 or z0 > 50):
+                continue
+            modified.append((
+                on,
+                max(x0, -50), min(x1, 50),
+                max(y0, -50), min(y1, 50),
+                max(z0, -50), min(z1, 50),
+            ))
+        return modified
 
-    def merge(self, a, b):
-        if sum(1 for i, j in zip(a, b) if i == j) != 2:
-            return None
-        p = []
-        for (a0, a1), (b0, b1) in zip(a, b):
-            if a0 == b0 and a1 == b1:
-                p.append((a0, a1))
-            elif a0 == b1 + 1:
-                p.append((b0, a1))
-            elif b0 == a1 + 1:
-                p.append((a0, b1))
-            else:
-                return None
-        return tuple(p)
+    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
+        """Return the number of points which are on, no restrictions."""
+        if args[0]:
+            parsed_input = self.restrict(parsed_input)
 
-    def explode(self, a, b):
-        if self.no_intersect(a, b):
-            return set([a])
-        dims = []
-        for (a0, a1), (b0, b1) in zip(a, b):
-            ranges = []
-            if a0 < b0:  # left overhang
-                ranges.append((a0, min(a1, b0)-1))
-            ranges.append((max(a0, b0), min(b1, a1)))
-            if a1 > b1:  # right overhang
-                ranges.append((min(b1, a0)+1, a1))
-            dims.append(ranges)
-        cuboids = set(itertools.product(*dims))
-        return cuboids
+        add: list[Cube] = []
+        sub: list[Cube] = []
 
-    def meld(self, pieces):
-        for a in pieces:
-            for b in pieces:
-                if a >= b:
-                    continue
-                if combined := self.merge(a, b):
-                    pieces.remove(a)
-                    pieces.remove(b)
-                    pieces.add(combined)
-                    return self.meld(pieces)
-        return pieces
+        for on, *cube in parsed_input:
+            new_sub = self.overlaps(add, *cube)
+            new_add = self.overlaps(sub, *cube)
+            add.extend(new_add)
+            sub.extend(new_sub)
+            if on:
+                add.append(tuple(cube))  # type: ignore
 
-    def combine(self, a, b):
-        a_pieces = Day22().explode(a, b)
-        b_pieces = Day22().explode(b, a)
-        return self.meld(a_pieces | b_pieces)
-
-    def subtract(self, a, b):
-        a_pieces = Day22().explode(a, b)
-        b_pieces = Day22().explode(b, a)
-        # print(f"{a=} {b=}")
-        # print(f"{a_pieces=}")
-        # print(f"{b_pieces=}")
-        return a_pieces - b_pieces, b_pieces - a_pieces
-
-    def part2(self, parsed_input: InputType) -> int:
-        on_cubes = set()
-        for line in parsed_input:
-            toggle, x0, x1, y0, y1, z0, z1 = line
-            print(line, len(on_cubes))
-            cur = ((x0, x1), (y0, y1), (z0, z1))
-            if toggle:
-                to_add = set([cur])
-                for other in list(on_cubes):
-                    for piece in list(to_add):
-                        if self.no_intersect(piece, other):
-                            continue
-                        to_add.remove(piece)
-                        to_add.update(self.subtract(piece, other)[0])
-                on_cubes.update(to_add)
-            else:
-                to_del = set([cur])
-                count = 1
-                while to_del:
-                    count += 1
-                    assert count < 1000
-                    # print(len(to_del), len(on_cubes))
-                    piece = to_del.pop()
-                    for other in list(on_cubes):
-                        if self.no_intersect(piece, other):
-                            continue
-
-                        remain_on, remain_del = self.subtract(other, piece)
-                        on_cubes.remove(other)
-                        on_cubes.update(remain_on)
-                        to_del.update(remain_del)
-                        break
-        return len(on_cubes)
-
-    def part2_b(self, parsed_input: InputType) -> int:
-        on_cubes = []
-        for toggle, x0, x1, y0, y1, z0, z1 in parsed_input:
-            if toggle:
-                on_cubes.append(tuple([(x0, x1), (y0, y1), (z0, z1)]))
-        print(f"{len(on_cubes)=}")
-
-        off_cubes = []
-        for toggle, x0, x1, y0, y1, z0, z1 in parsed_input:
-            if not toggle:
-                off_cubes.append(tuple([(x0, x1), (y0, y1), (z0, z1)]))
-        print(f"{len(off_cubes)=}")
-
-        on_intersections = []
-        for ai, a in enumerate(on_cubes):
-            for bi, b in enumerate(on_cubes):
-                if a >= b:
-                    continue
-                overlap = True
-                (ax0, ax1), (ay0, ay1), (az0, az1) = a
-                (bx0, bx1), (by0, by1), (bz0, bz1) = b
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    if ap0 > bp1 or bp0 > ap1:
-                        overlap = False
-                if not overlap:
-                    continue
-
-                overlap_dim = []
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    overlap_dim.append(tuple([max(ap0, bp0), min(ap1, bp1)]))
-                on_intersections.append(tuple(overlap_dim))
-
-        cuts = []
-        for ai, a in enumerate(on_cubes):
-            for bi, b in enumerate(off_cubes):
-                if ai == bi:
-                    continue
-                overlap = True
-                (ax0, ax1), (ay0, ay1), (az0, az1) = a
-                (bx0, bx1), (by0, by1), (bz0, bz1) = b
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    if ap0 > bp1 or bp0 > ap1:
-                        overlap = False
-                if not overlap:
-                    continue
-
-                overlap_dim = []
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    overlap_dim.append(tuple([max(ap0, bp0), min(ap1, bp1)]))
-                cuts.append(tuple(overlap_dim))
-
-        cut_overlaps = []
-        for ai, a in enumerate(cuts):
-            for bi, b in enumerate(cuts):
-                if ai == bi:
-                    continue
-                overlap = True
-                (ax0, ax1), (ay0, ay1), (az0, az1) = a
-                (bx0, bx1), (by0, by1), (bz0, bz1) = b
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    if ap0 > bp1 or bp0 > ap1:
-                        overlap = False
-                if not overlap:
-                    continue
-
-                overlap_dim = []
-                for p1, p2 in zip(a, b):
-                    ap0, ap1 = p1
-                    bp0, bp1 = p2
-                    overlap_dim.append(tuple([max(ap0, bp0), min(ap1, bp1)]))
-                cut_overlaps.append(tuple(overlap_dim))
-
-        sum_on = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in on_cubes)
-        sum_on_intersections = sum(
-            (x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in on_intersections
-        )
-        sum_cuts = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in cuts)
-        sum_cut_overlaps = sum((x1 - x0) * (y1 - y0) * (z1 - z0) for (x0, x1), (y0, y1), (z0, z1) in cut_overlaps)
-
-        total = sum_on - sum_on_intersections - sum_cuts + sum_cut_overlaps
-        return total
-
-        # print(f"{len(on_cubes)=} {len(off_cubes)=}")
-        # print(f"{len(intersections)=} {len(off_intersections)=}")
-        # return 0
-
-    def part1_overlaps(self, parsed_input: InputType) -> int:
-        add = []
-        sub = []
-        for count, (action, rect) in enumerate(parsed_input):
-            if count % 50 == 0:
-                print(count, len(add), len(sub))
-            match action:
-                case "turn on":
-                    new_add, new_sub = [rect], []
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            new_sub.append(overlap)
-                    for i in sub:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            new_add.append(overlap)
-                    add.extend(new_add)
-                    sub.extend(new_sub)
-                case "toggle":
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            sub.append(overlap)
-                            sub.append(overlap)
-                    add.append(rect)
-                case "turn off":
-                    for i in add:
-                        overlap = rect.overlap(i)
-                        if overlap:
-                            sub.append(overlap)
-        area_add = sum(i.area() for i in add)
-        area_sub = sum(i.area() for i in sub)
-        self.debug(f"{area_add=} {area_sub=}")
-        return area_add - area_sub
+        return self.volume(add) - self.volume(sub)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        instructions = []
+        instructions: InputType = []
         for line in puzzle_input.splitlines():
-            toggle = line.split()[0] == "on"
+            on = line.split()[0] == "on"
             nums = re.findall(r"-?[0-9]+", line)
-            assert len(nums) == 6, nums
-            instructions.append([toggle] + [int(i) for i in nums])
+            instructions.append((on, ) + tuple(int(i) for i in nums))  # type: ignore
         return instructions
 
 
 if __name__ == "__main__":
-    # big, small = ((0,2), (0,2), (0,2)), ((1,1), (1,1), (1,3))
-    # big, small = ((0,0), (0,0), (0,0)), ((2,2), (2,2), (2,2))
-    # res = Day22().combine(big, small)
-    # print(len(res))
-    # for i in res:
-    #     print(i)
-    big = ((1, 1), (1, 1), (1, 2))
-    small = ((1, 2), (1, 1), (1, 1))
-
-    res = Day22().subtract(big, small)[1]
-    print(len(res))
-    for i in res:
-        print(i)
-    print()
 
     typer.run(Day22().run)
 
