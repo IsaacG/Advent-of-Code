@@ -56,7 +56,14 @@ class Website:
     def assert_logged_in(self):
         resp = self.session.get(self.BASE)
         resp.raise_for_status()
-        assert '[Log Out]' in etree.HTML(resp.content).xpath('//a/text()')
+
+        db = os.getenv('SQL_DB')
+        query = 'UPDATE cookies SET value = "$cookie" WHERE key = "aoc";'
+
+        if "[Log Out]" not in etree.HTML(resp.content).xpath('//a/text()'):
+            print(f"sqlite3 {db}")
+            print(query)
+            raise RuntimeError("Did your cookie expire? It does not seem valid!")
 
     def get_input(self) -> str:
         resp = self.session.get(f"{self.uri_day}/input")
