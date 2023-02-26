@@ -1,12 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 9: Marble Mania."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
+"""Advent of Code, Day 9: Marble Mania. Simulate a marble game."""
 
 import typer
 from lib import aoc
@@ -20,17 +13,12 @@ SAMPLE = [
     "30 players; last marble is worth 5807 points",
 ]
 
-LineType = int
+LineType = list[int]
 InputType = list[LineType]
 
 
 class Day09(aoc.Challenge):
     """Day 9: Marble Mania."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=32),
@@ -41,19 +29,18 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[5], part=1, want=37305),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    PARAMETERIZED_INPUTS = [1, 100]  # Part 2: do part 1 with 100 more steps.
 
-    def part2(self, parsed_input: InputType) -> int:
+    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
         players, last = parsed_input[0]
-        return self.part1([[players, last * 100]])
+        # Multiple last value by 1 or 100 for parts 1, 2.
+        last *= args[0]
 
-    def part1(self, parsed_input: InputType) -> int:
-        players, last = parsed_input[0]
         score = [0] * players
         cur = aoc.Node(0)
-        start = cur
         cur.next = cur.prev = cur
+
         for marble in range(1, last + 1):
             if marble % 23:
                 cur = aoc.Node(marble, prev=cur.next, next=cur.next.next)
@@ -65,16 +52,8 @@ class Day09(aoc.Challenge):
                 removed.prev.next = removed.next
                 removed.next.prev = removed.prev
 
-            # i = start
-            # out = []
-            # while not out or i != start:
-            #     if i == cur:
-            #         out.append(f"({i.val})")
-            #     else:
-            #         out.append(str(i.val))
-            #     i = i.next
-            # print(" ".join(out))
         return max(score)
+
 
 if __name__ == "__main__":
     typer.run(Day09().run)
