@@ -66,6 +66,9 @@ OCR_MAP = {
     0b10010_10010_10010_10010_10010_01100: "U",
     0b10001_10001_01010_00100_00100_00100: "Y",
     0b11110_00010_00100_01000_10000_11110: "Z",
+    # 2018: 6x8
+    0b100010_100010_100010_111110_100010_100010_100010_100010: "H",
+    0b111000_010000_010000_010000_010000_010000_010000_111000: "I",
     # 2018: 7x10 from https://github.com/mstksg/advent-of-code-ocr/blob/main/src/Advent/OCR/LetterMap.hs#L210
     0b0011000_0100100_1000010_1000010_1000010_1111110_1000010_1000010_1000010_1000010: "A",
     0b1111100_1000010_1000010_1000010_1111100_1000010_1000010_1000010_1000010_1111100: "B",
@@ -111,31 +114,53 @@ def format_ns(ns: float) -> str:
 class OCR:
     """OCR helper for pixel displays."""
 
+    DIMS = {6: 5, 8: 6, 10: 7}
+
     def __init__(self, output: list[list[bool]]):
         self.output = output
         self.height = len(output)
-        if self.height not in (6, 10):
-            raise ValueError(f"Must have 6 or 10 rows; found {len(output)}")
+        if self.height not in (6, 8, 10):
+            raise ValueError(f"Must have 6, 8, 10 rows; found {len(output)}")
         # 6x5 or 10x7
-        self.width = {6: 5, 10: 7}[self.height]
+        self.width = self.DIMS[self.height]
         if any(len(line) != len(output[0]) for line in output):
             raise ValueError("Lines are not uniform size.")
         # Zero-pad rows if needed with a space.
         if len(output[0]) % self.width == self.width - 1:
             self.output = [row + [] for row in self.output]
-        if len(output[0]) % self.width != 0:
-            raise ValueError(f"Lines must be a multiple of {self.width} in length, got {len(output[0])}.")
+
+    def blocks(self):
+        transposed = zip(*self.output)
+        while True:
+            bits = []
+            col = next(transposed, None)
+            while col and not any(col):
+                col = next(transposed, None)
+            if col is None:
+                return
+            bits.append(col)
+            try:
+                while any(col):
+                    col = next(transposed)
+                    bits.append(col)
+            except StopIteration:
+                pass
+            while len(bits) < self.width:
+                bits.append([False] * self.height)
+            combined = []
+            for row in zip(*bits):
+                combined.extend(row)
+            yield combined
 
     def as_string(self) -> str:
         """Return the OCR text."""
         chars = []
-        for x in range(0, len(self.output[0]), self.width):
+        for block in self.blocks():
             num = 0
             alternative = 0
-            for row in self.output:
-                for byte in row[x:x + self.width]:
-                    num = num << 1 | byte
-                    alternative = alternative << 1 | (not byte)
+            for byte in block:
+                num = num << 1 | byte
+                alternative = alternative << 1 | (not byte)
             if num not in OCR_MAP:
                 if alternative in OCR_MAP:
                     num = alternative
@@ -145,6 +170,17 @@ class OCR:
         if "?" in chars:
             self.render()
         return "".join(chars)
+
+    def is_valid(self) -> bool:
+        for block in self.blocks():
+            num = 0
+            alternative = 0
+            for byte in block:
+                num = num << 1 | byte
+                alternative = alternative << 1 | (not byte)
+            if num not in OCR_MAP and alternative not in OCR_MAP:
+                return False
+        return True
 
     def render(self) -> None:
         """Print the pixels to STDOUT."""
@@ -156,19 +192,22 @@ class OCR:
     def from_point_set(cls, points: set[complex]):
         """OCR from a set of points."""
         rows = point_set_to_lists(points)
-        if len(rows) == 6 and len(rows[0]) % 5 == 4:
+        width = cls.DIMS[len(rows)]
+        while len(rows[0]) % width:
             rows = [row + [False] for row in rows]
         return cls(rows)
 
 
 def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
     """Convert a set of complex points to a 2D list of bools."""
-    xs = int(max(p.real for p in points))
-    ys = int(max(p.imag for p in points))
+    xmax = int(max(p.real for p in points))
+    xmin = int(min(p.real for p in points))
+    ymax = int(max(p.imag for p in points))
+    ymin = int(min(p.imag for p in points))
 
     rows = []
-    for y in range(ys + 1):
-        row = [x + y * 1j in points for x in range(xs + 1)]
+    for y in range(ymin, ymax + 1):
+        row = [x + y * 1j in points for x in range(xmin, xmax + 1)]
         rows.append(row)
     return rows
 
