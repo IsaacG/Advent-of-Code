@@ -36,40 +36,41 @@ class Day11(aoc.Challenge):
             for x in range(300):
                 row.append(power_level(x + 1, y + 1))
             grid.append(row)
-        grid_t = list(zip(*grid))
 
-        sumgrid = [[0] * 297 for _ in range(297)]
-        for x in range(297):
-            for y in range(297):
-                sumgrid[y][x] = sum(
-                    grid[y + dy][x + dx]
-                    for dx in range(3)
-                    for dy in range(3)
-                )
+        def max_grid(size: int) -> tuple[int, int]:
+            xgroups = []
+            for row in grid:
+                xrow = []
+                window = sum(row[:size])
+                for x in range(300 - size):
+                    window += row[x + size]
+                    xrow.append(window)
+                    window -= row[x]
+                xgroups.append(xrow)
 
-        size = 3
-        val, xmax, ymax = max(
-            (val, x, y)
-            for y, row in enumerate(sumgrid)
-            for x, val in enumerate(row)
-        )
-        for i in range(3, range_end):
-            sumgrid.pop()
-            for row in sumgrid:
-                row.pop()
-            for x in range(299 - i):
-                for y in range(299 - i):
-                    sumgrid[y][x] += sum(grid[y + i][x:x + i + 1])
-                    sumgrid[y][x] += sum(grid_t[x + i][y: y + i])
-            cand_val, cand_x, cand_y = max(
+            ygroups = []
+            for col in zip(*xgroups):
+                ycol = []
+                window = sum(col[:size])
+                for y in range(300 - size):
+                    window += col[y + size]
+                    ycol.append(window)
+                    window -= col[y]
+                ygroups.append(ycol)
+
+            groups = list(zip(*ygroups))
+            return max(
                 (val, x, y)
-                for y, row in enumerate(sumgrid)
+                for y, row in enumerate(groups)
                 for x, val in enumerate(row)
             )
-            if cand_val > val:
-                val, xmax, ymax, size = cand_val, cand_x, cand_y, i
 
-        out = [xmax + 1, ymax + 1]
+        (val, x, y), size = max(
+            (max_grid(size), size)
+            for size in range(range_start, range_end)
+        )
+
+        out = [x + 1, y + 1]
         if include_size:
             out.append(size + 1)
         return ",".join(str(i) for i in out)
