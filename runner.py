@@ -194,7 +194,6 @@ class Runner:
                     # Reload code and get the Challenge.
                     module = importlib.reload(module)
                     obj = getattr(module, f"Day{day:02}")()
-                    puzzle_input = obj.input_parser(raw_data)
                     # Run tests for this part.
                     obj.testing = True
                     tests = [t for t in obj.TESTS if t.part == part and t.want != 0]
@@ -216,8 +215,7 @@ class Runner:
                         print("Test failed")
                         continue
                     if obj.SUBMIT[part] and not submitted[part]:
-                        if answer := obj.funcs[part](puzzle_input):
-                            submitted[part] = True
+                        if answer := obj.run_solver(part, raw_data):
                             assert not isinstance(answer, float)
                             print("Submitting answer:", answer)
                             resp = obj.site.submit(answer)
@@ -225,6 +223,7 @@ class Runner:
                             if "That's the right answer!" in resp:
                                 print(f"Solved part {part}!!")
                                 self.update_solutions(day, {part: answer})
+                                submitted[part] = True
                                 part += 1
                             elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
                                 amount = m.group(1)
@@ -244,9 +243,8 @@ class Runner:
                     traceback.print_exc()
 
         print("Updated Solutions. Watch and run test/check.")
-        puzzle_input = obj.input_parser(raw_data)
         if not solutions:
-            solutions = {part: obj.funcs[part](puzzle_input) for part in (1, 2)}
+            solutions = {part: obj.run_solver(part, raw_data) for part in (1, 2)}
         inotify = inotify_simple.INotify()
         inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
 
@@ -261,20 +259,19 @@ class Runner:
                 # Reload code and get the Challenge.
                 module = importlib.reload(module)
                 obj = getattr(module, f"Day{day:02}")()
-                puzzle_input = obj.input_parser(raw_data)
                 # Run tests for this part.
                 obj.testing = True
-                tests = [t for t in obj.TESTS if t.want != 0]
+                tests = [t for t in obj.TESTS if t.want != 0 and t.want != aoc.TEST_SKIP]
                 for case in tests:
                     got = obj.run_solver(case.part, case.inputs.rstrip())
                     if case.want == got:
-                        print(f"TEST PASSED! {case.part}")
+                        print(f"TEST PASSED!  {case.part}")
                     else:
-                        print(f"TEST FAILED! {case.part}: want({case.want}) != got({got})")
+                        print(f"TEST FAILED!  {case.part}: want({case.want}) != got({got})")
                 obj.testing = False
                 # If tests pass, try to submit.
                 for part in (1, 2):
-                    got = obj.funcs[part](puzzle_input)
+                    got = obj.run_solver(part, raw_data)
                     if solutions[part] == got:
                         print(f"CHECK PASSED! {part}")
                     else:
@@ -309,7 +306,10 @@ class Runner:
                     solutions[part] = got
 
         existing = self.read_solutions()
-        new = existing | {day: solutions}
+        new = existing.copy()
+        if day not in new:
+            new[day] = {}
+        new[day].update(solutions)
         if new == existing:
             print("Existing solutions up to date.")
             return
