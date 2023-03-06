@@ -15,9 +15,11 @@ import click
 import humanize
 import more_itertools
 import png
+import requests
 
 # Regex used to detect an interger (positive or negative).
 NUM_RE = re.compile("-?[0-9]+")
+INPUT_ENDPOINT = "https://codingquest.io/api/puzzledata"
 
 
 def rolling_average(data: str) -> int:
@@ -470,6 +472,19 @@ def huffman_decode(data: str) -> str:
     return "".join(out)
 
 
+def inventory_check(data: str) -> int:
+    """Sum up inventory values.
+
+    Day 18.
+    """
+    counts = collections.defaultdict(int)
+    for line in data.splitlines():
+        _, count, category = line.split()
+        counts[category] += int(count)
+    return math.prod(count % 100 for count in counts.values())
+
+
+
 FUNCS = {
     1: rolling_average,
     2: lotto_winnings,
@@ -486,6 +501,7 @@ FUNCS = {
     15: astroid_sizes,
     16: checksums,
     17: huffman_decode,
+    18: inventory_check,
 }
 
 
@@ -495,6 +511,10 @@ FUNCS = {
 def main(day: int, data: Optional[pathlib.Path]):
     if not data:
         data = pathlib.Path(f"input/{day:02}.txt")
+        if not data.exists():
+            response = requests.get(INPUT_ENDPOINT, params={"puzzle": f"{day:02}"})
+            response.raise_for_status()
+            data.write_text(response.text)
     start = time.perf_counter_ns()
     got = FUNCS[day](data.read_text().rstrip())
     end = time.perf_counter_ns()
