@@ -7,6 +7,7 @@ import hashlib
 import math
 import pathlib
 import re
+import statistics
 import string
 import time
 from typing import Optional
@@ -124,6 +125,7 @@ def blockchain(data: str) -> str:
         821649, 1280359, 4675746, 7034044, 7103037, 8447017, 10479258,
         13953955, 17511092, 18147393, 20596537, 23807772, 35728140,
     ]
+    speedup = True
     for count, line in enumerate(data.splitlines()):
         desc, num, _, hash_out = line.split("|")
         hash_in = "|".join([desc, num, prior_hash]).encode("utf-8")
@@ -131,8 +133,8 @@ def blockchain(data: str) -> str:
             prior_hash = hash_out
         else:
             start = hashlib.sha256(f"{desc}|".encode("utf-8"))
-            # for num in itertools.count():
-            for num in itertools.count():
+            iterable = numbers if speedup else itertools.count()
+            for num in iterable:
                 c = start.copy()
                 c.update(f"{num}|{prior_hash}".encode("utf-8"))
                 hash_out = c.hexdigest()
@@ -473,15 +475,27 @@ def huffman_decode(data: str) -> str:
 
 
 def inventory_check(data: str) -> int:
-    """Sum up inventory values.
-
-    Day 18.
-    """
+    """18: Sum up inventory values. """
     counts = collections.defaultdict(int)
     for line in data.splitlines():
         _, count, category = line.split()
         counts[category] += int(count)
     return math.prod(count % 100 for count in counts.values())
+
+
+
+def navigation_sensor(data: str) -> int:
+    """19: Apply parity checks."""
+    parity_mask = 1 << 15  # 0x8000
+    value_mask = parity_mask - 1  # 0x7FFF
+
+    values = []
+    for line in data.splitlines():
+        number = int(line)
+        parity, value = bool(parity_mask & number), (value_mask & number)
+        if value.bit_count() % 2 == parity:
+            values.append(value)
+    return round(statistics.mean(values))
 
 
 
@@ -502,6 +516,7 @@ FUNCS = {
     16: checksums,
     17: huffman_decode,
     18: inventory_check,
+    19: navigation_sensor,
 }
 
 
@@ -509,6 +524,9 @@ FUNCS = {
 @click.option("--day", type=int, required=True)
 @click.option("--data", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(day: int, data: Optional[pathlib.Path]):
+    if day not in FUNCS:
+        print(f"Day {day:02} not solved.")
+        return
     if not data:
         data = pathlib.Path(f"input/{day:02}.txt")
         if not data.exists():
@@ -527,7 +545,7 @@ def main(day: int, data: Optional[pathlib.Path]):
             break
         delta //= 1000
 
-    print(f"Day {day} ({delta}{unit}): {got}")
+    print(f"Day {day:02} ({delta:4}{unit:<2}): {got}")
 
 if __name__ == "__main__":
     main()
