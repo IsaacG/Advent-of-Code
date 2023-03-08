@@ -498,6 +498,32 @@ def navigation_sensor(data: str) -> int:
     return round(statistics.mean(values))
 
 
+def tic_tac_toe(data: str) -> int:
+    """20: Score tic tac toe."""
+    # Game configuration.
+    player_count, board_size = 2, 3
+    # All possible ways to win.
+    lines = [set(complex(x, y) for x in range(board_size)) for y in range(board_size)]  # Horizontal
+    lines.extend(set(complex(x, y) for y in range(board_size)) for x in range(board_size))  # Vertical
+    lines.append(set(complex(i, i) for i in range(board_size)))  # Diagonal
+    lines.append(set(complex(i, board_size - 1 - i) for i in range(board_size)))  # Diagonal
+    # Outcome counters.
+    wins = {player: 0 for player in range(player_count)}
+    draws = 0
+    # Game logic.
+    games = ((int(move) - 1 for move in line.split()) for line in data.splitlines())
+    for game in games:
+        positions = {player: set() for player in range(player_count)}
+        for turn, move in enumerate(game):
+            position = complex(move % board_size, move // board_size)
+            positions[turn % player_count].add(position)
+            if any(positions[turn % player_count].issuperset(line) for line in lines):
+                wins[turn % player_count] += 1
+                break
+        else:
+            draws += 1
+    return math.prod(wins.values()) * draws
+
 
 FUNCS = {
     1: rolling_average,
@@ -517,6 +543,7 @@ FUNCS = {
     17: huffman_decode,
     18: inventory_check,
     19: navigation_sensor,
+    20: tic_tac_toe,
 }
 
 
