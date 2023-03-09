@@ -525,6 +525,28 @@ def tic_tac_toe(data: str) -> int:
     return math.prod(wins.values()) * draws
 
 
+def packet_parsing(data: str) -> str:
+    """21: Parsing a byte stream."""
+    packets = collections.defaultdict(list)
+    for line in data.splitlines():
+        stream = iter(line)
+        read_n = lambda n: int("".join(next(stream) for _ in range(2 * n)), 16)
+        header = read_n(2)
+        if header != 0x5555:
+            continue
+        sender = read_n(4)
+        sequence_number = read_n(1)
+        checksum = read_n(1)
+        message = [read_n(1) for _ in range(24)]
+        if checksum != sum(message) % 256:
+            continue
+        packets[sender].append((sequence_number, message))
+
+    for _, segments in packets.items():
+        message = [c for _, segment in sorted(segments) for c in segment]
+        return "".join(chr(i) for i in message)
+
+
 FUNCS = {
     1: rolling_average,
     2: lotto_winnings,
@@ -544,6 +566,7 @@ FUNCS = {
     18: inventory_check,
     19: navigation_sensor,
     20: tic_tac_toe,
+    21: packet_parsing,
 }
 
 
