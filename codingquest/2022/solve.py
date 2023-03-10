@@ -1,7 +1,7 @@
 #!/bin/python
+"""CodingQuest.io solver."""
 
 import collections
-import functools
 import itertools
 import hashlib
 import math
@@ -13,10 +13,9 @@ import time
 from typing import Optional
 
 import click
-import humanize
 import more_itertools
-import png
-import requests
+import png  # type: ignore
+import requests  # type: ignore
 
 # Regex used to detect an interger (positive or negative).
 NUM_RE = re.compile("-?[0-9]+")
@@ -80,7 +79,7 @@ def connect_four(data: str) -> int:
     """
     players = 3
     row_size = 4
-    moves = {}
+    moves: dict[int, set[tuple[int, int]]] = {}
     wins = {i: 0 for i in range(players)}
 
     def rows(point: tuple[int, int]) -> list[list[tuple[int, int]]]:
@@ -126,7 +125,7 @@ def blockchain(data: str) -> str:
         13953955, 17511092, 18147393, 20596537, 23807772, 35728140,
     ]
     speedup = True
-    for count, line in enumerate(data.splitlines()):
+    for line in data.splitlines():
         desc, num, _, hash_out = line.split("|")
         hash_in = "|".join([desc, num, prior_hash]).encode("utf-8")
         if hashlib.sha256(hash_in).hexdigest() == hash_out:
@@ -134,9 +133,9 @@ def blockchain(data: str) -> str:
         else:
             start = hashlib.sha256(f"{desc}|".encode("utf-8"))
             iterable = numbers if speedup else itertools.count()
-            for num in iterable:
+            for candidate in iterable:
                 c = start.copy()
-                c.update(f"{num}|{prior_hash}".encode("utf-8"))
+                c.update(f"{candidate}|{prior_hash}".encode("utf-8"))
                 hash_out = c.hexdigest()
                 if hash_out.startswith("000000"):
                     prior_hash = hash_out
@@ -149,7 +148,7 @@ def cpu(data: str) -> str:
 
     Day 6.
     """
-    variables = collections.defaultdict(int)
+    variables: dict[str, int] = collections.defaultdict(int)
     max_instructions = 1000
 
     def lookup(name: str) -> int:
@@ -161,7 +160,7 @@ def cpu(data: str) -> str:
     test = False
     out = []
     instructions = [line.split() for line in data.splitlines()]
-    for step in range(max_instructions):
+    for _ in range(max_instructions):
         match instructions[ptr]:
             case ["ADD", target, source]:
                 variables[target] += lookup(source)
@@ -221,7 +220,7 @@ def heatshield(data: str) -> int:
     # Sort tile ends by the end row.
     to_remove = sorted(squares, key=lambda s: s[3], reverse=True)
     # Track which tiles are currently in play.
-    in_use = set()
+    in_use: set[tuple[int, int, int, int]] = set()
 
     total = 0
     exposed = 0
@@ -246,8 +245,7 @@ def heatshield(data: str) -> int:
                 xstart, _, xend, _ = square
                 if cur < xstart:
                     exposed += xstart - cur
-                if cur < xend:
-                    cur = xend
+                cur = max(cur, xend)
             if cur < xmax:
                 exposed += xmax - cur
 
@@ -272,10 +270,12 @@ def shift_cipher(data: str) -> str:
         if char in chars:
             char = charpad[charpad.index(char) + distance]
         out.append(char)
-    return re.search(r" '([^']+)' ", "".join(out)).group(1)
+    m = re.search(r" '([^']+)' ", "".join(out))
+    assert m is not None
+    return m.group(1)
 
 
-def maze(data: str) -> str:
+def maze(data: str) -> int:
     """Return the length of the shortest way through a maze.
 
     Day 9.
@@ -290,8 +290,8 @@ def maze(data: str) -> str:
     ymax = len(data.splitlines()) - 1
     xstart = next(x for x in range(xmax + 1) if (x, 0) not in walls)
 
-    seen = set()
-    todo = collections.deque()
+    seen: set[tuple[int, int]] = set()
+    todo: collections.deque[tuple[int, int, int]] = collections.deque()
     todo.append((1, xstart, 0))
 
     while todo:
@@ -304,6 +304,7 @@ def maze(data: str) -> str:
                 continue
             seen.add((xnext, ynext))
             todo.append((steps + 1, xnext, ynext))
+    raise RuntimeError("Not solved")
 
 
 def png_message(data: str) -> str:
@@ -311,6 +312,7 @@ def png_message(data: str) -> str:
 
     Day 10.
     """
+    del data  # unused
     imgfile = "input/10.png"
     rows = png.Reader(filename=imgfile).read()[2]
     last = ""
@@ -325,14 +327,12 @@ def png_message(data: str) -> str:
         if not out:
             return last
         last = "".join(out).split()[-1].strip(string.punctuation)
+    raise RuntimeError("Not solved")
 
 
 def snakes_and_ladders(data: str) -> int:
-    """Return the number of moves for a player to win the game.
-
-    Day 13.
-    """
-    split_data = {True: [], False: []}
+    """Day 13. Return the number of moves for a player to win the game."""
+    split_data: dict[bool, list[str]] = {True: [], False: []}
     for line in data.splitlines():
         split_data[len(line) == 3].append(line)
     board = []
@@ -353,17 +353,15 @@ def snakes_and_ladders(data: str) -> int:
             positions[player] += board[positions[player]]
             if positions[player] > end:
                 return player * (steps // 2)
+    raise RuntimeError("Not solved.")
 
 
 def wordle(data: str) -> str:
-    """Return a Wordle solution based on prior guesses.
-
-    Day 14.
-    """
+    """Day 14. Return a Wordle solution based on prior guesses."""
     setup = [("keyless", "YYBBYYG"), ("society", "YGYYYBB"), ("phobias", "BBGBGBG")]
 
-    black = set()
-    yellow = set()
+    black: set[str] = set()
+    yellow: set[str] = set()
     known_positions: dict[int, str] = {}
     known_not: dict[int, set[str]] = collections.defaultdict(set)
     char_set_by_color = {"B": black, "Y": yellow, "G": yellow}
@@ -386,6 +384,7 @@ def wordle(data: str) -> str:
         ):
             continue
         return word
+    raise RuntimeError("Not solved.")
 
 
 def astroid_sizes(data: str) -> int:
@@ -404,7 +403,7 @@ def astroid_sizes(data: str) -> int:
     while todo:
         parts = []
         # Pop one piece and add all adjacent pieces, grouping by adjacency.
-        sub_todo = {todo.pop(),}
+        sub_todo = {todo.pop(), }
         while sub_todo:
             xy = sub_todo.pop()
             x, y = xy
@@ -461,13 +460,13 @@ def huffman_decode(data: str) -> str:
     out = []
     while True:
         # Read four bits to start.
-        v = 0
+        val = 0
         for _ in range(4):
-            v = (v << 1) + next(char_stream)
+            val = (val << 1) + next(char_stream)
         # Read additioonal bits until we have a table match.
-        while v not in table:
-            v = (v << 1) + next(char_stream)
-        char = table[v]
+        while val not in table:
+            val = (val << 1) + next(char_stream)
+        char = table[val]
         if char == "*":
             break
         out.append(char)
@@ -476,12 +475,11 @@ def huffman_decode(data: str) -> str:
 
 def inventory_check(data: str) -> int:
     """18: Sum up inventory values. """
-    counts = collections.defaultdict(int)
+    counts: dict[str, int] = collections.defaultdict(int)
     for line in data.splitlines():
         _, count, category = line.split()
         counts[category] += int(count)
     return math.prod(count % 100 for count in counts.values())
-
 
 
 def navigation_sensor(data: str) -> int:
@@ -503,8 +501,12 @@ def tic_tac_toe(data: str) -> int:
     # Game configuration.
     player_count, board_size = 2, 3
     # All possible ways to win.
-    lines = [set(complex(x, y) for x in range(board_size)) for y in range(board_size)]  # Horizontal
-    lines.extend(set(complex(x, y) for y in range(board_size)) for x in range(board_size))  # Vertical
+    lines = [
+        set(complex(x, y) for x in range(board_size)) for y in range(board_size)
+    ]  # Horizontal
+    lines.extend(
+        set(complex(x, y) for y in range(board_size)) for x in range(board_size)
+    )  # Vertical
     lines.append(set(complex(i, i) for i in range(board_size)))  # Diagonal
     lines.append(set(complex(i, board_size - 1 - i) for i in range(board_size)))  # Diagonal
     # Outcome counters.
@@ -513,7 +515,7 @@ def tic_tac_toe(data: str) -> int:
     # Game logic.
     games = ((int(move) - 1 for move in line.split()) for line in data.splitlines())
     for game in games:
-        positions = {player: set() for player in range(player_count)}
+        positions: dict[int, set[complex]] = {player: set() for player in range(player_count)}
         for turn, move in enumerate(game):
             position = complex(move % board_size, move // board_size)
             positions[turn % player_count].add(position)
@@ -542,9 +544,8 @@ def packet_parsing(data: str) -> str:
             continue
         packets[sender].append((sequence_number, message))
 
-    for _, segments in packets.items():
-        message = [c for _, segment in sorted(segments) for c in segment]
-        return "".join(chr(i) for i in message)
+    message = [c for _, segment in sorted(list(packets.values())[0]) for c in segment]
+    return "".join(chr(i) for i in message)
 
 
 FUNCS = {
@@ -574,6 +575,7 @@ FUNCS = {
 @click.option("--day", type=int, required=True)
 @click.option("--data", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(day: int, data: Optional[pathlib.Path]):
+    """Run the solver for a specific day."""
     if day not in FUNCS:
         print(f"Day {day:02} not solved.")
         return
@@ -596,6 +598,7 @@ def main(day: int, data: Optional[pathlib.Path]):
         delta //= 1000
 
     print(f"Day {day:02} ({delta:4}{unit:<2}): {got}")
+
 
 if __name__ == "__main__":
     main()
