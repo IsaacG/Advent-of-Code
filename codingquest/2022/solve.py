@@ -20,6 +20,8 @@ import requests  # type: ignore
 # Regex used to detect an interger (positive or negative).
 NUM_RE = re.compile("-?[0-9]+")
 INPUT_ENDPOINT = "https://codingquest.io/api/puzzledata"
+COLOR_SOLID = '█'
+COLOR_EMPTY = ' '
 
 
 def rolling_average(data: str) -> int:
@@ -548,6 +550,19 @@ def packet_parsing(data: str) -> str:
     return "".join(chr(i) for i in message)
 
 
+def overlapping_rectangles(data: str) -> str:
+    """22: Toggle rectangles on and off, brute force."""
+    grid = [[True] * 50 for _ in range(10)]
+    for line in data.splitlines():
+        xstart, ystart, width, height = (int(i) for i in line.split())
+        for ypos in range(ystart, ystart + height):
+            for xpos in range(xstart, xstart + width):
+                grid[ypos][xpos] = not grid[ypos][xpos]
+    for row in grid:
+        print("".join(COLOR_EMPTY if col else COLOR_SOLID for col in row))
+
+
+
 FUNCS = {
     1: rolling_average,
     2: lotto_winnings,
@@ -568,6 +583,7 @@ FUNCS = {
     19: navigation_sensor,
     20: tic_tac_toe,
     21: packet_parsing,
+    22: overlapping_rectangles,
 }
 
 
