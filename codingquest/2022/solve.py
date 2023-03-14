@@ -534,7 +534,10 @@ def packet_parsing(data: str) -> str:
     packets = collections.defaultdict(list)
     for line in data.splitlines():
         stream = iter(line)
-        read_n = lambda n: int("".join(next(stream) for _ in range(2 * n)), 16)
+
+        def read_n(n: int) -> int:
+            return int("".join(next(stream) for _ in range(2 * n)), 16)
+
         header = read_n(2)
         if header != 0x5555:
             continue
@@ -558,9 +561,63 @@ def overlapping_rectangles(data: str) -> str:
         for ypos in range(ystart, ystart + height):
             for xpos in range(xstart, xstart + width):
                 grid[ypos][xpos] = not grid[ypos][xpos]
-    for row in grid:
-        print("".join(COLOR_EMPTY if col else COLOR_SOLID for col in row))
+    return "\n".join(
+        "".join(COLOR_EMPTY if col else COLOR_SOLID for col in row)
+        for row in grid
+    )
 
+
+def astroid_field(data: str) -> str:
+    """23: Find the gap in the astroid field."""
+    filled = set()
+    size, offset, duration = 100, 60 * 60, 60
+    for line in data.splitlines():
+        xstart, ystart, xspeed, yspeed = (float(i) for i in line.split())
+        for steps in range(duration):
+            seconds = offset + steps
+            xpos = int(xstart + xspeed * seconds)
+            ypos = int(ystart + yspeed * seconds)
+            if 0 <= xpos < size and 0 <= ypos < size:
+                filled.add((xpos, ypos))
+    for xpos in range(size):
+        for ypos in range(size):
+            if (xpos, ypos) not in filled:
+                return f"{xpos}:{ypos}"
+    raise RuntimeError("Not solved.")
+
+
+def snake(data: str) -> int:
+    """24: Play the snake game."""
+    # Parse the inputs, set up data.
+    lines = data.splitlines()
+    fruit_line, move_line = lines[1], lines[3]
+    directions = {"U": complex(0, -1), "D": complex(0, 1), "L": complex(-1, 0), "R": complex(1, 0)}
+    moves = (directions[i] for i in move_line)
+
+    def to_complex(pair: str) -> complex:
+        x, y = pair.split(",")
+        return complex(int(x), int(y))
+
+    fruits = (to_complex(pair) for pair in fruit_line.split())
+    # Initialize game state.
+    head = complex(0, 0)
+    cur_fruit = next(fruits)
+    body: collections.deque[complex] = collections.deque()
+    body.append(head)
+    score = 0
+    # Play the game.
+    for step, move in enumerate(moves):
+        head = head + move
+        if head in body or any(not 0 <= i < 20 for i in (head.real, head.imag)):
+            return score
+        score += 1
+        body.append(head)
+        if head == cur_fruit:
+            score += 100
+            cur_fruit = next(fruits)
+        else:
+            body.popleft()
+    raise RuntimeError("No move moves left.")
 
 
 FUNCS = {
@@ -584,6 +641,8 @@ FUNCS = {
     20: tic_tac_toe,
     21: packet_parsing,
     22: overlapping_rectangles,
+    23: astroid_field,
+    24: snake,
 }
 
 
