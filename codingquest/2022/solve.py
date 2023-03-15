@@ -2,6 +2,7 @@
 """CodingQuest.io solver."""
 
 import collections
+import functools
 import itertools
 import hashlib
 import math
@@ -620,6 +621,37 @@ def snake(data: str) -> int:
     raise RuntimeError("No move moves left.")
 
 
+def traveling_salesman(data: str) -> int:
+    """25: Brute force the traveling salesman."""
+    distances = collections.defaultdict(dict)
+    for start, line in enumerate(data.splitlines(), start=1):
+        for end, value in enumerate(line.split(), start=1):
+            distances[start][end] = int(value)
+
+    for start in distances:
+        print(start, distances[start])
+
+    @functools.cache
+    def solve(current, to_visit):
+        if len(to_visit) == 0:
+            via = 1
+            minimum = distances[current][via]
+            print(f"{current=}, {to_visit=}, {minimum=}, {via=}")
+            return distances[current][1]
+        options = []
+        for candidate in to_visit:
+            if current == candidate:
+                continue
+            options.append((distances[current][candidate] + solve(candidate, frozenset(to_visit - {candidate})), candidate))
+        minimum, via = min(options)
+        print(f"{current=}, {to_visit=}, {minimum=}, {via=}")
+
+        return minimum
+
+    return solve(1, frozenset(set(distances) - {1}))
+
+
+
 FUNCS = {
     1: rolling_average,
     2: lotto_winnings,
@@ -643,6 +675,7 @@ FUNCS = {
     22: overlapping_rectangles,
     23: astroid_field,
     24: snake,
+    25: traveling_salesman,
 }
 
 
