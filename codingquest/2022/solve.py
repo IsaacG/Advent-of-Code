@@ -623,32 +623,28 @@ def snake(data: str) -> int:
 
 def traveling_salesman(data: str) -> int:
     """25: Brute force the traveling salesman."""
-    distances = collections.defaultdict(dict)
-    for start, line in enumerate(data.splitlines(), start=1):
-        for end, value in enumerate(line.split(), start=1):
-            distances[start][end] = int(value)
-
-    for start in distances:
-        print(start, distances[start])
+    # Create the cost matrix.
+    distances = {
+        start: {
+            end: int(value)
+            for end, value in enumerate(line.split())
+        }
+        for start, line in enumerate(data.splitlines())
+    }
 
     @functools.cache
     def solve(current, to_visit):
+        """Return the minimum cost of visiting all nodes starting at a given node."""
+        # Add the cost to return to the start after all nodes are visited.
         if len(to_visit) == 0:
-            via = 1
-            minimum = distances[current][via]
-            print(f"{current=}, {to_visit=}, {minimum=}, {via=}")
-            return distances[current][1]
-        options = []
-        for candidate in to_visit:
-            if current == candidate:
-                continue
-            options.append((distances[current][candidate] + solve(candidate, frozenset(to_visit - {candidate})), candidate))
-        minimum, via = min(options)
-        print(f"{current=}, {to_visit=}, {minimum=}, {via=}")
+            return distances[current][0]
+        # Return the minimum cost of visiting all nodes with each option as a candidate.
+        return min(
+            distances[current][candidate] + solve(candidate, frozenset(to_visit - {candidate}))
+            for candidate in to_visit
+        )
 
-        return minimum
-
-    return solve(1, frozenset(set(distances) - {1}))
+    return solve(0, frozenset(set(distances) - {0}))
 
 
 
