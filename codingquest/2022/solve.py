@@ -654,39 +654,47 @@ def binary_tree_shape(data: str) -> int:
 
     @dataclasses.dataclass
     class BTSNode:
+        """Binary Tree Shape node."""
 
         value: int
-        left: Optional[BTSNode] = None
-        right: Optional[BTSNode] = None
+        children: list[Optional[BTSNode]] = dataclasses.field(default_factory=lambda: [None] * 2)
 
-        def insert(self, value):
-            side = "left" if value < self.value else "right"
-            node = getattr(self, side)
+        def insert(self, value: int) -> None:
+            side = 0 if value < self.value else 1
+            node = self[side]
             if node is None:
-                setattr(self, side, BTSNode(value))
+                self[side] = value
             else:
                 node.insert(value)
 
         def depth(self):
-            left = 0 if self.left is None else self.left.depth()
-            right = 0 if self.right is None else self.right.depth()
-            return 1 + max(left, right)
+            return 1 + max(
+                0 if child is None else child.depth()
+                for child in self.children
+            )
 
-        def __hash__(self):
+        def __getitem__(self, key: int) -> Optional[BTSNode]:
+            return self.children[key]
+
+        def __setitem__(self, key: int, value: int) -> None:
+            self.children[key] = BTSNode(value)
+
+        def __hash__(self) -> int:
             return hash(self.value)
 
-    values = (int(line, 16) for line in data.splitlines())
-    tree = BTSNode(next(values))
-    for value in values:
-        tree.insert(value)
+    # Initialize the tree with a 0 value root then fill it.
+    tree = BTSNode(0)
+    for line in data.splitlines():
+        tree.insert(int(line, 16))
 
+    # BFS to get the width at each level.
     nodes = {tree}
     max_width = 0
     while nodes:
         max_width = max(max_width, len(nodes))
-        nodes = {n.left for n in nodes if n.left} | {n.right for n in nodes if n.right}
+        nodes = {i for n in nodes for i in n.children if i}
 
-    return tree.depth() * max_width
+    return (tree.depth() - 1) * max_width
 
 
 FUNCS = {
