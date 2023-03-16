@@ -1,7 +1,9 @@
 #!/bin/python
 """CodingQuest.io solver."""
+from __future__ import annotations
 
 import collections
+import dataclasses
 import functools
 import itertools
 import hashlib
@@ -647,6 +649,45 @@ def traveling_salesman(data: str) -> int:
     return solve(0, frozenset(set(distances) - {0}))
 
 
+def binary_tree_shape(data: str) -> int:
+    """26: Compute the shape of a binary tree."""
+
+    @dataclasses.dataclass
+    class BTSNode:
+
+        value: int
+        left: Optional[BTSNode] = None
+        right: Optional[BTSNode] = None
+
+        def insert(self, value):
+            side = "left" if value < self.value else "right"
+            node = getattr(self, side)
+            if node is None:
+                setattr(self, side, BTSNode(value))
+            else:
+                node.insert(value)
+
+        def depth(self):
+            left = 0 if self.left is None else self.left.depth()
+            right = 0 if self.right is None else self.right.depth()
+            return 1 + max(left, right)
+
+        def __hash__(self):
+            return hash(self.value)
+
+    values = (int(line, 16) for line in data.splitlines())
+    tree = BTSNode(next(values))
+    for value in values:
+        tree.insert(value)
+
+    nodes = {tree}
+    max_width = 0
+    while nodes:
+        max_width = max(max_width, len(nodes))
+        nodes = {n.left for n in nodes if n.left} | {n.right for n in nodes if n.right}
+
+    return tree.depth() * max_width
+
 
 FUNCS = {
     1: rolling_average,
@@ -672,6 +713,7 @@ FUNCS = {
     23: astroid_field,
     24: snake,
     25: traveling_salesman,
+    26: binary_tree_shape,
 }
 
 
