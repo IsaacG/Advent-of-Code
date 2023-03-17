@@ -610,7 +610,7 @@ def snake(data: str) -> int:
     body.append(head)
     score = 0
     # Play the game.
-    for step, move in enumerate(moves):
+    for move in moves:
         head = head + move
         if head in body or any(not 0 <= i < 20 for i in (head.real, head.imag)):
             return score
@@ -661,6 +661,7 @@ def binary_tree_shape(data: str) -> int:
         children: list[Optional[BTSNode]] = dataclasses.field(default_factory=lambda: [None] * 2)
 
         def insert(self, value: int) -> None:
+            """Insert a value into the tree."""
             side = 0 if value < self.value else 1
             node = self[side]
             if node is None:
@@ -668,7 +669,8 @@ def binary_tree_shape(data: str) -> int:
             else:
                 node.insert(value)
 
-        def depth(self):
+        def depth(self) -> int:
+            """Return the depth of the tree."""
             return 1 + max(
                 0 if child is None else child.depth()
                 for child in self.children
@@ -709,7 +711,7 @@ def shortest_path(data: str) -> int:
             for dest_dist in dests
         }
 
-    todo = queue.PriorityQueue()
+    todo: queue.PriorityQueue[tuple[int, str]] = queue.PriorityQueue()
     min_at = {"TYC": 0}
     todo.put((0, "TYC"))
     while not todo.empty():
