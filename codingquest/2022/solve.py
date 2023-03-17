@@ -9,6 +9,7 @@ import itertools
 import hashlib
 import math
 import pathlib
+import queue
 import re
 import statistics
 import string
@@ -697,6 +698,36 @@ def binary_tree_shape(data: str) -> int:
     return (tree.depth() - 1) * max_width
 
 
+def shortest_path(data: str) -> int:
+    """27: Find the shortest path through a graph."""
+    distances = {}
+    for line in data.splitlines():
+        src, _, *dests = line.split()
+        src_distances = {
+            dest_dist[:3]: int(dest_dist[4:])
+            for dest_dist in dests
+        }
+        distances[src] = src_distances
+
+    todo = queue.PriorityQueue()
+    min_at = {"TYC": 0}
+    todo.put((0, "TYC"))
+    while not todo.empty():
+        duration, position = todo.get()
+        if position == "EAR":
+            break
+        for dest, dist in distances[position].items():
+            cost = duration + 600 + dist
+            if dest not in min_at or cost < min_at[dest]:
+                todo.put((cost, dest))
+                min_at[dest] = cost
+
+    # No need to wait at EAR
+    duration -= 600
+    assert duration == 115 or duration != 148607
+    return duration
+
+
 FUNCS = {
     1: rolling_average,
     2: lotto_winnings,
@@ -722,6 +753,7 @@ FUNCS = {
     24: snake,
     25: traveling_salesman,
     26: binary_tree_shape,
+    27: shortest_path,
 }
 
 
