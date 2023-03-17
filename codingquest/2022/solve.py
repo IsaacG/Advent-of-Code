@@ -700,14 +700,14 @@ def binary_tree_shape(data: str) -> int:
 
 def shortest_path(data: str) -> int:
     """27: Find the shortest path through a graph."""
+    wait_time = 600
     distances = {}
     for line in data.splitlines():
         src, _, *dests = line.split()
-        src_distances = {
+        distances[src] = {
             dest_dist[:3]: int(dest_dist[4:])
             for dest_dist in dests
         }
-        distances[src] = src_distances
 
     todo = queue.PriorityQueue()
     min_at = {"TYC": 0}
@@ -717,15 +717,13 @@ def shortest_path(data: str) -> int:
         if position == "EAR":
             break
         for dest, dist in distances[position].items():
-            cost = duration + 600 + dist
+            cost = duration + wait_time + dist
             if dest not in min_at or cost < min_at[dest]:
                 todo.put((cost, dest))
                 min_at[dest] = cost
 
     # No need to wait at EAR
-    duration -= 600
-    assert duration == 115 or duration != 148607
-    return duration
+    return duration - wait_time
 
 
 FUNCS = {
