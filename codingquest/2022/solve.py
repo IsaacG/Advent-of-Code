@@ -503,28 +503,26 @@ def navigation_sensor(data: str) -> int:
 
 
 def tic_tac_toe(data: str) -> int:
-    """20: Score tic tac toe."""
+    """20: Score tic tac toe. 20938290."""
     # Game configuration.
-    player_count, board_size = 2, 3
+    player_count, size = 2, 3
     # All possible ways to win.
-    lines = [
-        set(complex(x, y) for x in range(board_size)) for y in range(board_size)
-    ]  # Horizontal
-    lines.extend(
-        set(complex(x, y) for y in range(board_size)) for x in range(board_size)
-    )  # Vertical
-    lines.append(set(complex(i, i) for i in range(board_size)))  # Diagonal
-    lines.append(set(complex(i, board_size - 1 - i) for i in range(board_size)))  # Diagonal
+    lines = [  # Horizontal
+        set(range(i, i + size * size, size)) for i in range(size)
+    ]
+    lines.extend(  # Vertical
+        set(range(i, i + size)) for i in range(0, size * size, size)
+    )
+    lines.append(set(range(0, size * size, size + 1)))  # Diagonal
+    lines.append(set(range(size - 1, size * size - 1, size - 1)))  # Diagonal
     # Outcome counters.
     wins = {player: 0 for player in range(player_count)}
     draws = 0
     # Game logic.
-    games = ((int(move) - 1 for move in line.split()) for line in data.splitlines())
-    for game in games:
-        positions: dict[int, set[complex]] = {player: set() for player in range(player_count)}
-        for turn, move in enumerate(game):
-            position = complex(move % board_size, move // board_size)
-            positions[turn % player_count].add(position)
+    for line in data.splitlines():
+        positions: dict[int, set[int]] = {player: set() for player in range(player_count)}
+        for turn, move in enumerate(line.split()):
+            positions[turn % player_count].add(int(move) - 1)
             if any(positions[turn % player_count].issuperset(line) for line in lines):
                 wins[turn % player_count] += 1
                 break
