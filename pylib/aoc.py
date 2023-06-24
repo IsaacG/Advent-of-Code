@@ -535,9 +535,13 @@ class LinkedList:
         if node == insert_after.next:
             raise ValueError("node == insert_after")
         # Remove the node from the old location and close the gap.
+        assert node.prev is not None
+        assert node.next is not None
         node.prev.next, node.next.prev = node.next, node.prev
         # Insert between insert_after and insert_after.next
         node.prev, node.next = insert_after, insert_after.next
+        assert node.prev is not None
+        assert node.next is not None
         node.prev.next, node.next.prev = node, node
 
 
@@ -616,7 +620,7 @@ class Challenge(Helpers):
             self._filecache[path] = path.read_text().rstrip()
         return self._filecache[path]
 
-    def solver(self, parsed_input: Any, *args, **kwargs) -> Any:
+    def solver(self, parsed_input: Any, param: Any) -> int | str:
         raise NotImplementedError
 
     def input_parser(self, puzzle_input: str) -> Any:
@@ -632,11 +636,15 @@ class Challenge(Helpers):
         func = {1: self.part1, 2: self.part2}
         parsed_input = self.input_parser(puzzle_input.rstrip())
         self.pre_run(parsed_input)
-        if self.solver.__func__ is not Challenge.solver and self.PARAMETERIZED_INPUTS is not None:
-            return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
-        if func[part].__func__ is getattr(Challenge, f"part{part}"):
+        if self.PARAMETERIZED_INPUTS is not None:
+            try:
+                return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
+            except NotImplementedError:
+                pass
+        try:
+            result = func[part](parsed_input)
+        except NotImplementedError:
             return None
-        result = func[part](parsed_input)
         if isinstance(result, float):
             print("=== WARNING!! Casting float to int. ===")
             result = int(result)
