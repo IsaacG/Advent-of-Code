@@ -43,7 +43,7 @@ class Day09(aoc.Challenge):
         """Track the movement of knots on a rope. Return the number of positions the tail visits."""
         points: set[complex] = set([0])
         knots: list[complex] = [0] * knot_count
-        movement = {"R": 1, "L": -1, "U": 1j, "D": -1j}
+        movement = aoc.LETTER_DIRECTIONS
         for direction, unit in lines:
             for _ in range(unit):
                 knots[0] += movement[direction]

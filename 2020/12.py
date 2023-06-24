@@ -20,8 +20,6 @@ In order to keep 0 <= bearing < 360, bearing = (bearing + n) % 360.
 [2] https://en.wikipedia.org/wiki/Polar_coordinate_system
 """
 
-from typing import List, Tuple
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -45,15 +43,13 @@ class Day12(aoc.Challenge):
   )
 
   # Modifier to map EWNS or degrees to a complex rotation.
-  MOD = {
-    'E': 1, 'N': 1j, 'W': -1, 'S': -1j,
-  }
+  MOD = aoc.COMPASS_DIRECTIONS
 
   def manhattan_dist(self, num: complex) -> int:
     """Manhattan distance of a complex number."""
     return int(abs(num.real) + abs(num.imag))
 
-  def solve(self, parsed_input: List[Tuple[str, int]], waypoint: complex, part: int) -> int:
+  def solve(self, parsed_input: list[tuple[str, int]], waypoint: complex, part: int) -> int:
     """Track the ship's position - with a magical waypoint."""
     ship = 0 + 0j
     for instruction, num in parsed_input:
@@ -72,14 +68,11 @@ class Day12(aoc.Challenge):
         ship += num * waypoint
     return self.manhattan_dist(ship)
 
-  def part1(self, parsed_input: List[Tuple[str, int]]) -> int:
+  def part1(self, parsed_input: list[tuple[str, int]]) -> int:
     return self.solve(parsed_input, 1, 1)
 
-  def part2(self, parsed_input: List[Tuple[str, int]]) -> int:
+  def part2(self, parsed_input: list[tuple[str, int]]) -> int:
     return self.solve(parsed_input, (10 + 1j), 2)
 
-
-if __name__ == '__main__':
-  typer.run(Day12().run)
 
 # vim:ts=2:sw=2:expandtab

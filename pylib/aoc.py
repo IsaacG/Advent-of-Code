@@ -33,6 +33,7 @@ TEST_SKIP = "__DO_NOT_RUN__"
 # 4 cardinal directions
 FOUR_DIRECTIONS = [1j ** i for i in range(4)]
 LETTER_DIRECTIONS = {"U": -1j, "D": 1j, "R": 1, "L": -1}
+COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS

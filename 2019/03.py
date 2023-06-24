@@ -2,10 +2,8 @@
 """2019 Day 3: Crossed Wires."""
 
 from lib import aoc
-import typer
-from typing import List
 
-DIRS = {'R': 1, 'L': -1, 'U': 1j, 'D': -1j}
+DIRS = aoc.LETTER_DIRECTIONS
 
 SAMPLES = [
   'R8,U5,L5,D3\nU7,R6,D4,L4',
@@ -26,7 +24,7 @@ class Day03(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLES[2], part=2, want=410),
   )
 
-  def solve(self, parsed_input: List[str], part: int) -> int:
+  def solve(self, parsed_input: list[str], part: int) -> int:
     """Walk the two wires.
 
     For wire 1, save locations visited and steps.
@@ -65,19 +63,15 @@ class Day03(aoc.Challenge):
     walk_wire(parsed_input[1], save_cost)
     return min(intersections)
 
-  def part2(self, parsed_input: List[str]) -> int:
+  def part2(self, parsed_input: list[str]) -> int:
     """Wire cross cost: combined step count."""
     return self.solve(parsed_input, 2)
 
-  def part1(self, parsed_input: List[str]) -> int:
+  def part1(self, parsed_input: list[str]) -> int:
     """Wire cross cost: Manhatten distance."""
     return self.solve(parsed_input, 1)
 
   def input_parser(self, puzzle_input: str):
     return [line.split(',') for line in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day03().run)
 
 # vim:ts=2:sw=2:expandtab
