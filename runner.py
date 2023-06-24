@@ -306,7 +306,7 @@ class Runner:
                     solutions[part] = got
 
         existing = self.read_solutions()
-        new = existing.copy()
+        new = {k: v.copy() for k, v in existing.items()}
         if day not in new:
             new[day] = {}
         new[day].update(solutions)
