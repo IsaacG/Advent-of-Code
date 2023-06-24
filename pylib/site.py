@@ -16,7 +16,7 @@ class Website:
     def __init__(self, year, day, check_login: bool = True):
         self.year = str(year)
         self.day = str(int(day))
-        conn = sqlite3.Connection(os.getenv('SQL_DB'))
+        conn = sqlite3.Connection(os.environ['SQL_DB'])
         query = 'SELECT value FROM cookies WHERE key = ?'
         cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
 
@@ -27,7 +27,7 @@ class Website:
         self._text = None
 
     def set_cookie(self, value: str) -> None:
-        conn = sqlite3.Connection(os.getenv('SQL_DB'))
+        conn = sqlite3.Connection(os.environ['SQL_DB'])
         query = 'UPDATE cookies SET value = ? WHERE key = ?'
         conn.cursor().execute(query, (value, 'aoc'))
 
@@ -36,6 +36,7 @@ class Website:
             resp = self.session.get(f'https://adventofcode.com/{self.year}/day/{self.day}')
             resp.raise_for_status()
             self._text = resp.text
+        assert self._text is not None
         return self._text
 
     @property
@@ -63,7 +64,7 @@ class Website:
         resp = self.session.get(self.BASE)
         resp.raise_for_status()
 
-        db = os.getenv('SQL_DB')
+        db = os.environ['SQL_DB']
         query = 'UPDATE cookies SET value = "$cookie" WHERE key = "aoc";'
 
         if "[Log Out]" not in etree.HTML(resp.content).xpath('//a/text()'):
