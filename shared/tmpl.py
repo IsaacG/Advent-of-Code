@@ -8,7 +8,6 @@ import itertools
 import math
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = ${sample}
@@ -78,9 +77,5 @@ class Day${day}(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day${day}().run)
 
 # vim:expandtab:sw=4:ts=4
