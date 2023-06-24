@@ -1,4 +1,4 @@
-import apsw
+import sqlite3
 import os
 import re
 import requests  # type: ignore
@@ -13,17 +13,23 @@ class Website:
 
     BASE = 'https://adventofcode.com/'
 
-    def __init__(self, year, day):
+    def __init__(self, year, day, check_login: bool = True):
         self.year = str(year)
         self.day = str(int(day))
-        conn = apsw.Connection(os.getenv('SQL_DB'))
+        conn = sqlite3.Connection(os.getenv('SQL_DB'))
         query = 'SELECT value FROM cookies WHERE key = ?'
         cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
 
         self.session = requests.Session()
         self.session.headers.update({'cookie': f'session={cookie}'})
-        self.assert_logged_in()
+        if check_login:
+            self.assert_logged_in()
         self._text = None
+
+    def set_cookie(self, value: str) -> None:
+        conn = sqlite3.Connection(os.getenv('SQL_DB'))
+        query = 'UPDATE cookies SET value = ? WHERE key = ?'
+        conn.cursor().execute(query, (value, 'aoc'))
 
     def text(self) -> str:
         if self._text is None:

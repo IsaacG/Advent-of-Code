@@ -345,6 +345,7 @@ class Runner:
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
 @click.option("--input-file", "--input", "--file", type=str, default=None, help="Alternative input file.")
+@click.option("--cookie", type=str, required=False, help="Set cookie")
 def main(
     date: Optional[str],
     day: Optional[int],
@@ -362,9 +363,13 @@ def main(
     input_file: Optional[str],
     timeout: int,
     year: Optional[int],
+    cookie: Optional[str],
 ):
     """Run the code in some fashion."""
     dotenv.load_dotenv()
+    if cookie:
+        site.Website(0, 0, False).set_cookie(cookie)
+        return
     if date:
         assert year is None and day is None
         m = re.match(r"^(\d{2}|\d{4}).??(\d{1,2})$", date)
