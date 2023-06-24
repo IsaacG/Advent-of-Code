@@ -556,7 +556,7 @@ class Challenge(Helpers):
     TIMER_ITERATIONS = (None, None)
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
-    PARAMETERIZED_INPUTS: Any = None
+    PARAMETERIZED_INPUTS: Any = [False, True]
 
     def __init__(self, parts_to_run: tuple[int, ...] = (1, 2)):
         if self.day == 25:
