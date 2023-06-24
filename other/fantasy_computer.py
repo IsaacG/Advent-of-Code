@@ -1,4 +1,8 @@
 #!/bin/python
+"""Implement an int code computer.
+
+https://www.reddit.com/r/adventofcode/comments/128t3c6
+"""
 
 import typing
 
