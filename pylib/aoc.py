@@ -113,6 +113,53 @@ def format_ns(ns: float) -> str:
     return f"{ns:>7.3f} {unit:>2}"
 
 
+from collections.abc import Iterable
+from collections.abc import Iterator
+from typing import TypeVar
+
+
+T = TypeVar('T')
+
+
+class CachedIterable(Iterable[T]):
+    """Cached Iterable by phy1729."""
+
+    __slots__ = ("_iter", "_cache")
+    def __init__(
+        self,
+        iterable: Iterable[T],
+    ) -> None:
+        self._iter = iter(iterable)
+        self._cache: list[T] = []
+
+    def __iter__(
+        self,
+    ) -> Iterator[T]:
+        return CachedIterator(self)
+
+
+class CachedIterator(Iterator[T]):
+    """Cached Iterator by phy1729."""
+
+    __slots__ = ("_pos", "_parent")
+    def __init__(
+        self,
+        parent: CachedIterable[T],
+    ) -> None:
+        self._pos = 0
+        self._parent = parent
+
+    def __next__(
+        self,
+    ) -> T:
+        if len(self._parent._cache) == self._pos:
+            self._parent._cache.append(next(self._parent._iter))
+
+        result = self._parent._cache[self._pos]
+        self._pos += 1
+        return result
+
+
 class OCR:
     """OCR helper for pixel displays."""
 

@@ -33,12 +33,16 @@ class Day05(aoc.Challenge):
             if digest.startswith("00000"):
                 yield digest
 
+    @functools.cache
+    def digest_gen(self, name: str) -> aoc.CachedIterable:
+        return aoc.CachedIterable(self.hash_gen(name))
+
     def part1(self, parsed_input: InputType) -> int:
-        gen = self.hash_gen(parsed_input)
+        gen = iter(self.digest_gen(parsed_input))
         return "".join(next(gen)[5] for _ in range(8))
 
     def part2(self, parsed_input: InputType) -> int:
-        gen = self.hash_gen(parsed_input)
+        gen = iter(self.digest_gen(parsed_input))
         out = {}
         while len(out) < 8:
             digest = next(gen)
