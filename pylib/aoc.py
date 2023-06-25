@@ -124,34 +124,26 @@ T = TypeVar('T')
 class CachedIterable(Iterable[T]):
     """Cached Iterable by phy1729."""
 
-    __slots__ = ("_iter", "_cache")
-    def __init__(
-        self,
-        iterable: Iterable[T],
-    ) -> None:
+    def __init__(self, iterable: Iterable[T]) -> None:
         self._iter = iter(iterable)
         self._cache: list[T] = []
 
-    def __iter__(
-        self,
-    ) -> Iterator[T]:
-        return CachedIterator(self)
+    def __iter__(self) -> Iterator[T]:
+        yield from self._cache
+        while True:
+            val = next(self._iter)
+            self._cache.append(val)
+            yield val
 
 
 class CachedIterator(Iterator[T]):
     """Cached Iterator by phy1729."""
 
-    __slots__ = ("_pos", "_parent")
-    def __init__(
-        self,
-        parent: CachedIterable[T],
-    ) -> None:
+    def __init__(self, parent: CachedIterable[T]) -> None:
         self._pos = 0
         self._parent = parent
 
-    def __next__(
-        self,
-    ) -> T:
+    def __next__(self) -> T:
         if len(self._parent._cache) == self._pos:
             self._parent._cache.append(next(self._parent._iter))
 
