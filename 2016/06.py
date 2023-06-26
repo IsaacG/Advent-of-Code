@@ -1,44 +1,23 @@
 #!/bin/python
-"""Advent of Code, Day 6: Signals and Noise."""
-from __future__ import annotations
+"""Advent of Code, Day 6: Signals and Noise. Extract the most and least common value from each column."""
 
 import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
 SAMPLE = """\
-eedadn
-drvtee
-eandsr
-raavrd
-atevrs
-tsrnev
-sdttsa
-rasrtv
-nssdts
-ntnada
-svetve
-tesnvt
-vntsnd
-vrdear
-dvrsen
-enarar"""
+eedadn\ndrvtee\neandsr\nraavrd\n
+atevrs\ntsrnev\nsdttsa\nrasrtv\n
+nssdts\nntnada\nsvetve\ntesnvt\n
+vntsnd\nvrdear\ndvrsen\nenarar"""
 
-LineType = int
-InputType = list[LineType]
+InputType = list[str]
 
 
 class Day06(aoc.Challenge):
     """Day 6: Signals and Noise."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
+    PARAMETERIZED_INPUTS = [0, -1]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want="easter"),
@@ -47,8 +26,8 @@ class Day06(aoc.Challenge):
 
     INPUT_PARSER = aoc.parse_one_str_per_line
 
-    def part1(self, parsed_input: InputType) -> int:
-        return "".join(collections.Counter(col).most_common(1)[0][0] for col in zip(*parsed_input))
-
-    def part2(self, parsed_input: InputType) -> int:
-        return "".join(collections.Counter(col).most_common()[-1][0] for col in zip(*parsed_input))
+    def solver(self, parsed_input: InputType, idx: int) -> str:
+        return "".join(
+            collections.Counter(col).most_common()[idx][0]
+            for col in zip(*parsed_input)
+        )
