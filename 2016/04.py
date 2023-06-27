@@ -3,10 +3,6 @@
 from __future__ import annotations
 
 import collections
-import functools
-import itertools
-import math
-import re
 import string
 
 from lib import aoc
@@ -38,7 +34,7 @@ class Day04(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         """Return the sum of real sectors."""
         return sum(
-            sector 
+            sector
             for name, sector, checksum in parsed_input
             if self.is_real(name, checksum)
         )

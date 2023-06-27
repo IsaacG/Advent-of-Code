@@ -52,6 +52,12 @@ class Day${day}(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         return 0
 
+    def part2(self, parsed_input: InputType) -> int:
+        raise NotImplementedError
+
+    def solver(self, parsed_input: InputType, param: bool) -> int | str:
+        raise NotImplementedError
+
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return super().input_parser(puzzle_input)
