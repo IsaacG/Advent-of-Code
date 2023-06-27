@@ -2,6 +2,7 @@
 """Advent of Code, Day 7: Internet Protocol Version 7. Detect line patterns."""
 
 import re
+import more_itertools
 
 from lib import aoc
 
@@ -36,7 +37,7 @@ class Day07(aoc.Challenge):
         """Return if a string segment has a pattern ABBA."""
         return any(
             chars[0] == chars[3] and chars[1] == chars[2] and chars[0] != chars[1]
-            for chars in zip(*[string[i:] for i in range(4)])
+            for chars in more_itertools.sliding_window(string, 4)
         )
 
     def ssl(self, outer: list[str], inner: list[str]) -> bool:
@@ -44,7 +45,7 @@ class Day07(aoc.Challenge):
         patterns = [
             (chars[1] + chars[0] + chars[1])
             for chunk in inner
-            for chars in zip(*[chunk[i:] for i in range(3)])
+            for chars in more_itertools.sliding_window(chunk, 3)
             if chars[0] == chars[2] != chars[1]
         ]
         return any(pattern in chunk for chunk in outer for pattern in patterns)
