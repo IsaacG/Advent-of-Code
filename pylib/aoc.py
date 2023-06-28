@@ -62,6 +62,7 @@ OCR_MAP = {
     0b11100_10010_10010_11100_10000_10000: "P",
     0b01100_10010_10010_10010_10100_01010: "Q",
     0b11100_10010_10010_11100_10100_10010: "R",
+    0b01110_10000_10000_01100_00010_11100: "S",
     0b01110_10000_01100_00010_00010_11100: "S",
     0b11100_01000_01000_01000_01000_01000: "T",
     0b11111_00100_00100_00100_00100_00100: "T",
@@ -157,9 +158,11 @@ class OCR:
 
     DIMS = {6: 5, 8: 6, 10: 7}
 
-    def __init__(self, output: list[list[bool]]):
+    def __init__(self, output: list[list[bool]], validate: bool = True):
         self.output = output
         self.height = len(output)
+        if not validate:
+            return
         if self.height not in (6, 8, 10):
             raise ValueError(f"Must have 6, 8, 10 rows; found {len(output)}")
         # 6x5 or 10x7
