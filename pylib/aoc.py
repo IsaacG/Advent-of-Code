@@ -667,13 +667,26 @@ class Challenge(Helpers):
     def solver(self, parsed_input: Any, param: Any) -> int | str:
         raise NotImplementedError
 
+    @functools.cache
+    def _parser(self) -> parsers.BaseParser:
+        if self.INPUT_PARSER is not None:
+            if not isinstance(self.INPUT_PARSER, BaseParser):
+                raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
+            return self.INPUT_PARSER
+        # Use heuristics to guess at an input parser.
+        data = self.raw_data(None)
+        lines = data.splitlines()
+        multi_lines = len(lines) > 1
+        one_line = lines[0]
+        if RE_INT.match(one_line):
+            return parse_one_int_per_line if multi_lines else parse_one_int
+        else:
+            return parse_one_str_per_line if multi_lines else parse_one_str
+
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-        assert self.INPUT_PARSER is not None
-        if not isinstance(self.INPUT_PARSER, BaseParser):
-            raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
 
-        return self.INPUT_PARSER.parse(puzzle_input)
+        return self._parser().parse(puzzle_input)
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""
@@ -705,7 +718,8 @@ class Challenge(Helpers):
                 continue
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
-            assert len(case.inputs) > 1, 'TestCase.inputs must be longer than one char!'
+            if len(case.inputs) <= 1:
+                print('WARNING TestCase.inputs is less than two chars.')
             start = time.perf_counter_ns()
             got = self.run_solver(case.part, case.inputs.rstrip())
             end = time.perf_counter_ns()
