@@ -205,6 +205,7 @@ class Runner:
                         if case.want == aoc.TEST_SKIP:
                             continue
                         assert isinstance(case.inputs, str), "TestCase.inputs must be a string!"
+                        assert len(case.inputs) > 1, "TestCase.inputs must be more than one char."
                         got = obj.run_solver(part, case.inputs.rstrip())
                         if case.want != got:
                             print(f"FAILED! {case.part}: want({case.want}) != got({got})")

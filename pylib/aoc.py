@@ -705,6 +705,7 @@ class Challenge(Helpers):
                 continue
             self.debug(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
+            assert len(case.inputs) > 1, 'TestCase.inputs must be longer than one char!'
             start = time.perf_counter_ns()
             got = self.run_solver(case.part, case.inputs.rstrip())
             end = time.perf_counter_ns()
