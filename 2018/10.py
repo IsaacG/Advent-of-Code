@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 10: The Stars Align. Read a message in the sky."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -67,9 +66,3 @@ class Day10(aoc.Challenge):
             ocr = aoc.OCR.from_point_set({complex(x, y) for x, y, _, _ in points})
             if ocr.is_valid():
                 return [ocr.as_string(), i + 1][args[0]]
-
-
-if __name__ == "__main__":
-    typer.run(Day10().run)
-
-# vim:expandtab:sw=4:ts=4

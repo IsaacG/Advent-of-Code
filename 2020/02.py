@@ -2,7 +2,6 @@
 
 import re
 from typing import List, Tuple
-import typer
 
 from lib import aoc
 
@@ -42,9 +41,3 @@ class Day02(aoc.Challenge):
       True for (mn, mx, char, passwd) in data
       if (passwd[mn - 1] == char) ^ (passwd[mx - 1] == char)
     ])
-
-
-if __name__ == '__main__':
-  typer.run(Day02().run)
-
-# vim:ts=2:sw=2:expandtab

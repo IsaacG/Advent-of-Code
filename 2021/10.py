@@ -2,7 +2,6 @@
 """Advent of Code: Day 10."""
 
 from typing import Optional
-import typer
 
 from lib import aoc
 
@@ -82,9 +81,3 @@ class Day10(aoc.Challenge):
         scores = [evaluate_stack(stack) for char, stack in char_and_stacks if not char]
         # Return the middle score.
         return sorted(scores)[len(scores)//2]
-
-
-if __name__ == "__main__":
-    typer.run(Day10().run)
-
-# vim:expandtab:sw=4:ts=4

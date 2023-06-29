@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 02."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -74,9 +73,3 @@ class Day02(aoc.Challenge):
             my_move = "XYZ"[pos_b]
             moves.append((elf_move, my_move))
         return self.part1(moves)
-
-
-if __name__ == "__main__":
-    typer.run(Day02().run)
-
-# vim:expandtab:sw=4:ts=4

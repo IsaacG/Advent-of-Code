@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from lib import aoc
 
 from typing import List
@@ -36,9 +35,3 @@ class Day05(aoc.Challenge):
       if (s + 1) not in seats and (s + 2) in seats:
         return s + 1
     raise RuntimeError
-
-
-if __name__ == '__main__':
-  typer.run(Day05().run)
-
-# vim:ts=2:sw=2:expandtab

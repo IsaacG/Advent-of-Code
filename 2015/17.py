@@ -4,7 +4,6 @@
 import collections
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -44,9 +43,3 @@ class Day17(aoc.Challenge):
         """Return the possible countainer combos which use the min number of containers."""
         count = self.count(parsed_input)
         return count[min(count)]
-
-
-if __name__ == "__main__":
-    typer.run(Day17().run)
-
-# vim:expandtab:sw=4:ts=4

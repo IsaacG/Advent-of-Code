@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from lib import aoc
 from typing import List
 
@@ -34,9 +33,3 @@ class Day06(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
-
-
-if __name__ == '__main__':
-  typer.run(Day06().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 13."""
 
-import typer
 
 from lib import aoc
 
@@ -90,9 +89,3 @@ class Day13(aoc.Challenge):
             axis, position = instruction.split("=")
             folds.append((axis, int(position)))
         return points, folds
-
-
-if __name__ == "__main__":
-    typer.run(Day13().run)
-
-# vim:expandtab:sw=4:ts=4

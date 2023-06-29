@@ -4,7 +4,6 @@
 import itertools
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -53,9 +52,3 @@ class Day09(aoc.Challenge):
             )
             for order in itertools.permutations(locations, len(locations))
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day09().run)
-
-# vim:expandtab:sw=4:ts=4

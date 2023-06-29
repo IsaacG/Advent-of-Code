@@ -2,7 +2,6 @@
 """Advent of Code, Day 5: Alchemical Reduction. Compute the length of a polymer after reactions."""
 from __future__ import annotations
 
-import typer
 from lib import aoc
 
 SAMPLE = "dabAcCaCBAcCcaDA"
@@ -47,9 +46,3 @@ class Day05(aoc.Challenge):
             len(self.reduce(codepoints, {candidate, candidate + self.DELTA}))
             for candidate in candidates
         )
-
-
-if __name__ == "__main__":
-    typer.run(Day05().run)
-
-# vim:expandtab:sw=4:ts=4

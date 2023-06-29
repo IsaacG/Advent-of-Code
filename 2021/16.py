@@ -9,7 +9,6 @@ import io
 import math
 import operator
 
-import typer
 from lib import aoc
 
 
@@ -209,9 +208,3 @@ class Day16(aoc.Challenge):
         """Parse the packets and evaluate."""
         bits_io = BitStream.from_hex(parsed_input)
         return packet_parser(bits_io).eval()
-
-
-if __name__ == "__main__":
-    typer.run(Day16().run)
-
-# vim:expandtab:sw=4:ts=4

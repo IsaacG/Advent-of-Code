@@ -4,7 +4,6 @@
 import string
 import collections
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -76,9 +75,3 @@ class Day12(aoc.Challenge):
         if start is None or end is None:
             raise ValueError("Failed to find start and end.")
         return start, end, aoc.Board(heights, diagonal=False)
-
-
-if __name__ == "__main__":
-    typer.run(Day12().run)
-
-# vim:expandtab:sw=4:ts=4

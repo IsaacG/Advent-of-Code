@@ -7,7 +7,6 @@ import math
 import re
 from typing import Any, Callable, Optional
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -120,9 +119,3 @@ class Day11(aoc.Challenge):
             ))
 
         return monkeys
-
-
-if __name__ == "__main__":
-    typer.run(Day11().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -7,7 +7,6 @@ Part 1, non-parameterized conds test: 3.313 ms
 With the tree parser: 0.178/4.177/4.783 ms
 """
 
-import typer
 from typing import Callable, List, Optional
 from lib import aoc
 
@@ -127,9 +126,3 @@ class Day18(aoc.Challenge):
         tokens.append(line[i:j])
         i = j
     return tokens
-
-
-if __name__ == '__main__':
-  typer.run(Day18().run)
-
-# vim:ts=2:sw=2:expandtab

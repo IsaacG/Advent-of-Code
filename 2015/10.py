@@ -3,7 +3,6 @@
 
 import functools
 
-import typer
 from lib import aoc
 
 SAMPLE = "1"
@@ -62,9 +61,3 @@ class Day10(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Look-say, 50 iterations."""
         return self.look_say_loop(parsed_input, 50)
-
-
-if __name__ == "__main__":
-    typer.run(Day10().run)
-
-# vim:expandtab:sw=4:ts=4

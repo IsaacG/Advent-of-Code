@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """2019 Day 01: The Tyranny of the Rocket Equation."""
 
-import typer
 from typing import List
 
 from lib import aoc
@@ -39,9 +38,3 @@ class Day01(aoc.Challenge):
 
   def part1(self, parsed_input: List[int]) -> int:
     return self.sum_map(parsed_input, self.simple_fuel)
-
-
-if __name__ == '__main__':
-  typer.run(Day01().run)
-
-# vim:ts=2:sw=2:expandtab

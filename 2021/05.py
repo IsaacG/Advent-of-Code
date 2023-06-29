@@ -5,7 +5,6 @@
 import collections
 import itertools
 import re
-import typer
 
 from lib import aoc
 
@@ -65,7 +64,3 @@ class Day05(aoc.Challenge):
                 )
             )
         return lines
-
-
-if __name__ == "__main__":
-    typer.run(Day05().run)

@@ -8,7 +8,6 @@ Brute force for initial inputs that generate the max output.
 import asyncio
 import functools
 import itertools
-import typer
 from typing import Iterable
 
 import intcode
@@ -68,9 +67,3 @@ class Day07(intcode.Challenge):
     """Find the phase permutation that derives the highest thruster output."""
     f = functools.partial(self.output_for_inputs, computer)
     return max(asyncio.run(f(phases)) for phases in itertools.permutations(range(5, 10)))
-
-
-if __name__ == '__main__':
-  typer.run(Day07().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -5,7 +5,6 @@ import collections
 import functools
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = "Player 1 starting position: 4\nPlayer 2 starting position: 8"
@@ -95,9 +94,3 @@ class Day21(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> tuple[int, ...]:
         """Parse the input data."""
         return tuple([int(line.split(": ")[1]) for line in puzzle_input.splitlines()])
-
-
-if __name__ == "__main__":
-    typer.run(Day21().run)
-
-# vim:expandtab:sw=4:ts=4

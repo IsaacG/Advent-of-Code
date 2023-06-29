@@ -2,7 +2,6 @@
 """Advent of Code: Day 07."""
 
 from typing import Callable
-import typer
 
 from lib import aoc
 
@@ -33,7 +32,3 @@ class Day07(aoc.Challenge):
         for i in range(min(positions), max(positions) + 1):
             costs.append(sum(func(abs(i - pos)) for pos in positions))
         return min(costs)
-
-
-if __name__ == "__main__":
-    typer.run(Day07().run)

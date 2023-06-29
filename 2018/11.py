@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 11: Chronal Charge. Find the subgrid with the max sum value."""
 
-import typer
 from lib import aoc
 
 SAMPLE = ["18", "42"]
@@ -74,9 +73,3 @@ class Day11(aoc.Challenge):
         if include_size:
             out.append(size + 1)
         return ",".join(str(i) for i in out)
-
-
-if __name__ == "__main__":
-    typer.run(Day11().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Train tickets."""
 
-import typer
 from lib import aoc
 
 # Fudge the second sample to include departure rows
@@ -135,9 +134,3 @@ class Day16(aoc.Challenge):
 
     # Multiply all the fields that start with "departure".
     return self.mult(v for k, v in completed_ticket.items() if k.startswith('departure'))
-
-
-if __name__ == '__main__':
-  typer.run(Day16().run)
-
-# vim:ts=2:sw=2:expandtab

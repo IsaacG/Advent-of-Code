@@ -32,7 +32,6 @@ import functools
 import itertools
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -351,9 +350,3 @@ class Day23(aoc.Challenge):
             for x, piece in enumerate(re.findall(r"[ABCD]", line)):
                 locations.append((piece, (x + 1) * 2, y + 1))
         return tuple(sorted(locations))
-
-
-if __name__ == "__main__":
-    typer.run(Day23().run)
-
-# vim:expandtab:sw=4:ts=4

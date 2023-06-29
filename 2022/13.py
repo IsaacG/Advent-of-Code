@@ -5,7 +5,6 @@ import functools
 import json
 from typing import Any
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -89,9 +88,3 @@ class Day13(aoc.Challenge):
             vals.extend(pair)
         vals.sort(key=functools.cmp_to_key(cmp))
         return self.mult(vals.index(divider) + 1 for divider in dividers)
-
-
-if __name__ == "__main__":
-    typer.run(Day13().run)
-
-# vim:expandtab:sw=4:ts=4

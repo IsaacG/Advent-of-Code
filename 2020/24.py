@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from lib import aoc
 import collections
 import re
@@ -87,9 +86,3 @@ class Day24(aoc.Challenge):
     """Split lines into lists of directions."""
     dir_re = re.compile('[ns]?[ew]')
     return [dir_re.findall(direction) for direction in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day24().run)
-
-# vim:ts=2:sw=2:expandtab

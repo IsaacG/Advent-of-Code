@@ -3,7 +3,6 @@
 
 from typing import Optional
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -104,7 +103,3 @@ class Day04(aoc.Challenge):
         inputs = [int(i) for i in chunks[0].split(",")]
         boards = [BingoCard(chunk) for chunk in chunks[1:]]
         return inputs, boards
-
-
-if __name__ == "__main__":
-    typer.run(Day04().run)

@@ -2,7 +2,6 @@
 """Brute force solve Diffie Hellman key exchange."""
 
 from lib import aoc
-import typer
 from typing import List
 
 MODULO = 20201227
@@ -43,9 +42,3 @@ class Day25(aoc.Challenge):
   def part2(self, pubkeys: List[str]) -> int:
     """No part 2."""
     return 0
-
-
-if __name__ == '__main__':
-  typer.run(Day25().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -4,8 +4,6 @@
 Run a computer with more operations: equality, control flow, address modes.
 """
 
-import typer
-
 import asyncio
 import intcode
 from lib import aoc
@@ -35,9 +33,3 @@ class Day05(intcode.Challenge):
   def part2(self, computer: intcode.Computer) -> int:
     asyncio.run(computer.run(inputs=[5]))
     return computer.output()[-1]
-
-
-if __name__ == '__main__':
-  typer.run(Day05().run)
-
-# vim:ts=2:sw=2:expandtab

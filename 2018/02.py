@@ -7,7 +7,6 @@ Count char occurances to checksum IDs then find IDs with hamming distance 1.
 
 import collections
 import itertools
-import typer
 from typing import Dict, List
 
 from lib import aoc
@@ -48,9 +47,3 @@ class Day02(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str) -> List[str]:
     return puzzle_input.split('\n')
-
-
-if __name__ == '__main__':
-  typer.run(Day02().run)
-
-# vim:ts=2:sw=2:expandtab

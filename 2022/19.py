@@ -3,7 +3,6 @@
 
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -160,9 +159,3 @@ class Day19(aoc.Challenge):
                 blueprint[TYPES[out]] = tuple(costs[i] for i in (ORE, CLAY, OBSIDIAN))
             blueprints.append(blueprint)
         return blueprints
-
-
-if __name__ == "__main__":
-    typer.run(Day19().run)
-
-# vim:expandtab:sw=4:ts=4

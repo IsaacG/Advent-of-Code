@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 18: Like a GIF For Your Yard. Conway's Game of Life."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -63,9 +62,3 @@ class Day18(aoc.Challenge):
         """Return the number of lights on, with corners stuck on."""
         cycles = 5 if self.testing else 100
         return self.solver(parsed_input, cycles, True)
-
-
-if __name__ == "__main__":
-    typer.run(Day18().run)
-
-# vim:expandtab:sw=4:ts=4

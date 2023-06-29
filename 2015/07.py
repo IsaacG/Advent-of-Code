@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 07."""
 
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -96,9 +95,3 @@ class Day07(aoc.Challenge):
                 a = str(val_a)
             v2.append((out, op, a, b))
         return self.part1(v2)
-
-
-if __name__ == "__main__":
-    typer.run(Day07().run)
-
-# vim:expandtab:sw=4:ts=4

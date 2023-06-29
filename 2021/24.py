@@ -6,7 +6,6 @@ import collections
 import dataclasses
 import operator
 
-import typer
 import input_data
 from lib import aoc
 
@@ -512,9 +511,3 @@ class Day24(aoc.Challenge):
 
         # Use the known input offsets to compute the min/max value for each input.
         return self.ranges(offsets)
-
-
-if __name__ == "__main__":
-    typer.run(Day24().run)
-
-# vim:expandtab:sw=4:ts=4

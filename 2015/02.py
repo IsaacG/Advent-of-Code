@@ -3,7 +3,6 @@
 
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = ["2x3x4", "1x1x10"]
@@ -36,9 +35,3 @@ class Day02(aoc.Challenge):
             perimeters = [a + b for a, b in itertools.combinations(dims, 2)]
             total += min(perimeters) * 2 + self.mult(dims)
         return total
-
-
-if __name__ == "__main__":
-    typer.run(Day02().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 18: Boiling Boulders. Compute the surface area of 3D bubbles."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -82,9 +81,3 @@ class Day18(aoc.Challenge):
                 exterior.add(p2)
                 todo.add(p2)
         return surfaces
-
-
-if __name__ == "__main__":
-    typer.run(Day18().run)
-
-# vim:expandtab:sw=4:ts=4

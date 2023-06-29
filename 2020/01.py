@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from typing import Iterable, List
-import typer
 
 from lib import aoc
 
@@ -42,9 +41,3 @@ class Day01(aoc.Challenge):
         prod *= n
         return prod
     raise RuntimeError
-
-
-if __name__ == '__main__':
-  typer.run(Day01().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -6,7 +6,6 @@ Handle chemical reactions, converting ORE to FUEL.
 
 import collections
 import math
-import typer
 from typing import Dict, List, Set, Tuple
 
 import data
@@ -169,9 +168,3 @@ class Day14(aoc.Challenge):
       )
       reactions[reaction.product] = reaction
     return reactions
-
-
-if __name__ == '__main__':
-  typer.run(Day14().run)
-
-# vim:ts=2:sw=2:expandtab

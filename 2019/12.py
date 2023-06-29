@@ -7,7 +7,6 @@ Determine how long a complete cycle takes.
 
 import itertools
 import math
-import typer
 from typing import List, Tuple
 
 from lib import aoc
@@ -117,9 +116,3 @@ class Day12(aoc.Challenge):
       cycles.append(steps)
 
     return math.lcm(*cycles)
-
-
-if __name__ == '__main__':
-  typer.run(Day12().run)
-
-# vim:ts=2:sw=2:expandtab

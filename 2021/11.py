@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 11."""
 
-import typer
-
 from lib import aoc
 
 InputType = dict[complex, int]
@@ -69,9 +67,3 @@ class Day11(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return aoc.Board.from_int_block(puzzle_input, diagonal=True)
-
-
-if __name__ == "__main__":
-    typer.run(Day11().run)
-
-# vim:expandtab:sw=4:ts=4

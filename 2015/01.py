@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 01."""
 
-import typer
 from lib import aoc
 
 SAMPLE = ["(())", "()()", "(()(()(", ")", "()())"]
@@ -36,9 +35,3 @@ class Day01(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return puzzle_input
-
-
-if __name__ == "__main__":
-    typer.run(Day01().run)
-
-# vim:expandtab:sw=4:ts=4

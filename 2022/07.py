@@ -5,7 +5,6 @@ from __future__ import annotations
 import collections
 import pathlib
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -84,9 +83,3 @@ class Day07(aoc.Challenge):
             for size in parsed_input.values()
             if size >= to_free
         )
-
-
-if __name__ == "__main__":
-    typer.run(Day07().run)
-
-# vim:expandtab:sw=4:ts=4

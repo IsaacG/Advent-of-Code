@@ -4,7 +4,6 @@
 import operator
 from typing import Any
 
-import typer
 from lib import aoc
 
 USE_SYMPY = False
@@ -133,9 +132,3 @@ class Day21(aoc.Challenge):
             left, right = left.reverse(right)
         assert left == Variable("humn")
         return right
-
-
-if __name__ == "__main__":
-    typer.run(Day21().run)
-
-# vim:expandtab:sw=4:ts=4

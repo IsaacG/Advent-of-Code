@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 05."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -62,9 +61,3 @@ class Day05(aoc.Challenge):
                     total += 1
                     break
         return total
-
-
-if __name__ == "__main__":
-    typer.run(Day05().run)
-
-# vim:expandtab:sw=4:ts=4

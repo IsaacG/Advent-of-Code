@@ -5,7 +5,6 @@ import collections
 import functools
 from typing import Type
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -277,9 +276,3 @@ class Day22(aoc.Challenge):
         final_d = {1j ** i: i for i in range(4)}[direction]
         score = 1000 * final_y + 4 * final_x + final_d
         return score
-
-
-if __name__ == "__main__":
-    typer.run(Day22().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -2,7 +2,6 @@
 """Advent of Code: Day 14."""
 
 import collections
-import typer
 from lib import aoc
 
 InputType = tuple[str, dict[str, str]]
@@ -98,9 +97,3 @@ class Day14(aoc.Challenge):
             formulas[pair] = (pair[0] + add, add + pair[1])
 
         return (start, formulas)
-
-
-if __name__ == "__main__":
-    typer.run(Day14().run)
-
-# vim:expandtab:sw=4:ts=4

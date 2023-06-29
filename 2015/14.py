@@ -3,7 +3,6 @@
 
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -51,9 +50,3 @@ class Day14(aoc.Challenge):
                 if position == max_position:
                     points[name] += 1
         return max(points.values())
-
-
-if __name__ == "__main__":
-    typer.run(Day14().run)
-
-# vim:expandtab:sw=4:ts=4

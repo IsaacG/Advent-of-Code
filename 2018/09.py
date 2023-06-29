@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 9: Marble Mania. Simulate a marble game."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -53,9 +52,3 @@ class Day09(aoc.Challenge):
                 removed.next.prev = removed.prev
 
         return max(score)
-
-
-if __name__ == "__main__":
-    typer.run(Day09().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -2,7 +2,6 @@
 
 """Advent of Code: Day 02."""
 
-import typer
 
 from lib import aoc
 
@@ -52,7 +51,3 @@ class Day02(aoc.Challenge):
                 aim += num
 
         return horiz * depth
-
-
-if __name__ == '__main__':
-    typer.run(Day02().run)

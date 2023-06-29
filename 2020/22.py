@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 import copy
 from typing import List, Tuple
 from lib import aoc
@@ -111,9 +110,3 @@ class Day22(aoc.Challenge):
       [int(line) for line in deck.split('\n')[1:]]
       for deck in puzzle_input.split('\n\n')
     ]
-
-
-if __name__ == '__main__':
-  typer.run(Day22().run)
-
-# vim:ts=2:sw=2:expandtab

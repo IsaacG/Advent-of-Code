@@ -2,7 +2,6 @@
 """2019 Day 4: Secure Container"""
 
 import collections
-import typer
 from typing import Callable, List
 
 from lib import aoc
@@ -69,9 +68,3 @@ class Day04(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return [int(i) for i in puzzle_input.split('-')]
-
-
-if __name__ == '__main__':
-  typer.run(Day04().run)
-
-# vim:ts=2:sw=2:expandtab

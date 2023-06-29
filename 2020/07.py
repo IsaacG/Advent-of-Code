@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from lib import aoc
 import collections
 import re
@@ -88,9 +87,3 @@ class Day07(aoc.Challenge):
       return cache[color]
 
     return num_inside(TARGET)
-
-
-if __name__ == '__main__':
-  typer.run(Day07().run)
-
-# vim:ts=2:sw=2:expandtab

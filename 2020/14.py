@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Day 14. Write data to memory?"""
 
-import typer
 from lib import aoc
 from typing import Callable, Dict, List, Tuple
 
@@ -81,9 +80,3 @@ class Day14(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str) -> List[Tuple[str, ...]]:
     return [tuple(line.split(' = ')) for line in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day14().run)
-
-# vim:ts=2:sw=2:expandtab

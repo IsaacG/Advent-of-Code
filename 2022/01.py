@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 01."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -45,9 +44,3 @@ class Day01(aoc.Challenge):
             [int(line) for line in block.splitlines()]
             for block in puzzle_input.split("\n\n")
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day01().run)
-
-# vim:expandtab:sw=4:ts=4

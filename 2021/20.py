@@ -2,7 +2,6 @@
 """Advent of Code: Day 20. Image enhancing algorithm."""
 
 import functools
-import typer
 from lib import aoc
 import input_data
 
@@ -93,9 +92,3 @@ class Day20(aoc.Challenge):
             if elem == "#"
         )
         return algo, image
-
-
-if __name__ == "__main__":
-    typer.run(Day20().run)
-
-# vim:expandtab:sw=4:ts=4

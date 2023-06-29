@@ -9,7 +9,6 @@ import math
 import re
 import time
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -321,9 +320,3 @@ class Day16(aoc.Challenge):
 
 
         return max(solve("AA", tuple(), 0, 29))
-
-
-if __name__ == "__main__":
-    typer.run(Day16().run)
-
-# vim:expandtab:sw=4:ts=4

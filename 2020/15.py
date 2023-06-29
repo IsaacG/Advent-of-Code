@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Day 15. Van Eck sequence. https://www.youtube.com/watch?v=etMJxB-igrc - Numberphile."""
 
-import typer
 from typing import List
 
 from lib import aoc
@@ -45,9 +44,3 @@ class Day15(aoc.Challenge):
       time_said[last_spoken] = counter
       last_spoken = say
     return last_spoken
-
-
-if __name__ == '__main__':
-  typer.run(Day15().run)
-
-# vim:ts=2:sw=2:expandtab

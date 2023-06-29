@@ -3,7 +3,6 @@
 
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -67,9 +66,3 @@ class Day14(aoc.Challenge):
 
             # Backtrack the position by one movement and resume from the prior location:
             cur -= path.pop()
-
-
-if __name__ == "__main__":
-    typer.run(Day14().run)
-
-# vim:expandtab:sw=4:ts=4

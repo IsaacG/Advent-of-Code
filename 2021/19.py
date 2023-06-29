@@ -5,7 +5,6 @@ import collections
 import functools
 import itertools
 
-import typer
 from lib import aoc
 import input_data
 
@@ -177,9 +176,3 @@ class Day19(aoc.Challenge):
             )
             scans.append(points)
         return frozenset(scans)
-
-
-if __name__ == "__main__":
-    typer.run(Day19().run)
-
-# vim:expandtab:sw=4:ts=4

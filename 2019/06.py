@@ -6,7 +6,6 @@ Count orbits and steps from one orbit to another.
 
 import collections
 import itertools
-import typer
 from typing import List, Tuple
 
 from lib import aoc
@@ -83,9 +82,3 @@ class Day06(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str) -> List[Tuple[str, ...]]:
     return [tuple(line.split(')')) for line in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day06().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -3,7 +3,6 @@
 
 import json
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -51,9 +50,3 @@ class Day12(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         return json.loads(puzzle_input)
-
-
-if __name__ == "__main__":
-    typer.run(Day12().run)
-
-# vim:expandtab:sw=4:ts=4

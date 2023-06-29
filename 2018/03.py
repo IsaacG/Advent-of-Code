@@ -5,7 +5,6 @@ Compute overlapping rectangles which the elves want to cut from fabric.
 """
 
 import re
-import typer
 from typing import List, Set, Tuple
 
 from lib import aoc
@@ -41,9 +40,3 @@ class Day03(aoc.Challenge):
   def input_parser(self, puzzle_input: str) -> List[List[int]]:
     r = re.compile(r'^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$')
     return [[int(i) for i in r.match(line).groups()] for line in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day03().run)
-
-# vim:ts=2:sw=2:expandtab

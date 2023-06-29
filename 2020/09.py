@@ -4,7 +4,6 @@
 import itertools
 from typing import List
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -69,9 +68,3 @@ class Day09(aoc.Challenge):
         if s > want:
           break
     raise ValueError
-
-
-if __name__ == '__main__':
-  typer.run(Day09().run)
-
-# vim:ts=2:sw=2:expandtab

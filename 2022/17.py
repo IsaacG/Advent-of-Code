@@ -4,7 +4,6 @@
 import collections
 import itertools
 
-import typer
 from lib import aoc
 
 ROCKS = """
@@ -122,9 +121,3 @@ class Day17(aoc.Challenge):
         if rock_cnt + 1 == target_rock_count:
             return tower_height
         raise RuntimeError("Not found")
-
-
-if __name__ == "__main__":
-    typer.run(Day17().run)
-
-# vim:expandtab:sw=4:ts=4

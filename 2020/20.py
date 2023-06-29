@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Day 20. Process satellite images."""
 
-import typer
 from lib import aoc
 import collections
 import enum
@@ -298,9 +297,3 @@ class Day20(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
-
-
-if __name__ == '__main__':
-  typer.run(Day20().run)
-
-# vim:ts=2:sw=2:expandtab

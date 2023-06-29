@@ -5,7 +5,6 @@ Extend Intcode computer with relative base addresses and infinite memory space.
 """
 
 import asyncio
-import typer
 
 import intcode
 from lib import aoc
@@ -43,9 +42,3 @@ class Day09(intcode.Challenge):
   def part2(self, computer: intcode.Computer) -> int:
     asyncio.run(computer.run(inputs=[2]))
     return computer.output()[0]
-
-
-if __name__ == '__main__':
-  typer.run(Day09().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -4,7 +4,6 @@
 Emulate a simple CPU and program with a cycle counter.
 """
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -199,9 +198,3 @@ class Day10(aoc.Challenge):
         # Split the output into 6 rows of 40 pixels each.
         rows = [pixels[i*40:(i+1)*40] for i in range(6)]
         return aoc.OCR(rows).as_string()
-
-
-if __name__ == "__main__":
-    typer.run(Day10().run)
-
-# vim:expandtab:sw=4:ts=4

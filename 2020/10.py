@@ -5,7 +5,6 @@ import collections
 import functools
 from typing import List
 
-import typer
 from lib import aoc
 
 
@@ -106,9 +105,3 @@ class Day10(aoc.Challenge):
       return self.sum_map(valid, possible_paths_from)
 
     return possible_paths_from(0)
-
-
-if __name__ == '__main__':
-  typer.run(Day10().run)
-
-# vim:ts=2:sw=2:expandtab

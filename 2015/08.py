@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 08."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -42,9 +41,3 @@ class Day08(aoc.Challenge):
             2 + a.count('"') + a.count("\\")
             for a in parsed_input
         )
-
-
-if __name__ == "__main__":
-    typer.run(Day08().run)
-
-# vim:expandtab:sw=4:ts=4

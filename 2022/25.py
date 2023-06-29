@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 25: Full of Hot Air. Convert from base 4 to 10 and back again!"""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -84,9 +83,3 @@ class Day25(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Placeholder."""
         return 1
-
-
-if __name__ == "__main__":
-    typer.run(Day25().run)
-
-# vim:expandtab:sw=4:ts=4

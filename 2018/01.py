@@ -5,7 +5,6 @@ Sum up frequencies then do so repeatedly until a repeat is seen.
 """
 
 import itertools
-import typer
 from typing import List
 
 from lib import aoc
@@ -27,9 +26,3 @@ class Day01(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str) -> List[int]:
     return [int(i) for i in puzzle_input.split('\n')]
-
-
-if __name__ == '__main__':
-  typer.run(Day01().run)
-
-# vim:ts=2:sw=2:expandtab

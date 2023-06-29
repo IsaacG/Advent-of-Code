@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import json
 
-import typer
 from lib import aoc
 
 
@@ -219,9 +218,3 @@ class Day18(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> list[Node]:
         """Parse the input data."""
         return [Node(json.loads(line)) for line in puzzle_input.splitlines()]
-
-
-if __name__ == "__main__":
-    typer.run(Day18().run)
-
-# vim:expandtab:sw=4:ts=4

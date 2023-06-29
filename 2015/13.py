@@ -4,7 +4,6 @@
 import itertools
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -71,9 +70,3 @@ class Day13(aoc.Challenge):
             data[person, neighbor] = num
             people.add(person)
         return data, people
-
-
-if __name__ == "__main__":
-    typer.run(Day13().run)
-
-# vim:expandtab:sw=4:ts=4

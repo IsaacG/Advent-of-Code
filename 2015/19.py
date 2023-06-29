@@ -7,7 +7,6 @@ import math
 import queue
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -132,9 +131,3 @@ class Day19(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day19().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 04."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -39,9 +38,3 @@ class Day04(aoc.Challenge):
             for a1, a2, b1, b2 in parsed_input
             if b1 <= a1 <= b2 or a1 <= b1 <= a2
         )
-
-
-if __name__ == "__main__":
-    typer.run(Day04().run)
-
-# vim:expandtab:sw=4:ts=4

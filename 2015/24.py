@@ -3,7 +3,6 @@
 
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = "\n".join([str(i) for i in list(range(1, 6)) + list(range(7, 12))])
@@ -39,9 +38,3 @@ class Day24(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Return the smallest group, with 4 groups."""
         return self.balance(parsed_input, 4)
-
-
-if __name__ == "__main__":
-    typer.run(Day24().run)
-
-# vim:expandtab:sw=4:ts=4

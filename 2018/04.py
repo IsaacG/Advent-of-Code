@@ -7,7 +7,6 @@ import collections
 import heapq
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -127,9 +126,3 @@ class Day04(aoc.Challenge):
         for interval in sleeping.values():
             interval.sort()
         return sleeping
-
-
-if __name__ == "__main__":
-    typer.run(Day04().run)
-
-# vim:expandtab:sw=4:ts=4

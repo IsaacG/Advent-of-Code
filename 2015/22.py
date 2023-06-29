@@ -6,7 +6,6 @@ import queue
 import dataclasses
 from typing import Any
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -179,9 +178,3 @@ class Day22(aoc.Challenge):
         assert got < 1242  # Attempt 2
         assert got > 1189  # Attempt 3
         return got
-
-
-if __name__ == "__main__":
-    typer.run(Day22().run)
-
-# vim:expandtab:sw=4:ts=4

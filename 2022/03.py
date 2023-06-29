@@ -4,7 +4,6 @@
 import string
 import more_itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -49,9 +48,3 @@ class Day03(aoc.Challenge):
             score += SCORING.index(common.pop())
 
         return score
-
-
-if __name__ == "__main__":
-    typer.run(Day03().run)
-
-# vim:expandtab:sw=4:ts=4

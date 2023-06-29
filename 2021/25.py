@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 25."""
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -75,9 +74,3 @@ class Day25(aoc.Challenge):
         width = len(lines[0])
         height = len(lines)
         return right, down, width, height
-
-
-if __name__ == "__main__":
-    typer.run(Day25().run)
-
-# vim:expandtab:sw=4:ts=4

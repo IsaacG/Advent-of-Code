@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 05."""
 
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -61,9 +60,3 @@ class Day05(aoc.Challenge):
             del stack[src - 1][-move_count:]
 
         return "".join(s.pop() for s in stack)
-
-
-if __name__ == "__main__":
-    typer.run(Day05().run)
-
-# vim:expandtab:sw=4:ts=4

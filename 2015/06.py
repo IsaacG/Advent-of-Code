@@ -3,7 +3,6 @@
 
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -68,9 +67,3 @@ class Day06(aoc.Challenge):
                         case _:
                             raise ValueError(f"Unknown {action=}")
         return sum(i for row in grid for i in row)
-
-
-if __name__ == "__main__":
-    typer.run(Day06().run)
-
-# vim:expandtab:sw=4:ts=4

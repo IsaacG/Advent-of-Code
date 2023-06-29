@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Walrus operator not supported by python3."""
 
-import typer
 import re
 
 from typing import List
@@ -97,9 +96,3 @@ class Day04(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')
-
-
-if __name__ == '__main__':
-  typer.run(Day04().run)
-
-# vim:ts=2:sw=2:expandtab

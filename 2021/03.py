@@ -3,7 +3,6 @@
 """Advent of Code: Day 03."""
 
 import collections
-import typer
 
 from lib import aoc
 
@@ -59,7 +58,3 @@ class Day03(aoc.Challenge):
                     break
 
         return result
-
-
-if __name__ == "__main__":
-    typer.run(Day03().run)

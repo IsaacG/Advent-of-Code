@@ -5,7 +5,6 @@ Implement an Intcode computer.
 """
 
 import asyncio
-import typer
 
 import intcode
 from lib import aoc
@@ -41,9 +40,3 @@ class Day02(intcode.Challenge):
         if self.run_with(computer, noun, verb) == want:
           return 100 * noun + verb
     raise ValueError('Should not get here.')
-
-
-if __name__ == '__main__':
-  typer.run(Day02().run)
-
-# vim:ts=2:sw=2:expandtab

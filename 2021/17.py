@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 17."""
 
-import typer
 from lib import aoc
 
 SAMPLE = "target area: x=20..30, y=-10..-5"
@@ -72,9 +71,3 @@ class Day17(aoc.Challenge):
                         break
 
         return velocities
-
-
-if __name__ == "__main__":
-    typer.run(Day17().run)
-
-# vim:expandtab:sw=4:ts=4

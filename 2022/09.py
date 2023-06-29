@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 9: Rope Bridge. Track the movement of knots."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -55,9 +54,3 @@ class Day09(aoc.Challenge):
                     knots[i + 1] += complex(x, y)
                 points.add(knots[-1])
         return len(points)
-
-
-if __name__ == "__main__":
-    typer.run(Day09().run)
-
-# vim:expandtab:sw=4:ts=4

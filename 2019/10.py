@@ -7,7 +7,6 @@ astroid is #200 to get evaporated by laser beam.
 
 import collections
 import math
-import typer
 from typing import Dict, Set
 
 import data
@@ -80,9 +79,3 @@ class Day10(aoc.Challenge):
         if val == '#':
           locations.add(col + (row * 1j))
     return locations
-
-
-if __name__ == '__main__':
-  typer.run(Day10().run)
-
-# vim:ts=2:sw=2:expandtab

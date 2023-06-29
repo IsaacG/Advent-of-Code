@@ -6,7 +6,6 @@ Read and flatten layered images.
 
 import collections
 import more_itertools
-import typer
 
 from lib import aoc
 
@@ -46,9 +45,3 @@ class Day08(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return puzzle_input
-
-
-if __name__ == '__main__':
-  typer.run(Day08().run)
-
-# vim:ts=2:sw=2:expandtab

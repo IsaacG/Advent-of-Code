@@ -3,7 +3,6 @@
 
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -76,9 +75,3 @@ class Day12(aoc.Challenge):
                 seen[shift_state] = gen, offset
 
         return sum(state)
-
-
-if __name__ == "__main__":
-    typer.run(Day12().run)
-
-# vim:expandtab:sw=4:ts=4

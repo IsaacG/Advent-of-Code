@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 06."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -35,9 +34,3 @@ class Day06(aoc.Challenge):
             for offset, chars in enumerate(zip(*parts))
             if len(set(chars)) == num
         )
-
-
-if __name__ == "__main__":
-    typer.run(Day06().run)
-
-# vim:expandtab:sw=4:ts=4

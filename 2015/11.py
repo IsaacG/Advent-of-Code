@@ -3,7 +3,6 @@
 
 import string
 
-import typer
 from lib import aoc
 
 SAMPLE = ["abcdefgh", "ghijklmn"]
@@ -84,9 +83,3 @@ class Day11(aoc.Challenge):
         """Rotate twice."""
         password = self.next_password(parsed_input)
         return self.next_password(password)
-
-
-if __name__ == "__main__":
-    typer.run(Day11().run)
-
-# vim:expandtab:sw=4:ts=4

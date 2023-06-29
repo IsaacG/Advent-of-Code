@@ -7,7 +7,6 @@ and you have to predict where they'll end up.
 https://adventofcode.com/2020/day/23
 """
 
-import typer
 from lib import aoc
 from typing import List, Optional
 
@@ -112,9 +111,3 @@ class Day23(aoc.Challenge):
 
   def input_parser(self, puzzle_input: str):
     return [int(i) for i in puzzle_input]
-
-
-if __name__ == '__main__':
-  typer.run(Day23().run)
-
-# vim:ts=2:sw=2:expandtab

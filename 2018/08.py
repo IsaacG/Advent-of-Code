@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 8: Memory Maneuver."""
 
-import typer
 from lib import aoc
 
 SAMPLE = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"
@@ -44,9 +43,3 @@ class Day08(aoc.Challenge):
             return sum(children[i] for i in metadata if i < child_count)
 
         return parser()
-
-
-if __name__ == "__main__":
-    typer.run(Day08().run)
-
-# vim:expandtab:sw=4:ts=4

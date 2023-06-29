@@ -5,7 +5,6 @@ from __future__ import annotations
 import dataclasses
 import queue
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -132,9 +131,3 @@ class Day24(aoc.Challenge):
             moves = self.navigate(parsed_input, bool(i % 2), moves)
             self.debug(f"{i}: {moves=}")
         return moves
-
-
-if __name__ == "__main__":
-    typer.run(Day24().run)
-
-# vim:expandtab:sw=4:ts=4

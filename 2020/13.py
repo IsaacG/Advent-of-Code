@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Day 13. Bus terminal departure schedules."""
 
-import typer
 from lib import aoc
 from typing import List
 
@@ -64,9 +63,3 @@ class Day13(aoc.Challenge):
         step *= newfound
     else:
       return start_time
-
-
-if __name__ == '__main__':
-  typer.run(Day13().run)
-
-# vim:ts=2:sw=2:expandtab

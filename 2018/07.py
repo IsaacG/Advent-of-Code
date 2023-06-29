@@ -4,7 +4,6 @@
 import collections
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -98,9 +97,3 @@ class Day07(aoc.Challenge):
             nodes.add(a)
             nodes.add(b)
         return nodes, dependencies
-
-
-if __name__ == "__main__":
-    typer.run(Day07().run)
-
-# vim:expandtab:sw=4:ts=4

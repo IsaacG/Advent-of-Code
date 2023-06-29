@@ -4,7 +4,6 @@
 import itertools
 import math
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -94,9 +93,3 @@ class Day21(aoc.Challenge):
         """Return the max cost for the boss to win."""
         costs = self.solver(dict(parsed_input))
         return max(costs[False])
-
-
-if __name__ == "__main__":
-    typer.run(Day21().run)
-
-# vim:expandtab:sw=4:ts=4

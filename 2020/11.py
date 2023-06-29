@@ -4,7 +4,6 @@
 import itertools
 from typing import List
 
-import typer
 from lib import aoc
 import data
 
@@ -136,9 +135,3 @@ class Day11(aoc.Challenge):
   def part2(self, parsed_input: List[str]) -> int:
     board = Seating(parsed_input)
     return self.solution(board, 5, board.visible)
-
-
-if __name__ == '__main__':
-  typer.run(Day11().run)
-
-# vim:ts=2:sw=2:expandtab

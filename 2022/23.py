@@ -3,7 +3,6 @@
 
 from typing import Optional
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -102,9 +101,3 @@ class Day23(aoc.Challenge):
             positions = new_positions
 
         raise RuntimeError("Not found")
-
-
-if __name__ == "__main__":
-    typer.run(Day23().run)
-
-# vim:expandtab:sw=4:ts=4

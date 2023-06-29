@@ -3,8 +3,6 @@
 
 import collections
 
-import typer
-
 from lib import aoc
 
 SAMPLE = "3,4,3,1,2"
@@ -42,7 +40,3 @@ class Day06(aoc.Challenge):
             new[8] = counter.get(0, 0)
             counter = new
         return sum(counter.values())
-
-
-if __name__ == "__main__":
-    typer.run(Day06().run)

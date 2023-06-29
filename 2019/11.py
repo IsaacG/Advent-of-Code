@@ -7,7 +7,6 @@ This robot got camera inputs and motor outputs (paint, turn, move).
 
 import asyncio
 import collections
-import typer
 
 from typing import Set
 import intcode
@@ -90,9 +89,3 @@ class Day11(intcode.Challenge):
     # print('\n'.join(image))
     # Meaningless number to use in the solutions file.
     return self.mult(sum(True for c in row if c != ' ') for row in image)
-
-
-if __name__ == '__main__':
-  typer.run(Day11().run)
-
-# vim:ts=2:sw=2:expandtab

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from typing import Dict, List, Tuple
 from lib import aoc
 
@@ -73,9 +72,3 @@ class Day21(aoc.Challenge):
       allergens = allergens_raw[:-1].split(', ')
       out.append((set(ingredients), set(allergens)))
     return out
-
-
-if __name__ == '__main__':
-  typer.run(Day21().run)
-
-# vim:ts=2:sw=2:expandtab

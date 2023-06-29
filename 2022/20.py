@@ -5,7 +5,6 @@ from __future__ import annotations
 import dataclasses
 from typing import Iterable, Optional
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -74,9 +73,3 @@ class Day20(aoc.Challenge):
         res = sum(out)
         self.debug(f"Got {out} => {res}")
         return res
-
-
-if __name__ == "__main__":
-    typer.run(Day20().run)
-
-# vim:expandtab:sw=4:ts=4

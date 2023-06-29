@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 import itertools
 from typing import List, Tuple
 from lib import aoc
@@ -140,9 +139,3 @@ class Day17(aoc.Challenge):
 
   def part2(self, parsed_input: List[str]) -> int:
     return self.solve_game_of_life(parsed_input, 4)
-
-
-if __name__ == '__main__':
-  typer.run(Day17().run)
-
-# vim:ts=2:sw=2:expandtab

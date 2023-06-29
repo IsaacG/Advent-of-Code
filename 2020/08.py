@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import typer
 from typing import List, Tuple
 
 from lib import aoc
@@ -90,9 +89,3 @@ class Day08(aoc.Challenge):
         return acc
       parsed_input[i] = line
     raise RuntimeError
-
-
-if __name__ == '__main__':
-  typer.run(Day08().run)
-
-# vim:ts=2:sw=2:expandtab

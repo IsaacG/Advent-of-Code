@@ -3,7 +3,6 @@
 
 import re
 
-import typer
 from lib import aoc
 
 SAMPLE = ["""\
@@ -184,8 +183,3 @@ class Day22(aoc.Challenge):
         return instructions
 
 
-if __name__ == "__main__":
-
-    typer.run(Day22().run)
-
-# vim:expandtab:sw=4:ts=4

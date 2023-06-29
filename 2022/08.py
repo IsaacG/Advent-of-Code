@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 8: Treetop Tree House. Compute tree visibility."""
 
-import typer
 from lib import aoc
 
 SAMPLE = [
@@ -80,9 +79,3 @@ class Day08(aoc.Challenge):
             scores.append(self.mult(visible))
 
         return max(scores)
-
-
-if __name__ == "__main__":
-    typer.run(Day08().run)
-
-# vim:expandtab:sw=4:ts=4

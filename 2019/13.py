@@ -5,7 +5,6 @@ Play the Pong arcade game.
 """
 
 import asyncio
-import typer
 from typing import Dict, Tuple
 
 import intcode
@@ -99,9 +98,3 @@ class Day13(intcode.Challenge):
       arcade.run(),
     )
     return arcade
-
-
-if __name__ == '__main__':
-  typer.run(Day13().run)
-
-# vim:ts=2:sw=2:expandtab

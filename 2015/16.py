@@ -4,7 +4,6 @@
 import operator
 from typing import Callable
 
-import typer
 from lib import aoc
 
 InputType = list[dict[str, int]]
@@ -62,9 +61,3 @@ class Day16(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day16().run)
-
-# vim:expandtab:sw=4:ts=4

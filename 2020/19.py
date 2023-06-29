@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Day 19. Regex building."""
 
-import typer
 from lib import aoc
 import re
 from typing import Dict, List, Tuple
@@ -107,9 +106,3 @@ class Day19(aoc.Challenge):
     rules_raw, strings = puzzle_input.split('\n\n')
     rules = {int(line.split(': ')[0]): line.split(': ')[1] for line in rules_raw.split('\n')}
     return rules, strings.split('\n')
-
-
-if __name__ == '__main__':
-  typer.run(Day19().run)
-
-# vim:ts=2:sw=2:expandtab

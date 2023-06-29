@@ -2,7 +2,6 @@
 """Advent of Code, Day 23: Opening the Turing Lock. Emulate a simple CPU."""
 from __future__ import annotations
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -65,9 +64,3 @@ class Day23(aoc.Challenge):
     def part2(self, parsed_input: InputType) -> int:
         """Return reg b, starting with a=1."""
         return self.solver(parsed_input, 1)
-
-
-if __name__ == "__main__":
-    typer.run(Day23().run)
-
-# vim:expandtab:sw=4:ts=4

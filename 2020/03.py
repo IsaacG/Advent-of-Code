@@ -2,7 +2,6 @@
 
 from typing import List
 
-import typer
 from lib import aoc
 
 
@@ -45,9 +44,3 @@ class Day03(aoc.Challenge):
     for x_step, y_step in ((1, 1), (3, 1), (5, 1), (7, 1), (1, 2)):
       prod *= self.tree_count(grid, x_step, y_step)
     return prod
-
-
-if __name__ == '__main__':
-  typer.run(Day03().run)
-
-# vim:ts=2:sw=2:expandtab

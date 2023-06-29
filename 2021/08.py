@@ -2,7 +2,6 @@
 """Advent of Code: Day 08."""
 
 import collections
-import typer
 
 from lib import aoc
 
@@ -104,7 +103,3 @@ class Day08(aoc.Challenge):
             )
             for line in puzzle_input.splitlines()
         ]
-
-
-if __name__ == "__main__":
-    typer.run(Day08().run)

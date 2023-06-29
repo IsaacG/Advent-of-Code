@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 25: Let It Snow. Compute the code needed to start the machine."""
 
-import typer
 from lib import aoc
 
 SAMPLE = ["1 1", "2 6", "6 4"]
@@ -39,9 +38,3 @@ class Day25(aoc.Challenge):
 
     def part2(self, parsed_input: InputType) -> int:
         return 0
-
-
-if __name__ == "__main__":
-    typer.run(Day25().run)
-
-# vim:expandtab:sw=4:ts=4

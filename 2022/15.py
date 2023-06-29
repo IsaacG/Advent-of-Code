@@ -3,7 +3,6 @@
 
 import itertools
 
-import typer
 from lib import aoc
 
 SAMPLE = """\
@@ -188,9 +187,3 @@ class Day15(aoc.Challenge):
         # Sort sensors, left to right.
         data.sort()
         return data
-
-
-if __name__ == "__main__":
-    typer.run(Day15().run)
-
-# vim:expandtab:sw=4:ts=4

@@ -2,7 +2,6 @@
 
 """Advent of Code: Day 01."""
 
-import typer
 
 from lib import aoc
 
@@ -44,7 +43,3 @@ class Day01(aoc.Challenge):
         """
         groups = [a + b + c for a, b, c in zip(parsed_input, parsed_input[1:], parsed_input[2:])]
         return self.part1(groups)
-
-
-if __name__ == '__main__':
-    typer.run(Day01().run)

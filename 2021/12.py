@@ -5,7 +5,6 @@ import collections
 import functools
 from typing import Optional
 
-import typer
 
 from lib import aoc
 
@@ -122,9 +121,3 @@ class Day12(aoc.Challenge):
             graph[start].append(end)
             graph[end].append(start)
         return dict(graph)
-
-
-if __name__ == "__main__":
-    typer.run(Day12().run)
-
-# vim:expandtab:sw=4:ts=4
