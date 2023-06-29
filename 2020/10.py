@@ -66,7 +66,6 @@ class Day10(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=1, want=220),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=19208),
   )
-  INPUT_PARSER = aoc.parse_one_int_per_line
 
   def part1(self, parsed_input: List[int]) -> int:
     """Count the 1-steps and 3-steps."""

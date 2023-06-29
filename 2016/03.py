@@ -9,7 +9,7 @@ InputType = list[list[int]]
 class Day03(aoc.Challenge):
     """Day 3: Squares With Three Sides."""
 
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
     def solver(self, parsed_input: list[list[int]], rotate: bool) -> int:
         """Return the number of valid triangles."""

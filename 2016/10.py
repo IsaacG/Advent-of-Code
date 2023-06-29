@@ -23,9 +23,8 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=2),
         aoc.TestCase(inputs=SAMPLE, part=2, want=2 * 3 * 5),
     ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
-    def solver(self, parsed_input: list[Iterable[int | str]], param: bool) -> int:
+    def solver(self, parsed_input: list[str], param: bool) -> int:
         """Simulate a bot factory."""
         want = [2, 5] if self.testing else [17, 61]
         bots = collections.defaultdict(list)
@@ -34,14 +33,14 @@ class Day10(aoc.Challenge):
 
         # Parse the input, setting up initial bot states and instructions.
         for line in parsed_input:
-            match line:
+            match line.split():
                 case ["value", value, "goes", "to", "bot", bot]:
-                    bots[bot].append(value)
+                    bots[int(bot)].append(int(value))
                 case [
                     "bot", bot, "gives", "low", "to",
                     low_type, low, "and", "high", "to", high_type, high,
                 ]:
-                    instructions[bot] = ((low_type, low), (high_type, high))
+                    instructions[int(bot)] = ((low_type, int(low)), (high_type, int(high)))
                 case _:
                     raise ValueError(f"Invalid line {line}")
         self.debug(f"Starting bots: {bots}")

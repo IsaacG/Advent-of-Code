@@ -47,6 +47,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=6),
     ]
     INPUT_PARSER = aoc.parse_one_str
+    TIMEOUT = 70
 
     def look_say_loop(self, string: str, steps: int) -> str:
         """Return look-say length after looping."""

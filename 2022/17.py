@@ -34,12 +34,10 @@ InputType = str
 class Day17(aoc.Challenge):
     """Day 17: Pyroclastic Flow."""
 
-    DEBUG = False
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=3068),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
     ]
-    INPUT_PARSER = aoc.parse_one_str
     # Rounds to run, part 1 vs part 2.
     PARAMETERIZED_INPUTS = [2022, 1000000000000]
 

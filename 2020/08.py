@@ -35,7 +35,6 @@ class Day08(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=8),
   )
-  INPUT_PARSER = aoc.parse_one_str_per_line
 
   def compute(self, lines: List[str]) -> Tuple[int, bool]:
     """Run the code, returning the accumulator and if the end was hit."""

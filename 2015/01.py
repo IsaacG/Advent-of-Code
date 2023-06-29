@@ -19,7 +19,6 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=1),
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=5),
     )
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, parsed_input: InputType) -> int:
         """Return Santa's final floor."""

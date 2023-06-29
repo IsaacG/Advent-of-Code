@@ -27,7 +27,6 @@ class Day03(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE, part=1, want=7),
     aoc.TestCase(inputs=SAMPLE, part=2, want=336),
   )
-  INPUT_PARSER = aoc.parse_one_str_per_line
 
   def tree_count(self, grid, x_step, y_step) -> int:
     count = 0

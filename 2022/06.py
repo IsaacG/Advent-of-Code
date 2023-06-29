@@ -25,7 +25,6 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=1, want=11),
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=19),
     ]
-    INPUT_PARSER = aoc.parse_one_str
     PARAMETERIZED_INPUTS = [4, 14]
 
     def solver(self, line: str, num: int) -> int:

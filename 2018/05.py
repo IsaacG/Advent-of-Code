@@ -17,7 +17,6 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=4),
     ]
 
-    INPUT_PARSER = aoc.parse_one_str
     DELTA = abs(ord("A") - ord("a"))
 
     def reduce(self, codepoints: list[int], ignore: set[int]) -> list[int]:

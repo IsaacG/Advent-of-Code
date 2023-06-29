@@ -18,7 +18,7 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=37),
         aoc.TestCase(inputs=SAMPLE, part=2, want=168),
     )
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     PARAMETERIZED_INPUTS = [
         # Return the optimal blast position with constant movement cost.
         lambda x: x,

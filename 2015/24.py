@@ -19,7 +19,6 @@ class Day24(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=99),
         aoc.TestCase(inputs=SAMPLE, part=2, want=44),
     ]
-    INPUT_PARSER = aoc.parse_one_int_per_line
 
     def balance(self, packages: list[int], groups: int) -> int:
         """Return the group of packages which meets the constraints."""

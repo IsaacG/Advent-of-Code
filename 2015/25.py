@@ -19,7 +19,7 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=1, want=24659492),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the code given on a row/column."""

@@ -28,7 +28,6 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=7),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=5),
     )
-    INPUT_PARSER = aoc.parse_one_int_per_line
 
     def part1(self, parsed_input: list[int]) -> int:
         """Return the number of "steps" with an increase.

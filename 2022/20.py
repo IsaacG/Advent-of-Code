@@ -59,7 +59,6 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=3),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1623178306),
     ]
-    INPUT_PARSER = aoc.parse_one_int_per_line
     PARAMETERIZED_INPUTS = ((1, 1), (811589153, 10))
 
     def solver(self, parsed_input: InputType, args: tuple[int, int]) -> int:

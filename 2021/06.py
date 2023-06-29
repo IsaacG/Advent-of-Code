@@ -19,7 +19,7 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=5934),
         aoc.TestCase(inputs=SAMPLE, part=2, want=26984457539),
     )
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
     def part1(self, parsed_input: InputType) -> int:
         """Compute fish population after 80 days."""

@@ -25,9 +25,8 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
-    INPUT_PARSER = aoc.parse_one_int_per_line
 
-    def solver(self, containers: list[int]) -> dict[int, int]:
+    def count(self, containers: list[int]) -> dict[int, int]:
         """Compute the number of ways to fill containers."""
         target = 25 if self.testing else 150
         count: dict[int, int] = collections.defaultdict(int)
@@ -39,11 +38,11 @@ class Day17(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the possible countainer combos which fit the eggnog."""
-        return sum(self.solver(parsed_input).values())
+        return sum(self.count(parsed_input).values())
 
     def part2(self, parsed_input: InputType) -> int:
         """Return the possible countainer combos which use the min number of containers."""
-        count = self.solver(parsed_input)
+        count = self.count(parsed_input)
         return count[min(count)]
 
 

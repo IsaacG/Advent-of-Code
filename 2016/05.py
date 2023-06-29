@@ -20,8 +20,6 @@ class Day05(aoc.Challenge):
     ]
     TIMEOUT = 60
 
-    INPUT_PARSER = aoc.parse_one_str
-
     def hash_gen(self, name: str) -> abc.Generator[str, None, None]:
         """Generate MD5 digests which start with 00000."""
         base = hashlib.md5(name.encode())

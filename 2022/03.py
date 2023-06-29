@@ -27,7 +27,6 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=157),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=70),
     ]
-    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def part1(self, parsed_input: InputType) -> int:
         """Find the common element across the first and second half of each line."""

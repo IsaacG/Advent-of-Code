@@ -31,8 +31,6 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=288957),
     )
 
-    INPUT_PARSER = aoc.parse_one_str_per_line
-
     @staticmethod
     def bracket_match(line: str) -> tuple[Optional[str], list[str]]:
         """Bracket match a line, returning first invalid char and stack."""

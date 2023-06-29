@@ -25,7 +25,6 @@ class Day09(aoc.Challenge):
     ] + [
         aoc.TestCase(inputs=i[0], part=2, want=i[1]) for i in SAMPLE[6:]
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, parsed_input: str, expand: bool) -> int:
         """Compute the length of an encoded sequence."""

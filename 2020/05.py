@@ -22,7 +22,6 @@ class Day05(aoc.Challenge):
     aoc.TestCase(inputs='FFFBBBFRRR', part=1, want=119),
     aoc.TestCase(inputs='BBFFBBFRLL', part=1, want=820),
   )
-  INPUT_PARSER = aoc.parse_one_str_per_line
 
   def part1(self, parsed_input: List[str]) -> int:
     # Part one: max seat number

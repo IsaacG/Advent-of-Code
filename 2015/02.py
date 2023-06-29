@@ -19,7 +19,7 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=34),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=14),
     )
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the amount of wrapping paper needed."""

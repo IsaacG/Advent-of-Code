@@ -14,7 +14,6 @@ class Day25(aoc.Challenge):
   TESTS = (
     aoc.TestCase(inputs="5764801\n17807724\n", part=1, want=14897079),
   )
-  INPUT_PARSER = aoc.parse_one_int_per_line
 
   def transform(self, subject: int, loop_counter: int) -> int:
     """Apply the transform function."""

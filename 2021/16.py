@@ -199,7 +199,6 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs="9C005AC2F8F0", part=2, want=0),
         aoc.TestCase(inputs="9C0141080250320F1802104A08", part=2, want=1),
     )
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, parsed_input: str) -> int:
         """Parse the packets and sum up all the versions."""

@@ -24,8 +24,6 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want="advent"),
     ]
 
-    INPUT_PARSER = aoc.parse_one_str_per_line
-
     def solver(self, parsed_input: InputType, idx: int) -> str:
         return "".join(
             collections.Counter(col).most_common()[idx][0]

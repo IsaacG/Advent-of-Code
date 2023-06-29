@@ -20,7 +20,6 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want="1985"),
         aoc.TestCase(inputs=SAMPLE, part=2, want="5DB3"),
     ]
-    INPUT_PARSER = aoc.parse_one_str_per_line
     PARAMETERIZED_INPUTS = ["123\n456\n789", "1\n234\n56789\nABC\nD"]
 
     def solver(self, parsed_input: InputType, pad_layout: str) -> str:
