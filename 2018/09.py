@@ -28,7 +28,6 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[5], part=1, want=37305),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     PARAMETERIZED_INPUTS = [1, 100]  # Part 2: do part 1 with 100 more steps.
 
     def solver(self, parsed_input: InputType, *args, **kwargs) -> int:

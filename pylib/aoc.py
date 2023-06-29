@@ -39,6 +39,7 @@ DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
 RE_INT = re.compile(r"[+-]?\d+")
+RE_BOUNDED_INT = re.compile(r"\b[+-]?\d+\b")
 
 OCR_MAP = {
     # 2022/10: 6x5
@@ -678,8 +679,10 @@ class Challenge(Helpers):
         lines = data.splitlines()
         multi_lines = len(lines) > 1
         one_line = lines[0]
-        if RE_INT.match(one_line):
+        if RE_INT.fullmatch(one_line):
             return parse_one_int_per_line if multi_lines else parse_one_int
+        elif len(RE_BOUNDED_INT.findall(one_line)) > 1:
+            return parse_re_findall_int(RE_BOUNDED_INT)
         else:
             return parse_one_str_per_line if multi_lines else parse_one_str
 
