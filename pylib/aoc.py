@@ -681,10 +681,13 @@ class Challenge(Helpers):
         one_line = lines[0]
         if RE_INT.fullmatch(one_line):
             return parse_one_int_per_line if multi_lines else parse_one_int
-        elif len(RE_BOUNDED_INT.findall(one_line)) > 1:
-            return parse_re_findall_int(RE_BOUNDED_INT)
-        else:
-            return parse_one_str_per_line if multi_lines else parse_one_str
+        if len(RE_BOUNDED_INT.findall(one_line)) > 1:
+            lines = [re.sub("  +", " ", line) for line in lines[:4]]
+            one_line = lines[0]
+            template = re.compile(RE_BOUNDED_INT.sub(lambda x: RE_BOUNDED_INT.pattern, one_line))
+            if all(template.fullmatch(line) for line in lines):
+                return parse_re_findall_int(RE_BOUNDED_INT)
+        return parse_one_str_per_line if multi_lines else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
