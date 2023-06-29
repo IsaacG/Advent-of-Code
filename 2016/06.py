@@ -6,9 +6,9 @@ import collections
 from lib import aoc
 
 SAMPLE = """\
-eedadn\ndrvtee\neandsr\nraavrd\n
-atevrs\ntsrnev\nsdttsa\nrasrtv\n
-nssdts\nntnada\nsvetve\ntesnvt\n
+eedadn\ndrvtee\neandsr\nraavrd\n\
+atevrs\ntsrnev\nsdttsa\nrasrtv\n\
+nssdts\nntnada\nsvetve\ntesnvt\n\
 vntsnd\nvrdear\ndvrsen\nenarar"""
 
 InputType = list[str]
