@@ -1,13 +1,11 @@
 #!/bin/python
-"""Advent of Code, Day 11: Radioisotope Thermoelectric Generators."""
-from __future__ import annotations
+"""Advent of Code, Day 11: Radioisotope Thermoelectric Generators. Solve moving devices around the warehouse."""
 
-import collections
 import functools
 import itertools
 import queue
-import math
 import re
+from collections.abc import Generator, Iterable
 
 from lib import aoc
 
@@ -24,16 +22,10 @@ Device = tuple[int, bool]
 class Day11(aoc.Challenge):
     """Day 11: Radioisotope Thermoelectric Generators."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=11),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_re_group_str(r"The (.*) floor contains (.*)\.$")
 
     @functools.cache
@@ -50,6 +42,7 @@ class Day11(aoc.Challenge):
         return all(self.valid_floor(floor) for floor in state)
 
     def moves(self, floor: Iterable[Device]) -> Generator[tuple[set[Device], set[Device]], None, None]:
+        """Generator what devices can be moved off a floor while leaving the floor valid."""
         candidates = [{device} for device in floor]
         candidates.extend(set(i) for i in itertools.combinations(floor, 2))
         for candidate in candidates:
@@ -57,61 +50,65 @@ class Day11(aoc.Challenge):
             if self.valid_floor(new_floor):
                 yield (candidate, new_floor)
 
+    @staticmethod
+    def cost(floors: Iterable[Device]) -> int:
+        """A* cost function: minimum moves needed to solve the puzzle."""
+        return sum(len(floor) * i for i, floor in zip((3, 2, 1), floors[:3]))
+
     def part1(self, parsed_input: InputType) -> int:
+        """Solve for minimum moves using A*."""
         state, materials = parsed_input
-        # print(f"{state=}, {materials=}, {self.valid(state)=}")
 
-        def cost(floors: Iterable[floors]) -> int:
-            return sum(len(floor) * i for i, floor in zip((3, 2, 1), floors[:3]))
-
+        # Initial setup
+        elevator, steps = 0, 0
         todo = queue.PriorityQueue()
-        todo.put((cost(state), 0, 0, state))
-        seen = {}
-        count = 1
+        todo.put((self.cost(state), steps, elevator, state))
+        seen = {(elevator, state): 0}
 
         while not todo.empty():
-            if count % 100000 == 0:
-                print(count)
-            count += 1
+            # Pop the lowest cost state to explore.
             _, steps, elevator, state = todo.get()
+            # Check if we are done.
+            if all(not floor for floor in state[:3]):
+                self.debug(f"Seen states: {len(seen)}")
+                return steps
             next_steps = steps + 1
-            if (elevator, state) in seen and seen[(elevator, state)] <= steps:
-                continue
-            seen[(elevator, state)] = steps
-
             next_floors = {elevator + n for n in (1, -1) if 0 <= elevator + n <= 3}
+
+            # Consider all possible valid moves (devices which can move into the elevator).
             for moving, new_floor in self.moves(state[elevator]):
-                # print(f"Move {moving}, leaving {new_floor}")
+                # Consider which direction the elevator moves in.
                 for next_floor in next_floors:
+                    # Check if the floor we move onto is valid.
                     new_next = frozenset(state[next_floor] | moving)
                     if not self.valid_floor(new_next):
                         continue
-                    # self.debug(f"Move {moving} from {elevator} to {next_floor}")
+
+                    # Compute what the new state looks like with the moving devices on the new floor.
                     new_floors = list(state)
                     new_floors[elevator] = new_floor
                     new_floors[next_floor] = new_next
                     new_floors = tuple(new_floors)
-                    # self.debug(f"{new_floors=}")
-                    todo.put((cost(new_floors), next_steps, next_floor, new_floors))
 
-                    if next_floor == 3 and not new_floor and not new_floors[0] and not new_floors[1]:
-                        print("Seen states:", len(seen))
-                        return next_steps
+                    # Have we encountered this state before at a lower cost?
+                    if (next_floor, new_floors) in seen and seen[(next_floor, new_floors)] <= next_steps:
+                        continue
+                    # Add this option to the queue.
+                    seen[(next_floor, new_floors)] = next_steps
+                    todo.put((self.cost(new_floors), next_steps, next_floor, new_floors))
 
     def part2(self, parsed_input: InputType) -> int:
+        """Add extra devices then solve the puzzle."""
         state, materials = parsed_input
         floors = list(state)
         ground = list(floors[0])
-        for material in ("elerium", "dilithium"):
+        for material in ("dilithium", "elerium"):
             materials.append(material)
             material_idx = materials.index(material)
             for device_type in (True, False):
                 ground.append((material_idx, device_type))
         floors[0] = frozenset(ground)
         return self.part1((tuple(floors), materials))
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
