@@ -48,34 +48,20 @@ class Day14(aoc.Challenge):
                 yield i, m.group(1), digest
 
     def solver(self, parsed_input: InputType, param: bool) -> int:
-        triplets = re.compile(r"(?P<a>.)(?P=a)(?P=a)")
+        """Return the 64th key."""
         gen = self.hash_gen(parsed_input, param)
         queue = collections.deque((next(gen) for _ in range(1001)), maxlen=1001)
 
         found = 0
-        fi = False
-        first = False
-        for step in range(1_000_000):
+        idx = 0
+        while found < 64:
             idx, char, candidate = queue.popleft()
-            if not fi:
-                fi = True
-                print(idx, char, candidate)
-            quints = char * 5
-            # print(f"{char=}, {quints=}")
             queue.append(next(gen))
+            quints = char * 5
             if any(
                 quints in digest
                 for _, _, digest in itertools.takewhile(lambda x: x[0] <= idx + 1000, queue)
             ):
                 found += 1
-                if found == 64:
-                    return idx
-                if not first:
-                    first = True
-                    print("First", idx, candidate)
 
-        return 0
-
-    def part2(self, parsed_input: InputType) -> int:
-        raise NotImplementedError
-
+        return idx
