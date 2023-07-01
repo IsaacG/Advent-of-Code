@@ -50,6 +50,7 @@ class Day${day}(aoc.Challenge):
     # POST_PROCESS = set
 
     def part1(self, parsed_input: InputType) -> int:
+        print(f"{parsed_input!r}")
         return 0
 
     def part2(self, parsed_input: InputType) -> int:
