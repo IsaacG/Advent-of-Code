@@ -368,6 +368,7 @@ def main(
     cookie: Optional[str],
 ):
     """Run the code in some fashion."""
+    os.nice(19)
     dotenv.load_dotenv()
     if cookie:
         site.Website(0, 0, False).set_cookie(cookie)
