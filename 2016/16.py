@@ -52,10 +52,11 @@ class Day16(aoc.Challenge):
 
             This data is the original disk data, forward then backwards, with separator bits in between.
             """
+            reversed_data = [not i for i in reversed(data)]
             while True:
                 yield from data
                 yield next(separator)
-                yield from [not i for i in reversed(data)]
+                yield from reversed_data
                 yield next(separator)
 
         def checksum_gen(disk_data: Generator[bool, None, None]) -> Generator[bool, None, None]:
