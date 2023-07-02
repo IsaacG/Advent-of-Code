@@ -691,7 +691,6 @@ class Challenge(Helpers):
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-
         return self._parser().parse(puzzle_input)
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
