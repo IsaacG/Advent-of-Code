@@ -2,7 +2,6 @@
 """Advent of Code, Day 16: Dragon Checksum. Compute a repeat-checksum of dragon-curve data."""
 
 import collections
-import math
 from collections.abc import Generator
 import more_itertools
 from lib import aoc
@@ -60,18 +59,22 @@ class Day16(aoc.Challenge):
                 yield from reversed_data
                 yield next(separator)
 
-        disk_data = bit_gen(parsed_input, separator_gen())
-        checksum_width = length // size
-        checksum_levels = math.log2(checksum_width)
+        def checksum_gen(disk_data: Generator[bool, None, None]) -> Generator[bool, None, None]:
+            """Generate the checksum bits from the random disk bits.
 
-        def checksum_gen(depth: int) -> bool:
-            """Generate the checksum bits from the random disk bits."""
-            if depth:
-                return checksum_gen(depth - 1) == checksum_gen(depth - 1)
-            return next(disk_data)
+            This can also be approached rescursively (see commit 57c55df) but that performed slower.
+            """
+            checksum_width = length // size
+            queue = collections.deque()
 
-        checksum_bits = (checksum_gen(checksum_levels) for _ in range(size))
-        return "".join("1" if i else "0" for i in checksum_bits)
+            while True:
+                queue.extend(next(disk_data) == next(disk_data) for _ in range(checksum_width // 2))
+                while len(queue) > 1:
+                    queue.append(queue.popleft() == queue.popleft())
+                yield queue.pop()
+
+        out_stream = checksum_gen(bit_gen(parsed_input, separator_gen()))
+        return "".join("1" if i else "0" for i in more_itertools.take(size, out_stream))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
