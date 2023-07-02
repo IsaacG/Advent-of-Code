@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 15: Timing is Everything. Determine when a hole in disks line up."""
 
+import itertools
 from lib import aoc
 
 SAMPLE = """\
