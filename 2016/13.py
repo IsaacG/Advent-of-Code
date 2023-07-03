@@ -25,7 +25,7 @@ class Day13(aoc.Challenge):
             complex(x, y)
             for x in range(size)
             for y in range(size)
-            if bin(x*x + 3*x + 2*x*y + y + y*y + parsed_input).count("1") % 2 == 0
+            if (x*x + 3*x + 2*x*y + y + y*y + parsed_input).bit_count() % 2 == 0
         }
 
         # Initialize.
