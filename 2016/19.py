@@ -1,47 +1,31 @@
 #!/bin/python
-"""Advent of Code, Day 19: An Elephant Named Joseph."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
+"""Advent of Code, Day 19: An Elephant Named Joseph. Compute the winner of the Josephus problem."""
 
 from lib import aoc
-
-SAMPLE = "5"
-
-InputType = int
 
 
 class Day19(aoc.Challenge):
     """Day 19: An Elephant Named Joseph."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=3),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=2),
+        aoc.TestCase(inputs="5", part=1, want=3),
+        aoc.TestCase(inputs="5", part=2, want=2),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, parsed_input: int) -> int:
+        """Solve the Josephus problem."""
         circle = list(range(parsed_input))
         while len(circle) > 1:
             odd = len(circle) % 2
             circle = circle[::2]
             if odd:
                 circle = circle[1:]
-        got = circle[0] + 1
-        if not self.testing:
-            assert got > 917453, got
-        return got
+        return circle[0] + 1
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: int) -> int:
+        """Solve a variation on the Josephus problem."""
         stop = parsed_input - 1
+
         size = 1
         while True:
             counter = 1
