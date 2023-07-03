@@ -244,7 +244,7 @@ class Runner:
                 except Exception:
                     traceback.print_exc()
 
-        print("Updated Solutions. Watch and run test/check.")
+        print("Watch and run test/check.")
         if not solutions:
             solutions = {part: obj.run_solver(part, raw_data) for part in (1, 2)}
         inotify = inotify_simple.INotify()
