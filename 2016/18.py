@@ -28,9 +28,7 @@ class Day18(aoc.Challenge):
 
         safe = 0
         for row in range(rows):
-            layout = bin(traps)[2:].zfill(width)
-            count = layout.count("0")
-            safe += count
+            safe += width - traps.bit_count()
             traps = ((traps << 1) ^ (traps >> 1)) & width_mask
 
         return safe
