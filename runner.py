@@ -72,7 +72,7 @@ class ChallengeRunner:
             proc.start()
             proc.join(timeout=timeout)
             if proc.is_alive():
-                print("Timed out waiting for Challenge.")
+                print(f"{self.year}/{self.day} Timed out waiting for Challenge.")
                 proc.terminate()
 
 

@@ -1,12 +1,9 @@
 #!/bin/python
 """Advent of Code, Day 14: One-Time Pad."""
-from __future__ import annotations
 
 import collections
-import functools
 import hashlib
 import itertools
-import math
 import re
 
 from lib import aoc
@@ -24,6 +21,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs="abc", part=1, want=22728),
         aoc.TestCase(inputs="abc", part=2, want=22551),
     ]
+    TIMEOUT = 120
 
     def hash_gen(self, name: str, stretch: bool) -> abc.Generator[str, None, None]:
         """Generate MD5 digests which start with triplets.

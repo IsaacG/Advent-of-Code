@@ -19,6 +19,7 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=42),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
+    TIMEOUT = 45
 
     def solver(self, parsed_input: list[str], param: bool) -> int:
         """Simulate a computer."""
