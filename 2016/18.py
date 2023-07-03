@@ -15,19 +15,22 @@ class Day18(aoc.Challenge):
     def solver(self, parsed_input: str, param: bool) -> int:
         """Return the number of safe tiles."""
         width = len(parsed_input)
-        traps = {i for i, char in enumerate(parsed_input) if char == "^"}
+        width_mask = (1 << (width)) - 1
 
         rows = 10 if self.testing else 40
         if param:
             rows = 400_000
 
+        traps = 0
+        for i, char in enumerate(reversed(parsed_input)):
+            if char == "^":
+                traps |= 1 << i
+
         safe = 0
-        for _ in range(rows):
-            safe += width - len(traps)
-            traps = {
-                col
-                for col in range(width)
-                if (col - 1 in traps) != (col + 1 in traps)
-            }
+        for row in range(rows):
+            layout = bin(traps)[2:].zfill(width)
+            count = layout.count("0")
+            safe += count
+            traps = ((traps << 1) ^ (traps >> 1)) & width_mask
 
         return safe
