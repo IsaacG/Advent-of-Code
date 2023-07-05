@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import pathlib
 import re
+import resource
 import string
 import sys
 import time
@@ -369,6 +370,7 @@ def main(
 ):
     """Run the code in some fashion."""
     os.nice(19)
+    resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
     dotenv.load_dotenv()
     if cookie:
         site.Website(0, 0, False).set_cookie(cookie)
