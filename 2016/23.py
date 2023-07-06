@@ -1,12 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 23: Safe Cracking."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
+"""Advent of Code, Day 23: Safe Cracking. Simulate a computer."""
 
 from lib import aoc
 
@@ -25,15 +18,11 @@ InputType = list[list[str]]
 class Day23(aoc.Challenge):
     """Day 23: Safe Cracking."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    PARAMETERIZED_INPUTS = [7, 12]
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=3),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
+    PARAMETERIZED_INPUTS = [7, 12]
 
     def solver(self, parsed_input: InputType, param: bool) -> int | str:
         """Simulate a computer."""
@@ -41,7 +30,6 @@ class Day23(aoc.Challenge):
         end = len(instructions)
         register = {i: 0 for i in "abcd"}
         register["a"] = param
-        cycle_count = 0
         ptr = 0
 
         def multiply():
@@ -68,19 +56,19 @@ class Day23(aoc.Challenge):
             ]
             if instructions[ptr:ptr + 6] != want:
                 return False
-            self.debug(f"{ptr}: MULT {var_a} += {var_c} * {var_d}; {list(register.values())}")
             register[var_a] += register[var_c] * register[var_d]
             register[var_c] = register[var_d] = 0
-            self.debug(f"== {register}")
             ptr += 5
             return True
 
-        def add():
+        def decrement_or_addition():
             """Handle an addition loop efficiently.
 
             5: ["dec", "b"]
             6: ["inc", "a"]
             7: ["jnz", "b", "-2"]
+
+            Note, lines 5, 6 could be swapped and are not handled.
             """
             nonlocal ptr
             var_b, var_a = instructions[ptr][1], instructions[ptr + 1][1]
@@ -90,19 +78,13 @@ class Day23(aoc.Challenge):
                 ["jnz", var_b, "-2"],
             ]
             if instructions[ptr:ptr + 3] != want:
-                return False
-            self.debug(f"{ptr}: ADD {var_a} += {var_b}")
+                register[var_b] -= 1
+                return
             register[var_a] += register[var_b]
             register[var_b] = 0
             ptr += 2
-            return True
 
         while ptr < end:
-            cycle_count += 1
-            if cycle_count > 50000:
-                print("\n".join(" ".join(i) for i in instructions))
-                print("50000 cycles")
-                return
             match instructions[ptr]:
                 case ["cpy", val, dst]:
                     value = int(val) if aoc.RE_INT.match(val) else register[val]
@@ -111,8 +93,7 @@ class Day23(aoc.Challenge):
                 case ["inc", dst]:
                     register[dst] += 1
                 case ["dec", dst]:
-                    if not add():
-                        register[dst] -= 1
+                    decrement_or_addition()
                 case ["jnz", val, distance]:
                     cond = int(val) if aoc.RE_INT.match(val) else register[val]
                     jump = int(distance) if aoc.RE_INT.match(distance) else register[distance]
@@ -126,10 +107,6 @@ class Day23(aoc.Challenge):
                             old[0] = "dec" if old[0] == "inc" else "inc"
                         if len(old) == 3:
                             old[0] = "cpy" if old[0] == "jnz" else "jnz"
-                case instruction:
-                    self.debug(f"Unhandled instruction {instruction}")
-            self.debug(f"{ptr:2}: {' '.join(instructions[ptr]):10}  ||  {list(register.values())}")
             ptr += 1
 
-        self.debug(f"Done; {register=}, {cycle_count=}")
         return register["a"]
