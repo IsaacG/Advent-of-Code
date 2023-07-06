@@ -1,12 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 24: Air Duct Spelunking."""
-from __future__ import annotations
+"""Advent of Code, Day 24: Air Duct Spelunking. Return the shortest path through a maze which hits certain points."""
 
 import collections
-import functools
 import itertools
-import math
-import re
 import string
 
 from lib import aoc
@@ -18,17 +14,11 @@ SAMPLE = """\
 #4.......3#
 ###########"""
 
-LineType = int
-InputType = list[LineType]
+InputType = tuple[set[complex], dict[complex, int]]
 
 
 class Day24(aoc.Challenge):
     """Day 24: Air Duct Spelunking."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=14),
@@ -36,24 +26,26 @@ class Day24(aoc.Challenge):
     ]
 
     def solver(self, parsed_input: InputType, param: bool) -> int:
+        """Return the shortest path through a maze which hits certain points."""
         floor, wires = parsed_input
+
+        # For each wire, use Dijkstra to find the shortest path to every other wire.
         distances = collections.defaultdict(dict)
         for start, wire in wires.items():
-            # self.debug(f"Build distances for {wire} at {start}")
             todo = collections.deque()
             seen = {start}
             todo.append((0, start))
 
             while todo:
                 steps, position = todo.popleft()
-                # self.debug(f"Explore {position} at {steps=}")
                 if position in wires:
                     other = wires[position]
                     if other in distances[wire]:
-                        assert distances[wire][other] == steps, f"{wire}-{other} == {distances[wire][other]} != {steps}"
+                        assert distances[wire][other] == steps
                     distances[wire][other] = steps
-                    distances[other][wire] = steps
+                    distances[other][wire] = steps  # Reverse checks for sanity checking.
                 if len(distances[wire]) == len(wires):
+                    # Stop exploring once all wire pairs are explored.
                     break
 
                 next_steps = steps + 1
@@ -64,14 +56,17 @@ class Day24(aoc.Challenge):
                     todo.append((next_steps, next_pos))
                     seen.add(next_pos)
 
+        # Optionally append the start position to the end of the route.
         extra = (0,) if param else tuple()
 
         other_wires = set(wires.values()) - {0}
+        # Find the shortest distrance that walks a specific wire path...
         shortest = min(
             sum(
                 distances[a][b]
                 for a, b in zip((0,) + path, path + extra)
             )
+            # ... for all possible paths.
             for path in itertools.permutations(other_wires, len(other_wires))
         )
 
