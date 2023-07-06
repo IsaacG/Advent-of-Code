@@ -35,10 +35,8 @@ class Day07(aoc.Challenge):
 
     def tls(self, string: str) -> bool:
         """Return if a string segment has a pattern ABBA."""
-        return any(
-            chars[0] == chars[3] and chars[1] == chars[2] and chars[0] != chars[1]
-            for chars in more_itertools.sliding_window(string, 4)
-        )
+        iter = more_itertools.sliding_window(string, 4)
+        return any(a == d != b == c for a, b, c, d in iter)
 
     def ssl(self, outer: list[str], inner: list[str]) -> bool:
         """Return if inner and outer have a matching ABA, BAB."""
