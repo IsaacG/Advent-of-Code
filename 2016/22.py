@@ -1,45 +1,17 @@
 #!/bin/python
-"""Advent of Code, Day 22: Grid Computing."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import queue
-import re
+"""Advent of Code, Day 22: Grid Computing. Shuffle data around to access secrets."""
 
 from lib import aoc
 
-SAMPLE = """\
-root@ebhq-gridcenter# df -h
-Filesystem            Size  Used  Avail  Use%
-/dev/grid/node-x0-y0   10T    8T     2T   80%
-/dev/grid/node-x0-y1   11T    6T     5T   54%
-/dev/grid/node-x0-y2   32T   28T     4T   87%
-/dev/grid/node-x1-y0    9T    7T     2T   77%
-/dev/grid/node-x1-y1    8T    0T     8T    0%
-/dev/grid/node-x1-y2   11T    7T     4T   63%
-/dev/grid/node-x2-y0   10T    6T     4T   60%
-/dev/grid/node-x2-y1    9T    8T     1T   88%
-/dev/grid/node-x2-y2    9T    6T     3T   66%
-"""
-
-LineType = int
-InputType = list[LineType]
+InputType = dict[tuple[int, int], tuple[int, int]]
 
 
 class Day22(aoc.Challenge):
     """Day 22: Grid Computing."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=aoc.TEST_SKIP),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
     def part1(self, parsed_input: InputType) -> int:
@@ -63,6 +35,8 @@ class Day22(aoc.Challenge):
 
         Looking at the output, the hole starts out at the bottom, blocked by a wall
         of large blocks. The hole needs to move around the wall then to the top right.
+
+        Once in position, the hole can be used to slide the data across to the destination.
         """
         step_counter = 0
         # This is the empty "hole" used to move data.
@@ -118,11 +92,11 @@ class Day22(aoc.Challenge):
                 self.debug("".join(out))
             self.debug(f"{step_counter=}\n")
 
-        print_map("Initial")
-
         wall_left = min(x for x, y in oversized)
         wall_y = next(y for x, y in oversized)
         assert hole_pos[1] > wall_y, "Hole should be below wall"
+
+        print_map("Initial")
         # Walk the hole horizontally to the left of the wall.
         step_counter += hole_pos[0] - wall_left + 1
         hole_pos = (wall_left - 1, hole_pos[1])
@@ -143,60 +117,6 @@ class Day22(aoc.Challenge):
         return step_counter
 
 
-    def part2_ugh(self, parsed_input: InputType) -> int:
-        max_x = max(x for x, y in parsed_input)
-        max_y = max(y for x, y in parsed_input)
-        want_x, want_y, steps = max_x, 0, 0
-        score = want_x + want_y + steps
-
-        todo = queue.PriorityQueue()
-        todo.put((score, steps, want_x, want_y, frozenset(parsed_input.items())))
-        seen = {frozenset(parsed_input.items())}
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
-        while todo:
-            _, steps, want_x, want_y, data = todo.get()
-            data = dict(data)
-            next_steps = steps + 1
-            print(steps, want_x, want_y)
-            print(len(seen))
-            if len(seen) > 1000:
-                return
-            
-            if want_x == 0 and want_y == 0:
-                return steps
-
-            for (a_x, a_y), (used_a, avail_a) in data.items():
-                if used_a == 0:
-                    continue
-                for d_x, d_y in directions:
-                    b_x, b_y = a_x + d_x, a_y + d_y
-                    if not (0 <= b_x <= max_x and 0 <= b_y <= max_y):
-                        continue
-                    used_b, avail_b = data[b_x, b_y]
-                    if avail_b < used_a:
-                        continue
-
-                    new_state = data.copy()
-                    new_state[a_x, a_y] = (0, used_a + avail_a)
-                    new_state[b_x, b_y] = (used_a + used_b, avail_b - used_a)
-
-                    new_state_f = frozenset(new_state.items())
-                    if new_state_f in seen:
-                        continue
-                    seen.add(new_state_f)
-
-                    next_want_x, next_want_y = want_x, want_y
-                    if a_x == want_x and a_y == want_y:
-                        next_want_x, next_want_y = a_x, a_y
-
-                    score = next_steps + next_want_x + next_want_y
-                    todo.put((score, next_steps, next_want_x, next_want_y, new_state_f))
-        raise NotImplementedError
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
-
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         data = {}
@@ -204,6 +124,3 @@ class Day22(aoc.Challenge):
             pos_x, pos_y, size, used, avail, _ = (int(i) for i in aoc.RE_INT.findall(line))
             data[pos_x, pos_y] = used, avail
         return data
-
-
-# vim:expandtab:sw=4:ts=4
