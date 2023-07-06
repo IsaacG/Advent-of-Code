@@ -1,3 +1,8 @@
+TODO
+====
+
+Comuter logic is shared across days 12, 23, 25. Should be shared code.
+
 Day 19
 ======
 
