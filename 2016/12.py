@@ -1,7 +1,14 @@
 #!/bin/python
 """Advent of Code, Day 12: Leonardo's Monorail. Simulate a computer."""
 
+import enum
 from lib import aoc
+import assembunny
+
+OP_CPY = assembunny.Operation.CPY.value
+OP_INC = assembunny.Operation.INC.value
+OP_DEC = assembunny.Operation.DEC.value
+OP_JNZ = assembunny.Operation.JNZ.value
 
 SAMPLE = """\
 cpy 41 a
@@ -23,28 +30,29 @@ class Day12(aoc.Challenge):
 
     def solver(self, parsed_input: list[str], param: bool) -> int:
         """Simulate a computer."""
-        instructions = [line.split() for line in parsed_input]
+        instructions = []
+        for line in parsed_input:
+            instruction = line.split()
+            instructions.append([assembunny.Operation[instruction[0].upper()].value] + instruction[1:])
         end = len(instructions)
         register = {i: 0 for i in "abcd"}
         if param:
             register["c"] = 1
 
+        def value(arg):
+            return int(arg) if aoc.RE_INT.match(arg) else register[arg]
+
         ptr = 0
         while ptr < end:
-            match instructions[ptr]:
-                case ["cpy", val, dst]:
-                    if val.isnumeric():
-                        register[dst] = int(val)
-                    else:
-                        register[dst] = register[val]
-                case ["inc", dst]:
-                        register[dst] += 1
-                case ["dec", dst]:
-                        register[dst] -= 1
-                case ["jnz", val, distance]:
-                    cond = int(val) if val.isnumeric() else register[val]
-                    if cond != 0:
-                        ptr += int(distance) - 1
+            op, *args = instructions[ptr]
+            if op == OP_CPY:
+                register[args[1]] = value(args[0])
+            elif op == OP_INC:
+                register[args[0]] += 1
+            elif op == OP_DEC:
+                register[args[0]] -= 1
+            elif op == OP_JNZ and value(args[0]):
+                ptr += value(args[1]) - 1
             ptr += 1
 
         return register["a"]
