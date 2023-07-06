@@ -26,13 +26,13 @@ class Day21(aoc.Challenge):
     def solver(self, parsed_input: list[list[str]], part2: bool) -> str:
         """Scramble a password following instructions."""
         if self.testing:
-            start = "abcde"
+            input_word = "abcde"
         elif not part2:
-            start = "abcdefgh"
+            input_word = "abcdefgh"
         else:
-            start = "fbgdceah"
+            input_word = "fbgdceah"
 
-        data = list(start)
+        data = list(input_word)
         size = len(data)
         # Rotate right, rotate left. Reversed for part 2.
         rotate_direction = {False: {"right": -1, "left": 1}, True: {"right": 1, "left": -1}}[part2]
@@ -42,7 +42,7 @@ class Day21(aoc.Challenge):
         for instruction in parsed_input:
             match instruction:
                 case ["swap", "position", reg_x, "with", "position", reg_y]:
-                    data[int(reg_x)], data[int(reg_y)] =  data[int(reg_y)], data[int(reg_x)]
+                    data[int(reg_x)], data[int(reg_y)] = data[int(reg_y)], data[int(reg_x)]
                 case ["swap", "letter", reg_x, "with", "letter", reg_y]:
                     swap = {reg_x: reg_y, reg_y: reg_x}
                     data = [swap.get(i, i) for i in data]

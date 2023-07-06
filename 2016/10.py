@@ -3,7 +3,6 @@
 
 import collections
 import math
-from collections.abc import Iterable
 
 from lib import aoc
 

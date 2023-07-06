@@ -52,3 +52,4 @@ class Day04(aoc.Challenge):
             )
             if "northpole" in name.split():
                 return sector
+        raise RuntimeError("No solution found.")

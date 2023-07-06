@@ -47,7 +47,7 @@ class Assembunny:
         register["c"] = register_c
 
         ptr = 0
-        prior_states = set()
+        prior_states: set[tuple[int, int, int, int, int]] = set()
 
         def state():
             """Tuple representing the current state of the computer, used for cycle checking.
@@ -112,26 +112,27 @@ class Assembunny:
             register[var_b] = 0
             ptr += 2
 
-        def value(arg):
+        def value(arg: str) -> int:
             return int(arg) if aoc.RE_INT.match(arg) else register[arg]
 
         # Clock signal tracker.
         last_out = None
 
         while ptr < end:
-            op, *args = instructions[ptr]
+            args: list[str]
+            operation, *args = instructions[ptr]
 
-            if op == OP_CPY:
+            if operation == OP_CPY:
                 register[args[1]] = value(args[0])
                 multiply()
-            elif op == OP_INC:
+            elif operation == OP_INC:
                 register[args[0]] += 1
-            elif op == OP_DEC:
+            elif operation == OP_DEC:
                 decrement_or_addition()
-            elif op == OP_JNZ:
+            elif operation == OP_JNZ:
                 if value(args[0]) != 0:
                     ptr += value(args[1]) - 1
-            elif op == OP_OUT:
+            elif operation == OP_OUT:
                 out = value(args[0])
                 if last_out is None:
                     last_out = out
@@ -146,7 +147,7 @@ class Assembunny:
                     if new_state in prior_states:
                         return register["a"], True
                     prior_states.add(new_state)
-            elif op == OP_TGL:
+            elif operation == OP_TGL:
                 loc = ptr + value(args[0])
                 if 0 <= loc < end:
                     old = instructions[loc]

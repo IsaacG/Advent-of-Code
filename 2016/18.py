@@ -27,7 +27,7 @@ class Day18(aoc.Challenge):
                 traps |= 1 << i
 
         safe = 0
-        for row in range(rows):
+        for _ in range(rows):
             safe += width - traps.bit_count()
             traps = ((traps << 1) ^ (traps >> 1)) & width_mask
 

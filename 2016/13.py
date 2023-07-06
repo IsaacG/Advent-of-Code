@@ -29,9 +29,9 @@ class Day13(aoc.Challenge):
         }
 
         # Initialize.
-        todo = collections.deque()
+        todo: collections.deque[tuple[int, complex]] = collections.deque()
         todo.append((0, complex(1, 1)))
-        seen = set(todo)
+        seen = {complex(1, 1)}
 
         # Breadth first search.
         while todo:
@@ -42,9 +42,11 @@ class Day13(aoc.Challenge):
             steps += 1
             # Step two: return the number of locations visited in 50 moves.
             if steps == 50:
-                return len(seen)
+                return len(seen) + 1
             for direction in aoc.FOUR_DIRECTIONS:
                 new = cur + direction
                 if new in space and new not in seen:
                     todo.append((steps, new))
                     seen.add(new)
+
+        raise RuntimeError("No solution found.")

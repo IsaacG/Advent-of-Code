@@ -1,5 +1,7 @@
 #!/bin/python
-"""Advent of Code, Day 11: Radioisotope Thermoelectric Generators. Solve moving devices around the warehouse."""
+"""Advent of Code, Day 11: Radioisotope Thermoelectric Generators.
+
+Solve moving devices around the warehouse."""
 
 import functools
 import itertools
@@ -57,7 +59,7 @@ class Day11(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Solve for minimum moves using A*."""
-        state, materials = parsed_input
+        state, _ = parsed_input
 
         # Initial setup
         elevator, steps = 0, 0
@@ -96,6 +98,7 @@ class Day11(aoc.Challenge):
                     # Add this option to the queue.
                     seen[(next_floor, new_floors)] = next_steps
                     todo.put((self.cost(new_floors), next_steps, next_floor, new_floors))
+        raise RuntimeError("No solution found.")
 
     def part2(self, parsed_input: InputType) -> int:
         """Add extra devices then solve the puzzle."""
@@ -119,7 +122,7 @@ class Day11(aoc.Challenge):
 
         materials = []
         for line in puzzle_input.splitlines():
-            if not (m := line_re.fullmatch(line).groups()):
+            if not line_re.fullmatch(line).groups():
                 print(f"{line!r} did not match regex.")
                 continue
             floor, contents = line_re.fullmatch(line).groups()
@@ -135,4 +138,3 @@ class Day11(aoc.Challenge):
                 state[floor_idx].append((material_idx, device.strip() == "generator"))
 
         return tuple(frozenset(floor) for floor in state), materials
-

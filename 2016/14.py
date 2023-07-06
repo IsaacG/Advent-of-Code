@@ -5,6 +5,7 @@ import collections
 import hashlib
 import itertools
 import re
+from collections import abc
 
 from lib import aoc
 
@@ -12,23 +13,23 @@ from lib import aoc
 class Day14(aoc.Challenge):
     """Day 14: One-Time Pad."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
         aoc.TestCase(inputs="abc", part=1, want=22728),
         aoc.TestCase(inputs="abc", part=2, want=22551),
     ]
     TIMEOUT = 120
 
-    def hash_gen(self, name: str, stretch: bool) -> abc.Generator[str, None, None]:
+    def hash_gen(self, name: str, stretch: bool) -> abc.Generator[tuple[int, str, str], None, None]:
         """Generate MD5 digests which start with triplets.
 
         >>> r = 'RE.match(s)'
         >>> z = 'any(a == b == c for a, b, c in zip(s, s[1:], s[2:]))'
-        >>> timeit.timeit(r, setup='s = "asdfd3fewafewewerrrsddasfdas"; import re; RE = re.compile(r"(?P<a>)(?P=a)(?P=a)")')
+        >>> timeit.timeit(
+                r,
+                setup='
+                    s = "asdfd3fewafewewerrrsddasfdas";
+                    import re; RE = re.compile(r"(?P<a>)(?P=a)(?P=a)")'
+            )
         0.3939150311052799
         >>> timeit.timeit(z, setup='s = "asdfd3fewafewewerrrsddasfdas"')
         5.473389117047191
@@ -42,10 +43,10 @@ class Day14(aoc.Challenge):
             if stretch:
                 for _ in range(2016):
                     digest = hashlib.md5(digest.encode()).hexdigest()
-            if m := triplets.search(digest):
-                yield i, m.group(1), digest
+            if found := triplets.search(digest):
+                yield i, found.group(1), digest
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: str, param: bool) -> int:
         """Return the 64th key."""
         gen = self.hash_gen(parsed_input, param)
         queue = collections.deque((next(gen) for _ in range(1001)), maxlen=1001)
@@ -53,7 +54,7 @@ class Day14(aoc.Challenge):
         found = 0
         idx = 0
         while found < 64:
-            idx, char, candidate = queue.popleft()
+            idx, char, _ = queue.popleft()
             queue.append(next(gen))
             quints = char * 5
             if any(

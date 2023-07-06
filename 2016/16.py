@@ -1,5 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 16: Dragon Checksum. Compute a repeat-checksum of dragon-curve data."""
+"""Advent of Code, Day 16: Dragon Checksum.
+
+Compute a repeat-checksum of dragon-curve data.
+"""
 
 import collections
 from collections.abc import Generator
@@ -30,7 +33,7 @@ class Day16(aoc.Challenge):
             data = [a == b for a, b in more_itertools.chunked(data, 2)]
         return "".join("1" if i else "0" for i in data)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: InputType) -> str:
         length = 35651584
 
         # Compute the size of the output.
@@ -41,7 +44,7 @@ class Day16(aoc.Challenge):
 
         def separator_gen() -> Generator[bool, None, None]:
             """Generate the separate bits."""
-            generated = []
+            generated: list[bool] = []
             while True:
                 add = [False] + [not i for i in reversed(generated)]
                 yield from add
@@ -65,7 +68,7 @@ class Day16(aoc.Challenge):
             This can also be approached rescursively (see commit 57c55df) but that performed slower.
             """
             checksum_width = length // size
-            queue = collections.deque()
+            queue: collections.deque[bool] = collections.deque()
 
             while True:
                 queue.extend(next(disk_data) == next(disk_data) for _ in range(checksum_width // 2))

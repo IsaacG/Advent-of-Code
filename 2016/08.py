@@ -1,12 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 8: Two-Factor Authentication. Manipulate screen pixels."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -36,15 +29,15 @@ class Day08(aoc.Challenge):
         for line in parsed_input:
             match line:
                 case ["rect", cols, rows]:
-                    for y in range(rows):
-                        for x in range(cols):
-                            grid[y][x] = True
+                    for row in range(rows):
+                        for col in range(cols):
+                            grid[row][col] = True
                 case ["row", row, distance]:
                     grid[row] = grid[row][-distance:] + grid[row][:-distance]
                 case ["column", col, distance]:
                     column = [row[col] for row in grid]
-                    for y in range(height):
-                        grid[y][col] = column[(y - distance + height) % height]
+                    for row in range(height):
+                        grid[row][col] = column[(row - distance + height) % height]
 
         if not p2:
             return sum(i for row in grid for i in row)

@@ -1,5 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 6: Signals and Noise. Extract the most and least common value from each column."""
+"""Advent of Code, Day 6: Signals and Noise.
+
+Extract the most and least common value from each column.
+"""
 
 import collections
 

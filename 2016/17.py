@@ -22,7 +22,7 @@ class Day17(aoc.Challenge):
 
     def solver(self, parsed_input: str, find_longest: bool) -> int | str:
         """Compute the route through a maze or doors which lock and unlock."""
-        todo = collections.deque()
+        todo: collections.deque[tuple[str, int, int]] = collections.deque()
         todo.append(("", 0, 0))
 
         dirs = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1)}

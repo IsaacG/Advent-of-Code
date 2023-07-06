@@ -27,7 +27,7 @@ class Day20(aoc.Challenge):
         cur = 0
         allowed = 0
         for low, high in parsed_input:
-            if low <= cur and cur <= high:
+            if low <= cur <= high:
                 cur = high + 1
             elif cur < low:
                 # Part 1: return the first allowed IP.
@@ -37,7 +37,6 @@ class Day20(aoc.Challenge):
                 allowed += low - cur
                 cur = high + 1
         return allowed
-
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

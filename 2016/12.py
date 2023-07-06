@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 12: Leonardo's Monorail. Simulate a computer."""
 
-import enum
 from lib import aoc
 import assembunny
 
@@ -33,7 +32,8 @@ class Day12(aoc.Challenge):
         instructions = []
         for line in parsed_input:
             instruction = line.split()
-            instructions.append([assembunny.Operation[instruction[0].upper()].value] + instruction[1:])
+            op_code = assembunny.Operation[instruction[0].upper()].value
+            instructions.append([op_code] + instruction[1:])
         end = len(instructions)
         register = {i: 0 for i in "abcd"}
         if param:
@@ -44,14 +44,14 @@ class Day12(aoc.Challenge):
 
         ptr = 0
         while ptr < end:
-            op, *args = instructions[ptr]
-            if op == OP_CPY:
+            operation, *args = instructions[ptr]
+            if operation == OP_CPY:
                 register[args[1]] = value(args[0])
-            elif op == OP_INC:
+            elif operation == OP_INC:
                 register[args[0]] += 1
-            elif op == OP_DEC:
+            elif operation == OP_DEC:
                 register[args[0]] -= 1
-            elif op == OP_JNZ and value(args[0]):
+            elif operation == OP_JNZ and value(args[0]):
                 ptr += value(args[1]) - 1
             ptr += 1
 

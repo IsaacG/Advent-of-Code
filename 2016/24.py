@@ -1,5 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 24: Air Duct Spelunking. Return the shortest path through a maze which hits certain points."""
+"""Advent of Code, Day 24: Air Duct Spelunking.
+
+Return the shortest path through a maze which hits certain points.
+"""
 
 import collections
 import itertools
@@ -30,9 +33,9 @@ class Day24(aoc.Challenge):
         floor, wires = parsed_input
 
         # For each wire, use Dijkstra to find the shortest path to every other wire.
-        distances = collections.defaultdict(dict)
+        distances: dict[int, dict[int, int]] = collections.defaultdict(dict)
         for start, wire in wires.items():
-            todo = collections.deque()
+            todo: collections.deque[tuple[int, complex]] = collections.deque()
             seen = {start}
             todo.append((0, start))
 

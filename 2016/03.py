@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 3: Squares With Three Sides. Count valid triangles."""
 
+from collections import abc
 from lib import aoc
 
 InputType = list[list[int]]
@@ -9,8 +10,7 @@ InputType = list[list[int]]
 class Day03(aoc.Challenge):
     """Day 3: Squares With Three Sides."""
 
-
-    def solver(self, parsed_input: list[list[int]], rotate: bool) -> int:
+    def solver(self, parsed_input: list[abc.Iterable[int]], rotate: bool) -> int:
         """Return the number of valid triangles."""
         if rotate:
             parsed_input = [
