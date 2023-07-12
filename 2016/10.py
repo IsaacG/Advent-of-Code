@@ -40,26 +40,17 @@ class Day10(aoc.Challenge):
                     low_type, low, "and", "high", "to", high_type, high,
                 ]:
                     instructions[int(bot)] = ((low_type, int(low)), (high_type, int(high)))
-                case _:
-                    raise ValueError(f"Invalid line {line}")
-        self.debug(f"Starting bots: {bots}")
 
         # Simulate bots until nothing is changing.
         # Note: we can exit earlier by waiting for the needed exit conditions.
-        changed = True
-        while changed:
-            changed = False
-            # These bots have two pieces and are ready to act.
-            full = [(bot, values) for bot, values in bots.items() if len(values) == 2]
+        # These bots have two pieces and are ready to act.
+        while full := [(bot, values) for bot, values in bots.items() if len(values) == 2]:
             for bot, values in full:
                 # Check if the output bot is full, ie the acting bot cannot hand off pieces.
-                if any(
-                    out_type == "bot" and len(bots[out]) == 2
-                    for out_type, out in instructions[bot]
-                ):
+                # Note: this check doesn't seem strictly needed.
+                if any(out_type == "bot" and len(bots[out]) == 2 for out_type, out in instructions[bot]):
                     continue
 
-                changed = True
                 ordered = sorted(values)
                 values.clear()
 
