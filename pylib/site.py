@@ -4,6 +4,7 @@ import re
 import requests  # type: ignore
 import subprocess
 
+import click
 from lxml import etree  # type: ignore
 from typing import Optional
 from urllib import parse
@@ -29,6 +30,7 @@ class Website:
     def set_cookie(self, value: str) -> None:
         conn = sqlite3.Connection(os.environ['SQL_DB'])
         query = 'UPDATE cookies SET value = ? WHERE key = ?'
+        print(f"Set cookie to {value}")
         conn.cursor().execute(query, (value, 'aoc'))
 
     def text(self) -> str:
@@ -65,11 +67,12 @@ class Website:
         resp.raise_for_status()
 
         db = os.environ['SQL_DB']
-        query = 'UPDATE cookies SET value = "$cookie" WHERE key = "aoc";'
+        query = "UPDATE cookies SET value = '$cookie' WHERE key = 'aoc';"
 
         if "[Log Out]" not in etree.HTML(resp.content).xpath('//a/text()'):
             print(f"sqlite3 {db}")
             print(query)
+            print(self.session.headers["cookie"])
             raise RuntimeError("Did your cookie expire? It does not seem valid!")
 
     def get_input(self) -> str:
@@ -109,3 +112,13 @@ class Website:
         et = etree.HTML(resp.content)
         output = ''.join(et.xpath('//main/article//text()'))
         return output
+
+
+@click.command()
+@click.option("--set_cookie", type=str, required=True)
+def main(set_cookie: str) -> None:
+    Website(0, 0, False).set_cookie(set_cookie.removeprefix("session="))
+
+
+if __name__ == "__main__":
+    main()
