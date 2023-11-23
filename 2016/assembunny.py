@@ -63,12 +63,14 @@ class Assembunny:
         def multiply():
             """Handle a multiplication loop efficiently.
 
-            4: ["cpy", "b", "c"]
-            5: ["inc", "a"]  a += b * d
-            6: ["dec", "c"]
-            7: ["jnz", "c", "-2"]
+            # a += b * d ==>
+                                  for(; d > 0; d--) {
+            4: ["cpy", "b", "c"]    for (c = b; c--; c > 0) {  # a += b
+            5: ["inc", "a"]           a++
+            6: ["dec", "c"]       
+            7: ["jnz", "c", "-2"]   }
             8: ["dec", "d"]
-            9: ["jnz", "d", "-5"]
+            9: ["jnz", "d", "-5"] }
             """
             nonlocal ptr
             var_b, var_c = instructions[ptr][1:]

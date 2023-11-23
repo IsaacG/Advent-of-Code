@@ -6,16 +6,6 @@ from lib import aoc
 import assembunny
 
 
-INSTRUCTIONS = {
-    "inc": 1,
-    "dec": 2,
-    "jnz": 3,
-    "tgl": 4,
-    "out": 5,
-    "cpy": 6,
-}
-
-
 class Day25(aoc.Challenge):
     """Day 25: Clock Signal."""
 
