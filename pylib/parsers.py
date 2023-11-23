@@ -167,15 +167,16 @@ class ParseCharMap(BaseParser):
         out: dict[complex, Any] = {}
         for y, line in enumerate(puzzle_input.splitlines()):
             for x, char in enumerate(line):
-                out[complex(x, y)] = self.transform(char)
+                if (val := self.transform(char)) is not None:
+                    out[complex(x, y)] = val
         return out
 
 
 class AsciiBoolMapParser(BaseParser):
     """Parse a map of on/off values to build a set of "on" points."""
 
-    def __init__(self, on_char: str):
-        self.on_char = on_char
+    def __init__(self, on_chars: str):
+        self.on_chars = on_chars
 
     def parse(self, puzzle_input: str) -> set[complex]:
         """Parse ASCII to find points in a map which are "on"."""
@@ -183,7 +184,7 @@ class AsciiBoolMapParser(BaseParser):
             complex(x, y)
             for y, line in enumerate(puzzle_input.splitlines())
             for x, char in enumerate(line)
-            if char == self.on_char
+            if char in self.on_chars
         }
 
 
