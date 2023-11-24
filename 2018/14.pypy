@@ -1,0 +1,65 @@
+#!/bin/pypy
+"""Benchmarking with pypy.
+
+NUC + Python: 16s
+ProDesk + Python: 6s
+ProDesk + PyPy: 3s
+
+NUC + Python: using dequeue for p2 made things slower.
+"""
+
+import pathlib
+import time
+
+
+def solver(parsed_input: str, param: bool) -> int:
+    """Solve for the target recipes."""
+    # Compute target data.
+    p1_target = int(parsed_input)
+    p1_stop = p1_target + 10
+    # Note: switching to dequeue made things slower.
+    p2_want = [int(i) for i in parsed_input]
+    p2_want_len = len(parsed_input)
+
+    # Initialize loop variables.
+    recipes = [3, 7]
+    elf1, elf2 = 0, 1
+    count = 2
+
+    while count < 100000000:
+        # Compute the new values to add.
+        recipe1, recipe2 = recipes[elf1], recipes[elf2]
+        new_recipe = recipe1 + recipe2
+        if new_recipe >= 10:
+            to_add = [1, new_recipe % 10]
+        else:
+            to_add = [new_recipe]
+
+        # Add new recipes and check for end conditions.
+        for recipe in to_add:
+            recipes.append(recipe)
+            count += 1
+            if param and recipes[-p2_want_len:] == p2_want:
+                return count - p2_want_len
+
+        if not param and count >= p1_stop:
+            return "".join(str(i) for i in recipes[p1_target:p1_stop])
+
+        # Update the elves' recipes.
+        elf1, elf2 = (elf1 + 1 + recipe1) % count, (elf2 + 1 + recipe2) % count
+
+
+def main():
+    data = pathlib.Path("data/14.txt").read_text().rstrip()
+    results = [14]
+    for i in [False, True]:
+        t1 = time.perf_counter()
+        got = solver(data, i)
+        t2 = time.perf_counter()
+        results.append(got)
+        print(t2 - t1, "s")
+    print(" ".join(str(i) for i in results))
+
+
+if __name__ == "__main__":
+    main()
