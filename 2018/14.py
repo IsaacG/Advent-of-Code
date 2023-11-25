@@ -27,6 +27,7 @@ class Day14(aoc.Challenge):
         p1_stop = p1_target + 10
         # Note: switching to dequeue made things slower.
         p2_want = [int(i) for i in parsed_input]
+        p2_want_last = p2_want[-1]
         p2_want_len = len(parsed_input)
 
         # Initialize loop variables.
@@ -39,7 +40,7 @@ class Day14(aoc.Challenge):
             recipe1, recipe2 = recipes[elf1], recipes[elf2]
             new_recipe = recipe1 + recipe2
             if new_recipe >= 10:
-                to_add = [1, new_recipe % 10]
+                to_add = [1, new_recipe - 10]
             else:
                 to_add = [new_recipe]
 
@@ -47,7 +48,7 @@ class Day14(aoc.Challenge):
             for recipe in to_add:
                 recipes.append(recipe)
                 count += 1
-                if param and recipes[-p2_want_len:] == p2_want:
+                if param and recipe == p2_want_last and recipes[-p2_want_len:] == p2_want:
                     return count - p2_want_len
 
             if not param and count >= p1_stop:
