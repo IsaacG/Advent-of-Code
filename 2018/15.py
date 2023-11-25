@@ -1,13 +1,9 @@
 #!/bin/python
 """Advent of Code, Day 15: Beverage Bandits."""
-from __future__ import annotations
 
 import collections
 import copy
-import functools
 import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -20,14 +16,6 @@ SAMPLE = [
 #..G#E#
 #.....#
 #######""", 27730, 4988,
-    """\
-#######
-#G..#E#
-#E#E.E#
-#G.##.#
-#...#E#
-#...E.#
-#######""", 36334, None,
     """\
 #######
 #E..EG#
@@ -64,56 +52,50 @@ SAMPLE = [
 #########""", 18740, 1140,
 ]
 
-LineType = int
-InputType = list[LineType]
+InputType = tuple[set[complex], dict[str, dict[complex, int]]]
 OTHER = {"E": "G", "G": "E"}
 
 
 def reading_order(position: complex) -> tuple[float, float]:
+    """Helper function to sort by reading order."""
     return position.imag, position.real
 
 
 class Day15(aoc.Challenge):
-    """Day 15: Beverage Bandits."""
-
-    DEBUG = False
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
+    """Day 15: Beverage Bandits. Simulate a D&D style battle between Elves and Goblins."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[i], part=1, want=SAMPLE[i + 1])
-        for i in range(0, 18, 3)
-    ] + [
-        aoc.TestCase(inputs=SAMPLE[i], part=2, want=SAMPLE[i + 2])
-        for i in range(0, 18, 3)
-        if SAMPLE[i + 2]
+        aoc.TestCase(inputs=SAMPLE[i], part=part, want=SAMPLE[i + part])
+        for i in range(0, len(SAMPLE), 3)
+        for part in [1, 2]
     ]
 
     def part1(self, parsed_input: InputType) -> int:
+        """Compute the number of rounds in an even battle."""
         return self.simulate(*parsed_input, 3)
 
     def part2(self, parsed_input: InputType) -> int:
+        """Compute how much damage boost the Elves need to win without a fatality."""
         spaces, og_units = parsed_input
         elf_count = len(og_units["E"])
-        for elf_damage in range(3, 100):
+        for elf_damage in itertools.count(start=3):
             units = copy.deepcopy(og_units)
             score = self.simulate(spaces, units, elf_damage)
+            # Check if there are no fatalities.
             if len(units["E"]) == elf_count:
-                assert score < 59339
                 return score
 
-    def simulate(self, spaces, units_by_type, elf_damage) -> int:
+    def simulate(self, spaces: set[complex], units_by_type: dict[str, dict[complex, int]], elf_damage: int) -> int:
         """Simulate a battle."""
         damage = {"G": 3, "E": elf_damage}
         occupied = {
             location: unit_type
-            for unit_type in "EG"
+            for unit_type in units_by_type
             for location in units_by_type[unit_type]
         }
 
-        # Similate up to 200 rounds of combat.
-        for count in range(200):
+        # Similate combat
+        for count in itertools.count():
             # Each unit acts in reading order.
             for location in sorted(occupied, key=reading_order):
                 # A unit may have been killed. If so, skip.
@@ -128,7 +110,6 @@ class Day15(aoc.Challenge):
                 # Check if the battle is ended. Check on a per-unit basis to accurately capture
                 # which round was fully completed.
                 if not enemies:
-                    self.debug(f"Battle ended. Round {count}, winner={unit_type}, {elf_damage=}")
                     return count * sum(hp for hp in friends.values())
 
                 # Move if there is no adjacent enemy.
@@ -158,8 +139,8 @@ class Day15(aoc.Challenge):
                         seen.update(new_candidates)
                         candidates = new_candidates
                         steps += 1
-                    options = candidates & enemies_reachable
-                    if options:
+                    
+                    if options := candidates & enemies_reachable:
                         # All options are equal distance. Pick based on reading order.
                         move_to = min(options, key=reading_order)
                         # Follow the path backwards to find the next step which brings us to the enemy.
@@ -167,20 +148,12 @@ class Day15(aoc.Challenge):
                         for _ in range(steps - 1):
                             next_step = {p for n in next_step for p in prior_location[n]}
                         new_loc = min(next_step, key=reading_order)
-                        assert abs(new_loc - location) == 1, "Moving more than one space!"
-                        # self.debug(f"{units[location]['type']} ({location}) {move_to=} {steps=} via {new_loc}")
                         # Update this unit's location.
                         friends[new_loc] = friends[location]
                         occupied[new_loc] = unit_type
                         del friends[location]
                         del occupied[location]
                         location = new_loc
-                    else:
-                        # self.debug(f"{units[location]['type']} at {location} unable to attack or move")
-                        pass
-                else:
-                    # self.debug(f"{units[location]['type']} at {location} can attack without moving")
-                    pass
 
                 # Attack if possible.
                 neighboring_enemies = {neighbor for neighbor in aoc.neighbors(location) if neighbor in enemies}
@@ -188,25 +161,14 @@ class Day15(aoc.Challenge):
                     # Pick a target based on lowest health then reading order.
                     target = min(neighboring_enemies, key=lambda x: (enemies[x], x.imag, x.real))
                     enemies[target] -= damage[unit_type]
-                    # self.debug(f"{units[location]['type']} at {location} attacks {target}, hp={units[target]['hp']}")
+                    # Remove dead units.
                     if enemies[target] <= 0:
-                        self.debug(f"Round {count}: {unit_type}@{location} kills {other_type}@{target}")
                         del enemies[target]
                         del occupied[target]
-                else:
-                    # self.debug(f"Round: {count}. {location=} cannot find anyone to attack")
-                    pass
-
-
-        return 0
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         spaces = aoc.parse_ascii_bool_map(".EG").parse(puzzle_input)
-
         units = {
             unit_type: {
                 i: 200
