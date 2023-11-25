@@ -136,9 +136,13 @@ class BaseMultiParser(BaseParser):
 class ParseBlocks(BaseMultiParser):
     """Parse an input by splitting into blocks and applying a parser to each block."""
 
+    def __init__(self, parsers: Iterable[BaseParser], separator: str = "\n\n"):
+        super().__init__(parsers)
+        self.separator = separator
+
     def parse(self, puzzle_input: str) -> list[Any]:
         """Convert input into "blocks" and parse each block."""
-        blocks = puzzle_input.split("\n\n")
+        blocks = puzzle_input.split(self.separator)
         outputs = []
         for block, parser in zip(blocks, itertools.cycle(self.parsers)):
             outputs.append(parser.parse(block))
