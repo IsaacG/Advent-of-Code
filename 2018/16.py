@@ -1,12 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 16: Chronal Classification."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -23,7 +16,7 @@ After:  [3, 2, 2, 1]
 
 1 2 3 4"""
 
-InputType = list[list[list[list[int]]], list[list[int]]]
+InputType = list[list[list[list[int]]] | list[list[int]]]
 
 
 class Day16(aoc.Challenge):

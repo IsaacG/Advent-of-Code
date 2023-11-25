@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 10: The Stars Align. Read a message in the sky."""
 
+from typing import Sequence
 from lib import aoc
 
 SAMPLE = """\
@@ -36,7 +37,7 @@ position=< 5,  9> velocity=< 1, -2>
 position=<14,  7> velocity=<-2,  0>
 position=<-3,  6> velocity=< 2, -1>"""
 
-LineType = list[int]
+LineType = Sequence[int]
 InputType = list[LineType]
 
 
@@ -52,10 +53,7 @@ class Day10(aoc.Challenge):
 
     def solver(self, parsed_input: InputType, *args, **kwargs) -> int | str:
         """Return the message in the moving stars."""
-        if self.testing:
-            height, width = 8, 6
-        else:
-            height, width = 10, 7
+        height = 8 if self.testing else 10
         points = parsed_input
         for i in range(12000):
             points = [(x + dx, y + dy, dx, dy) for x, y, dx, dy in points]
@@ -66,3 +64,4 @@ class Day10(aoc.Challenge):
             ocr = aoc.OCR.from_point_set({complex(x, y) for x, y, _, _ in points})
             if ocr.is_valid():
                 return [ocr.as_string(), i + 1][args[0]]
+        raise RuntimeError("Unreachable.")

@@ -84,6 +84,7 @@ class Day15(aoc.Challenge):
             # Check if there are no fatalities.
             if len(units["E"]) == elf_count:
                 return score
+        raise RuntimeError("Unreachable")
 
     def simulate(self, spaces: set[complex], units_by_type: dict[str, dict[complex, int]], elf_damage: int) -> int:
         """Simulate a battle."""
@@ -139,7 +140,7 @@ class Day15(aoc.Challenge):
                         seen.update(new_candidates)
                         candidates = new_candidates
                         steps += 1
-                    
+
                     if options := candidates & enemies_reachable:
                         # All options are equal distance. Pick based on reading order.
                         move_to = min(options, key=reading_order)
@@ -165,6 +166,7 @@ class Day15(aoc.Challenge):
                     if enemies[target] <= 0:
                         del enemies[target]
                         del occupied[target]
+        raise RuntimeError("Unreachable")
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

@@ -4,8 +4,6 @@
 from lib import aoc
 
 SAMPLE = ["18", "42"]
-LineType = int
-InputType = list[LineType]
 
 
 class Day11(aoc.Challenge):
@@ -20,10 +18,10 @@ class Day11(aoc.Challenge):
     INPUT_PARSER = aoc.parse_one_int
     PARAMETERIZED_INPUTS = [(2, 3, False), (2, 100, True)]
 
-    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
+    def solver(self, parsed_input: int, *args, **kwargs) -> str:
         serial = parsed_input
         range_start, range_end, include_size = args[0]
-        
+
         def power_level(x: int, y: int) -> int:
             rack_id = x + 10
             power = rack_id * (rack_id * y + serial)
@@ -36,7 +34,7 @@ class Day11(aoc.Challenge):
                 row.append(power_level(x + 1, y + 1))
             grid.append(row)
 
-        def max_grid(size: int) -> tuple[int, int]:
+        def max_grid(size: int) -> tuple[int, int, int]:
             xgroups = []
             for row in grid:
                 xrow = []

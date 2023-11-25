@@ -20,7 +20,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs="59414", part=2, want=2018),
     ]
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, parsed_input: str, param: bool) -> int | str:
         """Solve for the target recipes."""
         # Compute target data.
         p1_target = int(parsed_input)
@@ -56,3 +56,4 @@ class Day14(aoc.Challenge):
 
             # Update the elves' recipes.
             elf1, elf2 = (elf1 + 1 + recipe1) % count, (elf2 + 1 + recipe2) % count
+        raise RuntimeError("Unreachable")

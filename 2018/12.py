@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 12: Subterranean Sustainability. Compute what plants will be alive in future generations."""
 
-import re
-
 from lib import aoc
 
 SAMPLE = [
@@ -48,14 +46,14 @@ class Day12(aoc.Challenge):
         # Rules for new generations.
         rules = {tuple(rule[:5]) for rule in parsed_input[1] if rule[5]}
         # Cycle detection.
-        seen = {}
+        seen: dict[frozenset[int], tuple[int, int]] = {}
 
         for gen in range(target_gen):
             new_state = set()
             for pot in range(min(state) - 2, max(state) + 3):
-                    window = tuple(i in state for i in range(pot - 2, pot + 3))
-                    if window in rules:
-                        new_state.add(pot)
+                window = tuple(i in state for i in range(pot - 2, pot + 3))
+                if window in rules:
+                    new_state.add(pot)
 
             state = new_state
             # For cycle detection, shift pots so the pattern is relative to "0".

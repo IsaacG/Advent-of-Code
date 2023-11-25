@@ -24,7 +24,7 @@ class Day08(aoc.Challenge):
             child_count = next(reader)
             metadata_count = next(reader)
             children = sum((parser() for _ in range(child_count)), 0)
-            metadata =  sum((next(reader) for _ in range(metadata_count)), 0)
+            metadata = sum((next(reader) for _ in range(metadata_count)), 0)
             return children + metadata
 
         return parser()
