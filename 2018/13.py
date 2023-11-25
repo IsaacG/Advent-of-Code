@@ -72,7 +72,7 @@ class Day13(aoc.Challenge):
                 location = list(wagons)[0]
                 return f"{int(location.real)},{int(location.imag)}"
 
-            for location in sorted(wagons, key=lambda x: (x.imag, x.real)):
+            for location in aoc.reading_order(wagons):
                 # A wagon may be removed due to a collision.
                 if location not in wagons:
                     continue
