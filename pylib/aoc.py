@@ -243,6 +243,11 @@ class OCR:
         return cls(rows)
 
 
+def neighbors(point: complex, directions: Sequence[complex] = STRAIGHT_NEIGHBORS) -> Iterable[complex]:
+    """Return the 4/8 neighbors of a point."""
+    return (point + offset for offset in directions)
+
+
 def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
     """Convert a set of complex points to a 2D list of bools."""
     xmax = int(max(p.real for p in points))
@@ -433,6 +438,11 @@ def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) 
         row = [on if i else off for i in line]
         rows.append("".join(row))
     return "\n".join(rows)
+
+
+
+def reading_order(data: Sequence[complex]) -> list[complex]:
+    return sorted(data, key=lambda x: (x.imag, x.real))
 
 
 @dataclasses.dataclass
