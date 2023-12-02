@@ -19,7 +19,7 @@ import itertools
 import pathlib
 import re
 import time
-from typing import Any, Callable, Generator, Iterable, List, Optional
+from typing import Any, Callable, Generator, Iterable, List, Optional, Sequence
 
 from .parsers import *
 from . import parsers

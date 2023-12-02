@@ -6,41 +6,42 @@ import math
 
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
-Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green""",  # 3
-]
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"""
 
-LineType = int
-InputType = list[LineType]
+InputType = dict[int, list[dict[str, int]]]
 
 
 class Day02(aoc.Challenge):
     """Day 2: Cube Conundrum. Analyze marble game stats."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=8),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=2286),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=8),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=2286),
     ]
 
     def part1(self, parsed_input: InputType) -> int:
+        """Return which games are valid based on a per-color limit."""
+        limits = {"red": 12, "green": 13, "blue": 14}
         return sum(
             game_id for game_id, bunches in parsed_input.items()
             if all(
-                b.get("red", 0) <= 12 and b.get("green", 0) <= 13 and b.get("blue", 0) <= 14
-                for b in bunches
+                all(
+                    bunch.get(color, 0) <= limit for color, limit in limits.items()
+                )
+                for bunch in bunches
             )
         )
-        return 0
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return the per-color minimum if all bunches are valid."""
         return sum(
             math.prod(
-                max(b.get(i, 0) for b in bunches)
+                max(bunch.get(i, 0) for bunch in bunches)
                 for i in ["red", "green", "blue"]
             )
             for bunches in parsed_input.values()
@@ -50,14 +51,14 @@ class Day02(aoc.Challenge):
         """Parse the input data."""
         games = collections.defaultdict(list)
         for line in puzzle_input.splitlines():
-            a, b = line.split(":")
-            game_id = int(a.removeprefix("Game "))
-            for bunch in b.split("; "):
-                p = {}
+            game, bunches = line.split(":")
+            game_id = int(game.removeprefix("Game "))
+            for bunch in bunches.split("; "):
+                counts = {}
                 for one in bunch.split(", "):
                     count, color = one.split()
-                    p[color] = int(count)
-                games[game_id].append(p)
+                    counts[color] = int(count)
+                games[game_id].append(counts)
         return games
 
 # vim:expandtab:sw=4:ts=4

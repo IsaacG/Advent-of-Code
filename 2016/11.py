@@ -97,7 +97,7 @@ class Day11(aoc.Challenge):
                         continue
                     # Add this option to the queue.
                     seen[(next_floor, new_floors)] = next_steps
-                    todo.put((self.cost(new_floors), next_steps, next_floor, new_floors))
+                    todo.put((next_steps + self.cost(new_floors), next_steps, next_floor, new_floors))
         raise RuntimeError("No solution found.")
 
     def part2(self, parsed_input: InputType) -> int:
