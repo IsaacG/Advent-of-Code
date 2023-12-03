@@ -34,5 +34,23 @@ Not much to see here.
 
 # Day 03
 
-I used regex to find number start/ends then used `x in range(start, end + 1)` ... except the `re.match.span()` already adds +1 to the end so I was extending digits too far by one. That cost me at least 5 minutes.
+## Approach
+
+The parsing and mapping for this was a bit tricky.
+I used a regex to find all the numbers on each line then used the `match.span()` to find the start and end position of each number.
+This allowed me to find each coordinate with a digit and map those coordinates to the coordinate where each number starts.
+Having a unique coordinate for each number makes it easy to identify unique adjacent numbers.
+
+This produced three maps:
+* start positions of numbers to the numeric values,
+* digit coordinate to the number's start coordinate, and
+* engine coordinate to symbol.
+
+Using these three maps made the rest of the exercise relatively simple, once I corrected my off-by-one error.
+
+## Issue One
+I used regex to find number start and end position of each number, then used `x in range(start, end + 1)` to map each digit to the number's start coordinate.
+However, the `re.match.span()` already adds +1 to the end so I was extending digits too far by one.
+This managed to work with the example input but not my real input.
+That cost me at least 5 minutes.
 

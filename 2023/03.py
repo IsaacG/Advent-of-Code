@@ -1,17 +1,12 @@
 #!/bin/python
 """Advent of Code, Day 3: Gear Ratios."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
 import math
 import re
 
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 467..114..
 ...*......
 ..35..633.
@@ -21,92 +16,70 @@ SAMPLE = [
 ..592.....
 ......755.
 ...$.*....
-.664.598..""",  # 1
-]
+.664.598.."""
 
-LineType = int
-InputType = list[LineType]
+InputType = None
 
 
 class Day03(aoc.Challenge):
     """Day 3: Gear Ratios."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=4361),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=467835),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=4361),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=467835),
     ]
 
-    # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_one_str
-    # INPUT_PARSER = aoc.parse_one_int
-    # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_one_int_per_line
-    # INPUT_PARSER = aoc.parse_multi_str_per_line
-    # INPUT_PARSER = aoc.parse_re_group_str(r"(a) .* (b) .* (c)")
-    # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
-    # INPUT_PARSER = aoc.parse_multi_int_per_line
-    # INPUT_PARSER = aoc.parse_re_group_int(r"(\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
-    # INPUT_PARSER = aoc.parse_multi_mixed_per_line
-    # INPUT_PARSER = aoc.parse_re_group_mixed(r"(foo) .* (\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")
-    # INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
-    # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
-    # INPUT_PARSER = aoc.parse_ascii_bool_map("#")
-
     def part1(self, parsed_input: InputType) -> int:
-        number, number_pos, items = parsed_input
-        neighbors = {
-            neighbor
-            for pos in items
-            for neighbor in aoc.neighbors(pos, directions=aoc.EIGHT_DIRECTIONS)
-        }
+        """Sum up all engine part numbers."""
+        number_by_start, coord_to_number, engine_parts = parsed_input
+        # Map engine parts to neighboring positions to unique part numbers.
         all_nums = {
-            number_pos[neighbor]
-            for neighbor in neighbors
-            if neighbor in number_pos
+            coord_to_number[neighbor]
+            for pos in engine_parts
+            for neighbor in aoc.neighbors(pos, directions=aoc.EIGHT_DIRECTIONS)
+            if neighbor in coord_to_number
         }
-        res = sum(number[pos] for pos in all_nums)
-        assert res != 568651
-        return res
+        return sum(number_by_start[pos] for pos in all_nums)
 
     def part2(self, parsed_input: InputType) -> int:
-        number, number_pos, items = parsed_input
-        total = 0
-        for pos, char in items.items():
-            if char == "*":
-                neighbors = aoc.neighbors(pos, directions=aoc.EIGHT_DIRECTIONS)
-                nums = {
-                    number_pos[neighbor]
-                    for neighbor in neighbors
-                    if neighbor in number_pos
-                }
-                if len(nums) == 2:
-                    total += math.prod(number[pos] for pos in nums)
-        return total
+        """Sum up all gear ratios."""
+        number_by_start, coord_to_number, engine_parts = parsed_input
+        # Find gear parts and map them to neighboring numbers.
+        ratios = (
+            {
+                coord_to_number[neighbor]
+                for neighbor in aoc.neighbors(pos, directions=aoc.EIGHT_DIRECTIONS)
+                if neighbor in coord_to_number
+            }
+            for pos, char in engine_parts.items()
+            if char == "*"
+        )
+        # Sum up the product of ratios when exactly two exist for a given gear.
+        return sum(
+            math.prod(number_by_start[pos] for pos in nums)
+            for nums in ratios
+            if len(nums) == 2
+        )
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        numbers = {}
-        number_pos = {}
-        items = {}
-        for y, line in enumerate(puzzle_input.splitlines()):
-            for match in re.finditer(r"\d+", line):
-                x1, x2 = match.span()
-                val = int(match.group())
-                numbers[complex(x1, y)] = val
-                for x in range(x1, x2):
-                    number_pos[complex(x, y)] = complex(x1, y)
-            for x, char in enumerate(line):
-                if not char.isdigit() and char != ".":
-                    items[complex(x, y)] = char
-        return numbers, number_pos, items
+        # Part numbers by the coordinate of the first digit.
+        number_by_start: dict[complex, int] = {}
+        # Map all digits to the location of the first digit in the number.
+        coord_to_number: dict[complex, complex] = {}
+        # Map all engine parts, location to symbol.
+        engine_parts: dict[complex, str] = {}
 
+        for y_pos, line in enumerate(puzzle_input.splitlines()):
+            for match in re.finditer(r"\d+", line):
+                start, end = match.span()
+                val = int(match.group())
+                number_by_start[complex(start, y_pos)] = val
+                for x_pos in range(start, end):
+                    coord_to_number[complex(x_pos, y_pos)] = complex(start, y_pos)
+            for x_pos, char in enumerate(line):
+                if not char.isdigit() and char != ".":
+                    engine_parts[complex(x_pos, y_pos)] = char
+        return number_by_start, coord_to_number, engine_parts
 
 # vim:expandtab:sw=4:ts=4
