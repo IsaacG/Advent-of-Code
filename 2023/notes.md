@@ -27,3 +27,12 @@ total += first_digit(line) * 10 + first_digit(line2)
 
 Alas, too many variables and too easy to confuse them. `line2 = line[::-1]` is using the mutated line and not `original`.
 I only discovered this after abandoning ship and writing my new solution.
+
+# Day 02
+
+Not much to see here.
+
+# Day 03
+
+I used regex to find number start/ends then used `x in range(start, end + 1)` ... except the `re.match.span()` already adds +1 to the end so I was extending digits too far by one. That cost me at least 5 minutes.
+
