@@ -60,3 +60,11 @@ Relatively straight forward day.
 Part two took a bit of squinting to understand what was being asked but the example helped.
 
 # Day 05
+
+That was a ride!
+I managed to rank 416/2180.
+At first I couldn't even parse right, as I used `split("\n\n\n)` which had an extra newline!
+I tried a few approaches until I got a working algorithm for part 2.
+I then had a bug where I assumed when an input range exceeded the translation range, the excess would be copied over directly without change; what needed to happen was to preserve that excess for processing by other translation rules.
+Once that was fixed, I was failing to pass tests, because I changed variables around but failed to update the `return mix(...)` line.
+I spent a bunch of time going over the example, line by line, until I realized that error.
