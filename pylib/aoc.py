@@ -40,6 +40,7 @@ EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
 RE_INT = re.compile(r"[+-]?\d+")
 RE_BOUNDED_INT = re.compile(r"\b[+-]?\d+\b")
+Interval = tuple[int, int]
 
 OCR_MAP = {
     # 2022/10: 6x5
@@ -443,6 +444,18 @@ def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) 
 
 def reading_order(data: Sequence[complex]) -> list[complex]:
     return sorted(data, key=lambda x: (x.imag, x.real))
+
+
+def interval_overlap(one: Interval, two: Interval) -> tuple[Interval | None, Interval | None, Interval | None]:
+    one_start, one_end = one
+    two_start, two_end = two
+    if one_end < two_start or two_end < one_start:
+        return None, None, None
+    overlap_start, overlap_end = max(one_start, two_start), min(one_end, two_end)
+
+    pre = (one_start, overlap_start - 1) if one_start < two_start else None
+    post = (overlap_end + 1, one_end)  if one_end > two_end else None
+    return pre, (overlap_start, overlap_end), post
 
 
 @dataclasses.dataclass

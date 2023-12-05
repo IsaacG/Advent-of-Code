@@ -42,7 +42,6 @@ humidity-to-location map:
 
 InputType = tuple[list[int], list[list[list[int]]]]
 
-
 class Day05(aoc.Challenge):
     """Day 5: If You Give A Seed A Fertilizer. Work a set of seeds through a number of range-translations."""
 
@@ -69,7 +68,7 @@ class Day05(aoc.Challenge):
         # For each mapping, go through all value ranges and translate them to the next layer.
         for block in translation_layers:
             # Load the rules into a deque for easy access.
-            block.sort(key=lambda x: x[1])
+            block.sort()
             block_q = collections.deque(block)
             src_start, src_end, distance = block_q.popleft()
 
@@ -83,23 +82,17 @@ class Day05(aoc.Challenge):
                 # Cycle through rules until a rule is relevant.
                 while block_q and start > src_end:
                     src_start, src_end, distance = block_q.popleft()
-                if start > src_end:
-                    # We ran out of rules; all ranges start after the last rule.
-                    values.append((start, end))
-                elif end < src_start:
-                    # Our range ends before this rule starts. Copy without change.
+                pre, overlap, post = aoc.interval_overlap((start, end), (src_start, src_end))
+                if overlap is None:
                     values.append((start, end))
                 else:
-                    # We have some overlap. Handle the pre-overlap, overlap and post-overlap.
                     # Pre-overlap is copied without change. Overlap is translated.
                     # Post-overlap is put back into the queue as a later rule may apply.
-                    overlap_start = max(start, src_start)
-                    overlap_end = min(end, src_end)
-                    if start < overlap_start:
-                        values.append((start, overlap_start - 1))
-                    values.append((overlap_start + distance, overlap_end + distance))
-                    if end > overlap_end:
-                        ranges.appendleft((overlap_end + 1, end))
+                    if pre is not None:
+                        values.append(pre)
+                    values.append((overlap[0] + distance, overlap[1] + distance))
+                    if post is not None:
+                        ranges.appendleft(post)
 
         return min(values)[0]
 
