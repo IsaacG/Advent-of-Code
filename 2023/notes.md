@@ -54,3 +54,9 @@ However, the `re.match.span()` already adds +1 to the end so I was extending dig
 This managed to work with the example input but not my real input.
 That cost me at least 5 minutes.
 
+# Day 04
+
+Relatively straight forward day.
+Part two took a bit of squinting to understand what was being asked but the example helped.
+
+# Day 05
