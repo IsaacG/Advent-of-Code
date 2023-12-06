@@ -80,3 +80,31 @@ Pretty simple day.
    Having to parse things differently messes with that base assumption.
    I was able to work around that with `int("".join(str(i) for i in numbers)` but that makes me sad.
 
+## Optimization
+
+The brute force solution:
+
+```python
+return math.prod(
+    sum(
+        (time - i) * i > distance
+        for i in range(time + 1)
+    )
+    for time, distance in zip(times, distances)
+)
+```
+
+Note the inequality:
+
+```
+(time - i) * i > distance
+-1 * x * x + time * x - distance > 0
+# Quadratic equation!
+x = (-b +/- sqrt(b**2 - 4 * a * c)) / (2 * a)
+x = (-time +/- math.sqrt(time**2 - 4 * distance)) / (-2)
+x = (time +/- math.sqrt(time**2 - 4 * distance)) / 2
+```
+
+The inequality is `> 0` which means `x` sets the thresholds of the interval, but it is an open interval, i.e. `x` itself is not included.
+I solve this by solving for the x values and taking the "inner" integer values (`ceil(x1), floor(x2)`).
+If those inner values match `x` exactly, they need to be shifted inwards by one.
