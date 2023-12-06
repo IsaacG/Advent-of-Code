@@ -68,3 +68,15 @@ I tried a few approaches until I got a working algorithm for part 2.
 I then had a bug where I assumed when an input range exceeded the translation range, the excess would be copied over directly without change; what needed to happen was to preserve that excess for processing by other translation rules.
 Once that was fixed, I was failing to pass tests, because I changed variables around but failed to update the `return mix(...)` line.
 I spent a bunch of time going over the example, line by line, until I realized that error.
+
+# Day 06
+
+Pretty simple day.
+
+1. I initially wrote `time - i * i` to calculate distance.
+   I was very confused when my ways to win was 0.
+   Converting that to `(time - i) * i` helped.
+2. My framework assumes all parts use the same parser.
+   Having to parse things differently messes with that base assumption.
+   I was able to work around that with `int("".join(str(i) for i in numbers)` but that makes me sad.
+
