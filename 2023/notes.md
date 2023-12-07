@@ -114,10 +114,12 @@ If those inner values match `x` exactly, they need to be shifted inwards by one.
 I'm very glad I wrote a Python sort function in the past!
 Figuring that out on the fly would have been challenging.
 
-I was passing p1 example but failing p1 input for a while because when I ordered hands of same rank, I was using `10 ** position` for adding up the card orders.
-Turns out there's more than 10 cards and that makes a difference.
-My logic was putting 2A ahead of 32.
-
-I was worried about handling ties and that my result might be wrong due to a draw. So I added code to check for a draw.
+1. First mistake. For a short while I was passing the part one example but getting the wrong result for the real input.
+   When I ordered hands of same rank, I was using `10 ** position` for adding up the card orders.
+   However, there are more than 10 cards and that makes a difference!
+   My logic was putting `2A` (value 10 + 13) ahead of `32` (20 + 1).
+2. I was worried about handling ties and that my result might be wrong due to a draw.
+   I added code to check for a draw (duplicate hands).
+   However, those don't appear to exist in my input so I later removed it.
 
 

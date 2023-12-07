@@ -1,12 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 7: Camel Cards."""
-from __future__ import annotations
 
 import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -19,11 +14,20 @@ QQQJA 483"""
 
 InputType = list[list[str]]
 
-ORDERS = (list("AKQJT98765432"), list("AKQT98765432J"))
+# The value of J changes from part 1 to part 2.
+ORDERS = ("AKQJT98765432"[::-1], "AKQT98765432J"[::-1])
+CARD_COUNT = max(len(cards) for cards in ORDERS)
+# Hand ranking based on the largest group followed by the number of pairs:
+# 5 of a kind. 4 of a kind. Full house. 3 of a kind. 2 pairs. 1 pair. Nothing.
+RANK_ORDER = [(5, 0), (4, 0), (3, 1), (3, 0), (2, 2), (2, 1), (1, 0)]
+RANKS = {
+    largest_and_pairs: rank
+    for rank, largest_and_pairs in enumerate(reversed(RANK_ORDER))
+}
 
 
 class Day07(aoc.Challenge):
-    """Day 7: Camel Cards."""
+    """Day 7: Camel Cards. Rank poker card hands."""
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=6440),
@@ -32,41 +36,37 @@ class Day07(aoc.Challenge):
     INPUT_PARSER = aoc.parse_multi_str_per_line
     PARAMETERIZED_INPUTS = [0, 1]
 
-    def primary_ordering(self, part: int, hand: str) -> int:
-        cnt = collections.Counter(hand)
-
-        if part and "J" in hand:
-            count = max(collections.Counter(i for i in hand if i != "J").values(), default="A")
-            select = max((card for card in hand if card != "J" and cnt[card] == count), default="A")
-            hand = hand.replace("J", select)
-            cnt = collections.Counter(hand)
-
-        if cnt.most_common(1)[0][1] == 5:
-            return 1
-        if cnt.most_common(1)[0][1] == 4:
-            return 2
-        if set(cnt.values()) == {2, 3}:
-            return 3
-        if cnt.most_common(1)[0][1] == 3:
-            return 4
-        if sum(i == 2 for i in cnt.values()) == 2:
-            return 5
-        if 2 in cnt.values():
-            return 6
-        return 7
-
-    def secondary_ordering(self, card_order: list[str], hand: str) -> int:
-        score = 0
-        for card in hand:
-            score = score * 13 + card_order.index(card)
-        return score
-
-    def sort(self, param: int, line: list[str]) -> tuple(int, int):
+    def sort(self, part_two: int, line: list[str]) -> tuple[int, int]:
+        """Sort cards based on ranking then highest card."""
         hand = line[0]
-        return (self.primary_ordering(param, hand), self.secondary_ordering(ORDERS[param], hand))
 
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        parsed_input.sort(key=lambda x: self.sort(param, x), reverse=True)
+        # Compute the secondary order.
+        card_order = ORDERS[part_two]
+        secondary = 0
+        for card in hand:
+            secondary = secondary * CARD_COUNT + card_order.index(card)
+
+        # Replace J values if needed.
+        if part_two and "J" in hand:
+            card_counter = collections.Counter(i for i in hand if i != "J")
+            # Pick the best replacement.
+            # First, prefer the card that appears the most times.
+            # Second, prefer the highest value card.
+            card_ordering = lambda x: (card_counter[x], card_order.index(x))
+            replacement = max(card_counter, key=card_ordering, default="A")
+            hand = hand.replace("J", replacement)
+
+        # Compute the primary order, using potentially an updated hand.
+        card_counts = list(collections.Counter(hand).values())
+        largest_group = max(card_counts)
+        pairs = card_counts.count(2)
+        primary = RANKS[largest_group, pairs]
+
+        return (primary, secondary)
+
+    def solver(self, parsed_input: InputType, param: bool) -> int:
+        """Sort hands then return the bid returns."""
+        parsed_input.sort(key=lambda x: self.sort(param, x))
         return sum(idx * int(bid) for idx, (_, bid) in enumerate(parsed_input, start=1))
 
 # vim:expandtab:sw=4:ts=4
