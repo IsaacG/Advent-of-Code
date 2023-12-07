@@ -108,3 +108,16 @@ x = (time +/- math.sqrt(time**2 - 4 * distance)) / 2
 The inequality is `> 0` which means `x` sets the thresholds of the interval, but it is an open interval, i.e. `x` itself is not included.
 I solve this by solving for the x values and taking the "inner" integer values (`ceil(x1), floor(x2)`).
 If those inner values match `x` exactly, they need to be shifted inwards by one.
+
+# Day 07
+
+I'm very glad I wrote a Python sort function in the past!
+Figuring that out on the fly would have been challenging.
+
+I was passing p1 example but failing p1 input for a while because when I ordered hands of same rank, I was using `10 ** position` for adding up the card orders.
+Turns out there's more than 10 cards and that makes a difference.
+My logic was putting 2A ahead of 32.
+
+I was worried about handling ties and that my result might be wrong due to a draw. So I added code to check for a draw.
+
+

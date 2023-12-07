@@ -117,14 +117,18 @@ class Day22(aoc.Challenge):
     ) -> list[Cube]:
         """Return the overlapping sections of one cube with others."""
         out = []
-        a_intervals = [(ax0, ax1), (ay0, ay1), (az0, az0)]
         for bx0, bx1, by0, by1, bz0, bz1 in others:
-            b_intervals = [(bx0, bx1), (by0, by1), (bz0, bz0)]
-            overlaps = [overlap for a, b in zip(a_intervals, b_intervals) for _, overlap, _ in aoc.interval_overlap(a, b)]
-            if all(i for i in overlaps):
-                out.append((
-                    i for overlap in overlaps for i in overlap
-                ))
+            if (
+                bx1 < ax0 or bx0 > ax1 or
+                by1 < ay0 or by0 > ay1 or
+                bz1 < az0 or bz0 > az1
+            ):
+                continue
+            out.append((
+                max(ax0, bx0), min(ax1, bx1),
+                max(ay0, by0), min(ay1, by1),
+                max(az0, bz0), min(az1, bz1),
+            ))
         return out
 
     @staticmethod
