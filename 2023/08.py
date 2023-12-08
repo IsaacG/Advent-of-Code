@@ -53,7 +53,7 @@ class Day08(aoc.Challenge):
 
     def steps(self, instructions: str, mapping: dict[str, tuple[str, str]], location: str, part_two: bool) -> int:
         """Return the number of steps from a start location to a terminal node."""
-        for step, direction in zip(itertools.count(start=1), itertools.cycle(instructions)):
+        for step, direction in enumerate(itertools.cycle(instructions), start=1):
             location = mapping[location][INDEX[direction]]
             if location == "ZZZ" or part_two and location.endswith("Z"):
                 return step
@@ -102,12 +102,12 @@ class Day08(aoc.Challenge):
         for location in locations:
             step = 0
             next_instruction = itertools.cycle(instructions)
-            for step, direction in zip(itertools.count(start=1), next_instruction):
+            for step, direction in enumerate(next_instruction, start=1):
                 location = mapping[location][INDEX[direction]]
                 if location.endswith("Z"):
                     break
             steps1, terminal1 = step, location
-            for step, direction in zip(itertools.count(start=1), next_instruction):
+            for step, direction in enumerate(next_instruction, start=1):
                 location = mapping[location][INDEX[direction]]
                 if location.endswith("Z"):
                     break

@@ -122,10 +122,19 @@ Figuring that out on the fly would have been challenging.
    I added code to check for a draw (duplicate hands).
    However, those don't appear to exist in my input so I later removed it.
 
-## Day 08
+# Day 08
 
-I wasted some time since I forgot to reset steps=0 inside my `foreach start` loop. And then I used `/[A-Z]/` in p2 and apparent there are numbers in some node names :(
-Though I'm not convinced my algorithm is right. Even if it does yield the right answer.
-I was thinking I need to compute cycles to first (1)Z then all the step cycles from (1)Z to (n)Z for each start then try to find where those overlap
-But ... hey! If each starting (1)A->(1)Z has exactly one path from (1)Z->(2)Z where both Z nodes are the same and are aligned with the instruction code and is the same length as (1)A->(1)Z then that works?
+1. I wasted some time since I forgot to reset steps=0 inside my `foreach start` loop.
+2. The instructions in part 2 has example nodes with digits in the name, which threw me for a loop.
+   For part 1 I assumed the node names were all alpha.
+   And they are!
+   The example is just odd.
 
+## Part 2 data assumptions
+
+The part two solution using LCM assumes that:
+* `first_terminal_node == second_terminal_node`
+* `distance(start_location, first_terminal_node) == distance(first_terminal_node, second_terminal_node)`
+* `distance(start_location, first_terminal_node) == n * length(instruction)``
+
+I added `pre_run()` logic to validate these assumptions.
