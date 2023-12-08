@@ -764,7 +764,7 @@ class Challenge(Helpers):
         if self.DEBUG:
             print(msg)
 
-    def pre_run(self, puzzle_input: Any) -> None:
+    def pre_run(self, parsed_input: Any) -> None:
         """Hook to run things prior to tests and actual."""
 
     def solve(self, input_file: Optional[str]) -> None:

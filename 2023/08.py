@@ -3,12 +3,11 @@
 
 import itertools
 import math
-import re
 
 from lib import aoc
 
 SAMPLE = [
-   """\
+    """\
 RL
 
 AAA = (BBB, CCC)
@@ -17,14 +16,14 @@ CCC = (ZZZ, GGG)
 DDD = (DDD, DDD)
 EEE = (EEE, EEE)
 GGG = (GGG, GGG)
-ZZZ = (ZZZ, ZZZ)""",  # 4
+ZZZ = (ZZZ, ZZZ)""",
     """\
 LLR
 
 AAA = (BBB, BBB)
 BBB = (AAA, ZZZ)
-ZZZ = (ZZZ, ZZZ)""",  # 16
-    '''\
+ZZZ = (ZZZ, ZZZ)""",
+    """\
 LR
 
 11A = (11B, XXX)
@@ -34,7 +33,7 @@ LR
 22B = (22C, 22C)
 22C = (22Z, 22Z)
 22Z = (22B, 22B)
-XXX = (XXX, XXX)''',
+XXX = (XXX, XXX)""",
 ]
 
 InputType = tuple[str, dict[str, tuple[str, str]]]
@@ -51,12 +50,19 @@ class Day08(aoc.Challenge):
     ]
     PARAMETERIZED_INPUTS = [False, True]
 
-    def steps(self, instructions: str, mapping: dict[str, tuple[str, str]], location: str, part_two: bool) -> int:
+    def steps(
+        self,
+        instructions: str,
+        mapping: dict[str, tuple[str, str]],
+        location: str,
+        part_two: bool,
+    ) -> int:
         """Return the number of steps from a start location to a terminal node."""
         for step, direction in enumerate(itertools.cycle(instructions), start=1):
             location = mapping[location][INDEX[direction]]
             if location == "ZZZ" or part_two and location.endswith("Z"):
                 return step
+        raise RuntimeError("Unreachable")
 
     def solver(self, parsed_input: InputType, param: bool) -> int:
         """Compute the number of steps to get through the maze."""
@@ -91,9 +97,9 @@ class Day08(aoc.Challenge):
         """Verify assumptions.
 
         The part two solution using LCM assumes that:
-        * first_terminal_node == second_terminal_node
-        * distance(start_location, first_terminal_node) == distance(first_terminal_node, second_terminal_node)
-        * distance(start_location, first_terminal_node) == n * length(instruction)`
+        * first_Z == second_Z
+        * distance(start_location, first_Z) == distance(first_Z, second_Z)
+        * distance(start_location, first_Z) == n * length(instruction)`
         """
         if self.testing:
             return
