@@ -138,3 +138,20 @@ The part two solution using LCM assumes that:
 * `distance(start_location, first_terminal_node) == n * length(instruction)``
 
 I added `pre_run()` logic to validate these assumptions.
+
+# Day 09
+
+I instantly recognized this as requiring solving a polynomial and describing the first differences approach.
+However, I am not sufficiently familiar with numpy or other math libraries to leverage those.
+I was also battling internet issues this night.
+
+This code could be made more efficient (by roughly 10%) by reducing the recursion limit by one.
+
+```python
+# Sticking true to the AoC described algorithm, I used this.
+if all(i == 0 for i in diffs):
+    prior = following = 0
+# A more efficient approach is as follows.
+if len(set(diffs)) == 1:
+    prior = following = diffs[0]
+```
