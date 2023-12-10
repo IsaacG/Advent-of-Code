@@ -121,18 +121,16 @@ class Day10(aoc.Challenge):
         # If inside the loop and we find a surrounded cell, tally it up.
         min_x, min_y, max_x, max_y = aoc.bounding_coords(loop)
         count = 0
-        pipe_start = ""
         for y in range(min_y, max_y + 1):
             # Start each line outside the loop.
             inside = False
             for x in range(min_x, max_x + 1):
                 pos = complex(x, y)
                 if pos in loop:
-                    char = pipes[pos]
-                    if char in "FL":
-                        pipe_start = char
-                    elif char == "|" or pipe_start + char == "FJ" or pipe_start + char == "L7":
-                        # Toggle inside when crossing a pipe. LJ and F7 does not count.
+                    if pipes[pos] in "|F7":
+                        # Toggle inside when crossing a pipe.
+                        # Shift by a fractional percent and look at just lower junctions.
+                        # If we look at right/left then crossings like LJ are incorrect.
                         inside = not inside
                 elif inside:
                     count += 1
