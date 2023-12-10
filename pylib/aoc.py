@@ -95,8 +95,7 @@ OCR_MAP = {
 
 def print_point_set(board: set[complex]) -> None:
     """Print out a set of points as a map."""
-    min_x, max_x = int(min(p.real for p in board)), int(max(p.real for p in board))
-    min_y, max_y = int(min(p.imag for p in board)), int(max(p.imag for p in board))
+    min_x, min_y, max_x, max_y = bounding_coords(points)
     for y in range(min_y, max_y+1):
         line = ""
         for x in range(min_x, max_x + 1):
@@ -249,16 +248,20 @@ def neighbors(point: complex, directions: Sequence[complex] = STRAIGHT_NEIGHBORS
     return (point + offset for offset in directions)
 
 
+def bounding_coords(points: Sequence[complex]) -> tuple[tuple[int, int], tuple[int, int]]:
+    """Return bounding min (x, y), max (x, y) for coordinates."""
+    min_x = int(min(p.real for p in points))
+    max_x = int(max(p.real for p in points))
+    min_y = int(min(p.imag for p in points))
+    max_y = int(max(p.imag for p in points))
+    return min_x, min_y, max_x, max_y
+
 def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
     """Convert a set of complex points to a 2D list of bools."""
-    xmax = int(max(p.real for p in points))
-    xmin = int(min(p.real for p in points))
-    ymax = int(max(p.imag for p in points))
-    ymin = int(min(p.imag for p in points))
-
+    min_x, min_y, max_x, max_y = bounding_coords(points)
     rows = []
-    for y in range(ymin, ymax + 1):
-        row = [x + y * 1j in points for x in range(xmin, xmax + 1)]
+    for y in range(min_y, max_y + 1):
+        row = [x + y * 1j in points for x in range(min_x, max_x + 1)]
         rows.append(row)
     return rows
 

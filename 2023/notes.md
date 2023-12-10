@@ -155,3 +155,7 @@ if all(i == 0 for i in diffs):
 if len(set(diffs)) == 1:
     prior = following = diffs[0]
 ```
+
+# Day 10
+
+Started 60 minutes late.
