@@ -69,7 +69,7 @@ class Website:
         db = os.environ['SQL_DB']
         query = "UPDATE cookies SET value = '$cookie' WHERE key = 'aoc';"
 
-        if "[Log Out]" not in etree.HTML(resp.content).xpath('//a/text()'):
+        if "[Log In]" in etree.HTML(resp.content).xpath('//a/text()'):
             print(f"sqlite3 {db}")
             print(query)
             print(self.session.headers["cookie"])
