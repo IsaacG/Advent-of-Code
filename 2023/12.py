@@ -22,86 +22,148 @@ LineType = int
 InputType = list[LineType]
 
 
+def print_io(func):
+    def inner(*args):
+        got = func(*args)
+        print(f"{args[1:]} => {got}")
+        return got
+    return inner
+
 class Day12(aoc.Challenge):
     """Day 12: Hot Springs."""
 
+    DEBUG = True
     DEBUG = False
     # Default is True. On live solve, submit one tests pass.
     # SUBMIT = {1: False, 2: False}
     # PARAMETERIZED_INPUTS = [5, 50]
 
     TESTS = [
+        aoc.TestCase(inputs="??###?##.??????#??# 8,1,2,2", part=1, want=4),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=21),
         aoc.TestCase(inputs="??? 1", part=1, want=3),
         aoc.TestCase(inputs="?#?#?#?#?#?#?#? 1,3,1,6", part=1, want=1),
         aoc.TestCase(inputs="????.#...#... 4,1,1", part=1, want=1),
         aoc.TestCase(inputs="????.######..#####. 1,6,5", part=1, want=4),
         aoc.TestCase(inputs="?###???????? 3,2,1", part=1, want=10),
         aoc.TestCase(inputs="??.?? 1,1", part=1, want=4),
-        aoc.TestCase(inputs=SAMPLE, part=1, want=21),
         aoc.TestCase(inputs=SAMPLE, part=2, want=0),
         # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def possibilities_one(self, group: str):
-        if group == "":
-            yield []
-        elif "?" not in group:
-            yield [group]
-        else:
-            repl = group.replace("?", "#", 1)
-            yield from self.possibilities_one(repl)
-            a, b = group.split("?", 1)
-            if a and b:
-                for x, y in itertools.product(self.possibilities_one(a), self.possibilities_one(b)):
-                    yield x + y
-            elif a:
-                yield from self.possibilities_one(a)
-            elif b:
-                yield from self.possibilities_one(b)
-            else:
-                yield []
-
     def is_match(self, springs, numbers) -> int:
-        springs = list(itertools.chain.from_iterable(springs))
         return len(springs) == len(numbers) and all(len(group) == number for group, number in zip(springs, numbers))
 
-    def possibilities_many(self, groups):
-        options = []
-        for group in groups:
-            group_options = []
-            for i in self.possibilities_one(group):
-                group_options.append(i)
+    def trim(self, springs, numbers) -> int:
+        self.debug(f"{springs=} {numbers=}")
+        if springs and numbers:
+            if "#" in springs[0] and len(springs[0]) == numbers[0]:
+                return self.trim(springs[1:], numbers[1:])
+            if "#" in springs[-1] and len(springs[-1]) == numbers[-1]:
+                return self.trim(springs[:-1], numbers[:-1])
+            # ["#???"], [2] => ["?"], []
+            if springs[0].startswith("#") and "." not in springs[:numbers[0]]:
+                return self.trim([springs[0][numbers[0]:].removeprefix("?")] + springs[1:], numbers[1:])
+            # ["???#"], [2] => ["?"], []
+            if springs[-1].endswith("#") and "." not in springs[-1][:-numbers[0]]:
+                return self.trim(springs[:-1] + [springs[-1][:-numbers[-1]].removesuffix("?")], numbers[:-1])
 
-            # options.append(list(itertools.chain.from_iterable(group_options)))
-            options.append(group_options)
-        self.debug(f"Per group options: {groups}, {options}")
-        product = list(itertools.product(*options))
-        self.debug(f"{product=}")
-        yield from product
+        return springs, numbers
 
-    def solve_p(self, springs, numbers) -> int:
-        while springs and numbers and len(springs[0]) == numbers[0]:
-            springs, numbers = springs[1:], numbers[1:]
-        while springs and numbers and len(springs[-1]) == numbers[-1]:
-            springs, numbers = springs[:-1], numbers[:-1]
-        if not numbers and not springs:
+    def split(self, springs, numbers):
+        if len(springs) <= 1 or len(numbers) <= 1:
+            return None
+
+        first_num, second_num = sorted(numbers, reverse=True)[:2]
+        if first_num == second_num:
+            return None
+
+        if False:
+            # (['?', '???', '??'], [3, 1]) => [(['?'], []), (['??'], [1])]
+            springs_len = [len(group) for group in springs]
+            first_len, second_len = sorted(springs_len, reverse=True)[:2]
+            if first_len > second_len and first_len == first_num:
+                num_idx = numbers.index(first_num)
+                springs_idx = springs_len.index(first_num)
+                return [(springs[:springs_idx], numbers[:num_idx]), (springs[springs_idx + 1:], numbers[num_idx + 1:])]
+
+            # (['?', '?##', '???'], [3, 1]) => [(['?'], []), (['???'], [1])]
+            want = "#" * (second_num + 1)
+            for idx, group in enumerate(springs):
+                if len(group) == first_num and want in group:
+                    num_idx = numbers.index(first_num)
+                    return [(springs[:idx], numbers[:num_idx]), (springs[idx + 1:], numbers[num_idx + 1:])]
+
+        # (['?', '??###???', '?'], [3, 1]) => [(['?', '?'], []), ([??', '?'], [1])]
+        want = "#" * first_num
+        for idx, group in enumerate(springs):
+            if want in group:
+                num_idx = numbers.index(first_num)
+                pre, post = [(springs[:idx], numbers[:num_idx]), (springs[idx + 1:], numbers[num_idx + 1:])]
+                group_pre, group_post = group.split(want, 1)
+                group_pre = group_pre.removesuffix("?")
+                group_post = group_post.removeprefix("?")
+                if group_pre:
+                    pre[0].append(group_pre)
+                if group_post:
+                    post[0].insert(0, group_post)
+                return pre, post
+
+        return None
+
+    # @print_io
+    def ways_to_fit(self, springs, numbers) -> int:
+        springs, numbers = self.trim(springs, numbers)
+        if not numbers:
+            if not springs or not any("#" in s for s in springs):
+                return 1
+            if springs:
+                raise ValueError(f"Cannot fit {springs} {numbers}")
+        if not springs:
+            raise ValueError(f"Cannot fit {springs} {numbers}")
+        if self.is_match(springs, numbers):
             return 1
-        if not numbers and not any("#" in s for s in springs):
+        # if len(springs) == 1 and len(numbers) == 1 and "#" not in springs[0]:
+        #     return len(springs[0]) - numbers[0] + 1
+        if len(springs) == 1 and len(springs[0]) == sum(numbers) + len(numbers) - 1:
             return 1
-        if not numbers or not springs:
-            return 0
+
+        if (split := self.split(springs, numbers)):
+            a, b = split
+            return self.ways_to_fit(*a) * self.ways_to_fit(*b)
         
-        self.debug(f"Solve: {springs=}, {numbers=}")
+        springs_str = ".".join(springs)
+        size = numbers[0]
         count = 0
-        for groups in self.possibilities_many(springs):
-            good = self.is_match(groups, numbers)
-            self.debug(f"{good=}, {groups=}, {numbers=}")
-            if good: count+=1
+
+        end = len(springs_str) - sum(numbers[1:]) - len(numbers)
+        end = min(end, len(springs_str) - size)
+        if "#" in springs_str:
+            end = min(springs_str.index("#"), end)
+        for start in range(end + 1):
+            assert len(springs_str) >= start + size
+            if "." not in springs_str[start:start + size] and (len(springs_str) == start + size or springs_str[start + size] != "#"):
+                try:
+                    count += self.ways_to_fit(
+                        [i for i in springs_str[start + size + 1:].split(".") if i],
+                        numbers[1:]
+                    )
+                except:
+                    pass
+        self.debug(f"Ways to fit {springs_str} {numbers}: {count}")
         return count
 
     def part1(self, parsed_input: InputType) -> int:
-        got = sum(self.solve_p(springs, numbers) for springs, numbers in parsed_input)
-        assert got > 6863
+        for springs, numbers in parsed_input:
+            self.debug(f"{'.'.join(springs)} {','.join(str(i) for i in numbers)}")
+            self.debug(f" => {self.ways_to_fit(springs, numbers)}")
+            print(f"{'.'.join(springs)} {','.join(str(i) for i in numbers)} {self.ways_to_fit(springs, numbers)}")
+        got = sum(self.ways_to_fit(springs, numbers) for springs, numbers in parsed_input)
+        if not self.testing:
+            assert got > 6863
+            assert got > 7221
+            assert got > 7409
+            assert got != 7661
         return got
 
     def part2(self, parsed_input: InputType) -> int:
@@ -122,3 +184,19 @@ class Day12(aoc.Challenge):
                 )
             )
         return lines
+
+if __name__ == "__main__":
+    d = Day12(2023)
+    data = SAMPLE.splitlines() + [
+        ".??##????? 3,1",
+        ".?.###.??? 3,1",
+        ".?.?##.??? 3,1",
+        "..????..?? 3,1",
+        ".?.???..?? 3,1",
+        "?.??###???.? 3,1",
+    ]
+    for line in data:
+        parsed = d.input_parser(line)[0]
+        print(parsed, "=>", d.ways_to_fit(*parsed))
+
+# vim:expandtab:sw=4:ts=4
