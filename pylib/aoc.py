@@ -248,7 +248,7 @@ def neighbors(point: complex, directions: Sequence[complex] = STRAIGHT_NEIGHBORS
     return (point + offset for offset in directions)
 
 
-def bounding_coords(points: Sequence[complex]) -> tuple[tuple[int, int], tuple[int, int]]:
+def bounding_coords(points: Iterable[complex]) -> tuple[int, int, int, int]:
     """Return bounding min (x, y), max (x, y) for coordinates."""
     min_x = int(min(p.real for p in points))
     max_x = int(max(p.real for p in points))
