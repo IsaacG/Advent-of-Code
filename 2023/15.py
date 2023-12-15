@@ -1,7 +1,9 @@
 #!/bin/python
 """Advent of Code, Day 15: Lens Library."""
 
+import collections
 from lib import aoc
+
 SAMPLE = "rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
 
 class Day15(aoc.Challenge):
@@ -27,36 +29,24 @@ class Day15(aoc.Challenge):
 
     def part2(self, parsed_input: str) -> int:
         """Return which lenses are in the boxes."""
-        boxes = [[] for _ in range(256)]
+        boxes = collections.defaultdict(dict)
+        
+        def get_box(label):
+            return boxes[self.hash(label)]
 
         for word in parsed_input.split(","):
             if word.endswith("-"):
                 label = word.removesuffix("-")
-                box = self.hash(label)
-                # Remove lenses with a matching label.
-                boxes[box] = [
-                    (lens_label, lens_length)
-                    for lens_label, lens_length in boxes[box]
-                    if lens_label != label
-                ]
+                get_box(label).pop(label, None)
             else:
                 label, length = word.split("=")
-                box = self.hash(label)
-                if any(lens_label == label for lens_label, _ in boxes[box]):
-                    # Label already exists; update the length.
-                    boxes[box] = [
-                        (lens_label, length if lens_label == label else lens_length)
-                        for lens_label, lens_length in boxes[box]
-                    ]
-                else:
-                    # Add a new lens.
-                    boxes[box].append((label, length))
+                get_box(label)[label] = length
 
         # Sum up the lenses.
         result = 0
-        for idx_box, lenses in enumerate(boxes, start=1):
-            for idx_lens, (_, length) in enumerate(lenses, start=1):
-                result += idx_box * idx_lens * int(length)
+        for idx_box, lenses in boxes.items():
+            for idx_lens, length in enumerate(lenses.values(), start=1):
+                result += (idx_box + 1) * idx_lens * int(length)
         return result
 
 
