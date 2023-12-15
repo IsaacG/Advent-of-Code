@@ -159,3 +159,10 @@ if len(set(diffs)) == 1:
 # Day 10
 
 Started 60 minutes late.
+
+# Day 14
+
+Delayed start.
+
+I can deduplicate the 4-directions code by using the north code in a loop by rotating the grid 90 degrees between rotations.
+However, that seems to slow things down by 50%.

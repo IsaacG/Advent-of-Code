@@ -45,6 +45,8 @@ class Day14(aoc.Challenge):
     def cycle(self, moving, stationary):
         """Tilt the board in four directions."""
         min_x, min_y, max_x, max_y = aoc.bounding_coords(stationary | moving)
+        # This logic can be deduped by rotating the grid by 1j and looping 4x.
+        # However, that seems to run 50% slower.
         north = complex(0, -1)
         west = complex(-1, 0)
         south = complex(0, 1)
