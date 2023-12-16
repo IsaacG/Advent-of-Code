@@ -173,3 +173,17 @@ My part 1 solution was decently fast to pass the example.
 However, it took me the longest time to figure out why it failed the real input.
 I seeded my data with a beam at `(0, 0) RIGHT` then loop where I examine the next time.
 This was fine in the example with `(0, 0)` is empty but the real data has a reflector at `(0, 0)` which I skipped.
+
+The massive logic block could be changed to a dictionary lookup but that bumps runtime from 8s to 11s.
+
+```python
+# Out direction(s) based on in direction.
+DIR_IN_TO_OUT = {
+    "#":  {direction: {} for direction in aoc.FOUR_DIRECTIONS},
+    ".":  {direction: {direction} for direction in aoc.FOUR_DIRECTIONS},
+    "|":  {UP: {UP}, DOWN: {DOWN}, RIGHT: {UP, DOWN}, LEFT: {UP, DOWN}},
+    "-":  {RIGHT: {RIGHT}, LEFT: {LEFT}, UP: {RIGHT, LEFT}, DOWN: {RIGHT, LEFT}},
+    "/":  {RIGHT: {UP}, LEFT: {DOWN}, UP: {RIGHT}, DOWN: {LEFT}},
+    "\\": {RIGHT: {DOWN}, LEFT: {UP}, UP: {LEFT}, DOWN: {RIGHT}},
+}
+```

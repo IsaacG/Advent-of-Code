@@ -39,30 +39,35 @@ class Day16(aoc.Challenge):
                 if (char := parsed_input.get(pos, None)) is None:
                     # Off the map.
                     pass
-                elif (
-                    char == "."
-                    or (char == "|" and direction in (UP, DOWN))
-                    or (char == "-" and direction in (RIGHT, LEFT))
-                ):
+                elif char == ".":
                     # Pass through empty space and pointy side of splitters.
                     new_beams.add((pos, direction))
                 elif char == "|":
-                    # Split.
-                    new_beams.add((pos, UP))
-                    new_beams.add((pos, DOWN))
+                    if direction in (UP, DOWN):
+                        new_beams.add((pos, direction))
+                    else:
+                        # Split.
+                        new_beams.add((pos, UP))
+                        new_beams.add((pos, DOWN))
                 elif char == "-":
-                    # Split.
-                    new_beams.add((pos, RIGHT))
-                    new_beams.add((pos, LEFT))
-                elif (
-                    (char == "/" and direction in (RIGHT, LEFT))
-                    or (char == "\\" and direction in (UP, DOWN))
-                ):
-                    # Rotate counter-clockwise.
-                    new_beams.add((pos, direction * -1j))
-                else:
-                    # Rotate clockwise.
-                    new_beams.add((pos, direction * 1j))
+                    if direction in (RIGHT, LEFT):
+                        new_beams.add((pos, direction))
+                    else:
+                        # Split.
+                        new_beams.add((pos, RIGHT))
+                        new_beams.add((pos, LEFT))
+                elif char == "/":
+                    # Rotate.
+                    if direction in (RIGHT, LEFT):
+                        new_beams.add((pos, direction * -1j))
+                    else:
+                        new_beams.add((pos, direction * +1j))
+                elif char == "\\":
+                    # Rotate.
+                    if direction in (RIGHT, LEFT):
+                        new_beams.add((pos, direction * +1j))
+                    else:
+                        new_beams.add((pos, direction * -1j))
             # Ignore already-handled beams (loop detection).
             beams = new_beams - seen
             seen.update(new_beams)
