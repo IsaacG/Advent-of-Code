@@ -3,6 +3,7 @@
 
 from lib import aoc
 
+UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
 SAMPLE = r""".|...\....
 |.-.\.....
 .....|-...
@@ -14,9 +15,6 @@ SAMPLE = r""".|...\....
 .|....-|.\
 ..//.|...."""
 
-InputType = dict[complex, str]
-UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
-
 
 class Day16(aoc.Challenge):
     """Day 16: The Floor Will Be Lava."""
@@ -27,16 +25,16 @@ class Day16(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_ascii_char_map(lambda x: x)
 
-    def energized(self, parsed_input: InputType, start_pos, start_dir) -> int:
+    def energized(self, board: dict[complex, str], start_pos: complex, start_dir: complex) -> int:
         """Compute the number of energized tiles."""
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(parsed_input)
+        min_x, min_y, max_x, max_y = aoc.bounding_coords(board)
         seen = set()
         beams = {(start_pos, start_dir)}
         while beams:
             new_beams = set()
             for pos, direction in beams:
                 pos += direction
-                if (char := parsed_input.get(pos, None)) is None:
+                if (char := board.get(pos, None)) is None:
                     # Off the map.
                     pass
                 elif char == ".":
@@ -74,11 +72,11 @@ class Day16(aoc.Challenge):
 
         return len({position for position, direction in seen})
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, parsed_input: dict[complex, str]) -> int:
         """Return the number of energized tiles, assuming a given start."""
         return self.energized(parsed_input, complex(-1), RIGHT)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: dict[complex, str]) -> int:
         """Return the number of energized tiles, across all starts."""
         min_x, min_y, max_x, max_y = aoc.bounding_coords(parsed_input)
 
