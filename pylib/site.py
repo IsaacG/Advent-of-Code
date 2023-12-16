@@ -55,8 +55,11 @@ class Website:
         blocks = [c.strip() for c in et.xpath('//code/text()')]
         for num, block in enumerate(blocks):
             if "\n" in block:
-                sample.append('    """\\')
-                sample.append(block + f'""",  # {num}')
+                if "\\" in block:
+                    sample.append('    r"""' + block + f'""",  # {num}')
+                else:
+                    sample.append('    """\\')
+                    sample.append(block + f'""",  # {num}')
             else:
                 sample.append(f"    {block!r},  # {num}")
         sample.append("]")

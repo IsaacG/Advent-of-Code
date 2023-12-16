@@ -31,7 +31,9 @@ COLOR_EMPTY = ' '
 
 TEST_SKIP = "__DO_NOT_RUN__"
 # 4 cardinal directions
-FOUR_DIRECTIONS = [1j ** i for i in range(4)]
+UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
+FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
+# UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
 LETTER_DIRECTIONS = {"U": -1j, "D": 1j, "R": 1, "L": -1}
 COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS

@@ -166,3 +166,10 @@ Delayed start.
 
 I can deduplicate the 4-directions code by using the north code in a loop by rotating the grid 90 degrees between rotations.
 However, that seems to slow things down by 50%.
+
+# Day 16
+
+My part 1 solution was decently fast to pass the example.
+However, it took me the longest time to figure out why it failed the real input.
+I seeded my data with a beam at `(0, 0) RIGHT` then loop where I examine the next time.
+This was fine in the example with `(0, 0)` is empty but the real data has a reflector at `(0, 0)` which I skipped.
