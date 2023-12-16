@@ -262,23 +262,8 @@ class Runner:
                 # Reload code and get the Challenge.
                 module = importlib.reload(module)
                 obj = getattr(module, f"Day{day:02}")()
-                # Run tests for this part.
-                obj.testing = True
-                tests = [t for t in obj.TESTS if t.want != 0 and t.want != aoc.TEST_SKIP]
-                for case in tests:
-                    got = obj.run_solver(case.part, case.inputs.rstrip())
-                    if case.want == got:
-                        print(f"TEST PASSED!  {case.part}")
-                    else:
-                        print(f"TEST FAILED!  {case.part}: want({case.want}) != got({got})")
-                obj.testing = False
-                # If tests pass, try to submit.
-                for part in (1, 2):
-                    got = obj.run_solver(part, raw_data)
-                    if solutions[part] == got:
-                        print(f"CHECK PASSED! {part}")
-                    else:
-                        print(f"CHECK FAILED! {part}: want({solutions[part]}) != got({got})")
+                obj.test()
+                obj.check()
             except Exception:
                 traceback.print_exc()
         print("Done for the day.")
@@ -297,6 +282,10 @@ class Runner:
         return solutions
 
     def update_solutions(self, day: int, solutions: Optional[dict[int, int | str]] = None) -> None:
+        existing = self.read_solutions()
+        if len(existing[day]) == 2:
+            return
+
         if not solutions:
             # Reload code and get the Challenge.
             module = importlib.import_module(f"{day:02}")
