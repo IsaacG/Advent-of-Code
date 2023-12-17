@@ -160,6 +160,12 @@ if len(set(diffs)) == 1:
 
 Started 60 minutes late.
 
+# Day 12
+
+I solved this 5 days later on my 3rd attempt.
+I wrote a bunch of approaches and then deleted them.
+See git history.
+
 # Day 14
 
 Delayed start.

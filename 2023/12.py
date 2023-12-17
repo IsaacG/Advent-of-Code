@@ -1,13 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 12: Hot Springs."""
-from __future__ import annotations
 
-import collections
 import functools
-import itertools
-import math
-import re
-
 from lib import aoc
 
 SAMPLE = """\
@@ -29,78 +23,41 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=525152),
     ]
 
-    def trim(self, springs, numbers):
-        if springs and springs[0] == "":
-            return self.trim(springs[1:], numbers)
-
-        if not springs or not numbers:
-            return springs, numbers
-
-        if len(springs[0]) < numbers[0] and "#" not in springs[0]:
-            return self.trim(springs[1:], numbers)
-
-        if len(springs[-1]) < numbers[-1] and "#" not in springs[-1]:
-            return self.trim(springs[:-1], numbers)
-
-        if "#" in springs[0] and len(springs[0]) == numbers[0]:
-            return self.trim(springs[1:], numbers[1:])
-
-        mandatory_groups = tuple(group for group in springs if "#" in group)
-        if len(mandatory_groups) == len(numbers) != len(springs):
-            return self.trim(mandatory_groups, numbers)
-
-        return springs, numbers
-
     @functools.cache
-    def ways_to_fit(self, springs, numbers) -> int:
-        springs, numbers = self.trim(springs, numbers)
-        if not springs and not numbers:
-            # Nothing left, all fit. Done.
-            self.debug("ways_to_fit: nothing left, one fit")
-            return 1
-        elif not springs:
-            # Unmatched numbers. Cannot fit.
-            self.debug("ways_to_fit: no more springs, zero fit")
-            return 0
-        elif not numbers:
-            if any("#" in group for group in springs):
-                # Unmatched # is a failure.
-                self.debug("ways_to_fit: unmatched springs, zero fit")
-                return 0
-            else:
-                self.debug("ways_to_fit: no more numbers, one fit")
-                return 1
-        elif "#" in springs[0] and len(springs[0]) < numbers[0]:
-            self.debug("ways_to_fit: first spring group cannot match")
-            return 0
+    def ways_to_fit(self, springs: tuple[str, ...], numbers: tuple[int, ...]) -> int:
+        """Return the ways springs can fit."""
+        if not numbers:
+            # If we are out of numbers, check for known springs.
+            # If there are known springs, this is not a match.
+            # If there are only "?" then this is one match.
+            return 0 if any("#" in group for group in springs) else 1
 
-        if len(numbers) == 1:
-            if all("#" not in group for group in springs):
-                number = numbers[0]
-                return sum(
-                    len(group) - number + 1
-                    for group in springs
-                    if len(group) >= number
-                )
+        # Remove any leading ??? groups which are too small to match.
+        while springs and len(springs[0]) < numbers[0] and "#" not in springs[0]:
+            springs = springs[1:]
+
+        if not springs:
+            # Ran out of spring groups but have more numbers. Cannot match.
+            return 0
+        if "#" in springs[0] and len(springs[0]) < numbers[0]:
+            # The first group is too small but must match. This is not a match.
+            return 0
 
         count = 0
+        # Count possible matches with the first ? being a .
         if springs[0].startswith("?"):
             skip_start = (springs[0][1:],) + springs[1:]
             count += self.ways_to_fit(skip_start, numbers)
 
+        # Count possible matches with the first ? being a #
         first_group = springs[0]
         first_num = numbers[0]
-
-        assert len(first_group) >= first_num
-
         if len(first_group) == first_num:
             count += self.ways_to_fit(springs[1:], numbers[1:])
-        elif len(first_group) > first_num:
-            if first_group[first_num] == "?":
-                at_start = (first_group[first_num + 1:],) + springs[1:]
-                count += self.ways_to_fit(at_start, numbers[1:])
+        elif len(first_group) > first_num and first_group[first_num] == "?":
+            at_start = (first_group[first_num + 1:],) + springs[1:]
+            count += self.ways_to_fit(at_start, numbers[1:])
 
-        self.debug(f"Ways to fit {springs} {numbers}: {count}")
         return count
 
     def solver(self, parsed_input: str, param: bool) -> int:
