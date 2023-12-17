@@ -268,7 +268,6 @@ class Runner:
                 traceback.print_exc()
         print("Done for the day.")
 
-    @functools.cache
     def read_solutions(self) -> dict[int, dict[int, int | str]]:
         solutions = {}
         for line in (self.base / "solutions.txt").read_text().splitlines():
@@ -283,31 +282,28 @@ class Runner:
 
     def update_solutions(self, day: int, solutions: Optional[dict[int, int | str]] = None) -> None:
         existing = self.read_solutions()
-        if len(existing.get(day, [])) == 2:
-            return
+        if day not in existing:
+            existing[day] = {}
 
-        if not solutions:
-            # Reload code and get the Challenge.
-            module = importlib.import_module(f"{day:02}")
-            obj = getattr(module, f"Day{day:02}")()
-            parts = [1] if day == 25 else [1, 2]
-            solutions = {}
-            for part in parts:
-                got = obj.run_solver(part, obj.raw_data(None))
-                if got:
+        solutions = existing[day]
+        if len(solutions) == 2:
+            return
+        stored = solutions.copy()
+
+        # Reload code and get the Challenge.
+        module = importlib.import_module(f"{day:02}")
+        obj = getattr(module, f"Day{day:02}")()
+        parts = [1] if day == 25 else [1, 2]
+        for part in parts:
+            if part not in solutions:
+                if got := obj.run_solver(part, obj.raw_data(None)):
                     solutions[part] = got
 
-        existing = self.read_solutions()
-        new = {k: v.copy() for k, v in existing.items()}
-        if day not in new:
-            new[day] = {}
-        new[day].update(solutions)
-        if new == existing:
+        if solutions == stored:
             print("Existing solutions up to date.")
             return
 
         print(f"Writing solutions to file. {new[day]}")
-        self.read_solutions.cache_clear()
         lines = [
             " ".join(
                 [f"{line_day:02}"]
