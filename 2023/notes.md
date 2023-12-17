@@ -187,3 +187,10 @@ DIR_IN_TO_OUT = {
     "\\": {RIGHT: {DOWN}, LEFT: {UP}, UP: {LEFT}, DOWN: {RIGHT}},
 }
 ```
+
+It might be possible to speed things up by memoizing energized cells starting from a specific element but I had difficulties making that work.
+
+# Day 17
+
+* `PriorityQueue` and `complex` don't mix so I had to scramble slightly to rewrite everything from `complex` to `tuple[int, int]`.
+* I initially used A\* with the Manhatten distance as the heuristic but it seems to not actually help.

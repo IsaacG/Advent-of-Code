@@ -283,7 +283,7 @@ class Runner:
 
     def update_solutions(self, day: int, solutions: Optional[dict[int, int | str]] = None) -> None:
         existing = self.read_solutions()
-        if len(existing[day]) == 2:
+        if len(existing.get(day, [])) == 2:
             return
 
         if not solutions:
