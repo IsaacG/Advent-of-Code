@@ -95,6 +95,20 @@ OCR_MAP = {
 }
 
 
+def print_io(func):
+    """Decorate a function to show the inputs and output."""
+
+    def inner(*args):
+        got = func(*args)
+        if isinstance(args[0], aoc.Challenge):
+            print(f"{type(args[0]).__name__}.{func.__name__}{args[1:]} => {got}")
+        else:
+            print(f"{func.__name__}{args} => {got}")
+        return got
+
+    return inner
+
+
 def print_point_set(board: set[complex]) -> None:
     """Print out a set of points as a map."""
     min_x, min_y, max_x, max_y = bounding_coords(points)

@@ -18,78 +18,42 @@ SAMPLE = """\
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
 
-LineType = int
-InputType = list[LineType]
-
-
-def print_io(func):
-    def inner(*args):
-        got = func(*args)
-        print(f"{func.__name__}{args} => {got}")
-        return got
-    return inner
-
-
-# @print_io
-def trim(springs, numbers):
-    if springs and springs[0] == "":
-        return trim(springs[1:], numbers)
-
-    if not springs or not numbers:
-        return springs, numbers
-
-    if len(springs[0]) < numbers[0] and "#" not in springs[0]:
-        return trim(springs[1:], numbers)
-
-    if len(springs[-1]) < numbers[-1] and "#" not in springs[-1]:
-        return trim(springs[:-1], numbers)
-
-    if "#" in springs[0] and len(springs[0]) == numbers[0]:
-        return trim(springs[1:], numbers[1:])
-
-    mandatory_groups = tuple(group for group in springs if "#" in group)
-    if len(mandatory_groups) == len(numbers) != len(springs):
-        return trim(mandatory_groups, numbers)
-
-    return springs, numbers
-
 
 class Day12(aoc.Challenge):
     """Day 12: Hot Springs."""
 
-    DEBUG = True
-    DEBUG = False
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
     PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.parse_one_str_per_line
-
     TESTS = [
-        aoc.TestCase(inputs="??###?##.??????#??# 8,1,2,2", part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=1, want=21),
-        aoc.TestCase(inputs="??? 1", part=1, want=3),
-        aoc.TestCase(inputs="#?? 1", part=1, want=1),
-        aoc.TestCase(inputs="?#? 1", part=1, want=1),
-        aoc.TestCase(inputs="??# 1", part=1, want=1),
-        aoc.TestCase(inputs="?#?#?#?#?#?#?#? 1,3,1,6", part=1, want=1),
-        aoc.TestCase(inputs="????.#...#... 4,1,1", part=1, want=1),
-        aoc.TestCase(inputs="????.######..#####. 1,6,5", part=1, want=4),
-        aoc.TestCase(inputs="?###???????? 3,2,1", part=1, want=10),
-        aoc.TestCase(inputs="??.?? 1,1", part=1, want=4),
-        aoc.TestCase(inputs="???.### 1,1,3", part=2, want=1),
-        # Part 2
-        # aoc.TestCase(inputs="?#?#?#?#?#?#?#? 1,3,1,6", part=2, want=1),
-        # aoc.TestCase(inputs=".??..??...?##. 1,1,3", part=2, want=16384),
-        # aoc.TestCase(inputs="????.#...#... 4,1,1", part=2, want=16),
-        # aoc.TestCase(inputs="????.######..#####. 1,6,5", part=2, want=2500),
-        # aoc.TestCase(inputs="?###???????? 3,2,1", part=2, want=506250),
         aoc.TestCase(inputs=SAMPLE, part=2, want=525152),
     ]
 
-    # @print_io
+    def trim(self, springs, numbers):
+        if springs and springs[0] == "":
+            return self.trim(springs[1:], numbers)
+
+        if not springs or not numbers:
+            return springs, numbers
+
+        if len(springs[0]) < numbers[0] and "#" not in springs[0]:
+            return self.trim(springs[1:], numbers)
+
+        if len(springs[-1]) < numbers[-1] and "#" not in springs[-1]:
+            return self.trim(springs[:-1], numbers)
+
+        if "#" in springs[0] and len(springs[0]) == numbers[0]:
+            return self.trim(springs[1:], numbers[1:])
+
+        mandatory_groups = tuple(group for group in springs if "#" in group)
+        if len(mandatory_groups) == len(numbers) != len(springs):
+            return self.trim(mandatory_groups, numbers)
+
+        return springs, numbers
+
     @functools.cache
     def ways_to_fit(self, springs, numbers) -> int:
-        springs, numbers = trim(springs, numbers)
+        springs, numbers = self.trim(springs, numbers)
         if not springs and not numbers:
             # Nothing left, all fit. Done.
             self.debug("ways_to_fit: nothing left, one fit")
@@ -139,10 +103,10 @@ class Day12(aoc.Challenge):
         self.debug(f"Ways to fit {springs} {numbers}: {count}")
         return count
 
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
+    def solver(self, parsed_input: str, param: bool) -> int:
+        """Return the total number of possible fits."""
         count = 0
-        line_count = len(parsed_input)
-        for idx, line in enumerate(parsed_input):
+        for line in parsed_input:
             springs_str, numbers_str = line.split()
             if param:
                 springs_str = "?".join([springs_str] * 5)
@@ -150,22 +114,7 @@ class Day12(aoc.Challenge):
             springs = tuple(i for i in springs_str.split(".") if i)
             numbers = tuple(int(i) for i in numbers_str.split(","))
             count += self.ways_to_fit(springs, numbers)
-            # print(f"{idx:02}/{line_count:02}: {line:40} => {count:6}")
         return count
 
-
-if __name__ == "__main__":
-    d = Day12(2023)
-    data = SAMPLE.splitlines() + [
-        ".??##????? 3,1",
-        ".?.###.??? 3,1",
-        ".?.?##.??? 3,1",
-        "..????..?? 3,1",
-        ".?.???..?? 3,1",
-        "?.??###???.? 3,1",
-    ]
-    for line in data:
-        parsed = d.input_parser(line)[0]
-        print(parsed, "=>", d.ways_to_fit(*parsed))
 
 # vim:expandtab:sw=4:ts=4
