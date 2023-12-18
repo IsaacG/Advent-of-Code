@@ -289,25 +289,28 @@ class Runner:
         if day not in existing:
             existing[day] = {}
 
-        solutions = existing[day]
-        if len(solutions) == 2:
+        day_solutions = existing[day]
+        if len(day_solutions) == 2 and not solutions:
             return
-        stored = solutions.copy()
+        stored = day_solutions.copy()
 
-        # Reload code and get the Challenge.
-        module = importlib.import_module(f"{day:02}")
-        obj = getattr(module, f"Day{day:02}")()
-        parts = [1] if day == 25 else [1, 2]
-        for part in parts:
-            if part not in solutions:
-                if got := obj.run_solver(part, obj.raw_data(None)):
-                    solutions[part] = got
+        if solutions:
+            day_solutions.update(solutions)
+        else:
+            # Reload code and get the Challenge.
+            module = importlib.import_module(f"{day:02}")
+            obj = getattr(module, f"Day{day:02}")()
+            parts = [1] if day == 25 else [1, 2]
+            for part in parts:
+                if part not in day_solutions:
+                    if got := obj.run_solver(part, obj.raw_data(None)):
+                        day_solutions[part] = got
 
-        if solutions == stored:
+        if day_solutions == stored:
             print("Existing solutions up to date.")
             return
 
-        print(f"Writing solutions to file. {solutions[day]}")
+        print(f"Writing solutions to file. {day_solutions}")
         lines = [
             " ".join(
                 [f"{line_day:02}"]
