@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
-import functools
 import importlib
 import multiprocessing
 import os
@@ -20,12 +19,13 @@ from typing import Optional
 
 import click
 import dotenv
-import inotify_simple
+import inotify_simple  # type: ignore
 
 from pylib import aoc
 from pylib import site
 
 EST = zoneinfo.ZoneInfo("America/New_York")
+NUMBERS = "zero one two three four five six seven eight nine ten".split()
 
 
 @dataclasses.dataclass
@@ -68,7 +68,9 @@ class ChallengeRunner:
             if target.TIMEOUT and target.TIMEOUT > timeout:
                 target.debug(f"Challenge overrides timeout {timeout} => {target.TIMEOUT}")
                 timeout = target.TIMEOUT
-            proc = multiprocessing.Process(target=target.run, kwargs={"input_file": input_file, mode: True})
+            proc = multiprocessing.Process(
+                target=target.run, kwargs={"input_file": input_file, mode: True}
+            )
 
             proc.start()
             proc.join(timeout=timeout)
@@ -154,7 +156,7 @@ class Runner:
 
         stops = (60, 30, 15, 10, 5, 4, 3, 2, 1, 0)
         for offset, nxt in zip(stops, stops[1:]):
-            delay = (midnight - klass.now()).seconds - offset
+            delay: float = (midnight - klass.now()).seconds - offset
             if delay <= 0:
                 continue
             print(f"{delay + offset} seconds to go!")
@@ -178,7 +180,7 @@ class Runner:
         obj = getattr(module, f"Day{day:02}")()
         raw_data = obj.raw_data(None)
         submitted = {1: False, 2: False}
-        solutions = {}
+        solutions: dict[int, int | str] = {}
         part = obj.site.part()
         if part is None:
             print("It looks like you completed this day.")
@@ -231,7 +233,7 @@ class Runner:
                             elif m := re.search(r"Please wait (.*) (minute|second)s? before trying again.", resp):
                                 amount = m.group(1)
                                 units = {"second": 1, "minute": 60}[m.group(2)]
-                                seconds = "zero one two three four five six seven eight nine ten".split().index(amount) * units
+                                seconds = NUMBERS.index(amount) * units
                                 print(f"Waiting {seconds} seconds.")
                                 time.sleep(seconds)
                             else:
@@ -269,7 +271,8 @@ class Runner:
         print("Done for the day.")
 
     def read_solutions(self) -> dict[int, dict[int, int | str]]:
-        solutions = {}
+        """Return solutions from file."""
+        solutions: dict[int, dict[int, int | str]] = {}
         for line in (self.base / "solutions.txt").read_text().splitlines():
             if not line:
                 continue
@@ -281,6 +284,7 @@ class Runner:
         return solutions
 
     def update_solutions(self, day: int, solutions: Optional[dict[int, int | str]] = None) -> None:
+        """Update the solution file."""
         existing = self.read_solutions()
         if day not in existing:
             existing[day] = {}
@@ -309,7 +313,7 @@ class Runner:
                 [f"{line_day:02}"]
                 + [str(existing[line_day][p]) for p in (1, 2) if p in existing[line_day]]
             )
-            for line_day in sorted(new)
+            for line_day in sorted(existing)
         ]
 
         solution_file = self.base / "solutions.txt"
@@ -325,7 +329,10 @@ class Runner:
 @click.option("--live", is_flag=True, help="Live solve one day: setup, watch, test, submit.")
 @click.option("--test", "-t", is_flag=True, help="Test if the sample input/solution works.")
 @click.option("--solve", is_flag=True, help="Generate the solution.")
-@click.option("--check", "-c", is_flag=True, help="Check if the results in solution.txt match with the generated solution.")
+@click.option(
+    "--check", "-c", is_flag=True,
+    help="Check if the results in solution.txt match with the generated solution.",
+)
 @click.option("--submit", is_flag=True, help="Submit the next part on AoC website.")
 @click.option("--part", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
 @click.option("--watch", is_flag=True, help="If set, loop and repeat the action when the file is saved.")
@@ -352,17 +359,18 @@ def main(
     timeout: int,
     year: Optional[int],
     cookie: Optional[str],
-):
+) -> None:
     """Run the code in some fashion."""
     os.nice(19)
     resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
     dotenv.load_dotenv()
     if cookie:
         site.Website(0, 0, False).set_cookie(cookie)
-        return
+        return None
     if date:
         assert year is None and day is None
         m = re.match(r"^(\d{2}|\d{4}).??(\d{1,2})$", date)
+        assert m
         year = int(m.group(1))
         if year < 2000:
             year += 2000
@@ -374,13 +382,13 @@ def main(
 
     runner = Runner.build(year, day, watch, timeout)
     if december:
-        return Runner.december(timeout)
+        return runner.december(timeout)
     if waitlive:
-        return Runner.wait_solve(timeout)
+        return runner.wait_solve(timeout)
     if live:
         return runner.live_solve()
 
-    run_args = {
+    run_args: dict[str, bool | None] = {
         "test": test,
         "solve": solve,
         "submit": submit,
@@ -390,13 +398,13 @@ def main(
 
     if not watch or all_days:
         if all_days:
-            days = sorted(p.stem for p in year_dir.glob("[0-2][0-9].py"))
+            days = sorted(int(p.stem) for p in year_dir.glob("[0-2][0-9].py"))
         else:
             days = [day]
 
         for day in days:
             ChallengeRunner(year, day).run_code(run_args, input_file, part, timeout)
-        return
+        return None
 
     # Set up inotify watches and run a Challenge in a loop.
     inotify = inotify_simple.INotify()
@@ -412,7 +420,7 @@ def main(
         ChallengeRunner(year, day).run_code(run_args, input_file, part, timeout)
         print("Done.")
         print()
-    return
+    return None
 
 
 if __name__ == "__main__":

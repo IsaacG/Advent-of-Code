@@ -41,11 +41,12 @@ class Day18(aoc.Challenge):
         perimeter_size = 0
         # Follow the instructions to compute all the perimeter lines.
         for direction_letter, distance_str, color in parsed_input:
-            distance = int(distance_str)
-            color = color.strip("()#")
             if param:
+                color = color.strip("()#")
                 distance = int(color[:-1], 16)
                 direction_letter = NUM_TO_LETTER[color[-1]]
+            else:
+                distance = int(distance_str)
             direction = LETTER_DIRECTIONS[direction_letter]
 
             # The perimeter_size logic requires we never double back.
