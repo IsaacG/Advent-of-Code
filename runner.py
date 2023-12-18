@@ -303,11 +303,11 @@ class Runner:
             print("Existing solutions up to date.")
             return
 
-        print(f"Writing solutions to file. {new[day]}")
+        print(f"Writing solutions to file. {solutions[day]}")
         lines = [
             " ".join(
                 [f"{line_day:02}"]
-                + [str(new[line_day][p]) for p in (1, 2) if p in new[line_day]]
+                + [str(existing[line_day][p]) for p in (1, 2) if p in existing[line_day]]
             )
             for line_day in sorted(new)
         ]

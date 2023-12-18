@@ -200,3 +200,11 @@ It might be possible to speed things up by memoizing energized cells starting fr
 
 * `PriorityQueue` and `complex` don't mix so I had to scramble slightly to rewrite everything from `complex` to `tuple[int, int]`.
 * I initially used A\* with the Manhatten distance as the heuristic but it seems to not actually help.
+
+# Day 18
+
+I realized pretty quickly that I'd need a scanline here.
+I thought I could order by start/end y-coordinates and collect active ranges, but I confused myself then decided not to bother.
+Instead, I went the slower route of computing all the y-changes and, for each y-value, I computed which lines are relevant.
+The line count was small enough that this was fine.
+I got most the way to the end but got stuck for a good long while trying to figure out how to properly account for the perimeter.
