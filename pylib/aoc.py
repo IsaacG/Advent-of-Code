@@ -34,7 +34,7 @@ TEST_SKIP = "__DO_NOT_RUN__"
 UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
 FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
 # UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
-LETTER_DIRECTIONS = {"U": -1j, "D": 1j, "R": 1, "L": -1}
+LETTER_DIRECTIONS = {"U": UP, "D": DOWN, "R": RIGHT, "L": LEFT}
 COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
@@ -111,7 +111,7 @@ def print_io(func):
 
 def print_point_set(board: set[complex]) -> None:
     """Print out a set of points as a map."""
-    min_x, min_y, max_x, max_y = bounding_coords(points)
+    min_x, min_y, max_x, max_y = bounding_coords(board)
     for y in range(min_y, max_y+1):
         line = ""
         for x in range(min_x, max_x + 1):

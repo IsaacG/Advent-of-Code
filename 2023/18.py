@@ -1,10 +1,11 @@
 #!/bin/python
 """Advent of Code, Day 18: Lavaduct Lagoon."""
 
+import collections
 import more_itertools
 from lib import aoc
 
-LETTER_DIRECTIONS = {"R": aoc.RIGHT, "L": aoc.LEFT, "U": aoc.UP, "D": aoc.DOWN}
+LETTER_DIRECTIONS = aoc.LETTER_DIRECTIONS
 NUM_TO_LETTER = {"0": "R", "2": "L", "3": "U", "1": "D"}
 
 SAMPLE = """\
@@ -35,6 +36,7 @@ class Day18(aoc.Challenge):
     PARAMETERIZED_INPUTS = [False, True]
 
     def solver(self, parsed_input: list[list[str]], param: bool) -> int:
+        # Start at 0, 0 and track vertical trenches.
         position = complex(0)
         vertical_trenches = set()
         prior_direction = complex(0)
@@ -42,6 +44,7 @@ class Day18(aoc.Challenge):
         # Follow the instructions to compute all the perimeter lines.
         for direction_letter, distance_str, color in parsed_input:
             if param:
+                # Part two: read the instructions out of the color label.
                 color = color.strip("()#")
                 distance = int(color[:-1], 16)
                 direction_letter = NUM_TO_LETTER[color[-1]]
@@ -65,26 +68,49 @@ class Day18(aoc.Challenge):
                     start, end = end, start
                 vertical_trenches.add((start, end))
 
+        # To close the loop, we need to end where we started.
         assert position == complex(0)
 
-        count = 0
-        # Split the map into segments split at y-values where trenches start/end.
-        y_points = sorted({int(p.imag) for points in vertical_trenches for p in points})
-        for start_y, end_y in zip(y_points, y_points[1:]):
-            # For each y-range, find the trenches which exist across that range.
-            open_ranges = [
-                int(start.real) for (start, end) in vertical_trenches
-                if start.imag <= start_y and end_y <= end.imag
-            ]
-            # Pair those trenches into open-close pairs and compute the area.
-            open_ranges.sort()
-            for start_x, end_x in more_itertools.chunked(open_ranges, 2):
+        # Do vertical and horizontal line scanning.
+        # The starts and ends are the trenches ordered of
+        # when they need to be applied in a single pass.
+        starts = collections.deque(sorted(
+            (line for line in vertical_trenches),
+            key=lambda x: x[0].imag
+        ))
+        ends = collections.deque(sorted(
+            (line for line in vertical_trenches),
+            key=lambda x: x[1].imag
+        ))
+        active: list[tuple[complex, complex]] = []
+
+        start_y = starts[0][0].imag
+        count = 0.0
+        while ends:
+            # Find where the next change happens, either due to a new start or an end.
+            end_y = ends[0][1].imag
+            if starts:
+                end_y = min(end_y, starts[0][0].imag)
+            # Sort active trenches left to right then iterate in open/close pairs.
+            # The area between the trenches is a block of open pit to add.
+            active.sort(key=lambda x: x[0].real)
+            for start_line, end_line in more_itertools.chunked(active, 2):
+                start_x, end_x = start_line[0].real, end_line[0].real
                 block_size = (end_x - start_x) * (end_y - start_y)
                 count += block_size
 
+            # Update the active ranges. The end_y is where there are new starts/ends to apply.
+            # Use starts to add new active trenches and ends are used
+            # to remove trenches when we hit the bottom.
+            start_y = end_y
+            while starts and starts[0][0].imag == start_y:
+                active.append(starts.popleft())
+            while ends and ends[0][1].imag == start_y:
+                active.remove(ends.popleft())
         # The block-area includes one edge but not the other.
         # This makes overlapping blocks work. But requires we add on the perimeter after.
-        return count + (perimeter_size // 2) + 1
+        count += (perimeter_size // 2) + 1
+        return int(count)
 
 
 # vim:expandtab:sw=4:ts=4
