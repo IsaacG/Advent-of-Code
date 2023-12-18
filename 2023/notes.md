@@ -203,6 +203,10 @@ It might be possible to speed things up by memoizing energized cells starting fr
 
 # Day 18
 
+For part 1, I used a flood fill for the interior and added up the perimeter as I explored it.
+
+## Part 2
+
 I realized pretty quickly that I'd need a scanline here.
 I thought I could order by start/end y-coordinates and collect active ranges, but I confused myself then decided not to bother.
 Instead, I went the slower route of computing all the y-changes and, for each y-value, I computed which lines are relevant.
