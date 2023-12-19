@@ -212,3 +212,29 @@ I thought I could order by start/end y-coordinates and collect active ranges, bu
 Instead, I went the slower route of computing all the y-changes and, for each y-value, I computed which lines are relevant.
 The line count was small enough that this was fine.
 I got most the way to the end but got stuck for a good long while trying to figure out how to properly account for the perimeter.
+
+# Day 19
+
+I had a silly mistake in part two that took me a good half hour or so to figure out.
+
+Compare,
+
+```python
+# Bad code
+if target == "A":
+    accepted_contraints.append(constraints + [(attr, op, val)])
+elif target == "R":
+    rejected_contraints.append(constraints + [(attr, op, val)])
+else:
+    recurse(constraints + [(attr, op, val)], rules[target])
+    recurse(constraints + [reverse(attr, op, val)], tests[1:])
+
+# Working code
+if target == "A":
+    accepted_contraints.append(constraints + [(attr, op, val)])
+elif target == "R":
+    rejected_contraints.append(constraints + [(attr, op, val)])
+else:
+    recurse(constraints + [(attr, op, val)], rules[target])
+recurse(constraints + [reverse(attr, op, val)], tests[1:])
+```
