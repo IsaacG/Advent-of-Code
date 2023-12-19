@@ -3,6 +3,7 @@
 
 import math
 import operator
+import re
 import typing
 from lib import aoc
 
@@ -29,7 +30,13 @@ RuleName: typing.TypeAlias = str
 Comparison: typing.TypeAlias = typing.Callable[[float, float], bool]
 CompareRule: typing.TypeAlias = tuple[str, Comparison, int, RuleName]
 DefaultRule: typing.TypeAlias = tuple[None, None, None, RuleName]
-InputType = tuple[dict[RuleName, list[CompareRule | DefaultRule]], list[dict[str, int]]]
+RuleSet: typing.TypeAlias = dict[RuleName, list[CompareRule | DefaultRule]]
+InputType = tuple[RuleSet, list[dict[str, int]]]
+
+RULE_RE = re.compile(r"(\w+){((?:.*,)*)(\w+)}")
+TEST_RE = re.compile(r"(\w+)([><])(\d+):(\w+)")
+ITEM_RE = re.compile(r"([xmas])=(\d+)")
+OPS = {">": operator.gt, "<": operator.lt}
 
 
 class Day19(aoc.Challenge):
@@ -59,10 +66,9 @@ class Day19(aoc.Challenge):
                         tests = iter(rules[target])
         return result
 
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the number of possible accepted items."""
-        rules, _ = parsed_input
-        accepted_contraints = []
+    def accepted_contraints(self, rules: RuleSet) -> list[dict[str, tuple[int, int]]]:
+        """Return a collection of constraints which lead to accepted."""
+        accepted = []
 
         def reverse(attr, oper, val):
             """Return the reverse of a condition.
@@ -79,26 +85,30 @@ class Day19(aoc.Challenge):
             attr, oper, val, target = tests[0]
             if oper is None:
                 # Default rule: no constaints to add, only one brach to explore.
-                if target == "A":
-                    accepted_contraints.append(constraints.copy())
-                elif target != "R":
+                if target in rules:
                     recurse(constraints, rules[target])
+                elif target == "A":
+                    accepted.append(constraints)
             else:
                 # Comparison rule: explore both paths with additional constraints added.
                 # True path:
-                if target == "A":
-                    accepted_contraints.append(constraints + [(attr, oper, val)])
-                elif target != "R":
+                if target in rules:
                     recurse(constraints + [(attr, oper, val)], rules[target])
+                elif target == "A":
+                    accepted.append(constraints + [(attr, oper, val)])
                 # False path:
                 recurse(constraints + [reverse(attr, oper, val)], tests[1:])
 
-        # Compute all constraint sets that lead to approval.
         recurse([], rules["in"])
+        return accepted
+
+    def part2(self, parsed_input: InputType) -> int:
+        """Return the number of possible accepted items."""
+        rules, _ = parsed_input
 
         # Map constraint sets to accepted 4D intervals.
         all_intervals = []
-        for constraints in accepted_contraints:
+        for constraints in self.accepted_contraints(rules):
             # Start with a full [1, 4000] interval then update it with each constraint.
             intervals = {attr: [1, 4000] for attr in "xmas"}
             for attr, oper, val in constraints:
@@ -115,38 +125,22 @@ class Day19(aoc.Challenge):
 
         return possibilities
 
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
-
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         rule_lines, part_lines = puzzle_input.split("\n\n")
 
         rules = {}
-        for rule in rule_lines.splitlines():
-            name, parts_str = rule.removesuffix("}").split("{")
-            parts = parts_str.split(",")
-            default = parts[-1]
-            tests = []
-            for part in parts[:-1]:
-                cond, target = part.split(":")
-                if ">" in cond:
-                    attr, val = cond.split(">")
-                    tests.append((attr, operator.gt, int(val), target))
-                elif "<" in cond:
-                    attr, val = cond.split("<")
-                    tests.append((attr, operator.lt, int(val), target))
+        for line in rule_lines.splitlines():
+            name, conditions, default = RULE_RE.match(line).groups()
+            rules[name] = [
+                (attr, OPS[comparison], int(value), target)
+                for attr, comparison, value, target in TEST_RE.findall(conditions)
+            ] + [(None, None, None, default)]
 
-            tests.append((None, None, None, default))
-            rules[name] = tests
-
-        items = []
-        for part in part_lines.splitlines():
-            item = {}
-            for vals in part.strip("{}").split(","):
-                attr, val = vals.split("=")
-                item[attr] = int(val)
-            items.append(item)
+        items = [
+            {key: int(val) for key, val in ITEM_RE.findall(line)}
+            for line in part_lines.splitlines()
+        ]
 
         return rules, items
 
