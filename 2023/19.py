@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 19: Aplenty."""
 
+import math
 import operator
 import typing
 from lib import aoc
@@ -47,8 +48,8 @@ class Day19(aoc.Challenge):
         for item in items:
             tests = iter(rules["in"])
             while True:
-                attr, op, val, target = next(tests)
-                if op is None or op(item[attr], val):
+                attr, oper, val, target = next(tests)
+                if oper is None or oper(item[attr], val):
                     if target == "A":
                         result += sum(item.values())
                         break
@@ -62,21 +63,21 @@ class Day19(aoc.Challenge):
         """Return the number of possible accepted items."""
         rules, _ = parsed_input
         accepted_contraints = []
-        
-        def reverse(attr, op, val):
+
+        def reverse(attr, oper, val):
             """Return the reverse of a condition.
 
             >>> reverse(m > 5)
             m < 6
             """
-            if op == operator.gt:
+            if oper == operator.gt:
                 return attr, operator.lt, val + 1
             return attr, operator.gt, val - 1
 
         def recurse(constraints, tests):
             """Recursively explore rules to find constraint sets which are accepted."""
-            attr, op, val, target = tests[0]
-            if op is None:
+            attr, oper, val, target = tests[0]
+            if oper is None:
                 # Default rule: no constaints to add, only one brach to explore.
                 if target == "A":
                     accepted_contraints.append(constraints.copy())
@@ -86,11 +87,11 @@ class Day19(aoc.Challenge):
                 # Comparison rule: explore both paths with additional constraints added.
                 # True path:
                 if target == "A":
-                    accepted_contraints.append(constraints + [(attr, op, val)])
+                    accepted_contraints.append(constraints + [(attr, oper, val)])
                 elif target != "R":
-                    recurse(constraints + [(attr, op, val)], rules[target])
+                    recurse(constraints + [(attr, oper, val)], rules[target])
                 # False path:
-                recurse(constraints + [reverse(attr, op, val)], tests[1:])
+                recurse(constraints + [reverse(attr, oper, val)], tests[1:])
 
         # Compute all constraint sets that lead to approval.
         recurse([], rules["in"])
@@ -100,8 +101,8 @@ class Day19(aoc.Challenge):
         for constraints in accepted_contraints:
             # Start with a full [1, 4000] interval then update it with each constraint.
             intervals = {attr: [1, 4000] for attr in "xmas"}
-            for attr, op, val in constraints:
-                if op == operator.gt:
+            for attr, oper, val in constraints:
+                if oper == operator.gt:
                     intervals[attr][0] = max(intervals[attr][0], val + 1)
                 else:
                     intervals[attr][1] = min(intervals[attr][1], val - 1)
@@ -113,7 +114,6 @@ class Day19(aoc.Challenge):
             possibilities += math.prod(end - start + 1 for start, end in intervals.values())
 
         return possibilities
-
 
     def solver(self, parsed_input: InputType, param: bool) -> int | str:
         raise NotImplementedError
@@ -144,12 +144,11 @@ class Day19(aoc.Challenge):
         for part in part_lines.splitlines():
             item = {}
             for vals in part.strip("{}").split(","):
-                k, v = vals.split("=")
-                item[k] = int(v)
+                attr, val = vals.split("=")
+                item[attr] = int(val)
             items.append(item)
 
         return rules, items
-
 
 
 # vim:expandtab:sw=4:ts=4
