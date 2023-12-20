@@ -26,71 +26,36 @@ broadcaster -> a
 &con -> output""",  # 23
 ]
 
-LineType = int
-InputType = list[LineType]
+CONJUNCTION = "&"
+FLIP_FLIP = "%"
+InputType = tuple[dict[str, str], dict[str, list[str]]]
 
 
 class Day20(aoc.Challenge):
     """Day 20: Pulse Propagation."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=32000000),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=11687500),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
+    PARAMETERIZED_INPUTS = [False, True]
 
-    def part1(self, parsed_input: InputType) -> int:
-        modules = parsed_input
-        flipflops = {name: False for name, (mtype, _) in modules.items() if mtype == "%"}
+    def solver(self, parsed_input: InputType, param: bool) -> int:
+        """Simulate the circuit."""
+        module_types, outputs = parsed_input
 
-        conjs = {name: {} for name, (mtype, _) in modules.items() if mtype == "&"}
-        for name, (_, targets) in modules.items():
+        memory_flipflips = {
+            name: False for name, module_type in module_types.items() if module_type == FLIP_FLIP
+        }
+        memory_conjucations = {
+            name: {} for name, module_type in module_types.items() if module_type == CONJUNCTION
+        }
+
+        for name, targets in outputs.items():
             for target in targets:
-                if target in conjs:
-                    conjs[target][name] = False
-
-        sent = {True: 0, False: 0}
-        for step in range(1000):
-            inputs = collections.deque([("button", "broadcaster", False)])
-            # print("Step", step)
-            while inputs:
-                src, dest, signal = inputs.popleft()
-                dest_type, targets = modules[dest]
-                sent[signal] += 1
-                # print(f"{src} {'high' if signal else 'low'} => {dest}")
-
-                out = None
-                if dest_type == "broadcaster":
-                    out = signal
-                elif dest_type == "%" and not signal:
-                    out = not flipflops[dest]
-                    flipflops[dest] = out
-                elif dest_type == "&":
-                    conjs[dest][src] = signal
-                    out = not all(conjs[dest].values())
-
-                if out is not None:
-                    for target in targets:
-                        inputs.append((dest, target, out))
-
-        # print(sent)
-        return math.prod(sent.values())
-
-    def part2(self, parsed_input: InputType) -> int:
-        # print(f"{parsed_input!r}")
-        modules = parsed_input
-        flipflops = {name: False for name, (mtype, _) in modules.items() if mtype == "%"}
-
-        conjs = {name: {} for name, (mtype, _) in modules.items() if mtype == "&"}
-        for name, (_, targets) in modules.items():
-            for target in targets:
-                if target in conjs:
-                    conjs[target][name] = False
+                if module_types.get(target) == CONJUNCTION:
+                    memory_conjucations[target][name] = False
 
         # Part two
         # --------
@@ -110,61 +75,65 @@ class Day20(aoc.Challenge):
         # Run the simulation until they each output three HIGH values.
         # Validate the HIGH output is cyclical.
         # Return the product.
-        rx_inputs = [name for name, (_, targets) in modules.items() if "rx" in targets]
-        assert len(rx_inputs) == 1 and rx_inputs[0] in conjs
-        rx_input = rx_inputs[0]
-        second_level_inputs = [name for name, (_, targets) in modules.items() if rx_input in targets]
-        second_level_highs = {name: [] for name in second_level_inputs}
+        if param:
+            rx_inputs = [name for name, targets in outputs.items() if "rx" in targets]
+            assert len(rx_inputs) == 1 and module_types[rx_inputs[0]] == CONJUNCTION
+            rx_input = rx_inputs[0]
+            second_level_highs = {name: [] for name, targets in outputs.items() if rx_input in targets}
 
         sent = {True: 0, False: 0}
+        inputs = collections.deque()
         for step in itertools.count(start=1):
-            inputs = collections.deque([("button", "broadcaster", False)])
+            # Push the button and send a LOW to the broadcaster!
+            inputs.append(("button", "broadcaster", False))
             while inputs:
-                src, dest, signal = inputs.popleft()
-                dest_type, targets = modules[dest]
+                src, current_module, signal = inputs.popleft()
                 sent[signal] += 1
+                if current_module not in module_types:
+                    # Sink. Nothing to do here.
+                    continue
+                dest_type = module_types[current_module]
+                targets = outputs[current_module]
 
-                out = None
+                output = None
                 if dest_type == "broadcaster":
-                    out = signal
-                elif dest_type == "%" and not signal:
-                    out = not flipflops[dest]
-                    flipflops[dest] = out
-                elif dest_type == "&":
-                    conjs[dest][src] = signal
-                    out = not all(conjs[dest].values())
+                    output = signal
+                elif dest_type == FLIP_FLIP and not signal:
+                    output = not memory_flipflips[current_module]
+                    memory_flipflips[current_module] = output
+                elif dest_type == CONJUNCTION:
+                    memory_conjucations[current_module][src] = signal
+                    output = not all(memory_conjucations[current_module].values())
 
-                if out is not None:
+                # If there is an output signal, propagate it.
+                if output is not None:
                     for target in targets:
-                        inputs.append((dest, target, out))
+                        inputs.append((current_module, target, output))
 
                 # Track the HIGH outputs of the second level inputs.
-                if out is True and dest in second_level_highs:
-                    second_level_highs[dest].append(step)
-                    if all(len(vals) >= 3 for vals in second_level_highs.values()):
+                if param and output and current_module in second_level_highs:
+                    second_level_highs[current_module].append(step)
+                    # Loop until we see N values for each second level module.
+                    if all(len(vals) >= 2 for vals in second_level_highs.values()):
                         # Verify the outputs are all cyclical. Return the product.
                         for vals in second_level_highs.values():
-                            first = vals[0]
-                            assert all(first * idx == value for idx, value in enumerate(vals, start=1))
-                            return math.prod(vals[0] for vals in second_level_highs.values())
-
-
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
+                            assert all(vals[0] * idx == value for idx, value in enumerate(vals, start=1))
+                        return math.prod(vals[0] for vals in second_level_highs.values())
+            if not param and step == 1000:
+                return math.prod(sent.values())
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        modules = collections.defaultdict(lambda: ("NA", []))
+        outputs = {}
+        module_types = {}
         for line in puzzle_input.splitlines():
             name, targets = line.split(" -> ")
-            if name[0] in "%&":
-                mtype, name = name[0], name[1:]
-            elif name == "broadcaster":
-                mtype = "broadcaster"
+            if name[0] in (CONJUNCTION, FLIP_FLIP):
+                module_type, name = name[0], name[1:]
             else:
-                raise RuntimeError(f"Unknown type, {line}")
-            modules[name] = (mtype, targets.split(", "))
-        return modules
+                module_type = name
+            outputs[name] = targets.split(", ")
+            module_types[name] = module_type
+        return module_types, outputs
 
 # vim:expandtab:sw=4:ts=4
