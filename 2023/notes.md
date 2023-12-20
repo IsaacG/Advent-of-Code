@@ -238,3 +238,24 @@ else:
     recurse(constraints + [(attr, op, val)], rules[target])
 recurse(constraints + [reverse(attr, op, val)], tests[1:])
 ```
+
+# Day 20
+
+## Part 2
+
+This part required manual analysis and solving.
+Here is a snippet of my input.
+
+```
+&pg -> gf
+&qs -> gf
+&sp -> gf
+&sv -> gf
+&gf -> rx
+```
+
+`rx` needs to receive a LOW from `gf`.
+`gf` will send a LOW on a cycle when it gets HIGH from all its four inputs, `pg, qa, sp, sv`.
+When I run for a whole lot of cycles, I noticed that those four modules all output a HIGH cyclically, that is, every `n_i * k` cycles for k in `1..(infinite)` and i in `pg, qa, sp, sv`.
+If those `n_i` are all co-primes, then they will output HIGH on `product(n_pg, n_qs, n_sp, n_sv)`.
+I verified they are co-prime and I submitted the product for my solution.
