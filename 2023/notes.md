@@ -259,3 +259,94 @@ Here is a snippet of my input.
 When I run for a whole lot of cycles, I noticed that those four modules all output a HIGH cyclically, that is, every `n_i * k` cycles for k in `1..(infinite)` and i in `pg, qa, sp, sv`.
 If those `n_i` are all co-primes, then they will output HIGH on `product(n_pg, n_qs, n_sp, n_sv)`.
 I verified they are co-prime and I submitted the product for my solution.
+
+# Day 21
+
+## Part 1
+
+Ranked 112.
+
+## Part 2
+
+Another hard one, solved for this specific input!
+
+Key observations here:
+
+* The garden is the same width as length, which are odd values (131).
+* The starting position is in the dead center of the garden (65, 65).
+* There is a direct path (no blocking stones) from the starting position to all four edges.
+* The total number of steps is `(distance to garden edge) + 2 * k * (garden size)`.
+
+The ramifications of the above:
+
+* After 65 steps, the elf can reach the edges of the garden.
+* After every `garden size` steps, the reachable steps expands in a semi-uniform pattern.
+* If we consider every `2 * garden size` steps, the expansion pattern is even more uniform!
+  The pattern alternates a bit every `garden size` steps so considering every `2 * garden size` makes the pattern more uniform.
+
+I had not realized the pattern alternated which bit me pretty hard.
+Eventually, I ran the thing and printed it out every `65 + k * garden size` steps for a few values of `k`.
+The output can be visualized by chunking the map into 131x131 blocks and printing the number of reachable locations in each block as a grid output, i.e. displaying the diamond pattern.
+It is also handy to print the number of each count.
+
+```
+Expansion 2
+    0 |  964 | 5756 |  965 |    0
+  964 | 6703 | 7650 | 6690 |  965
+ 5764 | 7650 | 7637 | 7650 | 5747
+  984 | 6698 | 7650 | 6694 |  964
+    0 |  984 | 5755 |  964 |    0
+[(0, 4), (964, 4), (965, 2), (984, 2), (5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 1), (6694, 1), (6698, 1), (6703, 1), (7637, 1), (7650, 4)]
+[(5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 1), (6694, 1), (6698, 1), (6703, 1), (7637, 1), (965, 2), (984, 2), (0, 4), (964, 4), (7650, 4)]
+
+Expansion 4
+    0 |    0 |    0 |  964 | 5756 |  965 |    0 |    0 |    0
+    0 |    0 |  964 | 6703 | 7650 | 6690 |  965 |    0 |    0
+    0 |  964 | 6703 | 7650 | 7637 | 7650 | 6690 |  965 |    0
+  964 | 6703 | 7650 | 7637 | 7650 | 7637 | 7650 | 6690 |  965
+ 5764 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 5747
+  984 | 6698 | 7650 | 7637 | 7650 | 7637 | 7650 | 6694 |  964
+    0 |  984 | 6698 | 7650 | 7637 | 7650 | 6694 |  964 |    0
+    0 |    0 |  984 | 6698 | 7650 | 6694 |  964 |    0 |    0
+    0 |    0 |    0 |  984 | 5755 |  964 |    0 |    0 |    0
+[(0, 24), (964, 8), (965, 4), (984, 4), (5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 3), (6694, 3), (6698, 3), (6703, 3), (7637, 9), (7650, 16)]
+[(5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 3), (6694, 3), (6698, 3), (6703, 3), (965, 4), (984, 4), (964, 8), (7637, 9), (7650, 16), (0, 24)]
+
+Expansion 6
+    0 |    0 |    0 |    0 |    0 |  964 | 5756 |  965 |    0 |    0 |    0 |    0 |    0
+    0 |    0 |    0 |    0 |  964 | 6703 | 7650 | 6690 |  965 |    0 |    0 |    0 |    0
+    0 |    0 |    0 |  964 | 6703 | 7650 | 7637 | 7650 | 6690 |  965 |    0 |    0 |    0
+    0 |    0 |  964 | 6703 | 7650 | 7637 | 7650 | 7637 | 7650 | 6690 |  965 |    0 |    0
+    0 |  964 | 6703 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 6690 |  965 |    0
+  964 | 6703 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 6690 |  965
+ 5764 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 5747
+  984 | 6698 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 6694 |  964
+    0 |  984 | 6698 | 7650 | 7637 | 7650 | 7637 | 7650 | 7637 | 7650 | 6694 |  964 |    0
+    0 |    0 |  984 | 6698 | 7650 | 7637 | 7650 | 7637 | 7650 | 6694 |  964 |    0 |    0
+    0 |    0 |    0 |  984 | 6698 | 7650 | 7637 | 7650 | 6694 |  964 |    0 |    0 |    0
+    0 |    0 |    0 |    0 |  984 | 6698 | 7650 | 6694 |  964 |    0 |    0 |    0 |    0
+    0 |    0 |    0 |    0 |    0 |  984 | 5755 |  964 |    0 |    0 |    0 |    0 |    0
+[(0, 60), (964, 12), (965, 6), (984, 6), (5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 5), (6694, 5), (6698, 5), (6703, 5), (7637, 25), (7650, 36)]
+[(5747, 1), (5755, 1), (5756, 1), (5764, 1), (6690, 5), (6694, 5), (6698, 5), (6703, 5), (965, 6), (984, 6), (964, 12), (7637, 25), (7650, 36), (0, 60)]
+```
+
+Note how the number of unique cell values does not change after four expansions.
+Only the count changes.
+We can run the algorithm for four expansions then use the output to capture the cell values.
+
+The non-zero cells include:
+
+* The four tips/points.
+* The four diagonals which include alternating more full (inner) and less full (outer) cells.
+* The alternating interior cells.
+
+All that is needed at this point is to count how many of each is expected after `k` expansions and sum them up.
+
+* There are always exactly one set of tips.
+* The diagonals grow linearly (`expansions` and `expansions - 1`).
+* The interior cells grow quadratically (`expansions ^ 2` and `(expansions - 1) ^ 2`).
+
+
+# Follow up
+
+* Parser for `char_coords`
