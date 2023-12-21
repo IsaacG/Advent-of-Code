@@ -26,21 +26,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=136),
         aoc.TestCase(inputs=SAMPLE, part=2, want=64),
     ]
-
-    def part1(self, parsed_input: InputType) -> int:
-        """Tilt the board north."""
-        stationary, moving = parsed_input
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(stationary | moving)
-        north = complex(0, -1)
-
-        post_move = set(stationary)
-        for rock in sorted(moving, key=lambda x: x.imag):
-            while (new_pos := rock + north) not in post_move and rock.imag > 0:
-                rock = new_pos
-            post_move.add(rock)
-        moving = post_move - stationary
-
-        return int(sum(max_y + 1 - rock.imag for rock in moving))
+    INPUT_PARSER = aoc.CharCoordinatesParser("#O")
 
     def cycle(self, moving, stationary):
         """Tilt the board in four directions."""
@@ -86,10 +72,23 @@ class Day14(aoc.Challenge):
 
         return moving
 
+    def part1(self, parsed_input: InputType) -> int:
+        """Tilt the board north."""
+        (_, height), stationary, moving = parsed_input
+        north = complex(0, -1)
+
+        post_move = set(stationary)
+        for rock in sorted(moving, key=lambda x: x.imag):
+            while (new_pos := rock + north) not in post_move and rock.imag > 0:
+                rock = new_pos
+            post_move.add(rock)
+        moving = post_move - stationary
+
+        return int(sum(height - rock.imag for rock in moving))
+
     def part2(self, parsed_input: InputType) -> int:
         """Tilt the board in four directions for many cycles."""
-        stationary, moving = parsed_input
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(stationary | moving)
+        (_, height), stationary, moving = parsed_input
 
         # Find a cycle in the rotation.
         cache = {}
@@ -106,13 +105,6 @@ class Day14(aoc.Challenge):
                 break
             cache[frozenset(moving)] = step
 
-        return int(sum(max_y + 1 - rock.imag for rock in moving))
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return (
-            aoc.parse_ascii_bool_map("#").parse(puzzle_input),
-            aoc.parse_ascii_bool_map("O").parse(puzzle_input),
-        )
+        return int(sum(height - rock.imag for rock in moving))
 
 # vim:expandtab:sw=4:ts=4
