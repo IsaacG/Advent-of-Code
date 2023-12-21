@@ -1,12 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 21: Step Counter."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -23,7 +16,8 @@ SAMPLE = """\
 .##..##.##.
 ..........."""
 
-InputType = tuple[set[complex], set[complex], set[complex]]
+# Size, starting position, rocks
+InputType = tuple[tuple[int, int], set[complex], set[complex]]
 
 
 class Day21(aoc.Challenge):
@@ -33,70 +27,70 @@ class Day21(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=16),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1),
     ]
+    # Get coordinates of start, rocks.
+    INPUT_PARSER = aoc.CharCoordinatesParser("S#")
 
-    def walk(self, start, garden, rocks, steps):
-        reach = start
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(garden)
-        max_x += 1
-        max_y += 1
-        for s in range(steps):
+    def walk(self, size, start, rocks, steps):
+        """Return reachable coordinates after walking N steps from the start."""
+        for _ in range(steps):
             new = set()
-            for p in reach:
-                for n in aoc.neighbors(p):
-                    if complex(n.real % max_x, n.imag % max_y) not in rocks:
-                        new.add(n)
-            reach = new
-        return reach
+            for coord in start:
+                for neighbor in aoc.neighbors(coord):
+                    if complex(neighbor.real % size, neighbor.imag % size) not in rocks:
+                        new.add(neighbor)
+            start = new
+        return start
 
     def part1(self, parsed_input: InputType) -> int:
-        start, garden, _ = parsed_input
+        """Return the number of reachable locations in 64 steps."""
+        (size, _), start, rocks = parsed_input
         steps = 64
         if self.testing:
             steps = 6
-
-        reach = start.copy()
-        for s in range(steps):
-            n = set()
-            for p in reach:
-                n.update(aoc.neighbors(p))
-            reach = n & garden
-        return len(reach)
+        return len(self.walk(size, start, rocks, steps))
 
     def test_p2(self, parsed_input: InputType) -> int:
+        """Run the part 2 tests."""
         steps_count = [(6, 16), (10, 50), (50, 1594), (100, 6536)]
 
-        start, garden, rocks = parsed_input
+        (size, _), start, rocks = parsed_input
         for steps, want in steps_count:
-            got = len(self.walk(start, garden, rocks, steps))
+            got = len(self.walk(size, start, rocks, steps))
             assert got == want, f"{(steps, want, got)=}"
+        return 1
 
     def part2(self, parsed_input: InputType) -> int:
+        """Return the number of reachable locations in many steps."""
         if self.testing:
-            self.test_p2(parsed_input)
-            return 1
-        start, garden, rocks = parsed_input
+            return self.test_p2(parsed_input)
+        (size, _), start, rocks = parsed_input
         steps = 26501365
 
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(garden)
-        size = max_x - min_x + 1
-        half_size = max_x // 2
+        half_size = (size - 1) // 2
         expansions = (steps - half_size) // size
 
         # Explore the garden for 2 garden lengths to compute garden values.
         # Those garden values are then used to multiply and compute the expanded version
         # since they expand in a reliable pattern.
+        # See notes.
         manual_expansions = 2
-        reach = self.walk(start, garden, rocks, half_size + manual_expansions * size)
+        reach = self.walk(size, start, rocks, half_size + manual_expansions * size)
 
+        # Chunk up the reachable locations into a grid of gardens.
         rows = []
-        for y in range(-manual_expansions, manual_expansions + 1):
+        for offset_y in range(-manual_expansions, manual_expansions + 1):
             row = []
-            top = size * y
+            top = size * offset_y
             bottom = top + size
-            for x in range(-manual_expansions, manual_expansions + 1):
-                left = size * x
+            for offset_x in range(-manual_expansions, manual_expansions + 1):
+                left = size * offset_x
                 right = left + size
-                num = len({p for p in reach if left <= p.real < right and top <= p.imag < bottom})
+                num = len(
+                    {
+                        coord for coord in reach
+                        if left <= coord.real < right and top <= coord.imag < bottom
+                    }
+                )
                 row.append(num)
             rows.append(row)
             self.debug(" | ".join(f"{r:5}" for r in row))
@@ -113,18 +107,10 @@ class Day21(aoc.Challenge):
 
         return (
             tips
-            + expansions * short_diag
             + (expansions - 1) * large_diag
+            + expansions * short_diag
             + interior_center * (expansions - 1) ** 2
             + interior_even * expansions ** 2
         )
-
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        start = aoc.parse_ascii_bool_map("S").parse(puzzle_input)
-        garden = aoc.parse_ascii_bool_map(".").parse(puzzle_input) | start
-        rocks = aoc.parse_ascii_bool_map("#").parse(puzzle_input)
-        return start, garden, rocks
 
 # vim:expandtab:sw=4:ts=4

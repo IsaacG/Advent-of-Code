@@ -6,6 +6,7 @@ The Parser class shall have a `parse()` method which takes the puzzle input
 and returns the parsed value.
 """
 
+import collections.abc
 import inspect
 import itertools
 import re
@@ -176,6 +177,17 @@ class ParseCharMap(BaseParser):
         return out
 
 
+class Transform(BaseParser):
+    """Apply an arbitrary transform to the data."""
+
+    def __init__(self, func: collections.abc.Callable):
+        self.func = func
+
+    def parse(self, puzzle_input: Any) -> Any:
+        """Apply a transformation."""
+        return self.func(puzzle_input)
+
+
 class AsciiBoolMapParser(BaseParser):
     """Parse a map of on/off values to build a set of "on" points."""
 
@@ -190,6 +202,28 @@ class AsciiBoolMapParser(BaseParser):
             for x, char in enumerate(line)
             if char in self.on_chars
         }
+
+
+class CharCoordinatesParser(BaseParser):
+    """Generate coordinate sets for multiple characters."""
+
+    def __init__(self, chars: collections.abc.Iterable[str]):
+        self.chars = chars
+
+    def parse(self, puzzle_input: str) -> tuple[tuple[int, int], set[complex], ...]:
+        """Parse a map and return the coordinates of different chars."""
+        lines = puzzle_input.splitlines()
+        size = (len(lines[0]), len(lines))
+        maps = (
+            {
+                complex(x, y)
+                for y, line in enumerate(lines)
+                for x, got in enumerate(line)
+                if got == want
+            }
+            for want in self.chars
+        )
+        return (size, *maps)
 
 
 # Convert the entire input into one str.
