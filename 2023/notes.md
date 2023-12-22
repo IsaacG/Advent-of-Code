@@ -354,3 +354,20 @@ Some data checks that made me feel better.
 assert all(x1 < 10 and y2 < 10 and x2 < 10 and y2 < 10 for x1, y1, z1, x2, y2, z2 in bricks.values())
 assert all(x1 <= x2 and y1 <= y2 and z1 <= z2 for x1, y1, z1, x2, y2, z2 in bricks.values())
 ```
+
+The mapping of bricks to footprints and `(x, y)` columns to bricks is a bit tedious.
+But it is also `O(n * 3 * 100)` or so, which is `O(n)`.
+I tried being smarter about finding brick overlaps, but it was much slower, being `O(n^2 / 2)`.
+
+```python
+potential_supports = collections.defaultdict(set)
+for idx, brick in enumerate(landing_order):
+    start_x, start_y, _, end_x, end_y, _ = bricks[brick]
+    for other in landing_order[:idx]:
+        other_start_x, other_start_y, _, other_end_x, other_end_y, _ = bricks[other]
+        if not (
+            other_end_x < start_x or other_start_x > end_x
+            or other_end_y < start_y or other_start_y > end_y
+        ):
+            potential_supports[brick].add(other)
+```

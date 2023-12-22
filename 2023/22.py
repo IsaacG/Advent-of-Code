@@ -29,9 +29,6 @@ class Day22(aoc.Challenge):
         # Brick ID to coordinates.
         bricks = parsed_input
 
-        # Sort bricks by lowest bottom, i.e. the order in which they land.
-        landing_order = sorted(bricks, key=lambda x: bricks[x][2])
-
         # Track which bricks exist by x-y column for faster lookups.
         footprints = {
             brick: [
@@ -55,6 +52,8 @@ class Day22(aoc.Challenge):
         # Drop bricks until all bricks have settled; this is the updated brick list.
         settled: set[int] = set()
         settled_bricks: dict[int, list[int]] = {}
+        # Sort bricks by lowest bottom, i.e. the order in which they land.
+        landing_order = sorted(bricks, key=lambda x: bricks[x][2])
 
         for brick in landing_order:
             start_x, start_y, start_z, end_x, end_y, end_z = bricks[brick]
