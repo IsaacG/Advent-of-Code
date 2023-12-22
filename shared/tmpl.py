@@ -22,7 +22,7 @@ class Day${day}(aoc.Challenge):
     DEBUG = True
     # Default is True. On live solve, submit one tests pass.
     # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
+    # PARAMETERIZED_INPUTS = [False, True]
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
@@ -40,7 +40,7 @@ class Day${day}(aoc.Challenge):
     # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
     # INPUT_PARSER = aoc.parse_multi_int_per_line
     # INPUT_PARSER = aoc.parse_re_group_int(r"(\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
+    # INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     # INPUT_PARSER = aoc.parse_multi_mixed_per_line
     # INPUT_PARSER = aoc.parse_re_group_mixed(r"(foo) .* (\d+)")
     # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")

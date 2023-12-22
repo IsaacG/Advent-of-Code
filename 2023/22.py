@@ -1,188 +1,110 @@
 #!/bin/python
 """Advent of Code, Day 22: Sand Slabs."""
-from __future__ import annotations
 
 import collections
-import copy
-import functools
-import itertools
-import math
-import re
-
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 1,0,1~1,2,1
 0,0,2~2,0,2
 0,2,3~2,2,3
 0,0,4~0,2,4
 2,0,5~2,2,5
 0,1,6~2,1,6
-1,1,8~1,1,9""",  # 0
-]
+1,1,8~1,1,9"""
 
-LineType = int
-InputType = list[LineType]
+InputType = dict[int, list[int]]
 
 
 class Day22(aoc.Challenge):
     """Day 22: Sand Slabs."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [5, 50]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=7),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=5),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=7),
     ]
+    PARAMETERIZED_INPUTS = [False, True]
 
-    # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_one_str
-    # INPUT_PARSER = aoc.parse_one_int
-    # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_one_int_per_line
-    # INPUT_PARSER = aoc.parse_multi_str_per_line
-    # INPUT_PARSER = aoc.parse_re_group_str(r"(a) .* (b) .* (c)")
-    # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
-    # INPUT_PARSER = aoc.parse_multi_int_per_line
-    # INPUT_PARSER = aoc.parse_re_group_int(r"(\d+)")
-    INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
-    # INPUT_PARSER = aoc.parse_multi_mixed_per_line
-    # INPUT_PARSER = aoc.parse_re_group_mixed(r"(foo) .* (\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")
-    # INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
-    # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
-    # INPUT_PARSER = aoc.parse_ascii_bool_map("#")
-    # ---
-    # INPUT_PARSER = aoc.CharCoordinatesParser("S.#")
-    # (width, height), start, garden, rocks = parsed_input
-    # max_x, max_y = width - 1, height - 1
+    def solver(self, parsed_input: InputType, param: bool) -> int:
+        # Brick ID to coordinates.
+        bricks = parsed_input
 
-    def part1(self, parsed_input: InputType) -> int:
-        bricks = {num: [x1, y1, z1, x2, y2, z2] for num, (x1, y1, z1, x2, y2, z2) in enumerate(parsed_input)}
-        assert all(a < 10 and b < 10 and d < 10 and e < 10 for a, b, c, d, e, f in bricks.values())
-        assert all(x1 <= x2 and y1 <= y2 and z1 <= z2 for x1, y1, z1, x2, y2, z2 in bricks.values())
-        
+        # Track which bricks exist by x-y column for faster lookups.
         brick_by_x_y = collections.defaultdict(list)
-        for num, (x1, y1, z1, x2, y2, z2) in bricks.items():
-            for x in range(x1, x2 + 1):
-                for y in range(y1, y2 + 1):
-                    brick_by_x_y[x, y].append(num)
+        for num, (start_x, start_y, start_z, end_x, end_y, _) in bricks.items():
+            for x_col in range(start_x, end_x + 1):
+                for y_col in range(start_y, end_y + 1):
+                    brick_by_x_y[x_col, y_col].append(num)
 
-        holding = collections.defaultdict(list)
-        holding = {brick: [] for brick in bricks}
-        todo = list(bricks)
-        settled = set()
-        step = 0
-        while todo:
-            step += 1
-            if step > 10000:
-                raise RuntimeError
-            by_bottom = sorted(bricks, key=lambda x: bricks[x][2])
-            by_top = sorted(bricks, key=lambda x: bricks[x][5])
-            todo.sort(key=lambda x: bricks[x][2])
-            for brick in todo:
-                x1, y1, z1, x2, y2, z2 = bricks[brick]
-                if bricks[brick][2] == 1:
-                    todo.remove(brick)
+        # Track which other bricks a given brick is supporting.
+        holding: dict[int, list[int]] = {brick: [] for brick in bricks}
+        held_by: dict[int, list[int]] = {brick: [] for brick in bricks}
+        # Drop bricks until all bricks have settled.
+        settled: set[int] = set()
+        # Sort bricks by lowest bottom, i.e. most likely to settle next.
+        inflight = sorted(bricks, key=lambda x: bricks[x][2])
+
+        while inflight:
+            for brick in inflight:
+                start_x, start_y, start_z, end_x, end_y, _ = bricks[brick]
+                # Locate other bricks in the same column(s) as this brick but lower down.
+                potential_tops = {
+                    other for (x, y), others in brick_by_x_y.items()
+                    if start_x <= x <= end_x and start_y <= y <= end_y for other in others
+                }
+                # Check if this brick is resting on top of any other bricks.
+                landed = {other for other in potential_tops & settled if bricks[other][5] + 1 == start_z}
+                if bricks[brick][2] == 1 or landed:
+                    inflight.remove(brick)
                     settled.add(brick)
-                    # print(f"Settled on ground: {brick} {bricks[brick]}")
+                    for other in landed:
+                        holding[other].append(brick)
+                    held_by[brick].extend(landed)
                 else:
-                    potential_tops = {other for (x, y), others in brick_by_x_y.items() if x1 <= x <= x2 and y1 <= y <= y2 for other in others}
-                    landed = {other for other in potential_tops & settled if bricks[other][5] + 1 == z1}
-                    if landed:
-                        todo.remove(brick)
-                        settled.add(brick)
-                        for other in landed:
-                            holding[other].append(brick)
-                        # print(f"{brick} {bricks[brick]} landed on {landed}")
-                    else:
-                        new_bottom = max((bricks[other][5] for other in potential_tops if bricks[other][5] < z1), default=0) + 1
-                        if new_bottom < z1:
-                            dist = z1 - new_bottom
-                            bricks[brick][2] -= dist
-                            bricks[brick][5] -= dist
-                            # print(f"Move down {brick} {bricks[brick]} by {dist}")
-                            break
+                    new_bottom = 1 + max(
+                        (bricks[other][5] for other in potential_tops if bricks[other][5] < start_z),
+                        default=0,
+                    )
+                    if new_bottom < start_z:
+                        dist = start_z - new_bottom
+                        bricks[brick][2] -= dist
+                        bricks[brick][5] -= dist
+                        break
+
+        # Part 1: count the bricks which can safely be removed.
+        # If a brick is not a sole support of any other brick, it can be removed.
+        if not param:
+            return sum(
+                all(held_by[supported] != [brick] for supported in holding[brick])
+                for brick in bricks
+            )
+
+        # Part 2: count how many bricks can be dropped by removing a support.
         count = 0
+        original = holding
+        # Try removing each brick. Count the chain reaction disintegration.
         for brick in bricks:
-            if all(
-                bool({i for i, j in holding.items() if other in j and i != brick})
-                for other in holding[brick]
-            ):
-                count += 1
+            holding = original.copy()
+            # Track and process bricks which had a support removed.
+            # Chain remove bricks which do not have any other supports.
+            lost_support = set(holding.pop(brick))
+            while lost_support:
+                brick = lost_support.pop()
+                for other in held_by[brick]:
+                    if brick in holding.get(other, []):
+                        # This brick has an alternate support.
+                        break
+                else:
+                    # This brick does not have an alternate support. Disintegrate.
+                    count += 1
+                    lost_support.update(holding.pop(brick))
 
         return count
 
-
-    def part2(self, parsed_input: InputType) -> int:
-        bricks = {num: [x1, y1, z1, x2, y2, z2] for num, (x1, y1, z1, x2, y2, z2) in enumerate(parsed_input)}
-        assert all(a < 10 and b < 10 and d < 10 and e < 10 for a, b, c, d, e, f in bricks.values())
-        assert all(x1 <= x2 and y1 <= y2 and z1 <= z2 for x1, y1, z1, x2, y2, z2 in bricks.values())
-        
-        brick_by_x_y = collections.defaultdict(list)
-        for num, (x1, y1, z1, x2, y2, z2) in bricks.items():
-            for x in range(x1, x2 + 1):
-                for y in range(y1, y2 + 1):
-                    brick_by_x_y[x, y].append(num)
-
-        holding = {brick: [] for brick in bricks}
-        todo = list(bricks)
-        settled = set()
-        step = 0
-        while todo:
-            step += 1
-            if step > 10000:
-                raise RuntimeError
-            by_bottom = sorted(bricks, key=lambda x: bricks[x][2])
-            by_top = sorted(bricks, key=lambda x: bricks[x][5])
-            todo.sort(key=lambda x: bricks[x][2])
-            for brick in todo:
-                x1, y1, z1, x2, y2, z2 = bricks[brick]
-                if bricks[brick][2] == 1:
-                    todo.remove(brick)
-                    settled.add(brick)
-                    # print(f"Settled on ground: {brick} {bricks[brick]}")
-                else:
-                    potential_tops = {other for (x, y), others in brick_by_x_y.items() if x1 <= x <= x2 and y1 <= y <= y2 for other in others}
-                    landed = {other for other in potential_tops & settled if bricks[other][5] + 1 == z1}
-                    if landed:
-                        todo.remove(brick)
-                        settled.add(brick)
-                        for other in landed:
-                            holding[other].append(brick)
-                        # print(f"{brick} {bricks[brick]} landed on {landed}")
-                    else:
-                        new_bottom = max((bricks[other][5] for other in potential_tops if bricks[other][5] < z1), default=0) + 1
-                        if new_bottom < z1:
-                            dist = z1 - new_bottom
-                            bricks[brick][2] -= dist
-                            bricks[brick][5] -= dist
-                            # print(f"Move down {brick} {bricks[brick]} by {dist}")
-                            break
-
-        def fall_count(brick, holding):
-            holding = holding.copy()
-
-            chain = 0
-            todo = set(holding.pop(brick))
-            while todo:
-                brick = todo.pop()
-                alt_support = {alt_b for alt_b, alt_s in holding.items() if brick in alt_s}
-                if not alt_support:
-                    chain += 1
-                    todo.update(holding.pop(brick))
-            return chain
-
-
-        count = 0
-        for brick in bricks:
-            count += fall_count(brick, holding)
-
-        return count
+    def input_parser(self, puzzle_input: str) -> InputType:
+        """Parse the input data."""
+        data = aoc.parse_re_findall_int(aoc.RE_INT).parse(puzzle_input)
+        bricks = dict(enumerate(data))
+        return bricks
 
 # vim:expandtab:sw=4:ts=4

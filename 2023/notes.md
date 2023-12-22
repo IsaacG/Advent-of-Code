@@ -346,7 +346,11 @@ All that is needed at this point is to count how many of each is expected after 
 * The diagonals grow linearly (`expansions` and `expansions - 1`).
 * The interior cells grow quadratically (`expansions ^ 2` and `(expansions - 1) ^ 2`).
 
+# Day 22
 
-# Follow up
+Some data checks that made me feel better.
 
-* Parser for `char_coords`
+```python
+assert all(x1 < 10 and y2 < 10 and x2 < 10 and y2 < 10 for x1, y1, z1, x2, y2, z2 in bricks.values())
+assert all(x1 <= x2 and y1 <= y2 and z1 <= z2 for x1, y1, z1, x2, y2, z2 in bricks.values())
+```
