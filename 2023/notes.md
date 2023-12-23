@@ -376,3 +376,9 @@ for idx, brick in enumerate(landing_order):
         ):
             potential_supports[brick].add(other)
 ```
+
+# Day 23
+
+## Part 2
+
+Using a `collection.queue()` and DFS runs 3-6x faster than using a `set` or `PriorityQueue`.

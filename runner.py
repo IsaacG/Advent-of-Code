@@ -365,7 +365,10 @@ def main(
 ) -> None:
     """Run the code in some fashion."""
     os.nice(19)
-    resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
+    try:
+        resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
+    except ValueError:
+        pass
     dotenv.load_dotenv()
     if cookie:
         site.Website(0, 0, False).set_cookie(cookie)

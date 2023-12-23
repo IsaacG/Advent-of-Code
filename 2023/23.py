@@ -10,8 +10,7 @@ import re
 
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 #.#####################
 #.......#########...###
 #######.#########.#.###
@@ -34,8 +33,7 @@ SAMPLE = [
 #...#...#.#.>.>.#.>.###
 #.###.###.#.###.#.#v###
 #.....###...###...#...#
-#####################.#""",  # 6
-]
+#####################.#"""
 
 LineType = int
 InputType = list[LineType]
@@ -44,15 +42,9 @@ InputType = list[LineType]
 class Day23(aoc.Challenge):
     """Day 23: A Long Walk."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [False, True]
-
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=94),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=154),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=94),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=154),
     ]
 
     INPUT_PARSER = aoc.parse_ascii_char_map(lambda x: x)
@@ -63,7 +55,8 @@ class Day23(aoc.Challenge):
         start = next(i for i, char in board.items() if i.imag == min_y and char == ".")
         end = next(i for i, char in board.items() if i.imag == max_y and char == ".")
 
-        paths = {(start, frozenset({start}))}
+        paths = []
+        paths.append((start, {start}))
         max_path = 0
         while paths:
             current, seen = paths.pop()
@@ -78,11 +71,11 @@ class Day23(aoc.Challenge):
                 next_pos = current + aoc.ARROW_DIRECTIONS[char]
                 assert board[next_pos] != "#"
                 if next_pos not in seen:
-                    paths.add((next_pos, frozenset(seen | {next_pos})))
+                    paths.append((next_pos, seen | {next_pos}))
             else:
                 for next_pos in aoc.neighbors(current):
                     if board.get(next_pos, "#") != "#" and next_pos not in seen:
-                        paths.add((next_pos, frozenset(seen | {next_pos})))
+                        paths.append((next_pos, seen | {next_pos}))
 
         return max_path - 1
 
@@ -136,52 +129,66 @@ class Day23(aoc.Challenge):
                 longest_dist[coord][current] = dist
                 longest_dist[current][coord] = dist
 
-        longest_dist = {start: dict(end) for start, end in longest_dist.items()}
-        # print(longest_dist)
+        labels = {coord: idx for idx, coord in enumerate(destinations)}
+        longest_dist = {
+            labels[start]: {
+                labels[end]: distance
+                for end, distance in data.items()
+            }
+            for start, data in longest_dist.items()
+        }
+        start, end = labels[start], labels[end]
+
+        # Prune off side branches which do not lead to the end.
+        if False:
+            for coord in longest_dist:
+                for neighbor in list(longest_dist[coord]):
+                    if coord == end or neighbor == end:
+                        continue
+                    seen = {neighbor}
+                    todo = {neighbor}
+                    while todo:
+                        cur = todo.pop()
+                        for next_coord in longest_dist[cur]:
+                            if next_coord not in seen and next_coord != coord:
+                                todo.add(next_coord)
+                                seen.add(next_coord)
+                    if end not in seen:
+                        del longest_dist[coord][neighbor]
 
         max_path = 0
-        paths = {(start, frozenset({start}), 0)}
+        paths = []
+        paths.append((0, start, {start}))
+        max_seen = collections.defaultdict(int)
+
+        penultimate_pos, penultimate_distance = list(longest_dist[end].items())[0]
+        end = penultimate_pos
+
+        for src, data in longest_dist.items():
+            # print(f"{src} -> {list(data)}")
+            pass
+
         while paths:
-            current, seen, steps = paths.pop()
+            steps, current, seen = paths.pop()
             if current == end:
                 if steps > max_path:
                     max_path = steps
-                    print(f"{max_path=}, {len(paths)=}")
                 continue
 
             for next_pos, distance in longest_dist[current].items():
                 if next_pos not in seen:
-                    paths.add((next_pos, frozenset(seen | {next_pos}), steps + distance))
+                    next_steps = steps + distance
+                    next_seen = seen | {next_pos}
 
-        return max_path
+                    # Stop exploring a path if we explored it and found a longer version.
+                    # This balloons memory usage in a bad way.
+                    # if len(next_seen) < 20:
+                    #     if max_seen[next_pos, next_seen] > next_steps:
+                    #         continue
+                    #     max_seen[next_pos, next_seen] = next_steps
 
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
+                    paths.append((next_steps, next_pos, next_seen))
 
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
+        return max_path + penultimate_distance
 
 # vim:expandtab:sw=4:ts=4
