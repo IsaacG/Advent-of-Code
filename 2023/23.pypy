@@ -1,0 +1,155 @@
+#!/bin/python
+"""Advent of Code, Day 14: Parabolic Reflector Dish."""
+
+import collections
+import queue
+import pathlib
+import time
+
+UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
+FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
+STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
+
+def bounding_coords(points):
+    """Return bounding min (x, y), max (x, y) for coordinates."""
+    min_x = int(min(p.real for p in points))
+    max_x = int(max(p.real for p in points))
+    min_y = int(min(p.imag for p in points))
+    max_y = int(max(p.imag for p in points))
+    return min_x, min_y, max_x, max_y
+
+
+def part1(parsed_input: dict[complex, str]) -> int:
+    """Return the number of energized tiles, assuming a given start."""
+    return 1
+
+
+def gneighbors(point):
+    return (point + offset for offset in STRAIGHT_NEIGHBORS)
+
+
+def part2(board):
+    """Return the number of energized tiles, across all starts."""
+    min_x, min_y, max_x, max_y = bounding_coords(board)
+    start = next(i for i in board if i.imag == min_y)
+    end = next(i for i in board if i.imag == max_y)
+
+    forks = {coord for coord in board if len(set(gneighbors(coord)) & board) > 2}
+    forks.add(start)
+    destinations = forks | {end}
+
+    longest_dist = collections.defaultdict(lambda: collections.defaultdict(int))
+
+    for coord in forks:
+        neighbors = set(gneighbors(coord)) & board
+
+        for current in neighbors:
+            steps = 1
+            prior = coord
+
+            while current not in destinations:
+                steps += 1
+                options = set(gneighbors(current)) & board 
+                assert len(options) == 2
+                current, prior = next(i for i in options if i != prior), current
+
+            dist = max(steps, longest_dist[coord][current])
+            longest_dist[coord][current] = dist
+            longest_dist[current][coord] = dist
+
+    labels = {coord: idx for idx, coord in enumerate(destinations)}
+    longest_dist = {
+        labels[start]: {
+            labels[end]: distance
+            for end, distance in data.items()
+        }
+        for start, data in longest_dist.items()
+    }
+    start, end = labels[start], labels[end]
+
+    # Prune off side branches which do not lead to the end.
+    for coord in longest_dist:
+        for neighbor in list(longest_dist[coord]):
+            if coord == end or neighbor == end:
+                continue
+            seen = {neighbor}
+            todo = {neighbor}
+            while todo:
+                cur = todo.pop()
+                for next_coord in longest_dist[cur]:
+                    if next_coord not in seen and next_coord != coord:
+                        todo.add(next_coord)
+                        seen.add(next_coord)
+            if end not in seen:
+                del longest_dist[coord][neighbor]
+
+
+    max_path = 0
+    paths = []
+    paths.append((0, start, {start}))
+    max_seen = collections.defaultdict(int)
+
+    penultimate_pos, penultimate_distance = list(longest_dist[end].items())[0]
+    end = penultimate_pos
+
+    # while not paths.empty():
+    while paths:
+        steps, current, seen = paths.pop()
+        if current == end:
+            if steps > max_path:
+                max_path = steps
+            continue
+
+        for next_pos, distance in longest_dist[current].items():
+            if next_pos not in seen:
+
+                reachable = set()
+                todo = {next_pos}
+                while todo:
+                    cur = todo.pop()
+                    for neighbor in longest_dist[cur]:
+                        if neighbor not in seen and neighbor not in reachable:
+                            todo.add(neighbor)
+                            reachable.add(neighbor)
+                if end not in reachable:
+                    continue
+                possible_points = sum(max(longest_dist[node].values()) for node in reachable)
+                if steps + possible_points < max_path:
+                    continue
+
+                next_steps = steps + distance
+                next_seen = seen | {next_pos}
+
+                # Stop exploring a path if we explored it and found a longer version.
+                # This balloons memory usage in a bad way.
+                # if len(next_seen) < 25:
+                #     if max_seen[next_pos, frozenset(next_seen)] > next_steps:
+                #         continue
+                #     max_seen[next_pos, frozenset(next_seen)] = next_steps
+
+                paths.append((next_steps, next_pos, next_seen))
+
+    return max_path + penultimate_distance
+
+
+def parse(puzzle_input: str) -> set[complex]:
+    return {
+        complex(x, y)
+        for y, line in enumerate(puzzle_input.splitlines())
+        for x, char in enumerate(line)
+        if char != "#"
+    }
+
+def main():
+    data = pathlib.Path("2023/data/23.txt").read_text().rstrip()
+    parsed = parse(data)
+
+    t1 = time.perf_counter()
+    got = part2(parsed)
+    t2 = time.perf_counter()
+    print(t2 - t1, "s")
+    print(got)
+
+
+if __name__ == "__main__":
+    main()
