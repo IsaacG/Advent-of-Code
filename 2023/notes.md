@@ -346,6 +346,11 @@ All that is needed at this point is to count how many of each is expected after 
 * The diagonals grow linearly (`expansions` and `expansions - 1`).
 * The interior cells grow quadratically (`expansions ^ 2` and `(expansions - 1) ^ 2`).
 
+## Follow up
+
+Simulating `65 + 131 + 131` steps to get all the garden block values is very slow as the growth is exponential.
+It would be much, much faster to compute each of those garden blocks independently as a single, non-repeating garden, with a known set of start points and step counts.
+
 # Day 22
 
 Some data checks that made me feel better.
