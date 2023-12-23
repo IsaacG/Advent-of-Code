@@ -381,4 +381,10 @@ for idx, brick in enumerate(landing_order):
 
 ## Part 2
 
-Using a `collection.queue()` and DFS runs 3-6x faster than using a `set` or `PriorityQueue`.
+Optimizations
+
+* Using a `collection.queue()` and DFS runs 3-6x faster than using a `set` or `PriorityQueue`.
+  Using a `list` is just as fast, too!
+* Tracking the best value at each `(node: Node, seen: set[Node])` takes up too much memory.
+* Detecting if a given path can reach the end or is cut off seems to take 5% more time.
+* Computing `sum(max(steps into node) for reachable unvisited nodes)` as an upper bound and pruning when `steps + upper bound < max steps seen so far` improves speed by roughly 30%.
