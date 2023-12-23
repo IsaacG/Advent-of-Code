@@ -45,7 +45,7 @@ class Day23(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         """Return the max steps to the end, taking slopes into account."""
         board = parsed_input
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(board)
+        _, min_y, _, max_y = aoc.bounding_coords(board)
         start = next(i for i, char in board.items() if i.imag == min_y and char == ".")
         end = next(i for i, char in board.items() if i.imag == max_y and char == ".")
 
@@ -79,10 +79,9 @@ class Day23(aoc.Challenge):
         # The correct step count should not include the start.
         return max_steps - 1
 
-    def part2(self, parsed_input: InputType) -> int:
-        """Return the max steps to the end, ignoring slopes."""
-        board = {pos for pos, char in parsed_input.items() if char != "#"}
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(board)
+    def compressed_graph(self, board: set[complex]) -> tuple[dict[int, dict[int, int]], int, int]:
+        """Return a "hallway compressed" graph, i.e. a weighted graph between points of interest."""
+        _, min_y, _, max_y = aoc.bounding_coords(board)
         start_coord = next(i for i in board if i.imag == min_y)
         end_coord = next(i for i in board if i.imag == max_y)
 
@@ -92,8 +91,9 @@ class Day23(aoc.Challenge):
         forks.add(end_coord)
 
         # Compute the longest distances between all interesting locations.
-        longest_dist = collections.defaultdict(lambda: collections.defaultdict(int))
-        # For each start location, pick one direction and walk down that hallway until hitting another fork.
+        longest_dist: dict[complex, dict[complex, int]] = collections.defaultdict(lambda: collections.defaultdict(int))
+        # For each start location, pick one direction and
+        # walk down that hallway until hitting another fork.
         for coord in forks:
             neighbors = set(aoc.neighbors(coord)) & board
             for current_node in neighbors:
@@ -101,7 +101,7 @@ class Day23(aoc.Challenge):
                 prior = coord
                 while current_node not in forks:
                     steps += 1
-                    options = set(aoc.neighbors(current_node)) & board 
+                    options = set(aoc.neighbors(current_node)) & board
                     current_node, prior = next(i for i in options if i != prior), current_node
 
                 # Record the longest hallways between these two locations.
@@ -112,14 +112,20 @@ class Day23(aoc.Challenge):
         # Replace coordinates with `int` labels to reduce the storage needed to store paths.
         # Replace defaultdicts with dicts at the same time.
         labels = {coord: idx for idx, coord in enumerate(forks)}
-        longest_dist = {
+        start, end = labels[start_coord], labels[end_coord]
+        graph = {
             labels[start]: {
                 labels[end]: distance
                 for end, distance in data.items()
             }
             for start, data in longest_dist.items()
         }
-        start, end = labels[start_coord], labels[end_coord]
+        return graph, start, end
+
+    def part2(self, parsed_input: InputType) -> int:
+        """Return the max steps to the end, ignoring slopes."""
+        board = {pos for pos, char in parsed_input.items() if char != "#"}
+        longest_dist, start, end = self.compressed_graph(board)
 
         # The end node is connected to exactly one fork.
         # If we solve to that fork, we can prune the graph once reaching it.
