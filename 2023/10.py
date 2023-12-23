@@ -87,7 +87,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=4),
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=8),
     ]
-    INPUT_PARSER = aoc.parse_ascii_char_map(str)
+    INPUT_PARSER = aoc.char_map
 
     def solver(self, parsed_input: dict[complex, str], param: bool) -> int:
         pipes = parsed_input

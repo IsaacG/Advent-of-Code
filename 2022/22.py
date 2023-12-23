@@ -249,10 +249,7 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=5031),
     ]
     PARAMETERIZED_INPUTS = [FlatMap, CubeMap]
-    INPUT_PARSER = aoc.ParseBlocks([
-        aoc.parse_ascii_char_map(str),
-        aoc.parse_re_findall_str(r"(L|R|\d+)"),
-    ])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.char_map, aoc.parse_re_findall_str(r"(L|R|\d+)")])
 
     def solver(self, parsed_input: InputType, map_class: Type[Mapper]) -> int:
         """Return the final location after wandering the map."""

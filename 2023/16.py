@@ -23,7 +23,7 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=46),
         aoc.TestCase(inputs=SAMPLE, part=2, want=51),
     ]
-    INPUT_PARSER = aoc.parse_ascii_char_map(lambda x: x)
+    INPUT_PARSER = aoc.char_map
 
     def energized(self, board: dict[complex, str], start_pos: complex, start_dir: complex) -> int:
         """Compute the number of energized tiles."""

@@ -39,7 +39,7 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=94),
         aoc.TestCase(inputs=SAMPLE, part=2, want=154),
     ]
-    INPUT_PARSER = aoc.parse_ascii_char_map(lambda x: x)
+    INPUT_PARSER = aoc.char_map
     TIMEOUT = 45
 
     def part1(self, parsed_input: InputType) -> int:
