@@ -71,10 +71,22 @@ class Day25(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         all_components = set(parsed_input)
 
-        todo = {list(all_components)[0]}
+        todo = [(list(all_components)[0], [])]
+        pathcount = collections.defaultdict(int)
         while todo:
-            cur = todo.pop()
-            seen.add(cur)
+            cur, path = todo.pop()
+            if cur == "ntq":
+                print(cur, path)
+            pathcount[cur] += 1
+            for neighbor in parsed_input[cur]:
+                if neighbor not in path:
+                    todo.append((neighbor, path + [cur]))
+
+        print(pathcount)
+        return
+
+
+
 
         connections = set()
         for src, dsts in parsed_input.items():
