@@ -402,3 +402,9 @@ Yet with all that, I still managed to rank under 500!
 
 Apparently it's the day of constraint solvers, which makes for a very, very unsatisfying solution.
 Some people are figuring out how to solve this more directly, but it seems most the people that solved it in the first four hours used z3 or similar.
+
+# Day 25
+
+I briefly considered `networkx` but I couldn't find an algorithm at a quick glance so I assumed it wouldn't have what I needed.
+I was very wrong.
+I tried a bunch of approaches (see messy commits) until I found something that worked for me.

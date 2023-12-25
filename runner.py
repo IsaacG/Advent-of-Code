@@ -182,7 +182,7 @@ class Runner:
         submitted = {1: False, 2: False}
         solutions: dict[int, int | str] = {}
         part = obj.site.part()
-        if part is None:
+        if part is None or day == 25 and part == 2:
             print("It looks like you completed this day.")
             self.update_solutions(day)
         else:
