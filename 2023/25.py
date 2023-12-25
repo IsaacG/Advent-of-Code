@@ -70,24 +70,6 @@ class Day25(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         all_components = set(parsed_input)
-
-        todo = [(list(all_components)[0], [])]
-        pathcount = collections.defaultdict(int)
-        while todo:
-            cur, path = todo.pop()
-            if cur == "ntq":
-                print(cur, path)
-            pathcount[cur] += 1
-            for neighbor in parsed_input[cur]:
-                if neighbor not in path:
-                    todo.append((neighbor, path + [cur]))
-
-        print(pathcount)
-        return
-
-
-
-
         connections = set()
         for src, dsts in parsed_input.items():
             for dst in dsts:
@@ -105,26 +87,8 @@ class Day25(aoc.Challenge):
                     some_conns.add((src, dst))
         print(f"{len(some_conns)=}")
 
-        def get_wires():
-            for src_a, dsts_a in parsed_input.items():
-                for dst_a in dsts_a:
-                    for src_b in dsts_a:
-                        dsts_b = parsed_input[src_b]
-                        for dst_b in dsts_b:
-                            for src_c in dsts_a | dsts_b:
-                                dsts_c = parsed_input[src_c]
-                                for dst_c in dsts_c:
-                                    triple = {frozenset({src_a, dst_a}), frozenset({src_b, dst_b}), frozenset({src_c, dst_c})}
-                                    if len(triple) == 3 and all(len(i) == 2 for i in triple):
-                                        yield [sorted(i) for i in triple]
-
-                        
-
         cpy = copy.deepcopy(parsed_input)
-        for step, triple in enumerate(get_wires()):
-            if step and step % 100000 == 0:
-                print(step)
-
+        for step, triple in enumerate(itertools.combinations(sorted_conns, r=3)):
             todo = {i for pair in triple for i in pair}
             if len(todo) != 6:
                 continue
@@ -141,6 +105,8 @@ class Day25(aoc.Challenge):
             if not valid: continue
 
 
+            if step and step % 10000 == 0:
+                print(step)
             for src, dst in triple:
                 cpy[src].discard(dst)
                 cpy[dst].discard(src)
