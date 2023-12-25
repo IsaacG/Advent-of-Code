@@ -34,8 +34,8 @@ class Day25(aoc.Challenge):
     """Day 25: Snowverload."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=54),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=54),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
     def part1(self, parsed_input: InputType) -> int:
