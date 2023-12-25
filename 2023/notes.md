@@ -388,3 +388,17 @@ Optimizations
 * Tracking the best value at each `(node: Node, seen: set[Node])` takes up too much memory.
 * Detecting if a given path can reach the end or is cut off seems to take 5% more time.
 * Computing `sum(max(steps into node) for reachable unvisited nodes)` as an upper bound and pruning when `steps + upper bound < max steps seen so far` improves speed by roughly 30%.
+
+# Day 24
+
+## Part 1
+
+I was embarrassed at how much geometry I had forgotten.
+I needed to look up how to compute line intersections on Wikipedia.
+I also took a while to debug my `px, py, pz, vx, vy, vy = line` bug!
+Yet with all that, I still managed to rank under 500!
+
+# Part 2
+
+Apparently it's the day of constraint solvers, which makes for a very, very unsatisfying solution.
+Some people are figuring out how to solve this more directly, but it seems most the people that solved it in the first four hours used z3 or similar.

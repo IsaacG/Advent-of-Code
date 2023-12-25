@@ -7,6 +7,7 @@ import copy
 import functools
 import itertools
 import math
+import random
 import re
 
 from lib import aoc
@@ -69,76 +70,40 @@ class Day25(aoc.Challenge):
     # max_x, max_y = width - 1, height - 1
 
     def part1(self, parsed_input: InputType) -> int:
-        nodes = sorted(parsed_input)
-        start = nodes[0]
-        others = set(nodes[1:])
+        graph = {src: list(dsts) for src, dsts in parsed_input.items()}
+        nodes = list(graph)
+        counts = collections.Counter()
 
-        for end in nodes[1:]:
-            print(start, end)
-            paths = []
-            todo = [(start, [])]
-            cur = start
-            while todo:
-                cur, path = todo.pop()
-                if cur == end:
-                    paths.append(set(path))
-                else:
-                    newpath = path + [cur]
+        for j in range(200):
+            for i in range(50):
+                if i and i % 10 == 0:
+                    print("Step", j, i)
+                start = random.choice(nodes)
+                end = random.choice(nodes)
+                if start == end:
+                    continue
+                todo = []
+                todo.append((start, set(), set()))
+                while todo:
+                    cur, path, edges = random.choice(todo)
+                    todo.remove((cur, path, edges))
+                    if cur == end:
+                        counts.update(edges)
+                        print(start, end)
+                        break
+
+                    newpath = path | {cur}
                     for neighbor in parsed_input[cur]:
                         if neighbor not in path:
-                            todo.append((neighbor, newpath))
-            print(end, len(paths))
-            others.discard(end)
-            for triple in itertools.combinations(others, r=3):
-                triple = set(triple)
-                if all(path & triple for path in paths):
-                    print(triple)
-            others.add(end)
+                            new_edges = edges | {tuple(sorted([cur, neighbor]))}
+                            todo.append((neighbor, newpath, new_edges))
 
-        return
+            graph = copy.deepcopy(parsed_input)
+            for (a, b), _ in counts.most_common(3):
+                graph[a].remove(b)
+                graph[b].remove(a)
 
-        all_components = set(parsed_input)
-        connections = set()
-        for src, dsts in parsed_input.items():
-            for dst in dsts:
-                if src < dst:
-                    connections.add((src, dst))
-        print(f"{len(connections)=}")
-        sorted_conns = sorted(connections, key=lambda x: len(parsed_input[x]))
-
-        some_conns = set()
-        for src, dsts in parsed_input.items():
-            for dst in dsts:
-                if len(parsed_input[src]) > 5 or len(parsed_input[dst]) > 5:
-                    continue
-                if src < dst:
-                    some_conns.add((src, dst))
-        print(f"{len(some_conns)=}")
-
-        cpy = copy.deepcopy(parsed_input)
-        for step, triple in enumerate(itertools.combinations(sorted_conns, r=3)):
-            todo = {i for pair in triple for i in pair}
-            if len(todo) != 6:
-                continue
-
-            valid = True
-            for (src_a, dst_a), (src_b, dst_b) in zip(triple, triple[1:]):
-                if (
-                    src_a not in parsed_input[src_b]
-                    and src_a not in parsed_input[dst_b]
-                    and dst_a not in parsed_input[src_b]
-                    and dst_a not in parsed_input[dst_b]
-                ):
-                    valid = False
-            if not valid: continue
-
-
-            if step and step % 10000 == 0:
-                print(step)
-            for src, dst in triple:
-                cpy[src].discard(dst)
-                cpy[dst].discard(src)
-            todo = {i for pair in triple for i in pair}
+            todo = set(graph)
             groups = []
             while todo:
                 gtodo = {todo.pop()}
@@ -147,15 +112,11 @@ class Day25(aoc.Challenge):
                     cur = gtodo.pop()
                     todo.discard(cur)
                     group.add(cur)
-                    gtodo.update(cpy[cur] - group)
+                    gtodo.update(graph[cur] - group)
                 groups.append(group)
             if len(groups) == 2:
+                print(counts.most_common(3))
                 return math.prod(len(g) for g in groups)
-            for src, dst in triple:
-                cpy[src].add(dst)
-                cpy[dst].add(src)
-
-        return 0
 
     def part2(self, parsed_input: InputType) -> int:
         raise NotImplementedError
