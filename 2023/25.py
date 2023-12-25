@@ -76,34 +76,22 @@ class Day25(aoc.Challenge):
 
         for j in range(200):
             for i in range(50):
-                if i and i % 10 == 0:
-                    print("Step", j, i)
                 start = random.choice(nodes)
                 end = random.choice(nodes)
-                if start == end:
-                    continue
-                todo = []
-                todo.append((start, set(), set()))
-                while todo:
-                    cur, path, edges = random.choice(todo)
-                    todo.remove((cur, path, edges))
-                    if cur == end:
-                        counts.update(edges)
-                        print(start, end)
-                        break
+                cur = start
+                edges = set()
+                while cur != end:
+                    neighbor = random.choice(graph[cur])
+                    edges.add(tuple(sorted([cur, neighbor])))
+                    cur = neighbor
+                counts.update(edges)
 
-                    newpath = path | {cur}
-                    for neighbor in parsed_input[cur]:
-                        if neighbor not in path:
-                            new_edges = edges | {tuple(sorted([cur, neighbor]))}
-                            todo.append((neighbor, newpath, new_edges))
-
-            graph = copy.deepcopy(parsed_input)
+            cpy = copy.deepcopy(parsed_input)
             for (a, b), _ in counts.most_common(3):
-                graph[a].remove(b)
-                graph[b].remove(a)
+                cpy[a].remove(b)
+                cpy[b].remove(a)
 
-            todo = set(graph)
+            todo = set(cpy)
             groups = []
             while todo:
                 gtodo = {todo.pop()}
@@ -112,7 +100,7 @@ class Day25(aoc.Challenge):
                     cur = gtodo.pop()
                     todo.discard(cur)
                     group.add(cur)
-                    gtodo.update(graph[cur] - group)
+                    gtodo.update(cpy[cur] - group)
                 groups.append(group)
             if len(groups) == 2:
                 print(counts.most_common(3))
