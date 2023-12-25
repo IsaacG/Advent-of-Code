@@ -69,6 +69,34 @@ class Day25(aoc.Challenge):
     # max_x, max_y = width - 1, height - 1
 
     def part1(self, parsed_input: InputType) -> int:
+        nodes = sorted(parsed_input)
+        start = nodes[0]
+        others = set(nodes[1:])
+
+        for end in nodes[1:]:
+            print(start, end)
+            paths = []
+            todo = [(start, [])]
+            cur = start
+            while todo:
+                cur, path = todo.pop()
+                if cur == end:
+                    paths.append(set(path))
+                else:
+                    newpath = path + [cur]
+                    for neighbor in parsed_input[cur]:
+                        if neighbor not in path:
+                            todo.append((neighbor, newpath))
+            print(end, len(paths))
+            others.discard(end)
+            for triple in itertools.combinations(others, r=3):
+                triple = set(triple)
+                if all(path & triple for path in paths):
+                    print(triple)
+            others.add(end)
+
+        return
+
         all_components = set(parsed_input)
         connections = set()
         for src, dsts in parsed_input.items():
