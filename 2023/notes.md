@@ -33,6 +33,38 @@ Day       Time   Rank  Score       Time   Rank  Score       Time   Rank  Score
 * I managed to get day 18 part 1 in 20th place! My best ranking to date.
 * I got under 500 seven times and under 1000 21 times -- almost half the time!
 
+# Slow Days
+
+```
+2023/12 Part 2: PASS in   1.265  s!
+2023/13 Part 2: PASS in   1.234  s!
+2023/14 Part 2: PASS in   4.497  s!
+2023/16 Part 2: PASS in   7.736  s!
+2023/17 Part 1: PASS in   4.493  s!
+2023/17 Part 2: PASS in  16.562  s!
+2023/21 Part 2: PASS in   9.181  s!
+2023/23 Part 1: PASS in   7.117  s!
+2023/23 Part 2: PASS in  20.766  s!
+2023/24 Part 2: PASS in  49.109  s!
+2023/25 Part 1: PASS in  14.001  s!
+```
+
+* Day 14: Tilt the board and roll rocks around a lot of times.
+* Day 16: Map a light beam across a board of reflectors, for all possible starts.
+* Day 17: Find the route with the least heat loss with cart movement requirements.
+  Uses Djisktra. A* doesn't help here.
+* Day 21: Find the number of locations reachable after N steps. Lots and lots of steps.
+* Day 23: Find the max length path. Not much room for optimization that I know of. Maybe networkx?
+* Day 24: Hit astroids with one rock. Uses z3. No idea how to do better.
+* Day 25: Find the min cut set of a graph.
+  Can be done using networkx. Hard problem without a greats solution.
+
+```
+$ time ./runner.py --check --all-days
+0m51.371s  # ProDesk
+2m10.179s  # NUC
+```
+
 # Day 01
 
 ## Issue One
