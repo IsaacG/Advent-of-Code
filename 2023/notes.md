@@ -67,12 +67,18 @@ $ time ./runner.py --check --all-days
 
 # Day 01
 
+The exercise: scan lines to find the first and last number on each line.
+Part two: expand the words "one", "two", ... "nine" and repeat the above.
+Catch: words like "twone" and "eightwo" need to be expanded to two numbers.
+
 ## Issue One
+
 I decided it would be good to use the faster desktop this year.
 The exercise starts and I instantly realize my desktop doesn't have cookies set up to download the data.
 Close that all down and switch to the server!
 
 ## Issue Two
+
 Instead of adding `total += number[0] * 10 + number[-1]` I added `total += number[0] + number[-1]`.
 Thankfully I fixed that pretty quickly to solve part 1.
 
@@ -95,11 +101,23 @@ total += first_digit(line) * 10 + first_digit(line2)
 Alas, too many variables and too easy to confuse them. `line2 = line[::-1]` is using the mutated line and not `original`.
 I only discovered this after abandoning ship and writing my new solution.
 
+## Solution
+
+I solved this by iterating over each line and collecting numbers in a new list.
+Then I pull the first and last from the new list.
+For each line, I iterate over index position and check for digits or word at that position.
+
 # Day 02
 
-Not much to see here.
+The exercise: a handful of colored marbles are pulled from a bucket.
+Assuming a per-color maximum, count invalid hands.
+Part two: given the hands, determine the required minimum of each color in the bucket.
+This is simply the max value of each color.
 
 # Day 03
+
+The exercise: parse a parts diagram, identifying multi-character numbers which are adjacent to parts symbols.
+This is largely a parsing problem, mapping numbers to a location span.
 
 ## Approach
 
@@ -116,6 +134,7 @@ This produced three maps:
 Using these three maps made the rest of the exercise relatively simple, once I corrected my off-by-one error.
 
 ## Issue One
+
 I used regex to find number start and end position of each number, then used `x in range(start, end + 1)` to map each digit to the number's start coordinate.
 However, the `re.match.span()` already adds +1 to the end so I was extending digits too far by one.
 This managed to work with the example input but not my real input.
@@ -123,10 +142,24 @@ That cost me at least 5 minutes.
 
 # Day 04
 
+The exercise: given a bunch of cards with numbers and corresponding numbers drawn, count the number of wins.
+Part two: each time a card wins, consecutive cards are counted multiple times.
+
 Relatively straight forward day.
 Part two took a bit of squinting to understand what was being asked but the example helped.
 
+## Approach
+
+For part two, it could be tempting to replicate card data, but that tends to go poorly.
+Instead, based on prior experience, I maintain a count/multiplication dict which is applies to each card total.
+
 # Day 05
+
+The exercise: given a number of translation rules which are applied to ranges, and a set of starting values, apply the translations in order.
+Part two: same as part one but the starting set is actually a range.
+The twist: the number of values is very large and managing it as a set of values is not viable.
+Instead, the algorithm must handle ranges of values.
+This requires applying range rules to ranges, potentially splitting ranges into multiple ranges (range overlaps).
 
 That was a ride!
 I managed to rank 416/2180.
@@ -136,7 +169,22 @@ I then had a bug where I assumed when an input range exceeded the translation ra
 Once that was fixed, I was failing to pass tests, because I changed variables around but failed to update the `return mix(...)` line.
 I spent a bunch of time going over the example, line by line, until I realized that error.
 
+## Approach
+
+I initally solved part one using a set of values and part two using ranges.
+I later updates part one to also use ranges so it can reuse the same code as part two.
+
+One tricky bit here was handling range overlaps.
+Given a translation rule which impacts `[3..5]` and an input range of `[2..7]`,
+* the pre-overlap `[2]` is copied verbatim,
+* the overlap `[3..5]` is translated, and
+* the post-overlap `[6..7]` needs to be put back into the queue to potentially match future rules.
+The last part of requeuing part of the overlap was easy to overloop and handle incorrectly.
+
 # Day 06
+
+The exercise: given a fixed amount of time to win a race, where the time is used to first charge the car then drive the car, determine the ways to split the charge then drive such that the car drives past a certain distance.
+Part two: solve this with larger values.
 
 Pretty simple day.
 
@@ -178,6 +226,9 @@ If those inner values match `x` exactly, they need to be shifted inwards by one.
 
 # Day 07
 
+The exercise: score multiple hands of cards based on Poker-like ordering. `J` is a Jack, sorted between `Q` and `T`.
+Part two: `J` is a Joker, to be replaced with whatever yields the highest score.
+
 I'm very glad I wrote a Python sort function in the past!
 Figuring that out on the fly would have been challenging.
 
@@ -188,6 +239,15 @@ Figuring that out on the fly would have been challenging.
 2. I was worried about handling ties and that my result might be wrong due to a draw.
    I added code to check for a draw (duplicate hands).
    However, those don't appear to exist in my input so I later removed it.
+
+## Approach
+
+This can be solved by writing a Python sort ranking function.
+Hands can be described by a series of rules, encoded as the largest count of a card and the number of pairs.
+`(5, 0)` is five of a kind. `(3, 1)` is three of a kind and one pair -- a full house.
+Ties are broken by card valuesk in the order they appear.
+Combined, this provides a mechanism for scoring any hand in a sort order.
+For part two, `J` can be replaced by whichever card appears the most times (ties broken by card value), defaulting to `A` (eg for all Jokers).
 
 # Day 08
 
