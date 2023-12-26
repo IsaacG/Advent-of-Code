@@ -14,6 +14,7 @@ Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"""
 
 InputType = dict[int, list[dict[str, int]]]
+P1_LIMITS = {"red": 12, "green": 13, "blue": 14}
 
 
 class Day02(aoc.Challenge):
@@ -26,12 +27,11 @@ class Day02(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return which games are valid based on a per-color limit."""
-        limits = {"red": 12, "green": 13, "blue": 14}
         return sum(
             game_id for game_id, bunches in parsed_input.items()
             if all(
                 all(
-                    bunch.get(color, 0) <= limit for color, limit in limits.items()
+                    bunch.get(color, 0) <= limit for color, limit in P1_LIMITS.items()
                 )
                 for bunch in bunches
             )

@@ -19,9 +19,10 @@ zoneight234
 7pqrstsixteen""",
 ]
 
+NUMBER_WORDS = "one two three four five six seven eight nine"
 WORDS = {
-    word: str(index + 1)
-    for index, word in enumerate("one two three four five six seven eight nine".split())
+    word: str(index)
+    for index, word in enumerate(NUMBER_WORDS.split(), start=1)
 }
 
 
