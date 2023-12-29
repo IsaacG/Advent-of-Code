@@ -24,7 +24,7 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=29),
     ]
 
-    def solver(self, starts: list[complex], end: complex, board: aoc.Board) -> int:
+    def get_steps(self, starts: list[complex], end: complex, board: aoc.Board) -> int:
         """Return the min steps from start to end."""
         step_count = {point: 0 for point in starts}
         to_visit = collections.deque(starts)
@@ -46,7 +46,7 @@ class Day12(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         """Return steps from start to end."""
         start, end, board = parsed_input
-        return self.solver([start], end, board)
+        return self.get_steps([start], end, board)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return steps from any low point to end."""
@@ -56,7 +56,7 @@ class Day12(aoc.Challenge):
             for point, height in board.items()
             if height == 0
         ]
-        return self.solver(starts, end, board)
+        return self.get_steps(starts, end, board)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
