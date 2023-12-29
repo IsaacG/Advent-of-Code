@@ -251,11 +251,13 @@ For part two, `J` can be replaced by whichever card appears the most times (ties
 
 # Day 08
 
-1. I wasted some time since I forgot to reset steps=0 inside my `foreach start` loop.
-2. The instructions in part 2 has example nodes with digits in the name, which threw me for a loop.
-   For part 1 I assumed the node names were all alpha.
-   And they are!
-   The example is just odd.
+The exercise: walk a ordered graph from start to end following cyclic L/R instructions and count steps.
+Part two: given multiple starts and ends, figure out how many steps it takes to get from being at all starts to being at all ends.
+
+## Approach
+
+Assume each start-to-end count is cyclic.
+Solve each start-to-end count then take the lowest common multiple.
 
 ## Part 2 data assumptions
 
@@ -266,11 +268,29 @@ The part two solution using LCM assumes that:
 
 I added `pre_run()` logic to validate these assumptions.
 
+## Issues
+
+1. I wasted some time since I forgot to reset steps=0 inside my `foreach start` loop.
+2. The instructions in part 2 has example nodes with digits in the name, which threw me for a loop.
+   For part 1 I assumed the node names were all alpha.
+   And they are!
+   The example is just odd.
+
 # Day 09
+
+The exercise: given a sequence of numbers, use the iterative first-different approach to compute the next value.
+This is how derivatives in math works.
+Part two: extend the above to solve for test prior value as well as the following value.
 
 I instantly recognized this as requiring solving a polynomial and describing the first differences approach.
 However, I am not sufficiently familiar with numpy or other math libraries to leverage those.
 I was also battling internet issues this night.
+
+## Approach
+
+I solved this using the approach described in the exercise.
+This was more of a "implement this algorithm" than "figure out how to solve this".
+That said, using a math solver library would probably be less code and more efficient.
 
 This code could be made more efficient (by roughly 10%) by reducing the recursion limit by one.
 
