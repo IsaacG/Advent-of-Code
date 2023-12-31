@@ -91,19 +91,20 @@ class Day14(aoc.Challenge):
         (_, height), stationary, moving = parsed_input
 
         # Find a cycle in the rotation.
-        cache = {}
+        step_to_map = []
+        map_to_step = {}
         for step in range(STEPS_P2):
             moving = self.cycle(moving, stationary)
 
             frozen = frozenset(moving)
-            if frozen in cache:
-                cycle_size = (step - cache[frozen])
+            if frozen in map_to_step:
+                cycle_size = (step - map_to_step[frozen])
                 remaining_steps = STEPS_P2 - step - 1
                 remaining_steps %= cycle_size
-                for _ in range(remaining_steps):
-                    moving = self.cycle(moving, stationary)
+                moving = step_to_map[map_to_step[frozen] + remaining_steps]
                 break
-            cache[frozenset(moving)] = step
+            map_to_step[frozen] = step
+            step_to_map.append(frozen)
 
         return int(sum(height - rock.imag for rock in moving))
 
