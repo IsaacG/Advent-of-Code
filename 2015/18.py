@@ -23,7 +23,7 @@ class Day18(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseCharMap(lambda x: x == "#")
 
-    def solver(self, bitmap: dict[complex, bool], cycles: int, corners: bool) -> int:
+    def simulate(self, bitmap: dict[complex, bool], cycles: int, corners: bool) -> int:
         """Run Conway's Game of Life and return number of lights on at end."""
         # The number of neighbors which will turn a light on.
         want = {True: (2, 3), False: (3,)}
@@ -56,9 +56,9 @@ class Day18(aoc.Challenge):
     def part1(self, parsed_input: InputType) -> int:
         """Return the number of lights on, with corners not stuck."""
         cycles = 4 if self.testing else 100
-        return self.solver(parsed_input, cycles, False)
+        return self.simulate(parsed_input, cycles, False)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return the number of lights on, with corners stuck on."""
         cycles = 5 if self.testing else 100
-        return self.solver(parsed_input, cycles, True)
+        return self.simulate(parsed_input, cycles, True)

@@ -134,7 +134,7 @@ class Day22(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
 
-    def solver(self, boss: dict[str, int], hard: bool) -> int:
+    def simulate(self, boss: dict[str, int], hard: bool) -> int:
         """Return the min mana needed to beat the boss."""
         start = GameState(
             player_hp=50,
@@ -169,11 +169,11 @@ class Day22(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return mana to win, easy mode."""
-        return self.solver(dict(parsed_input), False)
+        return self.simulate(dict(parsed_input), False)
 
     def part2(self, parsed_input: InputType) -> int:
         """Return mana to win, hard mode."""
-        got = self.solver(dict(parsed_input), True)
+        got = self.simulate(dict(parsed_input), True)
         assert got > 900   # Attempt 1
         assert got < 1242  # Attempt 2
         assert got > 1189  # Attempt 3

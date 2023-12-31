@@ -66,7 +66,7 @@ class Day21(aoc.Challenge):
 
         return rounds_to_win[True] <= rounds_to_win[False]
 
-    def solver(self, boss: dict[str, int]) -> dict[bool, list[int]]:
+    def simulate(self, boss: dict[str, int]) -> dict[bool, list[int]]:
         """Compute all costs for all outcomes."""
         costs: dict[bool, list[int]] = {True: [], False: []}
         you = {"Hit Points": 100}
@@ -86,10 +86,10 @@ class Day21(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         """Return the min cost for the player to win."""
-        costs = self.solver(dict(parsed_input))
+        costs = self.simulate(dict(parsed_input))
         return min(costs[True])
 
     def part2(self, parsed_input: InputType) -> int:
         """Return the max cost for the boss to win."""
-        costs = self.solver(dict(parsed_input))
+        costs = self.simulate(dict(parsed_input))
         return max(costs[False])
