@@ -288,7 +288,7 @@ I was also battling internet issues this night.
 
 ## Approach
 
-I solved this using the approach described in the exercise.
+I solved this using the recursive approach described in the exercise.
 This was more of a "implement this algorithm" than "figure out how to solve this".
 That said, using a math solver library would probably be less code and more efficient.
 
@@ -305,7 +305,49 @@ if len(set(diffs)) == 1:
 
 # Day 10
 
-Started 60 minutes late.
+The exercise: walk an ASCII loop path around a map with odd corner symbols.
+Count the steps to the midway point.
+Part two: compute the area enclosed by the loop.
+
+## Approach
+
+I used three maps to figure things out.
+The first is used to walk the loop and rotate at corners.
+The latter two are used to replace the "S" start location with the appropriate pipe symbol.
+Replacing the "S" symbol allows me to look at the pipe to compute the interior size.
+
+* Corner symbol and input direction to an output direction (for rotating).
+* Direction and value "pipe continues" symbols to test which sides of the start square are pipe continuations.
+* A pair of start-neighboring continuation symbols to what the start symbol ought to be.
+
+Walking the pipe is simple enough.
+1. Start at the start location.
+2. Pick a valid direction.
+3. Walk the pipe, rotating at corners, until we get back to the start.
+4. Return half the loop length.
+
+Computing the interior is a bit more tricky.
+
+The shoelace formula apparently makes it trivial.
+That's not what I did!
+First, I consider any part of the board which is not part of the loop as \"empty\".
+Next, I did the \"ray crossing\" approach; if you start from outside the loop and draw a straight line, every time you cross a pipe you alternate from being outside the loop to being inside the loop.
+When inside the loop, any empty space is tallied up.
+Finally, add the loop itself.
+
+Figuring out the crossing isn't always straight forward, though!
+Crossing a `|` is a clear crossover; `F--7` or `L--J` is not a crossover; `F--J` or `L--7` is a crossover!
+My initial approach was to track the start-end and to differentiate `F--J` from `F--7`.
+
+It was then pointed out to me that we could consider the `F7` to be in the lower half of the cell and the `LJ` to be in the upper half of the cell.
+Imagine the ray is only travelling in the upper half of the cell.
+`LJ` are crossovers and `F7` are ignored.
+`L--J` would be a cross-in then cross-out without any empty interior.
+`L--7` and `F--J` would have a single cross-over.
+`F7` doesn't register.
+This makes the code a bit cleaner.
+
+Note: I started 60 minutes late.
 
 # Day 12
 
