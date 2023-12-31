@@ -349,18 +349,94 @@ This makes the code a bit cleaner.
 
 Note: I started 60 minutes late.
 
+# Day 11
+
+The exercise: sum the distance between all pairs of galaxies on the map.
+Twist: any empty row or column counts as two empty rows or columns.
+Part two: any empty row or column counts as 1000000 empty rows or columns.
+
+## Approach
+
+Always having everything as a `set[complex]` helped a whole lot here!
+I was able to find empty rows/columns, assign each row/column an offset based on empty rows/columns and update all objects in the set.
+
+I got hit hard by an off by one.
+In part one, I added `1` to the offset on empty rows/columns.
+For part two, I changed the `1` to `1000000`.
+That ought to be `1` and `1000000 - 1` or `2` and `1000000`.
+
+Once I resolved the off-by-one, this was pretty straight forward.
+
 # Day 12
 
-I solved this 5 days later on my 3rd attempt.
-I wrote a bunch of approaches and then deleted them.
-See git history.
+Exercise: count how many ways the unknowns can be resolved into a spring or gap to make the needed groups.
+Part two: the input is larger.
+
+I explored a number of approaches the proved futile.
+I didn't solve this until five days later on my third approach.
+My failed approaches tried too hard to be too clever and preemptively prune.
+They were all riddled with errors and the pruning proved unneeded.
+See the git history for all the ways I failed to solve this.
+
+## Approach
+
+# Day 13
+
+Exercise: locate the horizontal and vertical lines around which the map is reflected.
+Part two: assuming exactly one reflected cell needs to be toggled, find the reflection lines.
+
+## Approach
+
+Pick every possible line.
+For every line, check if both sides matched a reflection of the other side.
+
+I used a `set[complex]` here, as I do everywhere.
+Using a `Sequence` might have made things easier as I could check if `data[i:j] == data[k:j - 1:-1]`.
+On the other hand, sparse sets are faster than dense sequences.
+
+TODO: try to solve this using a `Sequence`.
+
+For part two, I just brute forced part one with each cell toggled.
+Doing part two, I noticed my part one only checked reflections in one direction, which works so long as the reflection line is on one half but not on the other.
+This cased incorrect part two results until corrected.
 
 # Day 14
 
+Exercise: given rolling and stationary rocks on a map, tilt the plane so the rolling rocks all roll until stopped.
+Compute a value based on rock position.
+Part two: repeat this process a large number of times.
+Twist: that large number is too large to reasonably simulate.
+
+## Approach
+
+For part one, I just simulate things.
+There are clever approaches using Sequences; this may be another day where `set[complex]` is not the best structure.
+
+For part two, I track prior states and look for a cyclic pattern.
+If the rocks finish in the same location after $cycle_a$ and $cycle_b$ rotations, then they will also finish in that location after $k * (cycle_b - cycle_a) + cycle_a$ cycles.
+To compute the finish pattern after a large number of cycles, $number$,
+
+```math
+cycle_len = cycle_b - cycle_a
+remainder = (number - cycle_a) % cycle_len
+cycle_number = cycle_(a + remainder)
+```
+
+## Notes
+
+This was one of those days with a lot of issues getting variable names correct, accounting for off-by-ones and other programmer errors.
+
 Delayed start.
+
+## Future improvements
 
 I can deduplicate the 4-directions code by using the north code in a loop by rotating the grid 90 degrees between rotations.
 However, that seems to slow things down by 50%.
+It would be nice to find a fast way to dedupe that code.
+
+# Day 15
+
+Reading and understanding the ask today was a challenge.
 
 # Day 16
 
