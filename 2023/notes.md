@@ -211,13 +211,23 @@ return math.prod(
 
 Note the inequality:
 
+```math
+(time - i) \times i > distance
 ```
-(time - i) * i > distance
--1 * x * x + time * x - distance > 0
-# Quadratic equation!
-x = (-b +/- sqrt(b**2 - 4 * a * c)) / (2 * a)
-x = (-time +/- math.sqrt(time**2 - 4 * distance)) / (-2)
-x = (time +/- math.sqrt(time**2 - 4 * distance)) / 2
+```math
+-1 \times x \times x + time \times x - distance > 0
+```
+
+Quadratic equation!
+
+```math
+x = -b \pm \frac{\sqrt{b^2 - 4 \times a \times c}}{2 \times a}
+```
+```math
+x = -time \pm \frac{\sqrt{time^2 - 4 \times distance}}{-2}
+```
+```math
+x = time \pm \frac{\sqrt{time^2 - 4 \times distance}}{2}
 ```
 
 The inequality is `> 0` which means `x` sets the thresholds of the interval, but it is an open interval, i.e. `x` itself is not included.
@@ -417,9 +427,13 @@ If the rocks finish in the same location after $cycle_a$ and $cycle_b$ rotations
 To compute the finish pattern after a large number of cycles, $number$,
 
 ```math
-cycle_len = cycle_b - cycle_a
-remainder = (number - cycle_a) % cycle_len
-cycle_number = cycle_(a + remainder)
+cycle_{len} = cycle_b - cycle_a
+```
+```math
+remainder = (number - cycle_a) \bmod cycle_{len}
+```
+```math
+cycle_{number} = cycle_{a + remainder}
 ```
 
 ## Notes
