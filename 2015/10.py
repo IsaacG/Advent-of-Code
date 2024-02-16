@@ -52,6 +52,7 @@ class Day10(aoc.Challenge):
         """Return look-say length after looping."""
         for _ in range(5 if self.testing else steps):
             string = look_say(string)
+            # string = "".join(f"{len(list(b))}{a}" for a, b in itertools.groupby(string))
         return len(string)
 
     def part1(self, parsed_input: InputType) -> int:
