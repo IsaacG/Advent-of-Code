@@ -30,14 +30,12 @@ COLOR_EMPTY = ' '
 
 def purchase_tickets(data: str) -> int:
     """Day 28: Return the cheapest airline cost."""
+    pattern = re.compile(r"(\S+): (\S+) (\d+)")
+    negative = ("Rebate", "Discount")
     costs = collections.defaultdict(int)
     for line in data.splitlines():
-        airline, item = line.split(": ")
-        item_type, cost = item.split()
-        cost = int(cost)
-        if item_type in ("Rebate", "Discount"):
-            cost *= -1
-        costs[airline] += cost
+        airline, item_type, cost = pattern.fullmatch(line).groups()
+        costs[airline] += int(cost) * (-1 if item_type in negative else 1)
     return min(costs.values())
 
 
