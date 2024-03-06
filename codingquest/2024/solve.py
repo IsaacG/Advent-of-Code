@@ -13,6 +13,7 @@ import queue
 import re
 import statistics
 import string
+import textwrap
 import time
 from typing import Optional
 
@@ -39,8 +40,34 @@ def purchase_tickets(data: str) -> int:
     return min(costs.values())
 
 
+def broken_firewall(data: str) -> str:
+    """Day 29."""
+    ship, customer = 0, 0
+    for line in data.splitlines():
+        datum = [int(a + b, 16) for a, b in more_itertools.chunked(line, 2)]
+        length = datum[2] * 256 + datum[3]
+        addrs = (datum[12:16], datum[16:20])
+        if any(addr[:2] == [192, 168] and all(i <= 254 for i in addr[:2]) for addr in addrs):
+            ship += length
+        elif any(addr[:2] == [10, 0] and all(i <= 254 for i in addr[:2]) for addr in addrs):
+            customer += length
+    return f"{ship}/{customer}"
+
+
+def hotel_door_code(data: str) -> str:
+    """Day 30."""
+    pixels = [
+        pixel
+        for pixel, chunk in zip(itertools.cycle([COLOR_EMPTY, COLOR_SOLID]), data.split())
+        for _ in range(int(chunk))
+    ]
+    return "\n".join("".join(i) for i in more_itertools.chunked(pixels[0:8000], 100))
+
+
 FUNCS = {
     28: purchase_tickets,
+    29: broken_firewall,
+    30: hotel_door_code,
 }
 
 
@@ -62,6 +89,8 @@ def main(day: int | None, data: Optional[pathlib.Path]):
             data.write_text(response.text)
     start = time.perf_counter_ns()
     got = FUNCS[day](data.read_text().rstrip())
+    if isinstance(got, str) and "\n" in got:
+        got = "\n" + got
     end = time.perf_counter_ns()
     delta = end - start
     units = ["ns", "us", "ms", "s"]
