@@ -64,10 +64,26 @@ def hotel_door_code(data: str) -> str:
     return "\n".join("".join(i) for i in more_itertools.chunked(pixels[0:8000], 100))
 
 
+def closest_star_systems(data: str) -> float:
+    """Day 31."""
+    coords = {
+        tuple(float(i) for i in line.split()[-3:])
+        for line in data.splitlines()[1:]
+    }
+    return round(
+        min(
+            math.sqrt((x2 - x1)**2 + (y2 - y1)**2 +  (z2 - z1)**2)
+            for (x1, y1, z1), (x2, y2, z2) in itertools.combinations(coords, 2)
+        ), 3
+    )
+
+
+
 FUNCS = {
     28: purchase_tickets,
     29: broken_firewall,
     30: hotel_door_code,
+    31: closest_star_systems,
 }
 
 
