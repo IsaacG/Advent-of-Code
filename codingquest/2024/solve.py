@@ -77,6 +77,23 @@ def closest_star_systems(data: str) -> float:
         ), 3
     )
 
+def busy_moon_rovers(data: str) -> int:
+    chart, log = (i.splitlines() for i in data.split("\n\n"))
+    dsts = chart[0].split()
+    graph = {}
+    for line in chart[1:]:
+        src, *distances = line.split()
+        graph[src] = {
+            dst: int(distance)
+            for dst, distance in zip(dsts, distances, strict=True)
+        }
+    result = 0
+    for line in log:
+        locations = line.split(": ")[1].split(" -> ")
+        result += sum(graph[src][dst] for src, dst in zip(locations, locations[1:]))
+    return result
+        
+
 
 
 FUNCS = {
@@ -84,6 +101,7 @@ FUNCS = {
     29: broken_firewall,
     30: hotel_door_code,
     31: closest_star_systems,
+    32: busy_moon_rovers,
 }
 
 
