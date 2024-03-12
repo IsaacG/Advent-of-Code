@@ -84,6 +84,7 @@ def closest_star_systems(data: str) -> float:
         ), 3
     )
 
+
 def busy_moon_rovers(data: str) -> int:
     chart, log = (i.splitlines() for i in data.split("\n\n"))
     dsts = chart[0].split()
@@ -139,6 +140,53 @@ def playfair(data: str) -> str:
     return " ".join(full_result)
 
 
+def the_purge(data: str) -> int:
+    """Day 34: count space freed upon file deletion."""
+    # Initialize variables.
+    folder_size = collections.defaultdict(int)
+    file_deletion = collections.defaultdict(int)
+    folder_deletion = set()
+    folder_children = collections.defaultdict(set)
+    delete_re = re.compile(r"delete|temporary")
+    dir_entry_re = re.compile(r" - ([^ ]+) \[FOLDER (\d+)\]")
+    file_entry_re = re.compile(r" - ([^ ]+) (\d+)")
+
+    # Parse the input and populate the data structures.
+    cur_folder = 0
+    for line in data.splitlines():
+        if line.startswith("Folder: "):
+            cur_folder = int(line.removeprefix("Folder: "))
+        elif m := dir_entry_re.fullmatch(line):
+            folder_num = int(m.group(2))
+            folder_children[cur_folder].add(folder_num)
+            if delete_re.search(m.group(1)):
+                folder_deletion.add(folder_num)
+        elif m := file_entry_re.fullmatch(line):
+            file_size = int(m.group(2))
+            folder_size[cur_folder] += file_size
+            if delete_re.search(m.group(1)):
+                file_deletion[cur_folder] += file_size
+
+    # Expand folders to be deleted.
+    exploded_folder_deletion = set()
+    exploded = set()
+    while folder_deletion:
+        folder = folder_deletion.pop()
+        exploded_folder_deletion.add(folder)
+        children = folder_children[folder]
+        exploded_folder_deletion.update(children)
+        for child in children:
+            if child not in exploded:
+                folder_deletion.add(child)
+        exploded.add(folder)
+
+    # Add up all the deletions.
+    not_deleted = set(file_deletion) - exploded_folder_deletion
+    result = sum(folder_size[folder] for folder in exploded_folder_deletion)
+    result += sum(file_deletion[folder] for folder in not_deleted)
+    return result
+
+
 FUNCS = {
     28: purchase_tickets,
     29: broken_firewall,
@@ -146,6 +194,7 @@ FUNCS = {
     31: closest_star_systems,
     32: busy_moon_rovers,
     33: playfair,
+    34: the_purge,
 }
 
 
