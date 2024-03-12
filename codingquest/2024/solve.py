@@ -5,6 +5,7 @@ from __future__ import annotations
 import collections
 import dataclasses
 import functools
+import ipaddress
 import itertools
 import hashlib
 import math
@@ -42,16 +43,22 @@ def purchase_tickets(data: str) -> int:
 
 def broken_firewall(data: str) -> str:
     """Day 29."""
-    ship, customer = 0, 0
+    ranges = (
+        (ipaddress.IPv4Address("192.168.0.0"), ipaddress.IPv4Address("192.168.254.254")),
+        (ipaddress.IPv4Address("10.0.0.0"), ipaddress.IPv4Address("10.0.254.254")),
+    )
+    counts = [0] * len(ranges)
     for line in data.splitlines():
         datum = [int(a + b, 16) for a, b in more_itertools.chunked(line, 2)]
         length = datum[2] * 256 + datum[3]
-        addrs = (datum[12:16], datum[16:20])
-        if any(addr[:2] == [192, 168] and all(i <= 254 for i in addr[:2]) for addr in addrs):
-            ship += length
-        elif any(addr[:2] == [10, 0] and all(i <= 254 for i in addr[:2]) for addr in addrs):
-            customer += length
-    return f"{ship}/{customer}"
+        addrs = [
+            ipaddress.IPv4Address(bytes(int(p) for p in parts))
+            for parts in (datum[12:16], datum[16:20])
+        ]
+        for idx, (low, high) in enumerate(ranges):
+            if any(low <= addr <= high for addr in addrs):
+                counts[idx] += length
+    return "/".join(str(i) for i in counts)
 
 
 def hotel_door_code(data: str) -> str:
