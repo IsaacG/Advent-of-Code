@@ -94,6 +94,42 @@ def busy_moon_rovers(data: str) -> int:
     return result
         
 
+def playfair(data: str) -> str:
+    """Day 33: Playfair Cipher."""
+    chunks = data.split("\n\n")
+    key, message = (chunk.split(": ")[1] for chunk in data.split("\n\n"))
+    key += string.ascii_lowercase
+    # Set up the cipher block
+    letter_coord = {}
+    coord_letter = {}
+    count = 0
+    for letter in key.replace("j", ""):
+        if letter in letter_coord:
+            continue
+        coord = (count % 5, count // 5)
+        letter_coord[letter] = coord
+        coord_letter[coord] = letter
+        count += 1
+
+    # Decrypt the message
+    full_result = []
+    for word in message.split():
+        result = []
+        for chars in  more_itertools.chunked(word, 2):
+            (x_a, y_a), (x_b, y_b) = (letter_coord[char] for char in chars)
+            # Look left/up when letters are on the same column/row.
+            dx, dy = (4 * (y_a == y_b)), (4 * (x_a == x_b))
+            letters = [
+                coord_letter[(x_b + dx) % 5, (y_a + dy) % 5],
+                coord_letter[(x_a + dx) % 5, (y_b + dy) % 5],
+            ]
+            # For some reason, letters need swapping when on the same row.
+            if y_a == y_b:
+                letters.reverse()
+            result.extend(letters)
+        full_result.append("".join(result))
+
+    return " ".join(full_result)
 
 
 FUNCS = {
@@ -102,6 +138,7 @@ FUNCS = {
     30: hotel_door_code,
     31: closest_star_systems,
     32: busy_moon_rovers,
+    33: playfair,
 }
 
 
@@ -115,27 +152,34 @@ def main(day: int | None, data: Optional[pathlib.Path]):
     if day not in FUNCS:
         print(f"Day {day:02} not solved.")
         return
-    if not data:
-        data = pathlib.Path(f"input/{day:02}.txt")
-        if not data.exists():
+    if data:
+        files = [data]
+    else:
+        input_file = pathlib.Path(f"input/{day:02}.txt")
+        if not input_file.exists():
             response = requests.get(INPUT_ENDPOINT, params={"puzzle": f"{day:02}"})
             response.raise_for_status()
-            data.write_text(response.text)
-    start = time.perf_counter_ns()
-    got = FUNCS[day](data.read_text().rstrip())
-    if isinstance(got, str) and "\n" in got:
-        got = "\n" + got
-    end = time.perf_counter_ns()
-    delta = end - start
-    units = ["ns", "us", "ms", "s"]
-    unit = ""
-    for i in units:
-        unit = i
-        if delta < 1000:
-            break
-        delta //= 1000
+            input_file.write_text(response.text)
+        files = [pathlib.Path(f"input/{day:02}.sample"), input_file]
+    for file in files:
+        if not file.exists():
+            print(f"{file} does not exist.")
+            continue
+        start = time.perf_counter_ns()
+        got = FUNCS[day](file.read_text().rstrip())
+        if isinstance(got, str) and "\n" in got:
+            got = "\n" + got
+        end = time.perf_counter_ns()
+        delta = end - start
+        units = ["ns", "us", "ms", "s"]
+        unit = ""
+        for i in units:
+            unit = i
+            if delta < 1000:
+                break
+            delta //= 1000
 
-    print(f"Day {day:02} ({delta:4}{unit:<2}): {got}")
+        print(f"Day {day:02} ({delta:4}{unit:<2}, {str(file):15}): {got}")
 
 
 if __name__ == "__main__":
