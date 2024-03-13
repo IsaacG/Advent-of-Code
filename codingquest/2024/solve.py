@@ -188,6 +188,7 @@ def the_purge(data: str) -> int:
 
 
 def connecting_cities(data: str) -> int:
+    options = {40, 12, 2, 1}
 
     @functools.cache
     def solve(target: int) -> int:
@@ -197,7 +198,6 @@ def connecting_cities(data: str) -> int:
 
     # options = {3, 2, 1}
     # return solve(5)
-    options = {40, 12, 2, 1}
     return solve(856)
 
 
