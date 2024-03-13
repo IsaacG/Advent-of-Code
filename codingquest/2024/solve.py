@@ -187,6 +187,22 @@ def the_purge(data: str) -> int:
     return result
 
 
+def connecting_cities(data: str) -> int:
+
+    @functools.cache
+    def solve(target: int) -> int:
+        if target == 0:
+            return 1
+        return sum(solve(target - option) for option in options if option <= target)
+
+    # options = {3, 2, 1}
+    # return solve(5)
+    options = {40, 12, 2, 1}
+    return solve(856)
+
+
+
+
 FUNCS = {
     28: purchase_tickets,
     29: broken_firewall,
@@ -195,6 +211,7 @@ FUNCS = {
     32: busy_moon_rovers,
     33: playfair,
     34: the_purge,
+    35: connecting_cities,
 }
 
 
