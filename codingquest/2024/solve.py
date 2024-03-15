@@ -188,7 +188,10 @@ def the_purge(data: str) -> int:
 
 
 def connecting_cities(data: str) -> int:
-    options = {40, 12, 2, 1}
+    """Day 35 (2024/8): compute the number of permutations which sums to a target."""
+    sample = "sample" in data
+    options = {3, 2, 1} if sample else {40, 12, 2, 1}
+    target = 5 if sample else 856
 
     @functools.cache
     def solve(target: int) -> int:
@@ -196,11 +199,44 @@ def connecting_cities(data: str) -> int:
             return 1
         return sum(solve(target - option) for option in options if option <= target)
 
-    # options = {3, 2, 1}
-    # return solve(5)
-    return solve(856)
+    return solve(target)
 
 
+def mining_tunnels(data: str) -> int:
+    """Day 36 (2024/9): return the shortest distance through a maze."""
+    # Extract spaces and elevator 3D coordinates.
+    spaces, elevators = (
+        {
+            (x, y, level)
+            for level, floormap in enumerate(data.split("\n\n"))
+            for y, line in enumerate(floormap.splitlines())
+            for x, char in enumerate(line)
+            if char in chars
+        }
+        for chars in (".$", "$")
+    )
+    assert all((x, y, 1 - level) in elevators for x, y, level in elevators)
+    # Find the left-most and right-most spaces, i.e. the entrance and exist.
+    start, end = (f(spaces, key=lambda x: x[0]) for f in (min, max))
+
+    offsets = [(0, -1), (0, +1), (-1, 0), (+1, 0)]
+    # Deptch first search.
+    dq = collections.deque([(0, *start)])
+    seen = set()
+    while dq:
+        step, x, y, level = dq.popleft()
+        if (x, y, level) == end:
+            return step
+        # Consider left, right, up, down. And maybe elevators.
+        options = [(x + dx, y + dy, level) for dx, dy in offsets]
+        if (x, y, level) in elevators:
+            options.append((x, y, 1 - level))
+        for pos in options:
+            if pos in spaces and pos not in seen:
+                seen.add(pos)
+                # Add one when not riding the elevator.
+                next_step = step + (level == pos[2])
+                dq.append((next_step, *pos))
 
 
 FUNCS = {
@@ -212,6 +248,7 @@ FUNCS = {
     33: playfair,
     34: the_purge,
     35: connecting_cities,
+    36: mining_tunnels,
 }
 
 
