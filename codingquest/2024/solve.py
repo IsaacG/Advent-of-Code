@@ -3,24 +3,18 @@
 from __future__ import annotations
 
 import collections
-import dataclasses
 import functools
 import ipaddress
 import itertools
-import hashlib
 import math
 import pathlib
-import queue
 import re
-import statistics
 import string
-import textwrap
 import time
 from typing import Optional
 
 import click
 import more_itertools
-import png  # type: ignore
 import requests  # type: ignore
 
 # Regex used to detect an interger (positive or negative).
@@ -34,9 +28,11 @@ def purchase_tickets(data: str) -> int:
     """Day 28: Return the cheapest airline cost."""
     pattern = re.compile(r"(\S+): (\S+) (\d+)")
     negative = ("Rebate", "Discount")
-    costs = collections.defaultdict(int)
+    costs: dict[str, int] = collections.defaultdict(int)
     for line in data.splitlines():
-        airline, item_type, cost = pattern.fullmatch(line).groups()
+        match = pattern.fullmatch(line)
+        assert match
+        airline, item_type, cost = match.groups()
         costs[airline] += int(cost) * (-1 if item_type in negative else 1)
     return min(costs.values())
 
@@ -79,13 +75,14 @@ def closest_star_systems(data: str) -> float:
     }
     return round(
         min(
-            math.sqrt((x2 - x1)**2 + (y2 - y1)**2 +  (z2 - z1)**2)
+            math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
             for (x1, y1, z1), (x2, y2, z2) in itertools.combinations(coords, 2)
         ), 3
     )
 
 
 def busy_moon_rovers(data: str) -> int:
+    """Day 32: Compute total distance travelled."""
     chart, log = (i.splitlines() for i in data.split("\n\n"))
     dsts = chart[0].split()
     graph = {}
@@ -100,11 +97,10 @@ def busy_moon_rovers(data: str) -> int:
         locations = line.split(": ")[1].split(" -> ")
         result += sum(graph[src][dst] for src, dst in zip(locations, locations[1:]))
     return result
-        
+
 
 def playfair(data: str) -> str:
     """Day 33: Playfair Cipher."""
-    chunks = data.split("\n\n")
     key, message = (chunk.split(": ")[1] for chunk in data.split("\n\n"))
     key += string.ascii_lowercase
     # Set up the cipher block
@@ -123,7 +119,7 @@ def playfair(data: str) -> str:
     full_result = []
     for word in message.split():
         result = []
-        for chars in  more_itertools.chunked(word, 2):
+        for chars in more_itertools.chunked(word, 2):
             (x_a, y_a), (x_b, y_b) = (letter_coord[char] for char in chars)
             # Look left/up when letters are on the same column/row.
             dx, dy = (4 * (y_a == y_b)), (4 * (x_a == x_b))
@@ -143,8 +139,8 @@ def playfair(data: str) -> str:
 def the_purge(data: str) -> int:
     """Day 34: count space freed upon file deletion."""
     # Initialize variables.
-    folder_size = collections.defaultdict(int)
-    file_deletion = collections.defaultdict(int)
+    folder_size: dict[int, int] = collections.defaultdict(int)
+    file_deletion: dict[int, int] = collections.defaultdict(int)
     folder_deletion = set()
     folder_children = collections.defaultdict(set)
     delete_re = re.compile(r"delete|temporary")
@@ -237,6 +233,7 @@ def mining_tunnels(data: str) -> int:
                 # Add one when not riding the elevator.
                 next_step = step + (level == pos[2])
                 dq.append((next_step, *pos))
+    raise RuntimeError("no solution found")
 
 
 FUNCS = {
