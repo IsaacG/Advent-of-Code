@@ -39,7 +39,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=71),
     ]
     PARAMETERIZED_INPUTS = [False, True]
-    INPUT_PARSER = aoc.parse_ascii_char_map(int)
+    INPUT_PARSER = aoc.int_map
 
     def solver(self, parsed_input: InputType, param: bool) -> int:
         """Return the minimum heat loss from start to end."""

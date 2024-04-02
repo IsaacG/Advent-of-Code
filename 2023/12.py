@@ -43,6 +43,8 @@ class Day12(aoc.Challenge):
             # The first group is too small but must match. This is not a match.
             return 0
 
+        first_group = springs[0]
+        first_num = numbers[0]
         count = 0
         # Count possible matches with the first ? being a .
         if springs[0].startswith("?"):
@@ -50,8 +52,6 @@ class Day12(aoc.Challenge):
             count += self.ways_to_fit(skip_start, numbers)
 
         # Count possible matches with the first ? being a #
-        first_group = springs[0]
-        first_num = numbers[0]
         if len(first_group) == first_num:
             count += self.ways_to_fit(springs[1:], numbers[1:])
         elif len(first_group) > first_num and first_group[first_num] == "?":

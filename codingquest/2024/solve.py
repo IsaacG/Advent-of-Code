@@ -17,6 +17,7 @@ import click
 import more_itertools
 import requests  # type: ignore
 
+DAY_OFFSET = 27
 # Regex used to detect an interger (positive or negative).
 NUM_RE = re.compile("-?[0-9]+")
 INPUT_ENDPOINT = "https://codingquest.io/api/puzzledata"
@@ -25,7 +26,7 @@ COLOR_EMPTY = ' '
 
 
 def purchase_tickets(data: str) -> int:
-    """Day 28: Return the cheapest airline cost."""
+    """Day 1: Return the cheapest airline cost."""
     pattern = re.compile(r"(\S+): (\S+) (\d+)")
     negative = ("Rebate", "Discount")
     costs: dict[str, int] = collections.defaultdict(int)
@@ -38,7 +39,7 @@ def purchase_tickets(data: str) -> int:
 
 
 def broken_firewall(data: str) -> str:
-    """Day 29."""
+    """Day 2."""
     ranges = (
         (ipaddress.IPv4Address("192.168.0.0"), ipaddress.IPv4Address("192.168.254.254")),
         (ipaddress.IPv4Address("10.0.0.0"), ipaddress.IPv4Address("10.0.254.254")),
@@ -58,7 +59,7 @@ def broken_firewall(data: str) -> str:
 
 
 def hotel_door_code(data: str) -> str:
-    """Day 30."""
+    """Day 3."""
     pixels = [
         pixel
         for pixel, chunk in zip(itertools.cycle([COLOR_EMPTY, COLOR_SOLID]), data.split())
@@ -68,7 +69,7 @@ def hotel_door_code(data: str) -> str:
 
 
 def closest_star_systems(data: str) -> float:
-    """Day 31."""
+    """Day 4."""
     coords = {
         tuple(float(i) for i in line.split()[-3:])
         for line in data.splitlines()[1:]
@@ -82,7 +83,7 @@ def closest_star_systems(data: str) -> float:
 
 
 def busy_moon_rovers(data: str) -> int:
-    """Day 32: Compute total distance travelled."""
+    """Day 5: Compute total distance travelled."""
     chart, log = (i.splitlines() for i in data.split("\n\n"))
     dsts = chart[0].split()
     graph = {}
@@ -100,7 +101,7 @@ def busy_moon_rovers(data: str) -> int:
 
 
 def playfair(data: str) -> str:
-    """Day 33: Playfair Cipher."""
+    """Day 6: Playfair Cipher."""
     key, message = (chunk.split(": ")[1] for chunk in data.split("\n\n"))
     key += string.ascii_lowercase
     # Set up the cipher block
@@ -137,7 +138,7 @@ def playfair(data: str) -> str:
 
 
 def the_purge(data: str) -> int:
-    """Day 34: count space freed upon file deletion."""
+    """Day 7: count space freed upon file deletion."""
     # Initialize variables.
     folder_size: dict[int, int] = collections.defaultdict(int)
     file_deletion: dict[int, int] = collections.defaultdict(int)
@@ -184,7 +185,7 @@ def the_purge(data: str) -> int:
 
 
 def connecting_cities(data: str) -> int:
-    """Day 35 (2024/8): compute the number of permutations which sums to a target."""
+    """Day 8: compute the number of permutations which sums to a target."""
     sample = "sample" in data
     options = {3, 2, 1} if sample else {40, 12, 2, 1}
     target = 5 if sample else 856
@@ -199,7 +200,7 @@ def connecting_cities(data: str) -> int:
 
 
 def mining_tunnels(data: str) -> int:
-    """Day 36 (2024/9): return the shortest distance through a maze."""
+    """Day 9: return the shortest distance through a maze."""
     # Extract spaces and elevator 3D coordinates.
     spaces, elevators = (
         {
@@ -236,17 +237,17 @@ def mining_tunnels(data: str) -> int:
     raise RuntimeError("no solution found")
 
 
-FUNCS = {
-    28: purchase_tickets,
-    29: broken_firewall,
-    30: hotel_door_code,
-    31: closest_star_systems,
-    32: busy_moon_rovers,
-    33: playfair,
-    34: the_purge,
-    35: connecting_cities,
-    36: mining_tunnels,
-}
+FUNCS = [
+    purchase_tickets,
+    broken_firewall,
+    hotel_door_code,
+    closest_star_systems,
+    busy_moon_rovers,
+    playfair,
+    the_purge,
+    connecting_cities,
+    mining_tunnels,
+]
 
 
 @click.command()
@@ -255,8 +256,8 @@ FUNCS = {
 def main(day: int | None, data: Optional[pathlib.Path]):
     """Run the solver for a specific day."""
     if not day:
-        day = max(FUNCS)
-    if day not in FUNCS:
+        day = len(FUNCS)
+    if day > len(FUNCS):
         print(f"Day {day:02} not solved.")
         return
     if data:
@@ -264,7 +265,7 @@ def main(day: int | None, data: Optional[pathlib.Path]):
     else:
         input_file = pathlib.Path(f"input/{day:02}.txt")
         if not input_file.exists():
-            response = requests.get(INPUT_ENDPOINT, params={"puzzle": f"{day:02}"})
+            response = requests.get(INPUT_ENDPOINT, params={"puzzle": f"{day + DAY_OFFSET:02}"})
             response.raise_for_status()
             input_file.write_text(response.text)
         files = [pathlib.Path(f"input/{day:02}.sample"), input_file]
@@ -273,7 +274,7 @@ def main(day: int | None, data: Optional[pathlib.Path]):
             print(f"{file} does not exist.")
             continue
         start = time.perf_counter_ns()
-        got = FUNCS[day](file.read_text().rstrip())
+        got = FUNCS[day - 1](file.read_text().rstrip())
         if isinstance(got, str) and "\n" in got:
             got = "\n" + got
         end = time.perf_counter_ns()

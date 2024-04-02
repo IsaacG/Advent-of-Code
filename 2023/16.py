@@ -81,18 +81,22 @@ class Day16(aoc.Challenge):
         min_x, min_y, max_x, max_y = aoc.bounding_coords(parsed_input)
 
         return max(
+            # Left edge.
             max(
                 self.energized(parsed_input, complex(min_x - 1, y), RIGHT)
                 for y in range(min_y, max_y + 1)
             ),
+            # Right edge.
             max(
                 self.energized(parsed_input, complex(max_x + 1, y), LEFT)
                 for y in range(min_y, max_y + 1)
             ),
+            # Top.
             max(
                 self.energized(parsed_input, complex(x, min_y - 1), DOWN)
                 for x in range(min_x, max_x + 1)
             ),
+            # Bottom.
             max(
                 self.energized(parsed_input, complex(x, max_y + 1), UP)
                 for x in range(min_x, max_x + 1)

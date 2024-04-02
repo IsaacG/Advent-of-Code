@@ -255,3 +255,4 @@ parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
 parse_ascii_bool_map = AsciiBoolMapParser
 parse_ascii_char_map = ParseCharMap
 char_map = ParseCharMap(str)
+int_map = ParseCharMap(int)

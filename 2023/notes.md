@@ -382,13 +382,30 @@ Once I resolved the off-by-one, this was pretty straight forward.
 Exercise: count how many ways the unknowns can be resolved into a spring or gap to make the needed groups.
 Part two: the input is larger.
 
+## Approach
+
+For every `?`, count the ways things can fit assuming the `?` is a `#` plus the ways things can fit assuming it is a `.`.
+Memoization helps a lot here; thanks, `functools`!
+
+Pruning groups and failing fast helps a lot here.
+* When there are no numbers left and no `#` left, there is exactly one fit.
+* When there are no numbers left and there are `#` left, there is no way to fit.
+* When there are no springs left (but there are still numbers), there is no way to fit.
+* Leading groups of `???` with lengths smaller than the first spring group size can be dropped.
+* Leading groups containing a `#` but smaller than the first spring group size means there is no way to fit.
+* If the leading group length matches the first group number, there is no need to swap just one `?` for a `#`; pair the first group with the first number.
+
+## Notes
+
 I explored a number of approaches the proved futile.
 I didn't solve this until five days later on my third approach.
 My failed approaches tried too hard to be too clever and preemptively prune.
 They were all riddled with errors and the pruning proved unneeded.
 See the git history for all the ways I failed to solve this.
 
-## Approach
+When I did finally get this working, my code still had a bunch of premature optimizations that didn't actually help and later got removed.
+
+I wrote a helper `@printio` decorator to print the inputs and outputs of function calls.
 
 # Day 13
 
@@ -450,14 +467,32 @@ It would be nice to find a fast way to dedupe that code.
 
 # Day 15
 
+Part one: implement a hashing algorithm.
+Part two: use the hash to track per-bucket collections of values with updates.
+
+## Notes
+
 Reading and understanding the ask today was a challenge.
+Solving it, not as much.
+Python's ordered dict helps a lot here.
 
 # Day 16
 
+Part one: compute the path(s) of a beam of light as it bounces and splits around a maze of mirrors.
+Part two: compute the starting location which yields the longest path.
+
+## Approach
+
+I solved this using a `dict[complex, str]`.
+I used some rather lengthly `if-elif` lookup blocks to handle all the cases, which makes for messy and bug prone code, but runs decently fast.
+Part two was decently easy, but runs slowly (8s), by brute forcing things along.
+
+## Notes
+
 My part 1 solution was decently fast to pass the example.
 However, it took me the longest time to figure out why it failed the real input.
-I seeded my data with a beam at `(0, 0) RIGHT` then loop where I examine the next time.
-This was fine in the example with `(0, 0)` is empty but the real data has a reflector at `(0, 0)` which I skipped.
+I seeded my data with a beam at `(0, 0) RIGHT` then loop where I examine the next cell.
+This was fine in the example where `(0, 0)` is empty but the real data has a reflector at `(0, 0)` which my logic skipped right over.
 
 The massive logic block could be changed to a dictionary lookup but that bumps runtime from 8s to 11s.
 
@@ -475,27 +510,71 @@ DIR_IN_TO_OUT = {
 
 It might be possible to speed things up by memoizing energized cells starting from a specific element but I had difficulties making that work.
 
+This input made me update my template to better handle `\` chars.
+
 # Day 17
 
+Part one: solve for the minimum cost path (heat loss) from start to end.
+There are fun constraints on which branches may be taken.
+Part two: those constraints change a bit and are slightly more complex.
+
+## Approach
+
+This is basically a "implement shortest path".
+The constraints translate into pruning steps and require additional tracking data (steps since last turn).
+I solved this with Djisktra.
+I initially used A\* with the Manhatten distance as the heuristic but it seems to not do much better than Djisktra.
+
+## Notes
+
 * `PriorityQueue` and `complex` don't mix so I had to scramble slightly to rewrite everything from `complex` to `tuple[int, int]`.
-* I initially used A\* with the Manhatten distance as the heuristic but it seems to not actually help.
 
 # Day 18
 
+Part one: given directions and distances used to build a loop, compute the loop-enclosed area.
+Part two: the loop is much larger.
+
+## Approach
+
 For part 1, I used a flood fill for the interior and added up the perimeter as I explored it.
+I seeded this with `(1, 1)` which I assume is always inside the loop.
+
+Note, the shoelace formula can help here.
+
+This is one of the few days where I used regex for parsing (in a follow up change).
 
 ## Part 2
 
 I realized pretty quickly that I'd need a scanline here.
+
 I thought I could order by start/end y-coordinates and collect active ranges, but I confused myself then decided not to bother.
-Instead, I went the slower route of computing all the y-changes and, for each y-value, I computed which lines are relevant.
+Instead, I initially went the slower route of computing all the y-changes and, for each y-value, I computed which lines are relevant.
 The line count was small enough that this was fine.
-I got most the way to the end but got stuck for a good long while trying to figure out how to properly account for the perimeter.
+I did eventually go back and fix this up.
+
+I got most the way to the end but got stuck for a good long while trying to figure out how to properly account for the perimeter/block edge overlaps.
+
+Once I got part two working, I was able to use the same solution for both parts.
 
 # Day 19
 
-I had a silly mistake in part two that took me a good half hour or so to figure out.
+Exercise: parse and walk rule trees.
+Part one: for each item, evalute the rules and count the items accepted vs rejected.
+Part two: determine the total number of items that the rules accept vs reject.
 
+## Approach
+
+Part one is simply a matter of walking the rule tree for each items and checking if an item is accepted or not.
+
+Part two took me a bit of time to wrap my head around the fact that each rule sub-divides the remaining accepted block into two pieces.
+Once I figured that out, combined with recursion, I was able to generate 4-dimensional interval blocks which are accepted.
+
+## Notes
+
+The accepted constraints generated by part two can be used to check items in part one.
+However, both parts run fast so that isn't needed.
+
+I had a silly mistake in part two that took me a good half hour or so to figure out.
 Compare,
 
 ```python
