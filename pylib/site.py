@@ -20,6 +20,7 @@ class Website:
         conn = sqlite3.Connection(os.environ['SQL_DB'])
         query = 'SELECT value FROM cookies WHERE key = ?'
         cookie = next(conn.cursor().execute(query, ('aoc',)))[0]
+        cookie = cookie.removeprefix('session=')
 
         self.session = requests.Session()
         self.session.headers.update({'cookie': f'session={cookie}'})
@@ -28,6 +29,7 @@ class Website:
         self._text = None
 
     def set_cookie(self, value: str) -> None:
+        value = value.split("=")[-1]
         conn = sqlite3.Connection(os.environ['SQL_DB'])
         query = 'UPDATE cookies SET value = ? WHERE key = ?'
         print(f"Set cookie to {value}")
@@ -120,7 +122,7 @@ class Website:
 @click.command()
 @click.option("--set_cookie", type=str, required=True)
 def main(set_cookie: str) -> None:
-    Website(0, 0, False).set_cookie(set_cookie.removeprefix("session="))
+    Website(0, 0, False).set_cookie(set_cookie)
 
 
 if __name__ == "__main__":
