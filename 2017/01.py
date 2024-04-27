@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 1: Inverse Captcha."""
 
+from collections.abc import Callable
 from lib import aoc
 
 SAMPLE = (
@@ -29,23 +30,21 @@ class Day01(aoc.Challenge):
         for data in dataset
     ]
     INPUT_PARSER = aoc.parse_one_str
-    # PARAMETERIZED_INPUTS = [False, True]
+    PARAMETERIZED_INPUTS = (
+        # Part one: compare digits to subsequent digit.
+        lambda x: 1,
+        # Part two: compare digits to digits halfway around the list.
+        lambda x: len(x) // 2,
+    )
 
-    def part1(self, parsed_input: str) -> int:
-        """Sum all numbers which match the subsequent number."""
+    def solver(self, parsed_input: str, offsetter: Callable[[str], int]) -> int:
+        """Sum all digits which match the corresponding digit."""
+        offset = offsetter(parsed_input)
+        shifted_list = parsed_input[offset:] + parsed_input[:offset]
         return sum(
-            int(a)
-            for a, b in zip(parsed_input, parsed_input[1:] + parsed_input[:1])
-            if a == b
-        )
-
-    def part2(self, parsed_input: str) -> int:
-        """Sum all numbers which match the subsequent number."""
-        offset = len(parsed_input) // 2
-        return sum(
-            int(a)
-            for a, b in zip(parsed_input, parsed_input[offset:] + parsed_input[:offset])
-            if a == b
+            int(digit)
+            for digit, corresponding in zip(parsed_input, shifted_list)
+            if digit == corresponding
         )
 
 # vim:expandtab:sw=4:ts=4
