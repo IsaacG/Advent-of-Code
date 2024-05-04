@@ -2,11 +2,7 @@
 """Advent of Code, Day 2: Corruption Checksum."""
 from __future__ import annotations
 
-import collections
-import functools
 import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -21,38 +17,32 @@ SAMPLE = [
 3 8 6 5""",
 ]
 
-LineType = int
-InputType = list[LineType]
-
 
 class Day02(aoc.Challenge):
-    """Day 2: Corruption Checksum."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [False, True]
+    """Day 2: Corruption Checksum. Compute checksums of lines."""
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=18),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=9),
     ]
-
     INPUT_PARSER = aoc.parse_multi_int_per_line
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, parsed_input: list[list[int]]) -> int:
+        """Return the sum difference between the largest and smallest value on each line."""
         return sum(
             max(line) - min(line)
             for line in parsed_input
         )
 
-    def part2(self, parsed_input: InputType) -> int:
-        total = 0
-        for line in parsed_input:
-            for a, b in itertools.combinations(sorted(line, reverse=True), 2):
-                if a % b == 0:
-                    total += a // b
-                    break
-        return total
+    def part2(self, parsed_input: list[list[int]]) -> int:
+        """Return the sum quotient between two evenly divisible numbers on each line."""
+        return sum(
+            next(
+                a // b
+                for a, b in itertools.combinations(sorted(line, reverse=True), 2)
+                if a % b == 0
+            )
+            for line in parsed_input
+        )
 
 # vim:expandtab:sw=4:ts=4
