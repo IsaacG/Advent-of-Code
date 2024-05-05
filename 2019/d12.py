@@ -31,88 +31,89 @@ SAMPLE = ["""\
 
 
 class Moon:
-  """Data wrapper around a "body"."""
+    """Data wrapper around a "body"."""
 
-  def __init__(self, pos):
-    self.pos = list(pos)
-    self.len = len(self.pos)
-    self.vel = [0] * self.len
+    def __init__(self, pos):
+        self.pos = list(pos)
+        self.len = len(self.pos)
+        self.vel = [0] * self.len
 
-  def __str__(self):
-    return (
-      f'pos=<x={self.pos[0]:3d}, y={self.pos[1]:3d}, z={self.pos[2]:3d}>, '
-      f'vel=<x={self.vel[0]:3d}, y={self.vel[1]:3d}, z={self.vel[2]:3d}>'
-    )
+    def __str__(self):
+        return (
+            f'pos=<x={self.pos[0]:3d}, y={self.pos[1]:3d}, z={self.pos[2]:3d}>, '
+            f'vel=<x={self.vel[0]:3d}, y={self.vel[1]:3d}, z={self.vel[2]:3d}>'
+        )
 
-  def apply_gravity(self, other):
-    """Update the velocity of `self` based on the location of `other`."""
-    for i in range(self.len):
-      if self.pos[i] < other.pos[i]:
-        v = 1
-      elif self.pos[i] > other.pos[i]:
-        v = -1
-      else:
-        v = 0
-      self.vel[i] += v
+    def apply_gravity(self, other):
+        """Update the velocity of `self` based on the location of `other`."""
+        for i in range(self.len):
+            if self.pos[i] < other.pos[i]:
+                v = 1
+            elif self.pos[i] > other.pos[i]:
+                v = -1
+            else:
+                v = 0
+            self.vel[i] += v
 
-  def apply_velocity(self):
-    """Update position of `self` based on velocity."""
-    for i in range(self.len):
-      self.pos[i] += self.vel[i]
+    def apply_velocity(self):
+        """Update position of `self` based on velocity."""
+        for i in range(self.len):
+            self.pos[i] += self.vel[i]
 
-  def energy(self):
-    """Total energy. Potential E * kinetic E."""
-    return sum(abs(x) for x in self.pos) * sum(abs(x) for x in self.vel)
+    def energy(self):
+        """Total energy. Potential E * kinetic E."""
+        return sum(abs(x) for x in self.pos) * sum(abs(x) for x in self.vel)
 
 
 class Day12(aoc.Challenge):
+    """Day 12."""
 
-  TESTS = (
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=1940),
-    aoc.TestCase(inputs=SAMPLE[1], part=2, want=2772),
-    aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
-  )
-  INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
+    TESTS = (
+        aoc.TestCase(inputs=SAMPLE[0], part=1, want=1940),
+        aoc.TestCase(inputs=SAMPLE[1], part=2, want=2772),
+        aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
+    )
+    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
-  def part1(self, positions: List[Tuple[int]]) -> int:
-    """Run the similation for N cycles and return total energy at the end."""
-    moons = [Moon(position) for position in positions]
-    lim = 100 if self.testing else 1000
-    for step in range(lim):
-      for a, b in itertools.permutations(moons, 2):
-        a.apply_gravity(b)
-      for a in moons:
-        a.apply_velocity()
-    return sum(m.energy() for m in moons)
+    def part1(self, parsed_input: List[Tuple[int]]) -> int:
+        """Run the similation for N cycles and return total energy at the end."""
+        moons = [Moon(position) for position in parsed_input]
+        lim = 100 if self.testing else 1000
+        for _ in range(lim):
+            for a, b in itertools.permutations(moons, 2):
+                a.apply_gravity(b)
+            for a in moons:
+                a.apply_velocity()
+        return sum(m.energy() for m in moons)
 
-  def part2(self, positions: List[Tuple[int]]) -> int:
-    """Calculate how many cycles before looping back to the begining."""
+    def part2(self, parsed_input: List[Tuple[int]]) -> int:
+        """Calculate how many cycles before looping back to the begining."""
 
-    def fp(moons):
-      """Fingerprint function used to convert the moons to a suitable `seen` object."""
-      vals = []
-      for m in moons:
-        vals.extend(m.pos + m.vel)
-      return tuple(vals)
+        def fp(moons):
+            """Fingerprint function used to convert the moons to a suitable `seen` object."""
+            vals = []
+            for m in moons:
+                vals.extend(m.pos + m.vel)
+            return tuple(vals)
 
-    cycles = []
-    # For each axis, count how many cycles until a repeat.
-    for axis in range(len(positions[0])):
-      seen = set()
-      steps = 0
-      moons = [Moon(position[axis:axis + 1]) for position in positions]
-      fingerprint = fp(moons)
-      perms = list(itertools.permutations(moons, 2))
+        cycles = []
+        # For each axis, count how many cycles until a repeat.
+        for axis in range(len(parsed_input[0])):
+            seen = set()
+            steps = 0
+            moons = [Moon(position[axis:axis + 1]) for position in parsed_input]
+            fingerprint = fp(moons)
+            perms = list(itertools.permutations(moons, 2))
 
-      while fingerprint not in seen:
-        seen.add(fingerprint)
-        steps += 1
-        for a, b in perms:
-          a.apply_gravity(b)
-        for a in moons:
-          a.apply_velocity()
-        fingerprint = fp(moons)
+            while fingerprint not in seen:
+                seen.add(fingerprint)
+                steps += 1
+                for a, b in perms:
+                    a.apply_gravity(b)
+                for a in moons:
+                    a.apply_velocity()
+                fingerprint = fp(moons)
 
-      cycles.append(steps)
+            cycles.append(steps)
 
-    return math.lcm(*cycles)
+        return math.lcm(*cycles)

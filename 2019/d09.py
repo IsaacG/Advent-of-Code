@@ -1,14 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 9: Sensor Boost."""
-from __future__ import annotations
 
 import intcode
-import collections
-import functools
-import itertools
-import math
-import re
-
 from lib import aoc
 
 SAMPLE = [
@@ -31,7 +24,7 @@ class Day09(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_one_str
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, parsed_input: str) -> int:
         computer = intcode.Computer(parsed_input, debug=self.DEBUG)
         if self.testing:
             computer.run()
@@ -44,13 +37,10 @@ class Day09(aoc.Challenge):
             raise RuntimeError(f"Test Failed! {results, output}")
         return output
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, parsed_input: str) -> int:
         computer = intcode.Computer(parsed_input, debug=self.DEBUG)
         computer.input.append(2)
         computer.run()
         return computer.output.popleft()
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
 
 # vim:expandtab:sw=4:ts=4

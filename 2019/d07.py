@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 7: Amplification Circuit."""
-from __future__ import annotations
 
 import collections
 import itertools
@@ -33,7 +32,7 @@ class Day07(aoc.Challenge):
     INPUT_PARSER = aoc.parse_one_str
     PARAMETERIZED_INPUTS = [0, 5]
 
-    def solver(self, program: str, input_shift: int) -> int:
+    def solver(self, parsed_input: str, input_shift: int) -> int:
         largest = 0
         # Try all permutations of initial inputs.
         for values in itertools.permutations(range(input_shift, 5 + input_shift)):
@@ -41,16 +40,14 @@ class Day07(aoc.Challenge):
             queues[0].append(0)  # Initial input: 0
             # Chain five programs in serial.
             computers = [
-                intcode.Computer(program, input_q=i, output_q=o)
+                intcode.Computer(parsed_input, input_q=i, output_q=o)
                 for i, o in zip(queues, queues[1:] + queues[:1])
             ]
             # Run all the programs until the last one is stopped.
             while not computers[-1].stopped:
                 for computer in computers:
                     computer.run()
-            value = queues[0].popleft()
-            if value > largest:
-                largest = value
+            largest = max(largest, queues[0].popleft())
 
         return largest
 

@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 5: Sunny with a Chance of Asteroids."""
 
-import itertools
-
 import intcode
 from lib import aoc
 
