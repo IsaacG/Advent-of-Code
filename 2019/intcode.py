@@ -60,7 +60,7 @@ class Computer:
         if input_q is None:
             input_q = collections.deque()
         if output_q is None:
-            output_q = input_q
+            output_q = collections.deque()
 
         self.memory = collections.defaultdict(int)
         self.memory.update(dict(enumerate(int(num) for num in program.split(","))))
@@ -131,7 +131,6 @@ class Computer:
         return self.state == State.STOP
 
     def update_relative_base(self, value: int) -> None:
-        self._debug(f"Update relative_base = {self.relative_base} + {value} = {self.relative_base + value}")
         self.relative_base += value
 
     def set_state(self, state: State) -> None:

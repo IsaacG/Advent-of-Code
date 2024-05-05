@@ -18,20 +18,19 @@ class Day11(aoc.Challenge):
     PARAMETERIZED_INPUTS = [0, 1]
 
     def solver(self, program: str, initial: int) -> int | str:
-        q_in, q_out = collections.deque(), collections.deque()
-        computer = intcode.Computer(program, input_q=q_in, output_q=q_out, debug=self.DEBUG)
+        computer = intcode.Computer(program, debug=self.DEBUG)
         position = complex()
         direction = complex(0, -1)
         painted: set[complex] = set()
         panels: dict[complex, int] = collections.defaultdict(int)
         panels[position] = initial
 
-        q_in.append(panels[position])
+        computer.input.append(panels[position])
         computer.run()
         while not computer.stopped:
             painted.add(position)
-            panels[position] = q_out.popleft()
-            rotation = q_out.popleft()
+            panels[position] = computer.output.popleft()
+            rotation = computer.output.popleft()
             direction *= 1j if rotation else -1j
             position += direction
             computer.input.append(panels[position])
