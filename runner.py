@@ -37,7 +37,7 @@ class ChallengeRunner:
 
     def __post_init__(self) -> None:
         """Initialize."""
-        self._module = importlib.import_module(f"{self.day:02}")
+        self._module = importlib.import_module(f"d{self.day:02}")
 
     def module(self):
         """Reload and return the module."""
@@ -105,7 +105,7 @@ class Runner:
 
     def from_template(self, day: int) -> None:
         """Create a new exercise file from template."""
-        filename = self.base / f"{day:02}.py"
+        filename = self.base / f"d{day:02}.py"
         if filename.exists():
             print(f"{filename.name} already exists")
             return
@@ -117,7 +117,7 @@ class Runner:
             sample=website.codeblocks(),
             title=website.title().strip("- "),
         )
-        filename = self.base / f"{day:02}.py"
+        filename = self.base / f"d{day:02}.py"
         filename.write_text(out)
         filename.chmod(0o700)
 
@@ -176,7 +176,7 @@ class Runner:
         # Set up the file from template.
         self.from_template(day)
         # Import once to set up.
-        module = importlib.import_module(f"{day:02}")
+        module = importlib.import_module(f"d{day:02}")
         obj = getattr(module, f"Day{day:02}")()
         raw_data = obj.raw_data(None)
         submitted = {1: False, 2: False}
@@ -298,7 +298,7 @@ class Runner:
             day_solutions.update(solutions)
         else:
             # Reload code and get the Challenge.
-            module = importlib.import_module(f"{day:02}")
+            module = importlib.import_module(f"d{day:02}")
             obj = getattr(module, f"Day{day:02}")()
             parts = [1] if day == 25 else [1, 2]
             for part in parts:
