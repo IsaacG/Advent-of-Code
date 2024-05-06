@@ -190,7 +190,7 @@ class Runner:
             inotify = inotify_simple.INotify()
             inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
             while events := inotify.read():
-                if not any(i.name == f"{day:02}.py" for i in events):
+                if not any(i.name == f"d{day:02}.py" for i in events):
                     continue
                 print(datetime.datetime.now().strftime("%H:%M:%S"))
                 try:
@@ -257,7 +257,7 @@ class Runner:
         while self.now() < stop_at:
             timeout = (stop_at - self.now()).seconds
             events = inotify.read(timeout=timeout)
-            if not any(i.name == f"{day:02}.py" for i in events):
+            if not any(i.name == f"d{day:02}.py" for i in events):
                 continue
             print(datetime.datetime.now().strftime("%H:%M:%S"))
             try:
@@ -404,7 +404,7 @@ def main(
 
     if not watch or all_days:
         if all_days:
-            days = sorted(int(p.stem) for p in year_dir.glob("[0-2][0-9].py"))
+            days = sorted(int(p.stem) for p in year_dir.glob("d[0-2][0-9].py"))
         else:
             days = [day]
 
