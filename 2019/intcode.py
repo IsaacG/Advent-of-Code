@@ -62,7 +62,7 @@ class Computer:
         if output_q is None:
             output_q = collections.deque()
 
-        self.memory = collections.defaultdict(int)
+        self.memory: dict[int, int] = collections.defaultdict(int)
         self.memory.update(dict(enumerate(int(num) for num in program.split(","))))
         self.ptr = 0
         self.relative_base = 0
