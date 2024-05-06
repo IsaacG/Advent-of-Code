@@ -71,12 +71,14 @@ class Day15(aoc.Challenge):
 
             # From this location, explore the area.
             # When there are no explored adjacencies, backtrack.
-            for _ in range(BACKTRACK_LIMIT):
+            backtrack_limit = BACKTRACK_LIMIT
+            while backtrack_limit:
                 # Find the next unexplored adjacency.
                 while direction := next(
                     (direction for direction in DIRECTIONS if pos + direction not in explored),
                     None,
                 ):
+                    backtrack_limit = BACKTRACK_LIMIT
                     new_pos = pos + direction
                     explored.add(new_pos)
                     candidates.discard(new_pos)
@@ -95,6 +97,7 @@ class Day15(aoc.Challenge):
                 # Got to a dead end. Backtrack when possible.
                 if not path:
                     break
+                backtrack_limit -= 1
                 direction = path[-1]
                 path = path[:-1]
                 pos -= direction
