@@ -19,7 +19,7 @@ class Day05(aoc.Challenge):
 
     def solver(self, parsed_input: list[int], param: bool) -> int:
         """Count how many steps of jumps it takes to exit the memory."""
-        mem = parsed_input.copy()
+        mem = parsed_input
         size = len(mem)
         ptr = 0
 
