@@ -1,75 +1,51 @@
 #!/bin/python
-"""Advent of Code, Day 6: Memory Reallocation."""
-from __future__ import annotations
+"""Advent of Code, Day 6: Memory Reallocation.
 
-import collections
-import functools
+This solution is `O(blocks)` as we redistribute the blocks.
+If the number of blocks is large, we can reduce `O(blocks)` to `O(banks)`.
+However, the block count is low enough that the `O(blocks)` solution appears faster.
+
+```
+div, mod = divmod(num, count)
+extras = {i % count for i in range(idx + 1, idx + 1 + mod)}
+banks[idx] = 0
+banks = [bank + div + (idx in extras) for idx, bank in enumerate(banks)]
+```
+"""
+
 import itertools
-import math
-import re
-
 from lib import aoc
 
-SAMPLE = ["0 2 7 0"]
-
-InputType = list[list[int]]
+SAMPLE = "0 2 7 0"
 
 
 class Day06(aoc.Challenge):
     """Day 6: Memory Reallocation."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [False, True]
-
+    PARAMETERIZED_INPUTS = [False, True]
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=4),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=5),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=4),
     ]
-
     INPUT_PARSER = aoc.parse_multi_int_per_line
 
-    def part1(self, parsed_input: InputType) -> int:
-        banks = parsed_input[0].copy()
-        seen = set()
+    def solver(self, parsed_input: list[list[int]], param: bool) -> int:
+        """Reallocate blocks across banks until a loop is detected."""
+        banks = parsed_input[0]
+        seen: dict[int, int] = {}
         count = len(banks)
-        for steps in range(100000):
-            # print(steps, banks)
-            t = tuple(banks)
-            if t in seen:
-                return steps
-            seen.add(t)
+        for step in itertools.count():
+            hash_ = hash(tuple(banks))
+            if hash_ in seen:
+                return step - seen[hash_] if param else step
+            seen[hash_] = step
             num, idx = max((num, -idx) for idx, num in enumerate(banks))
             idx = -idx
-            # print(f"Select {idx} with {num}")
+
             banks[idx] = 0
             for bank in range(idx + 1, idx + 1 + num):
                 banks[bank % count] += 1
 
-        return 0
-
-    def part2(self, parsed_input: InputType) -> int:
-        banks = parsed_input[0].copy()
-        seen = {}
-        count = len(banks)
-        for steps in range(100000):
-            # print(steps, banks)
-            t = tuple(banks)
-            if t in seen:
-                return steps - seen[t]
-            seen[t] = steps
-            num, idx = max((num, -idx) for idx, num in enumerate(banks))
-            idx = -idx
-            # print(f"Select {idx} with {num}")
-            banks[idx] = 0
-            for bank in range(idx + 1, idx + 1 + num):
-                banks[bank % count] += 1
-
-        return 0
-
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
-        raise NotImplementedError
+        raise RuntimeError("No solution.")
 
 # vim:expandtab:sw=4:ts=4
