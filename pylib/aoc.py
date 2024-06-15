@@ -16,6 +16,7 @@ import contextlib
 import dataclasses
 import functools
 import itertools
+import operator
 import pathlib
 import re
 import time
@@ -43,6 +44,19 @@ EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
 RE_INT = re.compile(r"[+-]?\d+")
 RE_BOUNDED_INT = re.compile(r"\b[+-]?\d+\b")
+OPERATORS = {
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+    "==": operator.eq,
+    "!=": operator.ne,
+    "=": operator.eq,
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.floordiv,
+}
 Interval = tuple[int, int]
 
 OCR_MAP = {
