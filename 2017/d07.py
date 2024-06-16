@@ -56,27 +56,26 @@ class Day07(aoc.Challenge):
                 )
             return tower_weights[node]
 
-        to_check = set(node_weight)
-        while to_check:
-            # Find a node at the edge, i.e. without any children that haven't been explored.
-            node = next(
-                node
-                for node in to_check
-                if all(child not in to_check for child in node_children[node])
+        weight_offset, current = 0, root
+        while True:
+            # Weights of subprograms.
+            weights = {child: sum_weights(child) for child in node_children[current]}
+            # We expect there to be multiple counts as one node should be an outlier.
+            # Until it is balanced, at which point we found the problem node.
+            counts = collections.Counter(weights.values()).most_common()
+
+            if len(counts) <= 1:
+                # If the children are balanced, the current node needs adjusting.
+                return node_weight[current] + weight_offset
+
+            # Find the weight delta then repeat at the outlier child.
+            (sibling_weight, _), (outlier_weight, _) = counts
+            weight_offset = sibling_weight - outlier_weight
+            current = next(
+                child for child, weight in weights.items()
+                if sum_weights(child) == outlier_weight
             )
-            to_check.remove(node)
 
-            # Find a tower with children of uneven weights.
-            weights = collections.Counter(
-                sum_weights(child) for child in node_children[node]
-            ).most_common()
-            if len(weights) <= 1:
-                continue
-            # Find which child is the outlier.
-            (common, _), (outlier, _) = weights
-            tower = next(child for child in node_children[node] if sum_weights(child) == outlier)
-
-            return node_weight[tower] + (common - outlier)
         raise RuntimeError("No solution found.")
 
 # vim:expandtab:sw=4:ts=4
