@@ -39,20 +39,17 @@ class Day09(aoc.Challenge):
 
     def solver(self, parsed_input: str, param) -> int | str:
         """Parse bracket matching in a string."""
-        stream = iter(parsed_input)
+        tokens = list(reversed(parsed_input))
 
         total_score = 0
         bracket_depth = 0
         garbage_group = False
         garbage_count = 0
 
-        while True:
-            try:
-                char = next(stream)
-            except StopIteration:
-                break
+        while tokens:
+            char = tokens.pop()
             if char == "!":
-                next(stream)
+                tokens.pop()
             elif garbage_group:
                 if char == ">":
                     garbage_group = False
