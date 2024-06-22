@@ -1,25 +1,18 @@
 #!/bin/python
 """Advent of Code, Day 9: Stream Processing."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
-SAMPLE = (
+SAMPLE: tuple[list[tuple[str, int]], ...] = (
     [
-        ('{}', '1'),
-        ('{{{}}}', '6'),
-        ('{{},{}}', '5'),
-        ('{{{},{},{{}}}}', '16'),
-        ('{<a>,<a>,<a>,<a>}', '1'),
-        ('{{<ab>},{<ab>},{<ab>},{<ab>}}', '9'),
-        ('{{<!!>},{<!!>},{<!!>},{<!!>}}', '9'),
-        ('{{<a!>},{<a!>},{<a!>},{<ab>}}', '3'),
+        ('{}', 1),
+        ('{{{}}}', 6),
+        ('{{},{}}', 5),
+        ('{{{},{},{{}}}}', 16),
+        ('{<a>,<a>,<a>,<a>}', 1),
+        ('{{<ab>},{<ab>},{<ab>},{<ab>}}', 9),
+        ('{{<!!>},{<!!>},{<!!>},{<!!>}}', 9),
+        ('{{<a!>},{<a!>},{<a!>},{<ab>}}', 3),
     ],
     [
         ('<>', 0),
@@ -36,24 +29,21 @@ SAMPLE = (
 class Day09(aoc.Challenge):
     """Day 9: Stream Processing."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    SUBMIT = {1: False, 2: False}
-    PARAMETERIZED_INPUTS = [0, 1]
-
     TESTS = [
         aoc.TestCase(inputs=data, part=part, want=int(val))
         for part, pairs in enumerate(SAMPLE, 1)
         for data, val in pairs
     ]
     INPUT_PARSER = aoc.parse_one_str
+    PARAMETERIZED_INPUTS = [0, 1]
 
     def solver(self, parsed_input: str, param) -> int | str:
+        """Parse bracket matching in a string."""
         stream = iter(parsed_input)
 
-        total = 0
-        score = 0
-        garbage = False
+        total_score = 0
+        bracket_depth = 0
+        garbage_group = False
         garbage_count = 0
 
         while True:
@@ -63,20 +53,19 @@ class Day09(aoc.Challenge):
                 break
             if char == "!":
                 next(stream)
-            elif garbage:
+            elif garbage_group:
                 if char == ">":
-                    garbage = False
+                    garbage_group = False
                 else:
                     garbage_count += 1
             elif char == "<":
-                garbage = True
+                garbage_group = True
             elif char == "{":
-                score += 1
+                bracket_depth += 1
             elif char == "}":
-                total += score
-                score -= 1
+                total_score += bracket_depth
+                bracket_depth -= 1
 
-        return (total, garbage_count)[param]
-
+        return (total_score, garbage_count)[param]
 
 # vim:expandtab:sw=4:ts=4
