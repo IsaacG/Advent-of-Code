@@ -320,7 +320,7 @@ class Runner:
         ]
 
         solution_file = self.base / "solutions.txt"
-        solution_file.write_text("\n".join(lines))
+        solution_file.write_text("\n".join(lines) + "\n")
 
 
 @click.command()
