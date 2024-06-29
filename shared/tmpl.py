@@ -30,17 +30,15 @@ class Day${day}(aoc.Challenge):
         # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    # INPUT_PARSER = aoc.parse_one_str_per_line
     # INPUT_PARSER = aoc.parse_one_str
-    # INPUT_PARSER = aoc.parse_one_int
     # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_one_int_per_line
     # INPUT_PARSER = aoc.parse_multi_str_per_line
+    # INPUT_PARSER = aoc.parse_one_int
+    # INPUT_PARSER = aoc.parse_one_int_per_line
+    # INPUT_PARSER = aoc.parse_ints_one_line
+    # INPUT_PARSER = aoc.parse_ints_pre_line
     # INPUT_PARSER = aoc.parse_re_group_str(r"(a) .* (b) .* (c)")
     # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
-    # INPUT_PARSER = aoc.parse_multi_int_per_line
-    # INPUT_PARSER = aoc.parse_re_group_int(r"(\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     # INPUT_PARSER = aoc.parse_multi_mixed_per_line
     # INPUT_PARSER = aoc.parse_re_group_mixed(r"(foo) .* (\d+)")
     # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")

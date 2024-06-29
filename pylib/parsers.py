@@ -90,16 +90,22 @@ class BaseParseMultiPerLine(BaseParser):
 class BaseParseRe(BaseParser):
     """Parse multi-line input by applying a regex to find words on each line."""
 
-    def __init__(self, regex: str, convert: Callable[[Iterable[str]], list[Any]]):
+    def __init__(self, regex: str, convert: Callable[[Iterable[str]], list[Any]], one_line: bool = False):
         self.compiled = re.compile(regex)
         self.convert = convert
+        self.one_line = one_line
 
-    def parse(self, puzzle_input: str) -> list[list[Any]]:
+    def parse(self, puzzle_input: str) -> list[list[Any]] | list[Any]:
         """Parse puzzle lines, applying a regex to each line."""
-        return [
+        data = [
             self.convert(self.line_to_iterable(line))
             for line in puzzle_input.splitlines()
         ]
+        if self.one_line:
+            if "\n" in puzzle_input:
+                raise ValueError("Parser set to one line but input has multiple lines!")
+            return data[0]
+        return data
 
     def line_to_iterable(self, line: str) -> Iterable[str]:
         """Return an iterable of str for each line."""
@@ -245,6 +251,8 @@ parse_multi_int_per_line = BaseParseMultiPerLine(input_to_ints)
 parse_re_group_int = lambda x: BaseParseReGroups(x, input_to_ints)
 parse_re_findall_int = lambda x: BaseParseReFindall(x, input_to_ints)
 parse_ints = BaseParseReFindall(RE_INT, input_to_ints)
+parse_ints_one_line = BaseParseReFindall(RE_INT, input_to_ints, one_line=True)
+parse_ints_per_line = BaseParseReFindall(RE_INT, input_to_ints, one_line=False)
 
 # Convert the input into list[list[int | str]], splitting each line into multiple words.
 parse_multi_mixed_per_line = BaseParseMultiPerLine(input_to_mixed)
