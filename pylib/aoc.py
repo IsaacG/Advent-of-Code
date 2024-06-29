@@ -496,7 +496,7 @@ def interval_overlap(one: Interval, two: Interval) -> tuple[Interval | None, Int
 class TestCase:
     """Test out a solution with a known input/want."""
     inputs: str
-    want: str | int
+    want: str | int | None
     part: int
 
 

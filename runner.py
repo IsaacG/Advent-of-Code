@@ -199,7 +199,7 @@ class Runner:
                     obj = getattr(module, f"Day{day:02}")()
                     # Run tests for this part.
                     obj.testing = True
-                    tests = [t for t in obj.TESTS if t.part == part and t.want != 0]
+                    tests = [t for t in obj.TESTS if t.part == part and t.want is not None]
                     if not tests:
                         print(f"No tests found for part {part}")
                         continue

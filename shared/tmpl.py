@@ -25,9 +25,9 @@ class Day${day}(aoc.Challenge):
     # PARAMETERIZED_INPUTS = [False, True]
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=0),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(part=1, inputs=SAMPLE[0], want=None),
+        aoc.TestCase(part=2, inputs=SAMPLE[0], want=None),
+        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
 
     # INPUT_PARSER = aoc.parse_one_str
