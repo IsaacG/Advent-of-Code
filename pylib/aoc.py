@@ -31,6 +31,7 @@ COLOR_SOLID = '█'
 COLOR_EMPTY = ' '
 
 TEST_SKIP = "__DO_NOT_RUN__"
+
 # 4 cardinal directions
 UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
 FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
@@ -42,6 +43,25 @@ STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
+
+HEX_AXIAL_DIRS_POINTY_TOP = {
+  'e':  +1 +0j,
+  'w':  -1 +0j,
+  'ne': +1 +1j,
+  'nw': +0 +1j,
+  'se': +0 -1j,
+  'sw': -1 -1j,
+}
+
+HEX_AXIAL_DIRS_FLAT_TOP = {
+  'n':  +0 +1j,
+  's':  +0 -1j,
+  'ne': +1 +0j,
+  'nw': -1 +1j,
+  'se': +1 -1j,
+  'sw': -1 +0j,
+}
+
 RE_INT = re.compile(r"[+-]?\d+")
 RE_BOUNDED_INT = re.compile(r"\b[+-]?\d+\b")
 OPERATORS = {
