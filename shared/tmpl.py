@@ -36,7 +36,7 @@ class Day${day}(aoc.Challenge):
     # INPUT_PARSER = aoc.parse_one_int
     # INPUT_PARSER = aoc.parse_one_int_per_line
     # INPUT_PARSER = aoc.parse_ints_one_line
-    # INPUT_PARSER = aoc.parse_ints_pre_line
+    # INPUT_PARSER = aoc.parse_ints_per_line
     # INPUT_PARSER = aoc.parse_re_group_str(r"(a) .* (b) .* (c)")
     # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
     # INPUT_PARSER = aoc.parse_multi_mixed_per_line
@@ -52,7 +52,7 @@ class Day${day}(aoc.Challenge):
 
     def part1(self, parsed_input: InputType) -> int:
         print(f"{parsed_input!r}")
-        return 0
+        return None
 
     def part2(self, parsed_input: InputType) -> int:
         raise NotImplementedError
