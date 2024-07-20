@@ -55,32 +55,26 @@ class Day13(aoc.Challenge):
         return severity
 
     def part2(self, parsed_input: InputType) -> int:
-        ranges = dict(sorted(parsed_input))
-        positions = {}
-        directions = {}
-        size = max(ranges) + 1
+        depths, ranges = [], []
+        for depth, range_ in sorted(parsed_input):
+            depths.append(depth)
+            ranges.append(range_)
+        positions = [
+            itertools.cycle(list(range(n)) + list(range(n - 2, 0, -1)))
+            for n in ranges
+        ]
 
-        for depth, range_ in ranges.items():
-            position = 0
-            direction = 1
-            reverse = (0, range_ - 1)
-            for step in range(depth):
-                position += direction
-                if position in reverse:
-                    direction *= -1
-            positions[depth] = position
-            directions[depth] = direction
+        for depth, position in zip(depths, positions):
+            for _ in range(depth):
+                next(position)
 
         for offset in itertools.count():
             if offset % 300000 == 0:
                 print(offset)
-            if all(positions.values()):
+            locations = [next(position) for position in positions]
+            # print(locations)
+            if all(locations):
                 return offset
-
-            positions = {scanner: (position + directions[scanner]) for scanner, position in positions.items()}
-            for scanner, range_ in ranges.items():
-                if positions[scanner] in (0, range_ - 1):
-                    directions[scanner] *= -1
 
 
     def solver(self, parsed_input: InputType, param: bool) -> int | str:
