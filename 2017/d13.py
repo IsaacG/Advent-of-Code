@@ -22,38 +22,36 @@ class Day13(aoc.Challenge):
     INPUT_PARSER = aoc.parse_ints_per_line
 
     def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
-        """Compute a path through a firewall scanner."""
-        ranges = dict(sorted(parsed_input))
-        # This builds a dict of position generators.
-        # If a sensor range is 4, it cycles through positions "0 1 2 3 2 1".
-        # The two range() functions yield "0 1 2" and "3 2 1".
-        # Using itertools.cycle() to generate positions is efficient.
-        positions = {
-            depth: itertools.cycle(list(range(range_ - 1)) + list(range(range_ - 1, 0, -1)))
-            for depth, range_ in ranges.items()
-        }
+        """Compute a path through a firewall scanner.
 
-        # Rather than advancing all the sensors one step at a time,
-        # we can store the sensor position at the moment we pass through that depth.
-        # Advance all sensors by their depth to compute the position-at-passing-through.
-        for depth, position in positions.items():
-            for _ in range(depth):
-                next(position)
+        Each scanner has a fixed number of locations it can be at.
+        The location is cyclic and we only care if it is in the top position or not.
+        If we "unwrap" the path, it can be viewed as a cyclic path, eg (0 1 2 1 0) -> (0 1 2 3 0).
+        The position can be computed as (picoseconds % interval) where the second half of the cycle
+        maps to to the first half but in an upwards direction.
 
+        Given that we only care if `(picoseconds % interval) == 0` and not the actual position,
+        we don't need to track the position.
+        We just need the interval `(range - 1) * 2.
+        """
+        ranges: dict[int, int] = dict(sorted(parsed_input))  # type: ignore
+        intervals = {depth: (range_ - 1) * 2 for depth, range_ in ranges.items()}
+
+        # Part one: sum(range * depth) for each sensor that would catch us (i.e. position == 0).
         if part_one:
-            # Part one: sum(range * depth) for each sensor that would catch us (ie position == 0).
             return sum(
-                range_ * depth
-                for depth, range_ in ranges.items()
-                if next(positions[depth]) == 0
+                ranges[depth] * depth
+                for depth, interval in intervals.items()
+                if depth % interval == 0
             )
 
         # Part two: return the smallest delay for which we can avoid being caught.
-        # Note: Using a list is 10-20% faster than using the dict_values.
-        # Note: We need to pass a list to all() to ensure next() is called on all elements.
-        position_iterators = list(positions.values())
-        for delay in itertools.count():
-            if all([next(position) for position in position_iterators]):
-                return delay
+        # Note, convert intervals to a list for faster iteration.
+        intervals_list = list(intervals.items())
+        return next(
+            delay
+            for delay in itertools.count()
+            if all((delay + depth) % interval for depth, interval in intervals_list)
+        )
 
 # vim:expandtab:sw=4:ts=4
