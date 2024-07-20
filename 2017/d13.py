@@ -55,29 +55,32 @@ class Day13(aoc.Challenge):
         return severity
 
     def part2(self, parsed_input: InputType) -> int:
-        ranges = dict(parsed_input)
-        start_positions = {scanner: 0 for scanner in ranges}
-        start_direction = {scanner: 1 for scanner in ranges}
+        ranges = dict(sorted(parsed_input))
+        positions = {}
+        directions = {}
         size = max(ranges) + 1
-        for offset in itertools.count():
-            if offset % 50000 == 0:
-                print(offset)
-            positions, direction = start_positions.copy(), start_direction.copy()
 
-            for depth in range(size):
-                if depth in positions and positions[depth] == 0:
-                    break
-                positions = {scanner: (position + direction[scanner]) for scanner, position in positions.items()}
-                for scanner, range_ in ranges.items():
-                    if positions[scanner] in (0, range_ - 1):
-                        direction[scanner] *= -1
-            else:
+        for depth, range_ in ranges.items():
+            position = 0
+            direction = 1
+            reverse = (0, range_ - 1)
+            for step in range(depth):
+                position += direction
+                if position in reverse:
+                    direction *= -1
+            positions[depth] = position
+            directions[depth] = direction
+
+        for offset in itertools.count():
+            if offset % 300000 == 0:
+                print(offset)
+            if all(positions.values()):
                 return offset
 
-            start_positions = {scanner: (position + start_direction[scanner]) for scanner, position in start_positions.items()}
+            positions = {scanner: (position + directions[scanner]) for scanner, position in positions.items()}
             for scanner, range_ in ranges.items():
-                if start_positions[scanner] in (0, range_ - 1):
-                    start_direction[scanner] *= -1
+                if positions[scanner] in (0, range_ - 1):
+                    directions[scanner] *= -1
 
 
     def solver(self, parsed_input: InputType, param: bool) -> int | str:
