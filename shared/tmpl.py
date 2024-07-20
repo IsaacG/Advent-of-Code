@@ -51,7 +51,7 @@ class Day${day}(aoc.Challenge):
     # max_x, max_y = width - 1, height - 1
 
     def part1(self, parsed_input: InputType) -> int:
-        print(f"{parsed_input!r}")
+        print("\n".join(["==="] + [f"{k}={v!r}" for k, v in locals().items()] + ["==="]))
         return None
 
     def part2(self, parsed_input: InputType) -> int:
