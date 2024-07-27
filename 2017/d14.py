@@ -74,7 +74,11 @@ class Day14(aoc.Challenge):
             todo = {used.pop()}
             count += 1
             while todo:
-                neighbors = {neighbor for neighbor in aoc.neighbors(todo.pop()) if neighbor in used}
-                used -= neighbors
-                todo |= neighbors
+                todo = {
+                    neighbor
+                    for position in todo
+                    for neighbor in aoc.neighbors(position)
+                    if neighbor in used
+                }
+                used -= todo
         return count
