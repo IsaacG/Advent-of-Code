@@ -99,6 +99,14 @@ class Day13(aoc.Challenge):
         Instead I expand the solution with the larger period (fewer values generates) then check if those would be in the other solution.
 
         This combination can be applied repeatedly until all groups are accounted for, then the min(delays) is the answer.
+
+        3. Hybrid Brute Force
+
+        The combining approach works really well to combine groups which have a single solution.
+        Once there are multiple solutions, things slow down.
+        If we can process most scanners using the progressive groupwise solution, we are left with a single `delay + interval * k`
+        which satisfies most scanners and a few large scanners remaining.
+        Those remaining scanners can be brute forced using `delay + interval * k` for a quick solution.
         """
         # Group scanners by period/interval.
         groups = collections.defaultdict(set)
@@ -114,6 +122,7 @@ class Day13(aoc.Challenge):
 
         # Initial solution: any delay is valid, i.e. 0 + 1 * k
         combined_period, combined_delays = 1, {0}
+        combined_intervals = set()
 
         # Start with the groups with the fewest solutions to keep the solution space size down.
         for group_interval, group_delays in sorted(group_solutions.items(), key=lambda i: len(i[1])):
@@ -126,10 +135,22 @@ class Day13(aoc.Challenge):
                 for delay in combined_delays
             )
             # Filter out delays which are not valid for this group of scanners.
-            combined_delays = {delay for delay in expanded_delays if delay % group_interval in group_delays}
-            combined_period = new_step
-        # Return the smallest valid delay.
-        return min(combined_delays)
+            new_delays = {delay for delay in expanded_delays if delay % group_interval in group_delays}
+            # Stop when we have more than one solution and switch to brute force.
+            if len(new_delays) > 1:
+                break
+            combined_intervals.add(group_interval)
+            combined_delays, combined_period = new_delays, new_step
+
+        # Brute force with the remaining scanners using values `combined_delay + combined_period * k`.
+        remaining_intervals = [(depth, interval) for depth, interval in intervals.items() if interval not in combined_intervals]
+        remaining_intervals.sort(reverse=False, key=lambda a: a[1])
+
+        return next(
+            delay
+            for delay in itertools.count(start=combined_delays.pop(), step=combined_period)
+            if all((delay + depth) % interval for depth, interval in remaining_intervals)
+        )
 
     def part_two_sieve(self, intervals: dict[int, int]) -> int:
         """Sieve - 3.4s.
