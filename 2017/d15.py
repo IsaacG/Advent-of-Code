@@ -1,39 +1,28 @@
 #!/bin/python
 """Advent of Code, Day 15: Dueling Generators."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import math
-import re
-
+import more_itertools
 from lib import aoc
 
 FACTOR_A = 16807
 FACTOR_B = 48271
 MOD = 2147483647
 MASK = (1 << 16) - 1
-SAMPLE = ['65\n8921']
-
-LineType = int
-InputType = list[LineType]
+SAMPLE = '65\n8921'
 
 
 class Day15(aoc.Challenge):
     """Day 15: Dueling Generators."""
 
-    PARAMETERIZED_INPUTS = [False, True]
     TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=588),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=309),
+        aoc.TestCase(part=1, inputs=SAMPLE, want=588),
+        aoc.TestCase(part=2, inputs=SAMPLE, want=309),
     ]
+    PARAMETERIZED_INPUTS = [True, False]
     INPUT_PARSER = aoc.parse_ints_per_line
 
     def solver(self, parsed_input: list[list[int]], param: bool) -> int:
-        (val_a,), (val_b,) = parsed_input
-        part_two = param
-        part_one = not part_two
+        ((val_a,), (val_b,)), part_one = parsed_input, param
 
         def gen(value, factor, mask):
             while True:
@@ -43,11 +32,8 @@ class Day15(aoc.Challenge):
 
         gen_a = gen(val_a, FACTOR_A, 4 - 1)
         gen_b = gen(val_b, FACTOR_B, 8 - 1)
-
-        return sum(
-            1
-            for step in range(40_000_000 if part_one else 5_000_000)
-            if next(gen_a) == next(gen_b)
-        )
+        steps = 40_000_000 if part_one else 5_000_000
+        pairs = more_itertools.take(steps, zip(gen_a, gen_b))
+        return sum(1 for val_a, val_b in pairs if val_a == val_b)
 
 # vim:expandtab:sw=4:ts=4
