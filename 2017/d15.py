@@ -40,6 +40,6 @@ class Day15(aoc.Challenge):
         gen_b = gen(val_b, FACTOR_B, 8 - 1)
         steps = 40_000_000 if part_one else 5_000_000
         pairs = itertools.islice(zip(gen_a, gen_b), steps)
-        return sum(for val_a, val_b in pairs if val_a == val_b)
+        return sum(1 for val_a, val_b in pairs if val_a == val_b)
 
 # vim:expandtab:sw=4:ts=4
