@@ -31,6 +31,7 @@ class Day16(aoc.Challenge):
         dances = 1000000000 if param else 1
         cmds = parsed_input
 
+
         dance_line = collections.deque(string.ascii_lowercase[:size])
 
         def dance():
