@@ -46,6 +46,7 @@ def program(
     sent = 0
     outputs: list[int] = []
     inputs = yield outputs
+    q_in = collections.deque(inputs)
 
     def val(register: int | str) -> int:
         """Return a value, either an immediate value or register lookup."""
@@ -77,12 +78,13 @@ def program(
                 # Yield if we are out of values.
                 # If we have recv values, read one.
                 # If we yielded and still do not have values, return the sent count.
-                if not inputs:
+                if not q_in:
                     inputs = yield outputs
                     outputs = []
+                    q_in.extend(inputs)
                     if not inputs:
                         return sent
-                registers[X] = inputs.pop(0)
+                registers[X] = q_in.popleft()
 
 
 class Day18(aoc.Challenge):
