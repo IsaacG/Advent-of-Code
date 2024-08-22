@@ -37,7 +37,7 @@ def input_to_strs(inputs: Iterable[str]) -> list[str]:
 
 def input_to_mixed(inputs: Iterable[str]) -> list[int | str]:
     """Return a list of int | str values from an iterable."""
-    return [int(i) if i.isdigit() else str(i) for i in inputs]
+    return [int(i) if RE_INT.fullmatch(i) else str(i) for i in inputs]
 
 
 class BaseParser:
