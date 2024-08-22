@@ -33,10 +33,8 @@ rcv d""",
 def program(
     code: list[list[str | int]],
     program_id: int,
-    q_send: collections.deque,
-    q_recv: collections.deque,
-    part_one: bool
-) -> collections.abc.Generator[None, None, int]:
+    part_one: bool,
+) -> collections.abc.Generator[list[int], list[int], int]:
     """Run a program with IO queues.
 
     Part 1 returns the last snd value on rcv non-zero.
@@ -46,6 +44,8 @@ def program(
     registers["p"] = program_id
     ptr = 0
     sent = 0
+    outputs: list[int] = []
+    inputs = yield outputs
 
     def val(register: int | str) -> int:
         """Return a value, either an immediate value or register lookup."""
@@ -68,20 +68,21 @@ def program(
             case ["jgz", X, Y] if val(X) > 0:
                 ptr += val(Y) - 1
             case ["snd", X]:
-                q_send.append(val(X))
+                outputs.append(val(X))
                 sent += 1
             case ["rcv", X] if part_one and val(X):
                 # Part one. On the first non-zero rcv, return the last send value.
-                return q_send.pop()
+                return outputs.pop()
             case ["rcv", str(X)] if not part_one:
                 # Yield if we are out of values.
                 # If we have recv values, read one.
                 # If we yielded and still do not have values, return the sent count.
-                if not q_recv:
-                    yield
-                    if not q_recv:
+                if not inputs:
+                    inputs = yield outputs
+                    outputs = []
+                    if not inputs:
                         return sent
-                registers[X] = q_recv.popleft()
+                registers[X] = inputs.pop(0)
 
 
 class Day18(aoc.Challenge):
@@ -97,17 +98,17 @@ class Day18(aoc.Challenge):
     def solver(self, parsed_input: list[list[str | int]], param: bool) -> int:
         """Run two programs and get IO details."""
         # Create queues for communication in both directions.
-        q_a: collections.deque[int] = collections.deque()
-        q_b: collections.deque[int] = collections.deque()
         # Create two programs.
         programs = [
-            program(parsed_input, 0, q_a, q_b, param),
-            program(parsed_input, 1, q_b, q_a, param),
+            program(parsed_input, 0, param),
+            program(parsed_input, 1, param),
         ]
         # Run the programs.
+        next(programs[0])
+        vals = next(programs[1])
         for i in itertools.count():
             try:
-                next(programs[i % 2])
+                vals = programs[i % 2].send(vals)
             except StopIteration as e:
                 # On a StopIteration, handle the return value.
                 if param or i % 2 == 1:
