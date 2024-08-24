@@ -99,21 +99,17 @@ class Day18(aoc.Challenge):
 
     def solver(self, parsed_input: list[list[str | int]], param: bool) -> int:
         """Run two programs and get IO details."""
-        # Create queues for communication in both directions.
         # Create two programs.
-        programs = [
-            program(parsed_input, 0, param),
-            program(parsed_input, 1, param),
-        ]
-        # Run the programs.
+        programs = {i: program(parsed_input, i, param) for i in range(2)}
+        # Initialize then run the programs.
         next(programs[0])
         vals = next(programs[1])
-        for i in itertools.count():
+        for i in itertools.cycle(programs):
             try:
-                vals = programs[i % 2].send(vals)
+                vals = programs[i].send(vals)
             except StopIteration as e:
                 # On a StopIteration, handle the return value.
-                if param or i % 2 == 1:
+                if param or i == 1:
                     return e.value
         raise RuntimeError
 
