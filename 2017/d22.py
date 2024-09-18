@@ -26,15 +26,16 @@ CLEAN, WEAKENED, INFECTED, FLAGGED = range(4)
 class Day22(aoc.Challenge):
     """Day 22: Sporifica Virus."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [False, True]
+    INPUT_PARSER = aoc.ParseMultiple(
+        [
+            aoc.Transform(lambda x: len(x.splitlines())),
+            aoc.parse_ascii_bool_map("#"),
+        ]
+    )
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=5587),
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=2511944),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
 
     def part1(self, parsed_input: InputType) -> int:
@@ -50,8 +51,6 @@ class Day22(aoc.Challenge):
             direction *= 1j if is_infected else -1j
             (board.remove if is_infected else board.add)(location)
             location += direction
-            if step in [0, 1, 2, 3, 6, 69]:
-                self.debug(f"{step + 1, infected, direction}")
 
         return infected
 
@@ -72,13 +71,5 @@ class Day22(aoc.Challenge):
             location += direction
 
         return infected
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        parsed = aoc.parse_ascii_bool_map("#").parse(puzzle_input)
-        dimensions = len(puzzle_input.splitlines())
-        assert len(puzzle_input.splitlines()[0]) == dimensions
-        assert dimensions % 2
-        return dimensions, parsed
 
 # vim:expandtab:sw=4:ts=4

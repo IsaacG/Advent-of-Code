@@ -156,6 +156,14 @@ class ParseBlocks(BaseMultiParser):
         return outputs
 
 
+class ParseMultiple(BaseMultiParser):
+    """Parse an input multiple ways."""
+
+    def parse(self, puzzle_input: str) -> list[Any]:
+        """Parse the input with each parser."""
+        return [parser.parse(puzzle_input) for parser in self.parsers]
+
+
 class ParseChain(BaseMultiParser):
     """Parse an input via a chain of serial parser steps."""
 
