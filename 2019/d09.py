@@ -14,8 +14,6 @@ SAMPLE = [
 class Day09(aoc.Challenge):
     """Day 9: Sensor Boost."""
 
-    DEBUG = False
-    # PARAMETERIZED_INPUTS = [False, True]
     TESTS = (
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=SAMPLE[0]),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want="1219070632396864"),

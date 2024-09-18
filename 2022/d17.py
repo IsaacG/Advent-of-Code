@@ -37,8 +37,6 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=3068),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
     ]
-    # Rounds to run, part 1 vs part 2.
-    PARAMETERIZED_INPUTS = [2022, 1000000000000]
 
     def pre_run(self, parsed_input: InputType) -> None:
         """Parse the rock shapes from ASCII art."""
@@ -53,8 +51,10 @@ class Day17(aoc.Challenge):
         self.rocks = rocks
         self.rock_heights = [int(max(i.imag for i in r)) for r in rocks]
 
-    def solver(self, parsed_input: InputType, target_rock_count: int) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Compute the height of the tower after n rocks have fallen."""
+        # Rounds to run, part 1 vs part 2.
+        target_rock_count = 2022 if part_one else 1000000000000
         rocks = self.rocks
         stream = parsed_input
         stream_size = len(stream)

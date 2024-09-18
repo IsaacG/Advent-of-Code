@@ -38,13 +38,12 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=94),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=71),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.int_map
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Return the minimum heat loss from start to end."""
         board, end = parsed_input
-        max_distance = 10 if param else 3
+        max_distance = 3 if part_one else 10
         seen = {}
 
         loss, location, direction, count = 0, (0, 0), (0, 0), 0
@@ -53,7 +52,7 @@ class Day17(aoc.Challenge):
 
         while not todo.empty():
             loss, location, direction, count = todo.get()
-            if location == end and (not param or count >= 4):
+            if location == end and (part_one or count >= 4):
                 return loss
             
             # Try moving in all four directions.
@@ -61,7 +60,7 @@ class Day17(aoc.Challenge):
                 if next_direction[0] == -direction[0] and next_direction[1] == -direction[1]:
                     # No reversing.
                     continue
-                if param and direction != (0, 0) and next_direction != direction and count < 4:
+                if not part_one and direction != (0, 0) and next_direction != direction and count < 4:
                     # Part two: no turning prior to 4 moves.
                     continue
                 if next_direction == direction and count == max_distance:

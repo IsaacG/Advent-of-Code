@@ -108,7 +108,6 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=590784),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=2758514936282235),
     ]
-    PARAMETERIZED_INPUTS = [True, False]
 
     @staticmethod
     def overlaps(
@@ -155,9 +154,9 @@ class Day22(aoc.Challenge):
             ))
         return modified
 
-    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Return the number of points which are on, no restrictions."""
-        if args[0]:
+        if part_one:
             parsed_input = self.restrict(parsed_input)
 
         add: list[Cube] = []

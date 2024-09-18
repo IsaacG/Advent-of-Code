@@ -7,7 +7,6 @@ from lib import aoc
 class Day14(aoc.Challenge):
     """Day 14: Chocolate Charts. Mix recipes until a pattern is found."""
 
-    PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.parse_one_str
     TESTS = [
         aoc.TestCase(inputs="9", part=1, want="5158916779"),
@@ -20,7 +19,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs="59414", part=2, want=2018),
     ]
 
-    def solver(self, parsed_input: str, param: bool) -> int | str:
+    def solver(self, parsed_input: str, part_one: bool) -> int | str:
         """Solve for the target recipes."""
         # Compute target data.
         p1_target = int(parsed_input)
@@ -48,10 +47,10 @@ class Day14(aoc.Challenge):
             for recipe in to_add:
                 recipes.append(recipe)
                 count += 1
-                if param and recipe == p2_want_last and recipes[-p2_want_len:] == p2_want:
+                if not part_one and recipe == p2_want_last and recipes[-p2_want_len:] == p2_want:
                     return count - p2_want_len
 
-            if not param and count >= p1_stop:
+            if part_one and count >= p1_stop:
                 return "".join(str(i) for i in recipes[p1_target:p1_stop])
 
             # Update the elves' recipes.

@@ -95,12 +95,11 @@ class Day18(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=3),
     ]
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
-    PARAMETERIZED_INPUTS = [True, False]
 
-    def solver(self, parsed_input: list[list[str | int]], param: bool) -> int:
+    def solver(self, parsed_input: list[list[str | int]], part_one: bool) -> int:
         """Run two programs and get IO details."""
         # Create two programs.
-        programs = {i: program(parsed_input, i, param) for i in range(2)}
+        programs = {i: program(parsed_input, i, part_one) for i in range(2)}
         # Initialize then run the programs.
         next(programs[0])
         vals = next(programs[1])
@@ -109,7 +108,7 @@ class Day18(aoc.Challenge):
                 vals = programs[i].send(vals)
             except StopIteration as e:
                 # On a StopIteration, handle the return value.
-                if param or i == 1:
+                if part_one or i == 1:
                     return e.value
         raise RuntimeError
 

@@ -36,9 +36,8 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs="hczrldvxffninemzbhsv2two5eightwozfh", part=2, want=92),
     ]
     INPUT_PARSER = aoc.parse_one_str_per_line
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: list[str], param: bool) -> int:
+    def solver(self, parsed_input: list[str], part_one: bool) -> int:
         """Walk a string and extract numbers."""
         total = 0
         for line in parsed_input:
@@ -46,7 +45,7 @@ class Day01(aoc.Challenge):
             for i in range(len(line)):
                 if line[i:i + 1].isdigit():
                     numbers.append(line[i:i + 1])
-                elif param:  # Part 2
+                elif not part_one:  # Part 2
                     for word, value in WORDS.items():
                         if line[i:].startswith(word):
                             numbers.append(value)

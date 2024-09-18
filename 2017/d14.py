@@ -43,14 +43,13 @@ def knot_hash(data: str) -> list[int]:
 class Day14(aoc.Challenge):
     """Day 14: Disk Defragmentation."""
 
-    PARAMETERIZED_INPUTS = [True, False]
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=8108),
         aoc.TestCase(part=2, inputs=SAMPLE, want=1242),
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         # Compute all the Knot Hashes as lines of binary values.
         lines = (
             "".join([f"{i:08b}" for i in knot_hash(f"{parsed_input}-{pos_y}")])
@@ -64,7 +63,7 @@ class Day14(aoc.Challenge):
             if val == "1"
         }
         # Part one: return the number of locations which are in use.
-        if param:
+        if part_one:
             return len(used)
 
         # Part two: count in use islands.

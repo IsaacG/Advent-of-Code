@@ -36,12 +36,11 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=36),
     ]
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
-    PARAMETERIZED_INPUTS = [2, 10]
 
-    def solver(self, lines: list[tuple[str, int]], knot_count: int) -> int:
+    def solver(self, lines: list[tuple[str, int]], part_one: bool) -> int:
         """Track the movement of knots on a rope. Return the number of positions the tail visits."""
         points: set[complex] = set([0])
-        knots: list[complex] = [0] * knot_count
+        knots: list[complex] = [0] * (2 if part_one else 10)
         movement = aoc.LETTER_DIRECTIONS
         for direction, unit in lines:
             for _ in range(unit):

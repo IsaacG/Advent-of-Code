@@ -16,11 +16,9 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want="232,251,12"),
     ]
     INPUT_PARSER = aoc.parse_one_int
-    PARAMETERIZED_INPUTS = [(2, 3, False), (2, 100, True)]
 
-    def solver(self, parsed_input: int, *args, **kwargs) -> str:
+    def solver(self, parsed_input: int, part_one: bool) -> str:
         serial = parsed_input
-        range_start, range_end, include_size = args[0]
 
         def power_level(x: int, y: int) -> int:
             rack_id = x + 10
@@ -64,10 +62,10 @@ class Day11(aoc.Challenge):
 
         (val, x, y), size = max(
             (max_grid(size), size)
-            for size in range(range_start, range_end)
+            for size in range(2, 3 if part_one else 100)
         )
 
         out = [x + 1, y + 1]
-        if include_size:
+        if not part_one:
             out.append(size + 1)
         return ",".join(str(i) for i in out)

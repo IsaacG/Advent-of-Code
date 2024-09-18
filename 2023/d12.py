@@ -16,7 +16,6 @@ SAMPLE = """\
 class Day12(aoc.Challenge):
     """Day 12: Hot Springs."""
 
-    PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.parse_one_str_per_line
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=21),
@@ -60,12 +59,12 @@ class Day12(aoc.Challenge):
 
         return count
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         """Return the total number of possible fits."""
         count = 0
         for line in parsed_input:
             springs_str, numbers_str = line.split()
-            if param:
+            if not part_one:
                 springs_str = "?".join([springs_str] * 5)
                 numbers_str = ",".join([numbers_str] * 5)
             springs = tuple(i for i in springs_str.split(".") if i)

@@ -25,7 +25,6 @@ class Day20(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=1),
         # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.parse_ints_per_line
 
     @staticmethod
@@ -33,7 +32,7 @@ class Day20(aoc.Challenge):
         """Return the Manhatten distance of a coordinate."""
         return sum(abs(i) for i in vals)
 
-    def solver(self, parsed_input: list[list[int]], param: bool) -> int:
+    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
         """Return particle metadata.
 
         Part one: return which particle will be farthest from the origin.
@@ -44,7 +43,7 @@ class Day20(aoc.Challenge):
             for i in range(3)
         ]
         # Simulate some ticks for collision removal. 40 is the min that works for my input.
-        for _ in range(100 if param else 0):
+        for _ in range(0 if part_one else 100):
             # Count positions. Any position with multiple particles is a collision.
             counts = collections.Counter(pos.values())
             collisions = {p for p, count in counts.items() if count > 1}
@@ -55,7 +54,7 @@ class Day20(aoc.Challenge):
             vel = {idx: tuple(vel[idx][dim] + acc[idx][dim] for dim in range(3)) for idx in pos}
             pos = {idx: tuple(pos[idx][dim] + vel[idx][dim] for dim in range(3)) for idx in pos}
 
-        if param:
+        if not part_one:
             return len(pos)
         # Sort remaining particles by acceleration then velocity (Manhatten distance).
         slowest = sorted((self.distance(acc[idx]), self.distance(vel[idx]), idx) for idx in pos)

@@ -33,9 +33,8 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=952408144115),
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: list[list[str]], param: bool) -> int:
+    def solver(self, parsed_input: list[list[str]], part_one: bool) -> int:
         # Start at 0, 0 and track vertical trenches.
         position = complex(0)
         vertical_trenches = set()
@@ -43,13 +42,13 @@ class Day18(aoc.Challenge):
         perimeter_size = 0
         # Follow the instructions to compute all the perimeter lines.
         for direction_letter, distance_str, color in parsed_input:
-            if param:
+            if part_one:
+                distance = int(distance_str)
+            else:
                 # Part two: read the instructions out of the color label.
                 color = color.strip("()#")
                 distance = int(color[:-1], 16)
                 direction_letter = NUM_TO_LETTER[color[-1]]
-            else:
-                distance = int(distance_str)
             direction = LETTER_DIRECTIONS[direction_letter]
 
             # The perimeter_size logic requires we never double back.

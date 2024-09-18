@@ -15,15 +15,14 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
     INPUT_PARSER = aoc.parse_one_str
-    PARAMETERIZED_INPUTS = [0, 1]
 
-    def solver(self, program: str, initial: int) -> int | str:
+    def solver(self, program: str, part_one: bool) -> int | str:
         computer = intcode.Computer(program, debug=self.DEBUG)
         position = complex()
         direction = complex(0, -1)
         painted: set[complex] = set()
         panels: dict[complex, int] = collections.defaultdict(int)
-        panels[position] = initial
+        panels[position] = 0 if part_one else 1
 
         computer.input.append(panels[position])
         computer.run()
@@ -35,7 +34,7 @@ class Day11(aoc.Challenge):
             position += direction
             computer.input.append(panels[position])
             computer.run()
-        if initial == 0:
+        if part_one:
             return len(painted)
         white = {pos for pos, color in panels.items() if color}
         return aoc.OCR.from_point_set(white).as_string()

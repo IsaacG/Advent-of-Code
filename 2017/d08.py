@@ -21,9 +21,8 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=10),
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
-    PARAMETERIZED_INPUTS = [1, 2]
 
-    def solver(self, parsed_input: list[list[str]], param: int) -> int:
+    def solver(self, parsed_input: list[list[str]], part_one: bool) -> int:
         """Apply conditional logic to update registers."""
         largest = 0
         registers: dict[str, int] = collections.defaultdict(int)
@@ -34,7 +33,7 @@ class Day08(aoc.Challenge):
                 largest = max(largest, result)
                 registers[target_reg] = result
 
-        if param == 1:
+        if part_one:
             return max(registers.values())
         return largest
 

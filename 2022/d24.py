@@ -88,7 +88,6 @@ class Day24(aoc.Challenge):
     ]
     DEBUG = False
     INPUT_PARSER = aoc.ParseOneWord(Basin.input_parser)
-    PARAMETERIZED_INPUTS = [1, 3]
 
     def navigate(self, basin: Basin, reverse: bool, init_steps: int) -> int:
         """Return move count after navigating from one side of the basin to the other."""
@@ -124,10 +123,10 @@ class Day24(aoc.Challenge):
                     )
         return moves
 
-    def solver(self, parsed_input: Basin, trip_count: int) -> int:
+    def solver(self, parsed_input: Basin, part_one: bool) -> int:
         """Solve for n trips across the basin."""
         moves = 0
-        for i in range(trip_count):
+        for i in range(1 if part_one else 3):
             moves = self.navigate(parsed_input, bool(i % 2), moves)
             self.debug(f"{i}: {moves=}")
         return moves

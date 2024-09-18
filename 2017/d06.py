@@ -22,14 +22,13 @@ SAMPLE = "0 2 7 0"
 class Day06(aoc.Challenge):
     """Day 6: Memory Reallocation."""
 
-    PARAMETERIZED_INPUTS = [False, True]
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=5),
         aoc.TestCase(inputs=SAMPLE, part=2, want=4),
     ]
     INPUT_PARSER = aoc.parse_multi_int_per_line
 
-    def solver(self, parsed_input: list[list[int]], param: bool) -> int:
+    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
         """Reallocate blocks across banks until a loop is detected."""
         banks = parsed_input[0]
         seen: dict[int, int] = {}
@@ -37,7 +36,7 @@ class Day06(aoc.Challenge):
         for step in itertools.count():
             hash_ = hash(tuple(banks))
             if hash_ in seen:
-                return step - seen[hash_] if param else step
+                return step if part_one else step - seen[hash_]
             seen[hash_] = step
             num, idx = max((num, -idx) for idx, num in enumerate(banks))
             idx = -idx

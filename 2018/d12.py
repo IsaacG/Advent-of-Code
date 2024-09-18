@@ -36,12 +36,11 @@ class Day12(aoc.Challenge):
     INPUT_PARSER = aoc.ParseBlocks(
         [aoc.BaseParseReFindall(r"[.#]", lambda line: [i == "#" for i in line])] * 2
     )
-    # How many generations to simulate.
-    PARAMETERIZED_INPUTS = [20, 50000000000]
 
-    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Simulate N generations of plant growth."""
-        target_gen = args[0]
+        # How many generations to simulate.
+        target_gen = 20 if part_one else 50000000000
         state = {i for i, j in enumerate(parsed_input[0][0]) if j}
         # Rules for new generations.
         rules = {tuple(rule[:5]) for rule in parsed_input[1] if rule[5]}

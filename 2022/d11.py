@@ -73,11 +73,10 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=10605),
         aoc.TestCase(inputs=SAMPLE, part=2, want=2713310158),
     ]
-    PARAMETERIZED_INPUTS = [(20, True), (10000, False)]
 
-    def solver(self, monkeys: list[Monkey], rounds_div: tuple[int,  bool]) -> int:
+    def solver(self, monkeys: list[Monkey], part_one: bool) -> int:
         """Simulate rounds of monkeys inspecting and throwing items."""
-        rounds, div = rounds_div
+        rounds = 20 if part_one else 10000
         # Use the LCM to keep the item size low.
         lcm = math.lcm(*[m.test for m in monkeys])
 
@@ -89,7 +88,7 @@ class Day11(aoc.Challenge):
                 # For each item, update values and throw it to another monkey.
                 for item in monkey.items:
                     item = monkey.operator(item, monkey.operand or item)
-                    if div:
+                    if part_one:
                         item = item // 3
                     item %= lcm
                     # Throw the item to the next monkey.

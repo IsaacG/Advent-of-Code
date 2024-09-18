@@ -28,12 +28,11 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[5], part=1, want=37305),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    PARAMETERIZED_INPUTS = [1, 100]  # Part 2: do part 1 with 100 more steps.
 
-    def solver(self, parsed_input: InputType, *args, **kwargs) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         players, last = parsed_input[0]
         # Multiple last value by 1 or 100 for parts 1, 2.
-        last *= args[0]
+        last *= 1 if part_one else 100
 
         score = [0] * players
         cur = aoc.Node(0)

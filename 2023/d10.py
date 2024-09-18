@@ -78,8 +78,6 @@ START_SYMBOL = {
 class Day10(aoc.Challenge):
     """Day 10: Pipe Maze. Navigate a pipe maze then identify interior cells."""
 
-    PARAMETERIZED_INPUTS = [True, False]
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=8),
@@ -89,7 +87,7 @@ class Day10(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.char_map
 
-    def solver(self, parsed_input: dict[complex, str], param: bool) -> int:
+    def solver(self, parsed_input: dict[complex, str], part_one: bool) -> int:
         pipes = parsed_input
 
         # Figure out the start position details.
@@ -114,7 +112,7 @@ class Day10(aoc.Challenge):
             location += direction
 
         # Part 1: return the length of the loop.
-        if param:
+        if part_one:
             return len(loop) // 2
 
         # Walk the board. Track if we are inside the loop (odd number of crossings).

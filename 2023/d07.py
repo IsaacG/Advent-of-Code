@@ -34,7 +34,6 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=5905),
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
-    PARAMETERIZED_INPUTS = [0, 1]
 
     def sort(self, part_two: int, line: list[str]) -> tuple[int, int]:
         """Sort cards based on ranking then highest card."""
@@ -64,9 +63,9 @@ class Day07(aoc.Challenge):
 
         return (primary, secondary)
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Sort hands then return the bid returns."""
-        parsed_input.sort(key=lambda x: self.sort(param, x))
+        parsed_input.sort(key=lambda x: self.sort(0 if part_one else 1, x))
         return sum(idx * int(bid) for idx, (_, bid) in enumerate(parsed_input, start=1))
 
 # vim:expandtab:sw=4:ts=4

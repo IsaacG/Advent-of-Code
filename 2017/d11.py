@@ -15,7 +15,6 @@ OFFSETS = aoc.HEX_AXIAL_DIRS_FLAT_TOP
 class Day11(aoc.Challenge):
     """Day 11: Hex Ed."""
 
-    PARAMETERIZED_INPUTS = [True, False]
     TESTS = [
         aoc.TestCase(part=1, inputs=data, want=want)
         for data, want in SAMPLE
@@ -24,7 +23,7 @@ class Day11(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         """Walk a hex grid and compute distances."""
         location = complex(0, 0)
         farthest = 0
@@ -37,4 +36,4 @@ class Day11(aoc.Challenge):
         for direction in parsed_input.split(","):
             location += OFFSETS[direction]
             farthest = max(farthest, axial_distance())
-        return axial_distance() if param else farthest
+        return axial_distance() if part_one else farthest

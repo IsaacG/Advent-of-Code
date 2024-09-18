@@ -35,9 +35,8 @@ class Day09(aoc.Challenge):
         for data, val in pairs
     ]
     INPUT_PARSER = aoc.parse_one_str
-    PARAMETERIZED_INPUTS = [0, 1]
 
-    def solver(self, parsed_input: str, param) -> int | str:
+    def solver(self, parsed_input: str, part_one: bool) -> int | str:
         """Parse bracket matching in a string."""
         tokens = iter(parsed_input)
 
@@ -62,6 +61,6 @@ class Day09(aoc.Challenge):
                 total_score += bracket_depth
                 bracket_depth -= 1
 
-        return (total_score, garbage_count)[param]
+        return total_score if part_one else garbage_count
 
 # vim:expandtab:sw=4:ts=4

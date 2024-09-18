@@ -24,9 +24,8 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=3),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=11),
     ]
-    PARAMETERIZED_INPUTS = [lambda x: x, lambda x: not x]
 
-    def solver(self, line: str, transform: Callable[[bool], bool]) -> int:
+    def solver(self, line: str, part_one: bool) -> int:
         """Return how many houses get presents."""
         pos = {True: complex(0), False: complex(0)}
         robot = False
@@ -34,5 +33,6 @@ class Day03(aoc.Challenge):
         for char in line:
             pos[robot] += MAPPING[char]
             visited.add(pos[robot])
-            robot = transform(robot)
+            if not part_one:
+                robot = not robot
         return len(visited)

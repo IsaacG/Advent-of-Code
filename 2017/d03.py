@@ -27,10 +27,9 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs="1024", part=1, want=31),
         aoc.TestCase(inputs="747", part=2, want=806),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
     INPUT_PARSER = aoc.parse_one_int
 
-    def solver(self, parsed_input: int, param: bool) -> int:
+    def solver(self, parsed_input: int, part_one: bool) -> int:
         """Fill out a spiral matrix until we get to the input number."""
         location = complex(0, 0)
         direction = complex(0, -1)
@@ -41,13 +40,13 @@ class Day03(aoc.Challenge):
             if location + direction * ROTATE_LEFT not in matrix:
                 direction *= ROTATE_LEFT
             location += direction
-            if param:
+            if part_one:
+                value = number
+            else:
                 value = sum(
                     matrix.get(location + offset, 0) for offset in aoc.EIGHT_DIRECTIONS)
-            else:
-                value = number
             matrix[location] = value
-            if param and value > parsed_input:
+            if not part_one and value > parsed_input:
                 return value
 
         return int(abs(location.real) + abs(location.imag))

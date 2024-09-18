@@ -30,9 +30,8 @@ class Day19(aoc.Challenge):
     ]
 
     INPUT_PARSER = aoc.ParseCharMap(lambda x: None if x == " " else x)
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: dict[complex, str], param: bool) -> int | str:
+    def solver(self, parsed_input: dict[complex, str], part_one: bool) -> int | str:
         """Walk the maze and track steps/letters."""
         maze = parsed_input
         # Initialize
@@ -59,7 +58,7 @@ class Day19(aoc.Challenge):
             location += direction
             # Check if we fell off the maze.
             if location not in maze:
-                return step if param else "".join(result)
+                return "".join(result) if part_one else step
         raise RuntimeError("No solution found.")
 
 # vim:expandtab:sw=4:ts=4

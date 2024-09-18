@@ -20,10 +20,10 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want="1985"),
         aoc.TestCase(inputs=SAMPLE, part=2, want="5DB3"),
     ]
-    PARAMETERIZED_INPUTS = ["123\n456\n789", "1\n234\n56789\nABC\nD"]
 
-    def solver(self, parsed_input: InputType, pad_layout: str) -> str:
+    def solver(self, parsed_input: InputType, part_one: bool) -> str:
         """Walk a keypad following directions to compute a code."""
+        pad_layout = "123\n456\n789" if part_one else "1\n234\n56789\nABC\nD"
         pad_rows = pad_layout.splitlines()
         size = max(len(row) for row in pad_rows)
         pad = {

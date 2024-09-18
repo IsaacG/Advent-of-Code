@@ -19,7 +19,6 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=2),
     ]
     INPUT_PARSER = aoc.parse_multi_int_per_line
-    PARAMETERIZED_INPUTS = [1, 0]
 
     def get_prior_and_following(self, line) -> tuple[int, int]:
         """Return the prior and following value of a line using recursive first differences."""
@@ -30,11 +29,11 @@ class Day09(aoc.Challenge):
             prior, following = self.get_prior_and_following(diffs)
         return line[0] - prior, line[-1] + following
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Compute the next value in a series using repeated first differences."""
         # Sum up the prior or following value from each line.
         return sum(
-            self.get_prior_and_following(line)[param]
+            self.get_prior_and_following(line)[1 if part_one else 0]
             for line in parsed_input
         )
 

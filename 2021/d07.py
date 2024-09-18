@@ -17,17 +17,14 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=37),
         aoc.TestCase(inputs=SAMPLE, part=2, want=168),
     )
-    PARAMETERIZED_INPUTS = [
-        # Return the optimal blast position with constant movement cost.
-        lambda x: x,
-        # Return the optimal blast position with linear movement cost.
-        lambda x: x * (x + 1) // 2,
-    ]
 
-    def solver(self, parsed_input: list[int], func: Callable[[int], int]) -> int:
+    def solver(self, parsed_input: list[int], part_one: bool) -> int:
         """Find the location where it is cheapest for all the crabs to move."""
         positions = parsed_input[0]
         costs = []
+        # Return the optimal blast position with constant movement cost.
+        # Return the optimal blast position with linear movement cost.
+        func = (lambda x: x) if part_one else (lambda x: x * (x + 1) // 2)
         for i in range(min(positions), max(positions) + 1):
             costs.append(sum(func(abs(i - pos)) for pos in positions))
         return min(costs)

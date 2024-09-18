@@ -21,9 +21,8 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=3),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-    PARAMETERIZED_INPUTS = [7, 12]
 
-    def solver(self, parsed_input: list[str], param: int) -> int:
+    def solver(self, parsed_input: list[str], part_one: bool) -> int:
         """Simulate a computer."""
         computer = assembunny.Assembunny(parsed_input)
-        return computer.run(register_a=param)[0]
+        return computer.run(register_a=7 if part_one else 12)[0]

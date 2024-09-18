@@ -30,16 +30,12 @@ class Day01(aoc.Challenge):
         for data in dataset
     ]
     INPUT_PARSER = aoc.parse_one_str
-    PARAMETERIZED_INPUTS = (
-        # Part one: compare digits to subsequent digit.
-        lambda x: 1,
-        # Part two: compare digits to digits halfway around the list.
-        lambda x: len(x) // 2,
-    )
 
-    def solver(self, parsed_input: str, offsetter: Callable[[str], int]) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         """Sum all digits which match the corresponding digit."""
-        offset = offsetter(parsed_input)
+        # Part one: compare digits to subsequent digit.
+        # Part two: compare digits to digits halfway around the list.
+        offset = 1 if part_one else len(parsed_input) // 2
         shifted_list = parsed_input[offset:] + parsed_input[:offset]
         return sum(
             int(digit)

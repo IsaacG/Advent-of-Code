@@ -30,10 +30,10 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=18216),      # phases = 1,0,4,3,2
     )
     INPUT_PARSER = aoc.parse_one_str
-    PARAMETERIZED_INPUTS = [0, 5]
 
-    def solver(self, parsed_input: str, input_shift: int) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         largest = 0
+        input_shift = 0 if part_one else 5
         # Try all permutations of initial inputs.
         for values in itertools.permutations(range(input_shift, 5 + input_shift)):
             queues = [collections.deque([i]) for i in values]

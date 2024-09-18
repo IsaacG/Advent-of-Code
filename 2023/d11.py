@@ -27,12 +27,11 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
     INPUT_PARSER = aoc.AsciiBoolMapParser("#")
-    PARAMETERIZED_INPUTS = [2, 1_000_000]
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Return the sum of the distances between shifted galaxies."""
         data = parsed_input
-        distance = param - 1
+        distance = 1 if part_one else 1_000_000 - 1
         min_x, min_y, max_x, max_y = aoc.bounding_coords(data)
 
         # Compute the shift for each column and row.

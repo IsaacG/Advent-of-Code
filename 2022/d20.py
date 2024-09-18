@@ -58,15 +58,14 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=3),
         aoc.TestCase(inputs=SAMPLE, part=2, want=1623178306),
     ]
-    PARAMETERIZED_INPUTS = ((1, 1), (811589153, 10))
 
-    def solver(self, parsed_input: InputType, args: tuple[int, int]) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Return the 1000th, 2000th, 3000th digit after mixing the list."""
-        decryption_key, rounds = args
+        decryption_key = 1 if part_one else 811589153
         nodelist = LinkedList.circular_list(i * decryption_key for i in parsed_input)
 
         self.debug(f"Node count: {len(nodelist.nodes)} == {nodelist.len}")
-        for _ in range(rounds):
+        for _ in range(1 if part_one else 10):
             nodelist.mix_nodes()
 
         out = nodelist.find_thousandths()

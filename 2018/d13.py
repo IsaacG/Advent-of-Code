@@ -54,15 +54,13 @@ CORNERS = {
 class Day13(aoc.Challenge):
     """Day 13: Mine Cart Madness."""
 
-    PARAMETERIZED_INPUTS = [False, True]
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want="0,3"),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want="7,3"),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want="6,4"),
     ]
 
-    def solver(self, parsed_input: InputType, param: bool) -> str:
+    def solver(self, parsed_input: InputType, part_one: bool) -> str:
         """Simulate wagons driving a track."""
         turns, junctions, wagons = parsed_input
 
@@ -91,7 +89,7 @@ class Day13(aoc.Challenge):
                 # Collisions detection.
                 if new_location in wagons:
                     # Part 1: return the location of the first collision.
-                    if not param:
+                    if part_one:
                         return f"{int(new_location.real)},{int(new_location.imag)}"
                     del wagons[new_location]
                 else:

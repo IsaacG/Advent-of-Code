@@ -19,16 +19,15 @@ class Day15(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=588),
         aoc.TestCase(part=2, inputs=SAMPLE, want=309),
     ]
-    PARAMETERIZED_INPUTS = [True, False]
     INPUT_PARSER = aoc.parse_ints_per_line
 
-    def solver(self, parsed_input: list[list[int]], param: bool) -> int:
+    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
         """Count the number of generated pairs that have matching ends.
 
         NUC + cpython: 60s
         Desktop + pypy: 3s
         """
-        ((val_a,), (val_b,)), part_one = parsed_input, param
+        ((val_a,), (val_b,)) = parsed_input
 
         def gen(value, factor, mask):
             while True:

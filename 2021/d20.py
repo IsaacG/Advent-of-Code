@@ -17,7 +17,6 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=1, want=1),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=3351),
     )
-    PARAMETERIZED_INPUTS = [2, 50]
 
     @staticmethod
     @functools.cache  # 2x faster
@@ -25,7 +24,7 @@ class Day20(aoc.Challenge):
         """Return the 3x3 points centered around `point`."""
         return [point + complex(x, y) for y in range(-1, 2) for x in range(-1, 2)]
 
-    def solver(self, parsed_input: InputType, steps: int) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Enhance the image N times.
 
         For every iteration, expand the area of interest by expanding outwards
@@ -48,7 +47,7 @@ class Day20(aoc.Challenge):
         candidate_points = image
         new_area = image
 
-        for step in range(steps):
+        for step in range(2 if part_one else 50):
             # The explored area is the points we evaluated last iteration.
             # Anything not explored may be blinking.
             explored = candidate_points

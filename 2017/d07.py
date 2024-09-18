@@ -28,9 +28,8 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=60),
     ]
     INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|[a-z]+")
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: list[list[int | str]], param: bool) -> int | str:
+    def solver(self, parsed_input: list[list[int | str]], part_one: bool) -> int | str:
         node_weight: dict[str, int] = {}
         node_children: dict[str, set[str]] = collections.defaultdict(set)
         not_root: set[str] = set()
@@ -43,7 +42,7 @@ class Day07(aoc.Challenge):
             node_children[node].update(children)
             not_root.update(children)
         root = (set(node_weight) - not_root).pop()
-        if not param:
+        if part_one:
             return root
 
         tower_weights: dict[str, int] = {}

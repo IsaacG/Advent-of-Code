@@ -23,9 +23,8 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=5),
         aoc.TestCase(inputs=SAMPLE, part=2, want=7),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         # Brick ID to coordinates.
         bricks = parsed_input
 
@@ -82,7 +81,7 @@ class Day22(aoc.Challenge):
 
         # Part 1: count the bricks which can safely be removed.
         # If a brick is not a sole support of any other brick, it can be removed.
-        if not param:
+        if part_one:
             return sum(
                 all(held_by[supported] != [brick] for supported in holding[brick])
                 for brick in bricks

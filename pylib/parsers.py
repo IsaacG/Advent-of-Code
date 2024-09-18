@@ -96,6 +96,9 @@ class BaseParseRe(BaseParser):
     convert: Callable[[Iterable[str]], list[Any]]
     one_line: bool = False
 
+    def __post_init__(self) -> None:
+        self.compiled = re.compile(self.regex)
+
     def parse(self, puzzle_input: str) -> list[list[Any]] | list[Any]:
         """Parse puzzle lines, applying a regex to each line."""
         data = [

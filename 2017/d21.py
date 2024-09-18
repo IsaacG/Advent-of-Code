@@ -52,19 +52,18 @@ def permutations(pixels: frozenset[complex], block_size: int) -> list[frozenset[
 class Day21(aoc.Challenge):
     """Day 21: Fractal Art."""
 
-    PARAMETERIZED_INPUTS = [5, 18]
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=12),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, param: int) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Return the number of pixels which are on after repeating the image enhancement."""
         pixels = START
         replacements = parsed_input
         size = 3
 
-        for _ in range(2 if self.testing else param):
+        for _ in range(2 if self.testing else 5 if part_one else 18):
             blocksize_in = 3 if size % 2 else 2
             blockcount = size // blocksize_in
             blocksize_out = blocksize_in + 1

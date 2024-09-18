@@ -49,9 +49,8 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
     INPUT_PARSER = aoc.parse_ints
-    PARAMETERIZED_INPUTS = [0, 1]
 
-    def solver(self, parsed_input: InputType, *args, **kwargs) -> int | str:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int | str:
         """Return the message in the moving stars."""
         height = 8 if self.testing else 10
         points = parsed_input
@@ -63,5 +62,5 @@ class Day10(aoc.Challenge):
                 continue
             ocr = aoc.OCR.from_point_set({complex(x, y) for x, y, _, _ in points})
             if ocr.is_valid():
-                return [ocr.as_string(), i + 1][args[0]]
+                return [ocr.as_string(), i + 1][0 if part_one else 1]
         raise RuntimeError("Unreachable.")

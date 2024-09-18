@@ -17,18 +17,16 @@ PARTNER = 2
 class Day16(aoc.Challenge):
     """Day 16: Permutation Promenade."""
 
-    PARAMETERIZED_INPUTS = [False, True]
-
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=SAMPLE[1]),
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, param: bool) -> str:
+    def solver(self, parsed_input: InputType, part_one: bool) -> str:
         """Do the dance shuffle on a lineup."""
 
         size = 5 if self.testing else 16
-        dances = 1000000000 if param else 1
+        dances = 1 if part_one else 1_000_000_000
         cmds = parsed_input
 
 

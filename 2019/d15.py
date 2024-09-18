@@ -28,7 +28,6 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
     INPUT_PARSER = aoc.parse_one_str
-    PARAMETERIZED_INPUTS = [False, True]
 
     @functools.cache
     def explore(self, program: str) -> tuple[set[complex], set[complex], complex]:
@@ -103,7 +102,7 @@ class Day15(aoc.Challenge):
                 pos -= direction
                 move(-direction)
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, parsed_input: str, part_one: bool) -> int:
         """Return the steps needed to find the oxygen or for the oxygen to fill the room."""
         hall, wall, oxygen = self.explore(parsed_input)
         start = complex()
@@ -116,7 +115,7 @@ class Day15(aoc.Challenge):
         for step in itertools.count():
             if len(filled) == total_space:
                 return step
-            if not param and start in filled:
+            if part_one and start in filled:
                 return step
             new = {
                 pos + direction for pos in filled for direction in DIRECTIONS

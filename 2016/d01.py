@@ -24,10 +24,10 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=4),
     ]
     INPUT_PARSER = aoc.parse_re_findall_str(r"[LR]\d+")
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: InputType, p2: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Compute how far we walked."""
+        p2 = not part_one
         cur = complex(0, 0)
         seen = {cur}
         heading = complex(0, 1)

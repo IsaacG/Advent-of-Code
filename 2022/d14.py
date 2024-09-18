@@ -21,9 +21,8 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=93),
     ]
     INPUT_PARSER = aoc.parse_re_findall_points
-    PARAMETERIZED_INPUTS = [True, False]
 
-    def solver(self, rocks: InputType, first_to_the_floor: bool) -> int:
+    def solver(self, rocks: InputType, part_one: bool) -> int:
         """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
         # Sand moves in these directions, in this order of preference.
         movement_directions = (complex(0, 1), complex(-1, 1), complex(1, 1))
@@ -57,7 +56,7 @@ class Day14(aoc.Challenge):
                 else:
                     break
             rocks_and_sand.add(cur)
-            if first_to_the_floor and cur.imag == lowest_position:
+            if part_one and cur.imag == lowest_position:
                 # Part 1: return the grain prior to the first to pass the lowest rock.
                 return grain
             elif cur == starting_point:

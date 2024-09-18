@@ -676,7 +676,6 @@ class Challenge(Helpers):
     TIMER_ITERATIONS = (None, None)
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
-    PARAMETERIZED_INPUTS: Any = [False, True]
 
     def __init__(self, parts_to_run: tuple[int, ...] = (1, 2)):
         if self.day == 25:
@@ -742,7 +741,7 @@ class Challenge(Helpers):
             self._filecache[path] = path.read_text().rstrip()
         return self._filecache[path]
 
-    def solver(self, parsed_input: Any, param: Any) -> int | str:
+    def solver(self, parsed_input: Any, part_one: bool) -> int | str:
         raise NotImplementedError
 
     @functools.cache
@@ -775,11 +774,10 @@ class Challenge(Helpers):
         func = {1: self.part1, 2: self.part2}
         parsed_input = self.input_parser(puzzle_input.rstrip())
         self.pre_run(parsed_input)
-        if self.PARAMETERIZED_INPUTS is not None:
-            try:
-                return self.solver(parsed_input, self.PARAMETERIZED_INPUTS[part - 1])
-            except NotImplementedError:
-                pass
+        try:
+            return self.solver(parsed_input, part == 1)
+        except NotImplementedError:
+            pass
         try:
             result = func[part](parsed_input)
         except NotImplementedError:

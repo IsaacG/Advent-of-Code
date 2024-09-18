@@ -48,7 +48,6 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=6),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=6),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
 
     def steps(
         self,
@@ -64,16 +63,16 @@ class Day08(aoc.Challenge):
                 return step
         raise RuntimeError("Unreachable")
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Compute the number of steps to get through the maze."""
         instructions, mapping = parsed_input
-        if param:
-            locations = {i for i in mapping if i.endswith("A")}
-        else:
+        if part_one:
             locations = {"AAA"}
+        else:
+            locations = {i for i in mapping if i.endswith("A")}
 
         factors = [
-            self.steps(instructions, mapping, location, param)
+            self.steps(instructions, mapping, location, not part_one)
             for location in locations
         ]
         return math.lcm(*factors)

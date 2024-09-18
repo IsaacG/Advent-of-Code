@@ -23,21 +23,20 @@ InputType = list[LineType]
 class Day06(aoc.Challenge):
     """Day 6: Wait For It."""
 
-    PARAMETERIZED_INPUTS = [False, True]
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=288),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=71503),
     ]
     INPUT_PARSER = aoc.parse_one_str_per_line
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Compute how long to charge the car in order to win the race."""
         lines = [line.split(":")[1].strip() for line in parsed_input]
 
-        if param:
-            times, distances = ([int(line.replace(" ", ""))] for line in lines)
-        else:
+        if part_one:
             times, distances = ([int(i) for i in line.split()] for line in lines)
+        else:
+            times, distances = ([int(line.replace(" ", ""))] for line in lines)
 
         # See notes for explanation.
         result = 1

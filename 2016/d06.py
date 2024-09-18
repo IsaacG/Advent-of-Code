@@ -20,14 +20,13 @@ InputType = list[str]
 class Day06(aoc.Challenge):
     """Day 6: Signals and Noise."""
 
-    PARAMETERIZED_INPUTS = [0, -1]
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want="easter"),
         aoc.TestCase(inputs=SAMPLE, part=2, want="advent"),
     ]
 
-    def solver(self, parsed_input: InputType, idx: int) -> str:
+    def solver(self, parsed_input: InputType, part_one: bool) -> str:
+        idx = 0 if part_one else -1
         return "".join(
             collections.Counter(col).most_common()[idx][0]
             for col in zip(*parsed_input)

@@ -49,15 +49,14 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=35),
         aoc.TestCase(inputs=SAMPLE, part=2, want=46),
     ]
-    PARAMETERIZED_INPUTS = [True, False]
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Map ranges of seeds to a final value and return the min."""
         seeds, translation_layers = parsed_input
 
         # Convert p1 into p2 by changing each seed into a range of length 1.
         # [5, 6, 7] => [5, 1, 6, 1, 7, 1]
-        if param:
+        if part_one:
             seeds = [i for seed in seeds for i in [seed, 1]]
 
         # Convert [seed, length, seed, length] into [(start, end), (start, end)] inclusive intervals.

@@ -39,9 +39,8 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=11687500),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Simulate the circuit."""
         module_types, outputs = parsed_input
 
@@ -75,7 +74,7 @@ class Day20(aoc.Challenge):
         # Run the simulation until they each output three HIGH values.
         # Validate the HIGH output is cyclical.
         # Return the product.
-        if param:
+        if not part_one:
             rx_inputs = [name for name, targets in outputs.items() if "rx" in targets]
             assert len(rx_inputs) == 1 and module_types[rx_inputs[0]] == CONJUNCTION
             rx_input = rx_inputs[0]
@@ -111,7 +110,7 @@ class Day20(aoc.Challenge):
                         inputs.append((current_module, target, output))
 
                 # Track the HIGH outputs of the second level inputs.
-                if param and output and current_module in second_level_highs:
+                if not part_one and output and current_module in second_level_highs:
                     second_level_highs[current_module].append(step)
                     # Loop until we see N values for each second level module.
                     if all(len(vals) >= 2 for vals in second_level_highs.values()):
@@ -119,7 +118,7 @@ class Day20(aoc.Challenge):
                         for vals in second_level_highs.values():
                             assert all(vals[0] * idx == value for idx, value in enumerate(vals, start=1))
                         return math.prod(vals[0] for vals in second_level_highs.values())
-            if not param and step == 1000:
+            if part_one and step == 1000:
                 return math.prod(sent.values())
 
     def input_parser(self, puzzle_input: str) -> InputType:

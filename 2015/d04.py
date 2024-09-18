@@ -15,10 +15,10 @@ class Day04(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=609043),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=1048970),
     ]
-    PARAMETERIZED_INPUTS = [5, 6]
 
-    def solver(self, key: list[int], size: int) -> int:
+    def solver(self, key: list[int], part_one: bool) -> int:
         """Return a suffix which generates a hash starting with a given prefix."""
+        size = 5 if part_one else 6
         prefix = "0" * size
         md5 = hashlib.md5(key.encode())
         for i in range(0, 100000000):

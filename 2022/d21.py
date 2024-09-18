@@ -90,9 +90,8 @@ class Day21(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=301),
     ]
     INPUT_PARSER = aoc.parse_re_findall_mixed(r"[^ :]+")
-    PARAMETERIZED_INPUTS = [False, True]
 
-    def solver(self, parsed_input: InputType, part2: bool) -> int:
+    def solver(self, parsed_input: InputType, part_one: bool) -> int:
         """Solve for the root value of an equation."""
         monkeys = {monkey: job for monkey, *job in parsed_input}
         solved = {}
@@ -102,7 +101,7 @@ class Day21(aoc.Challenge):
             if len(job) == 1:
                 solved[monkey] = job[0]
 
-        if part2:
+        if not part_one:
             solved["humn"] = sympy.symbols("humn") if USE_SYMPY else Variable("humn")
 
         # Resolve until "root" is solved.
@@ -118,7 +117,7 @@ class Day21(aoc.Challenge):
                     solved[monkey] = BinaryOp(solved[left], operation, solved[right])
                 unsolved.remove(monkey)
 
-        if not part2:
+        if part_one:
             return int(solved["root"])
         # Part 2: Isolate humn
         left, right = solved[monkeys["root"][0]], solved[monkeys["root"][2]]
