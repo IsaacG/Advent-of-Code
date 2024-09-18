@@ -43,7 +43,7 @@ class Day17(aoc.Challenge):
     def pre_run(self, parsed_input: InputType) -> None:
         """Parse the rock shapes from ASCII art."""
         rocks = []
-        parser = aoc.parse_ascii_bool_map("#")
+        parser = aoc.AsciiBoolMapParser("#")
         for block in ROCKS.strip().split("\n\n"):
             block = block.replace(" ", "")
             # Flip rocks upside down so Y increases from the bottom to the top.

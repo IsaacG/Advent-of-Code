@@ -32,7 +32,7 @@ class Day22(aoc.Challenge):
     INPUT_PARSER = aoc.ParseMultiple(
         [
             aoc.Transform(lambda x: len(x.splitlines())),
-            aoc.parse_ascii_bool_map("#", origin_top_left=False),
+            aoc.AsciiBoolMapParser("#", origin_top_left=False),
         ]
     )
     PARAMETERIZED_INPUTS = [False, True]

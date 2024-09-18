@@ -170,11 +170,11 @@ class Day15(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        spaces = aoc.parse_ascii_bool_map(".EG").parse(puzzle_input)
+        spaces = aoc.AsciiBoolMapParser(".EG").parse(puzzle_input)
         units = {
             unit_type: {
                 i: 200
-                for i in aoc.parse_ascii_bool_map(unit_type).parse(puzzle_input)
+                for i in aoc.AsciiBoolMapParser(unit_type).parse(puzzle_input)
             }
             for unit_type in "EG"
         }

@@ -275,7 +275,5 @@ parse_re_group_mixed = lambda x: BaseParseReGroups(x, input_to_mixed)
 parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
 parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
 
-parse_ascii_bool_map = AsciiBoolMapParser
-parse_ascii_char_map = ParseCharMap
 char_map = ParseCharMap(str)
 int_map = ParseCharMap(int)

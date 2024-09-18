@@ -26,7 +26,7 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=374),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_ascii_bool_map("#")
+    INPUT_PARSER = aoc.AsciiBoolMapParser("#")
     PARAMETERIZED_INPUTS = [2, 1_000_000]
 
     def solver(self, parsed_input: InputType, param: bool) -> int:

@@ -101,10 +101,10 @@ class Day13(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        # tracks = aoc.parse_ascii_bool_map("/\-|+^v<>").parse(puzzle_input)
-        junctions = aoc.parse_ascii_bool_map("+").parse(puzzle_input)
-        turns = aoc.parse_ascii_char_map(lambda x: CORNERS.get(x, None)).parse(puzzle_input)
-        wagons_directions = aoc.parse_ascii_char_map(
+        # tracks = aoc.AsciiBoolMapParser("/\-|+^v<>").parse(puzzle_input)
+        junctions = aoc.AsciiBoolMapParser("+").parse(puzzle_input)
+        turns = aoc.ParseCharMap(lambda x: CORNERS.get(x, None)).parse(puzzle_input)
+        wagons_directions = aoc.ParseCharMap(
             lambda x: DIRECTIONS.get(x, None)
         ).parse(puzzle_input)
         wagons = {location: (direction, 0) for location, direction in wagons_directions.items()}

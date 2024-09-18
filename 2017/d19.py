@@ -29,7 +29,7 @@ class Day19(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE, want=38),
     ]
 
-    INPUT_PARSER = aoc.parse_ascii_char_map(lambda x: None if x == " " else x)
+    INPUT_PARSER = aoc.ParseCharMap(lambda x: None if x == " " else x)
     PARAMETERIZED_INPUTS = [False, True]
 
     def solver(self, parsed_input: dict[complex, str], param: bool) -> int | str:
