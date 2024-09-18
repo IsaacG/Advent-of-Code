@@ -21,6 +21,9 @@ LineType = int
 InputType = list[LineType]
 
 CLEAN, WEAKENED, INFECTED, FLAGGED = range(4)
+STATES_P1 = [CLEAN, INFECTED, CLEAN]
+STATES_P2 = [CLEAN, WEAKENED, INFECTED, FLAGGED, CLEAN]
+ROTATIONS = {CLEAN: -1j, WEAKENED: 1, INFECTED: 1j, FLAGGED: -1}
 
 
 class Day22(aoc.Challenge):
@@ -32,40 +35,26 @@ class Day22(aoc.Challenge):
             aoc.parse_ascii_bool_map("#"),
         ]
     )
+    PARAMETERIZED_INPUTS = [False, True]
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=5587),
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=2511944),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
-        dimension, board = parsed_input
-        center = (dimension - 1) // 2
-        direction = complex(0, -1)
-        location = complex(1, 1) * center
-        infected = 0
-        for step in range(10000):
-            is_infected = location in board
-            if not is_infected:
-                infected += 1
-            direction *= 1j if is_infected else -1j
-            (board.remove if is_infected else board.add)(location)
-            location += direction
-
-        return infected
-
-    def part2(self, parsed_input: InputType) -> int:
+    def solver(self, parsed_input: list[list[int]], param: bool) -> int:
         dimension, initial_infected = parsed_input
         board = {i: INFECTED for i in initial_infected}
-        rotations = {CLEAN: -1j, WEAKENED: 1, INFECTED: 1j, FLAGGED: -1}
+        states = STATES_P2 if param else STATES_P1
+        next_state = {a: b for a, b in zip(states[:-1], states[1:])}
         center = (dimension - 1) // 2
         direction = complex(0, -1)
         location = complex(1, 1) * center
         infected = 0
-        for step in range(10000000):
+        for step in range(10000000 if param else 10000):
             state = board.get(location, CLEAN)
-            direction *= rotations[state]
-            board[location] = (state + 1) % 4
+            direction *= ROTATIONS[state]
+            board[location] = next_state[state]
             if board[location] == INFECTED:
                 infected += 1
             location += direction
