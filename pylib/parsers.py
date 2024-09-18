@@ -234,11 +234,11 @@ class CharCoordinatesParser(BaseParser):
 
     chars: collections.abc.Iterable[str]
 
-    def parse(self, puzzle_input: str) -> tuple[tuple[int, int], set[complex], ...]:
+    def parse(self, puzzle_input: str) -> tuple[tuple[int, int], list[set[complex]]]:
         """Parse a map and return the coordinates of different chars."""
         lines = puzzle_input.splitlines()
         size = (len(lines[0]), len(lines))
-        maps = (
+        maps = [
             {
                 complex(x, y)
                 for y, line in enumerate(lines)
@@ -246,8 +246,8 @@ class CharCoordinatesParser(BaseParser):
                 if got == want
             }
             for want in self.chars
-        )
-        return (size, *maps)
+        ]
+        return size, maps
 
 
 # Convert the entire input into one str.

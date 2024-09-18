@@ -44,7 +44,7 @@ class Day21(aoc.Challenge):
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the number of reachable locations in 64 steps."""
-        _, start, garden = puzzle_input
+        _, (start, garden) = puzzle_input
         garden.update(start)
         steps = 64
         if self.testing:
@@ -53,7 +53,7 @@ class Day21(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Return the number of reachable locations in many steps."""
-        (size, _), start, garden = puzzle_input
+        (size, _), (start, garden) = puzzle_input
         garden.update(start)
         steps = 26501365
 
