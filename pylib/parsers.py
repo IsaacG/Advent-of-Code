@@ -7,6 +7,7 @@ and returns the parsed value.
 """
 
 import collections.abc
+import dataclasses
 import inspect
 import itertools
 import re
@@ -48,22 +49,22 @@ class BaseParser:
         raise NotImplementedError
 
 
+@dataclasses.dataclass
 class ParseOneWord(BaseParser):
     """Parse an input which is a single line with a single word."""
 
-    def __init__(self, input_type: Callable[[str], Any]):
-        self.input_type = input_type
+    input_type: Callable[[str], Any]
 
     def parse(self, puzzle_input: str) -> Any:
         """Parse puzzle input as a single object and convert to a type."""
         return self.input_type(puzzle_input)
 
 
+@dataclasses.dataclass
 class ParseOneWordPerLine(BaseParser):
     """Parse an input which is multiple lines with a single word per line."""
 
-    def __init__(self, input_type: Callable[[str], Any]):
-        self.input_type = input_type
+    input_type: Callable[[str], Any]
 
     def parse(self, puzzle_input: str) -> list[Any]:
         """Parse puzzle lines, converting each line to a type."""
@@ -73,11 +74,11 @@ class ParseOneWordPerLine(BaseParser):
         ]
 
 
+@dataclasses.dataclass
 class BaseParseMultiPerLine(BaseParser):
     """Parse an input which is multiple lines with multiple words per line."""
 
-    def __init__(self, convert: Callable[[Iterable[str]], Any]):
-        self.convert = convert
+    convert: Callable[[Iterable[str]], Any]
 
     def parse(self, puzzle_input: str) -> list[list[Any]]:
         """Parse puzzle lines, converting each line to a list of types."""
@@ -87,13 +88,13 @@ class BaseParseMultiPerLine(BaseParser):
         ]
 
 
+@dataclasses.dataclass
 class BaseParseRe(BaseParser):
     """Parse multi-line input by applying a regex to find words on each line."""
 
-    def __init__(self, regex: str, convert: Callable[[Iterable[str]], list[Any]], one_line: bool = False):
-        self.compiled = re.compile(regex)
-        self.convert = convert
-        self.one_line = one_line
+    regex: str
+    convert: Callable[[Iterable[str]], list[Any]]
+    one_line: bool = False
 
     def parse(self, puzzle_input: str) -> list[list[Any]] | list[Any]:
         """Parse puzzle lines, applying a regex to each line."""
@@ -130,22 +131,24 @@ class BaseParseReGroups(BaseParseRe):
         raise ValueError(f"Pattern did not match! {self.compiled.pattern=} {line=}")
 
 
+@dataclasses.dataclass
 class BaseMultiParser(BaseParser):
     """Base for using multiple parsers."""
 
-    def __init__(self, parsers: Iterable[BaseParser]):
-        for parser in parsers:
+    parsers: Iterable[BaseParser]
+
+    def __post_init__(self) -> None:
+        for parser in self.parsers:
             if inspect.isclass(parser):
                 raise ValueError(f"{parser!r} is a class and not an instance!")
-        self.parsers = parsers
 
 
+@dataclasses.dataclass
 class ParseBlocks(BaseMultiParser):
     """Parse an input by splitting into blocks and applying a parser to each block."""
 
-    def __init__(self, parsers: Iterable[BaseParser], separator: str = "\n\n"):
-        super().__init__(parsers)
-        self.separator = separator
+    parsers: Iterable[BaseParser]
+    separator: str = "\n\n"
 
     def parse(self, puzzle_input: str) -> list[Any]:
         """Convert input into "blocks" and parse each block."""
@@ -175,11 +178,11 @@ class ParseChain(BaseMultiParser):
         return parsed
 
 
+@dataclasses.dataclass
 class ParseCharMap(BaseParser):
     """Parse a map of values, generating a set[complex]."""
 
-    def __init__(self, transform: Callable[[str], Any]):
-        self.transform = transform
+    transform: Callable[[str], Any]
 
     def parse(self, puzzle_input: str) -> dict[complex, Any]:
         """Parse a map."""
@@ -191,38 +194,42 @@ class ParseCharMap(BaseParser):
         return out
 
 
+@dataclasses.dataclass
 class Transform(BaseParser):
     """Apply an arbitrary transform to the data."""
 
-    def __init__(self, func: collections.abc.Callable):
-        self.func = func
+    func: collections.abc.Callable
 
     def parse(self, puzzle_input: Any) -> Any:
         """Apply a transformation."""
         return self.func(puzzle_input)
 
 
+@dataclasses.dataclass
 class AsciiBoolMapParser(BaseParser):
     """Parse a map of on/off values to build a set of "on" points."""
 
-    def __init__(self, on_chars: str):
-        self.on_chars = on_chars
+    on_chars: str
+    origin_top_left: bool = True
 
     def parse(self, puzzle_input: str) -> set[complex]:
         """Parse ASCII to find points in a map which are "on"."""
+        lines = puzzle_input.splitlines()
+        if not self.origin_top_left:
+            lines.reverse()
         return {
             complex(x, y)
-            for y, line in enumerate(puzzle_input.splitlines())
+            for y, line in enumerate(lines)
             for x, char in enumerate(line)
             if char in self.on_chars
         }
 
 
+@dataclasses.dataclass
 class CharCoordinatesParser(BaseParser):
     """Generate coordinate sets for multiple characters."""
 
-    def __init__(self, chars: collections.abc.Iterable[str]):
-        self.chars = chars
+    chars: collections.abc.Iterable[str]
 
     def parse(self, puzzle_input: str) -> tuple[tuple[int, int], set[complex], ...]:
         """Parse a map and return the coordinates of different chars."""

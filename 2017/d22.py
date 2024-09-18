@@ -23,7 +23,7 @@ InputType = list[LineType]
 CLEAN, WEAKENED, INFECTED, FLAGGED = range(4)
 STATES_P1 = [CLEAN, INFECTED, CLEAN]
 STATES_P2 = [CLEAN, WEAKENED, INFECTED, FLAGGED, CLEAN]
-ROTATIONS = {CLEAN: -1j, WEAKENED: 1, INFECTED: 1j, FLAGGED: -1}
+ROTATIONS = {CLEAN: 1j, WEAKENED: 1, INFECTED: -1j, FLAGGED: -1}
 
 
 class Day22(aoc.Challenge):
@@ -32,7 +32,7 @@ class Day22(aoc.Challenge):
     INPUT_PARSER = aoc.ParseMultiple(
         [
             aoc.Transform(lambda x: len(x.splitlines())),
-            aoc.parse_ascii_bool_map("#"),
+            aoc.parse_ascii_bool_map("#", origin_top_left=False),
         ]
     )
     PARAMETERIZED_INPUTS = [False, True]
@@ -47,9 +47,8 @@ class Day22(aoc.Challenge):
         board = {i: INFECTED for i in initial_infected}
         states = STATES_P2 if param else STATES_P1
         next_state = {a: b for a, b in zip(states[:-1], states[1:])}
-        center = (dimension - 1) // 2
-        direction = complex(0, -1)
-        location = complex(1, 1) * center
+        direction = complex(0, 1)
+        location = complex(1, 1) * ((dimension - 1) // 2)
         infected = 0
         for step in range(10000000 if param else 10000):
             state = board.get(location, CLEAN)
