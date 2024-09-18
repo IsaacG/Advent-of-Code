@@ -28,11 +28,11 @@ class Day22(aoc.Challenge):
         dimension, initial_infected = puzzle_input
         board = {i: INFECTED for i in initial_infected}
         states = STATES_P1 if part_one else STATES_P2
-        next_state = {a: b for a, b in zip(states[:-1], states[1:])}
+        next_state = dict(zip(states[:-1], states[1:]))
         direction = complex(0, 1)
         location = complex(1, 1) * ((dimension - 1) // 2)
         infected = 0
-        for step in range(10000 if part_one else 10000000):
+        for _ in range(10000 if part_one else 10000000):
             state = board.get(location, CLEAN)
             direction *= ROTATIONS[state]
             board[location] = next_state[state]
