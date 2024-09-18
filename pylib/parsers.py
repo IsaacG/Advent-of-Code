@@ -92,12 +92,12 @@ class BaseParseMultiPerLine(BaseParser):
 class BaseParseRe(BaseParser):
     """Parse multi-line input by applying a regex to find words on each line."""
 
-    regex: str
+    regex: str | re.Pattern
     convert: Callable[[Iterable[str]], list[Any]]
     one_line: bool = False
 
     def __post_init__(self) -> None:
-        self.compiled = re.compile(self.regex)
+        self.compiled = re.compile(self.regex) if isinstance(self.regex, str) else self.regex
 
     def parse(self, puzzle_input: str) -> list[list[Any]] | list[Any]:
         """Parse puzzle lines, applying a regex to each line."""
@@ -173,7 +173,7 @@ class ParseMultiple(BaseMultiParser):
 class ParseChain(BaseMultiParser):
     """Parse an input via a chain of serial parser steps."""
 
-    def parse(self, puzzle_input: str) -> list[Any]:
+    def parse(self, puzzle_input: str) -> Any:
         """Convert input into "blocks" and parse each block."""
         parsed = puzzle_input
         for parser in self.parsers:

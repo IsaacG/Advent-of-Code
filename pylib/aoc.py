@@ -728,6 +728,9 @@ class Challenge(Helpers):
         """Solve part 2."""
         raise NotImplementedError
 
+    def solver(self, puzzle_input: Any, part_one: bool) -> int | str:
+        raise NotImplementedError
+
     def raw_data(self, filename: Optional[str]) -> str:
         """Read puzzle data from file."""
         path = pathlib.Path(filename) if filename else self.data_file
@@ -740,9 +743,6 @@ class Challenge(Helpers):
 
             self._filecache[path] = path.read_text().rstrip()
         return self._filecache[path]
-
-    def solver(self, puzzle_input: Any, part_one: bool) -> int | str:
-        raise NotImplementedError
 
     @functools.cache
     def _parser(self) -> parsers.BaseParser:
