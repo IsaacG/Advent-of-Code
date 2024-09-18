@@ -31,10 +31,10 @@ class Day24(aoc.Challenge):
                 break
         return min(candidates)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the smallest group, with 3 groups."""
-        return self.balance(parsed_input, 3)
+        return self.balance(puzzle_input, 3)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the smallest group, with 4 groups."""
-        return self.balance(parsed_input, 4)
+        return self.balance(puzzle_input, 4)

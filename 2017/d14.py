@@ -49,10 +49,10 @@ class Day14(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         # Compute all the Knot Hashes as lines of binary values.
         lines = (
-            "".join([f"{i:08b}" for i in knot_hash(f"{parsed_input}-{pos_y}")])
+            "".join([f"{i:08b}" for i in knot_hash(f"{puzzle_input}-{pos_y}")])
             for pos_y in range(128)
         )
         # Make a set of locations which are in use.

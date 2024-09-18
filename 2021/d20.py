@@ -24,7 +24,7 @@ class Day20(aoc.Challenge):
         """Return the 3x3 points centered around `point`."""
         return [point + complex(x, y) for y in range(-1, 2) for x in range(-1, 2)]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Enhance the image N times.
 
         For every iteration, expand the area of interest by expanding outwards
@@ -37,7 +37,7 @@ class Day20(aoc.Challenge):
         When they blink off, they can be ignored. When blinked on (even steps),
         any point outside the "explored" region are "on" when evaluated.
         """
-        algo, image = parsed_input
+        algo, image = puzzle_input
 
         # The background blinks if 000_000_000 => on and 111_111_111 => off
         is_blinking = algo["000" * 3] and not algo["111" * 3]

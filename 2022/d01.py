@@ -30,10 +30,10 @@ class Day01(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_int_per_line])
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the sum calories held by the elf with the most calories."""
-        return max(sum(i) for i in parsed_input)
+        return max(sum(i) for i in puzzle_input)
 
-    def part2(self, parsed_input: InputType, top_n: int = 3) -> int:
+    def part2(self, puzzle_input: InputType, top_n: int = 3) -> int:
         """Return the sum calories held by the top three elves with the most calories."""
-        return sum(sorted(sum(i) for i in parsed_input)[-top_n:])
+        return sum(sorted(sum(i) for i in puzzle_input)[-top_n:])

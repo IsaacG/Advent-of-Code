@@ -33,8 +33,8 @@ class Day01(aoc.Challenge):
         """Direct fuel needed for some mass."""
         return max(0, int(mass / 3) - 2)
 
-    def part2(self, parsed_input: List[int]) -> int:
-        return self.sum_map(parsed_input, self.fuel)
+    def part2(self, puzzle_input: List[int]) -> int:
+        return self.sum_map(puzzle_input, self.fuel)
 
-    def part1(self, parsed_input: List[int]) -> int:
-        return self.sum_map(parsed_input, self.simple_fuel)
+    def part1(self, puzzle_input: List[int]) -> int:
+        return self.sum_map(puzzle_input, self.simple_fuel)

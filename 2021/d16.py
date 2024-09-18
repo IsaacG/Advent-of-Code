@@ -199,12 +199,12 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs="9C0141080250320F1802104A08", part=2, want=1),
     )
 
-    def part1(self, parsed_input: str) -> int:
+    def part1(self, puzzle_input: str) -> int:
         """Parse the packets and sum up all the versions."""
-        bits_io = BitStream.from_hex(parsed_input)
+        bits_io = BitStream.from_hex(puzzle_input)
         return packet_parser(bits_io).sum_versions()
 
-    def part2(self, parsed_input: str) -> int:
+    def part2(self, puzzle_input: str) -> int:
         """Parse the packets and evaluate."""
-        bits_io = BitStream.from_hex(parsed_input)
+        bits_io = BitStream.from_hex(puzzle_input)
         return packet_parser(bits_io).eval()

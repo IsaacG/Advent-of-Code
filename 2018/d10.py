@@ -50,10 +50,10 @@ class Day10(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_ints
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int | str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
         """Return the message in the moving stars."""
         height = 8 if self.testing else 10
-        points = parsed_input
+        points = puzzle_input
         for i in range(12000):
             points = [(x + dx, y + dy, dx, dy) for x, y, dx, dy in points]
             ymin = min(y for _, y, _, _ in points)

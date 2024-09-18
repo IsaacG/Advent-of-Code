@@ -31,14 +31,14 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=61229),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Count the number of 1, 4, 7, 8's in the output."""
         want_lengths = {2, 3, 4, 7}
         return sum(
             # Count occurances...
             1
             # ...for all wires in the digits...
-            for _, digits in parsed_input for wires in digits
+            for _, digits in puzzle_input for wires in digits
             # ...where the right number of wires are on.
             if len(wires) in want_lengths
         )
@@ -81,10 +81,10 @@ class Day08(aoc.Challenge):
 
         return known
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Decipher each output digits based on the sample digits."""
         sum_result = 0
-        for samples, digits in parsed_input:
+        for samples, digits in puzzle_input:
             wires_to_str = {
                 wires: str(value)
                 for value, wires in self.decipher(samples).items()

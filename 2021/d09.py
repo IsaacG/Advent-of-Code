@@ -33,17 +33,17 @@ class Day09(aoc.Challenge):
             )
         ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Find all the low points on the map."""
-        depths = parsed_input
-        return sum(depths[point] + 1 for point in self.lows(parsed_input))
+        depths = puzzle_input
+        return sum(depths[point] + 1 for point in self.lows(puzzle_input))
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Find the largest three basins.
 
         Simply remove 9's from the map and find the size of each island."""
         # Remove borders around the islands, i.e. points of height 9.
-        unexplored = {point for point, depth in parsed_input.items() if depth != 9}
+        unexplored = {point for point, depth in puzzle_input.items() if depth != 9}
         basin_sizes = []
         # Group points into islands. Pick any point and flood fill to neighboring points.
         while unexplored:
@@ -52,7 +52,7 @@ class Day09(aoc.Challenge):
             while queue:
                 point = queue.pop()
                 in_basin.add(point)
-                for neighbor in parsed_input.neighbors(point):
+                for neighbor in puzzle_input.neighbors(point):
                     if neighbor not in unexplored:
                         continue
                     queue.add(neighbor)
@@ -61,9 +61,9 @@ class Day09(aoc.Challenge):
 
         return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
 
-    def part2_slow(self, parsed_input: InputType) -> int:
+    def part2_slow(self, puzzle_input: InputType) -> int:
         """Find the largest three basins. Flood fill."""
-        depths = parsed_input
+        depths = puzzle_input
         basin_sizes = []
         # For each minimum, explore the basin.
         for lowpoint in self.lows(depths):

@@ -66,10 +66,10 @@ class Day10(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=19208),
   )
 
-  def part1(self, parsed_input: List[int]) -> int:
+  def part1(self, puzzle_input: List[int]) -> int:
     """Count the 1-steps and 3-steps."""
     # Sort the plugs.
-    nums = sorted(parsed_input)
+    nums = sorted(puzzle_input)
     # Add the source and dest, 0 and max+3.
     nums.insert(0, 0)
     nums.append(max(nums) + 3)
@@ -79,9 +79,9 @@ class Day10(aoc.Challenge):
     counts = collections.Counter(diffs)
     return counts[1] * counts[3]
 
-  def part2(self, parsed_input: List[int]) -> int:
+  def part2(self, puzzle_input: List[int]) -> int:
     """Count all possible paths from 0 to dest."""
-    nums = [0] + sorted(parsed_input) + [max(parsed_input) + 3]
+    nums = [0] + sorted(puzzle_input) + [max(puzzle_input) + 3]
 
     @functools.cache
     def possible_paths_from(i):

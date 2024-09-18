@@ -47,17 +47,17 @@ class Day${day}(aoc.Challenge):
     # INPUT_PARSER = aoc.AsciiBoolMapParser("#")
     # ---
     # INPUT_PARSER = aoc.CharCoordinatesParser("S.#")
-    # (width, height), start, garden, rocks = parsed_input
+    # (width, height), start, garden, rocks = puzzle_input
     # max_x, max_y = width - 1, height - 1
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         print("\n".join(["==="] + [f"{k}={v!r}" for k, v in locals().items()] + ["==="]))
         return None
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         raise NotImplementedError
 
-    def solver(self, parsed_input: InputType, param: bool) -> int | str:
+    def solver(self, puzzle_input: InputType, param: bool) -> int | str:
         raise NotImplementedError
 
     def input_parser(self, puzzle_input: str) -> InputType:

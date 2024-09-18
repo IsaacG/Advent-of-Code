@@ -57,9 +57,9 @@ class Day11(aoc.Challenge):
         """A* cost function: minimum moves needed to solve the puzzle."""
         return sum(len(floor) * i for i, floor in zip((3, 2, 1), floors[:3]))
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Solve for minimum moves using A*."""
-        state, _ = parsed_input
+        state, _ = puzzle_input
 
         # Initial setup
         elevator, steps = 0, 0
@@ -100,9 +100,9 @@ class Day11(aoc.Challenge):
                     todo.put((next_steps + self.cost(new_floors), next_steps, next_floor, new_floors))
         raise RuntimeError("No solution found.")
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Add extra devices then solve the puzzle."""
-        state, materials = parsed_input
+        state, materials = puzzle_input
         floors = list(state)
         ground = list(floors[0])
         for material in ("dilithium", "elerium"):

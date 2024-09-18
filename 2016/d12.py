@@ -27,10 +27,10 @@ class Day12(aoc.Challenge):
     ]
     TIMEOUT = 45
 
-    def solver(self, parsed_input: list[str], param: bool) -> int:
+    def solver(self, puzzle_input: list[str], param: bool) -> int:
         """Simulate a computer."""
         instructions = []
-        for line in parsed_input:
+        for line in puzzle_input:
             instruction = line.split()
             op_code = assembunny.Operation[instruction[0].upper()].value
             instructions.append([op_code] + instruction[1:])

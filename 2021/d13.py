@@ -55,16 +55,16 @@ class Day13(aoc.Challenge):
                     new.add(2 * position - point.real + point.imag * 1j)
         return new
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Fold the sheet once and count points."""
-        points, instructions = parsed_input
+        points, instructions = puzzle_input
         axis, position = instructions[0]
         points = self.fold(points, axis, position)
         return len(points)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Fold the sheet many times and render the resulting points."""
-        points, instructions = parsed_input
+        points, instructions = puzzle_input
         # TODO: Can we do all the folds in a single pass?
         for axis, position in instructions:
             points = self.fold(points, axis, position)

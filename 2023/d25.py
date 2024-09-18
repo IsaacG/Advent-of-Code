@@ -38,8 +38,8 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
-        graph = parsed_input
+    def part1(self, puzzle_input: InputType) -> int:
+        graph = puzzle_input
         graph_list = {src: list(dsts) for src, dsts in graph.items()}
         nodes = list(graph)
         node_count = len(nodes)

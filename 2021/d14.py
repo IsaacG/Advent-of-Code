@@ -35,16 +35,16 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=2188189693529),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Transform the polymer 10 times."""
-        return self.solve(parsed_input, 10)
+        return self.solve(puzzle_input, 10)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Transform the polymer 10 times."""
-        return self.solve(parsed_input, 40)
+        return self.solve(puzzle_input, 40)
 
     @staticmethod
-    def solve(parsed_input, count) -> int:
+    def solve(puzzle_input, count) -> int:
         """Transform the polymer a bunch of times and count.
 
         To avoid requiring more RAM than I can fit in a computer, do not actually expand
@@ -65,7 +65,7 @@ class Day14(aoc.Challenge):
         Looking at just the first letters means dropping the final letter.
         The final letter needs adding back.
         """
-        start, formulas = parsed_input
+        start, formulas = puzzle_input
         # The first and last char need an extra count at the end as they are not duplicated.
         last = start[-1]
         # Build a counter of how many times each pair shows up.

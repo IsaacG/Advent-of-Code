@@ -67,25 +67,25 @@ class Day08(aoc.Challenge):
       if ptr in seen:
         return acc, False
 
-  def part1(self, parsed_input: List[str]) -> int:
+  def part1(self, puzzle_input: List[str]) -> int:
     """Run the code until a loop is detected."""
-    acc, end = self.compute(parsed_input)
+    acc, end = self.compute(puzzle_input)
     assert not end
     return acc
 
-  def part2(self, parsed_input: List[str]) -> int:
+  def part2(self, puzzle_input: List[str]) -> int:
     """Swap jmp<>nop until the code can run to the end."""
-    for i in range(len(parsed_input)):
-      op, val = parsed_input[i].split()
-      line = parsed_input[i]
+    for i in range(len(puzzle_input)):
+      op, val = puzzle_input[i].split()
+      line = puzzle_input[i]
       if op == 'acc':
         continue
       if op == 'nop':
-        parsed_input[i] = f'jmp {val}'
+        puzzle_input[i] = f'jmp {val}'
       elif op == 'jmp':
-        parsed_input[i] = f'nop {val}'
-      acc, end = self.compute(parsed_input)
+        puzzle_input[i] = f'nop {val}'
+      acc, end = self.compute(puzzle_input)
       if end:
         return acc
-      parsed_input[i] = line
+      puzzle_input[i] = line
     raise RuntimeError

@@ -720,11 +720,11 @@ class Challenge(Helpers):
         assert len(p) == 4 and p.isnumeric(), p
         return p
 
-    def part1(self, parsed_input: Any) -> int | str:
+    def part1(self, puzzle_input: Any) -> int | str:
         """Solve part 1."""
         raise NotImplementedError
 
-    def part2(self, parsed_input: Any) -> int | str:
+    def part2(self, puzzle_input: Any) -> int | str:
         """Solve part 2."""
         raise NotImplementedError
 
@@ -741,7 +741,7 @@ class Challenge(Helpers):
             self._filecache[path] = path.read_text().rstrip()
         return self._filecache[path]
 
-    def solver(self, parsed_input: Any, part_one: bool) -> int | str:
+    def solver(self, puzzle_input: Any, part_one: bool) -> int | str:
         raise NotImplementedError
 
     @functools.cache
@@ -816,7 +816,7 @@ class Challenge(Helpers):
         if self.DEBUG:
             print(msg)
 
-    def pre_run(self, parsed_input: Any) -> None:
+    def pre_run(self, puzzle_input: Any) -> None:
         """Hook to run things prior to tests and actual."""
 
     def solve(self, input_file: Optional[str]) -> None:

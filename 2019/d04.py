@@ -28,13 +28,13 @@ class Day04(aoc.Challenge):
         digits = collections.Counter(str(num))
         return 2 in digits.values()
 
-    def part2(self, parsed_input: List[int]) -> int:
+    def part2(self, puzzle_input: List[int]) -> int:
         """Count valid passwords, using the has_a_double rule."""
-        return self.solve(parsed_input, lambda x: self.has_a_double(x))
+        return self.solve(puzzle_input, lambda x: self.has_a_double(x))
 
-    def part1(self, parsed_input: List[int]) -> int:
+    def part1(self, puzzle_input: List[int]) -> int:
         """Count valid passwords, using the has_a_repeat rule."""
-        return self.solve(parsed_input, lambda x: self.has_a_repeat(x))
+        return self.solve(puzzle_input, lambda x: self.has_a_repeat(x))
 
     def solve(self, puzzle_input: List[int], valid: Callable[[int], bool]) -> int:
         """Count the number of "valid" passwords in a range.

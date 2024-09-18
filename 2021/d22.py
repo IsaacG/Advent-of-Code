@@ -138,10 +138,10 @@ class Day22(aoc.Challenge):
             for x0, x1, y0, y1, z0, z1 in cubes
         )
 
-    def restrict(self, parsed_input: InputType) -> InputType:
+    def restrict(self, puzzle_input: InputType) -> InputType:
         """Filter the input to a -50..50 volume."""
         modified: InputType = []
-        for on, x0, x1, y0, y1, z0, z1 in parsed_input:
+        for on, x0, x1, y0, y1, z0, z1 in puzzle_input:
             if (x1 < -50 or y1 < -50 or z1 < -50):
                 continue
             if (x0 > 50 or y0 > 50 or z0 > 50):
@@ -154,15 +154,15 @@ class Day22(aoc.Challenge):
             ))
         return modified
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the number of points which are on, no restrictions."""
         if part_one:
-            parsed_input = self.restrict(parsed_input)
+            puzzle_input = self.restrict(puzzle_input)
 
         add: list[Cube] = []
         sub: list[Cube] = []
 
-        for on, *cube in parsed_input:
+        for on, *cube in puzzle_input:
             new_sub = self.overlaps(add, *cube)
             new_add = self.overlaps(sub, *cube)
             add.extend(new_add)

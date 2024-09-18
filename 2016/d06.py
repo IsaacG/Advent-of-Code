@@ -25,9 +25,9 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want="advent"),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> str:
         idx = 0 if part_one else -1
         return "".join(
             collections.Counter(col).most_common()[idx][0]
-            for col in zip(*parsed_input)
+            for col in zip(*puzzle_input)
         )

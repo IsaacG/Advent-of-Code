@@ -128,10 +128,10 @@ class Day11(aoc.Challenge):
       board.calc_next(threshold, counting)
     return board.people_count()
 
-  def part1(self, parsed_input: List[str]) -> int:
-    board = Seating(parsed_input)
+  def part1(self, puzzle_input: List[str]) -> int:
+    board = Seating(puzzle_input)
     return self.solution(board, 4, board.surrounding)
 
-  def part2(self, parsed_input: List[str]) -> int:
-    board = Seating(parsed_input)
+  def part2(self, puzzle_input: List[str]) -> int:
+    board = Seating(puzzle_input)
     return self.solution(board, 5, board.visible)

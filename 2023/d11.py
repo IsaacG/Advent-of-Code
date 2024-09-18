@@ -28,9 +28,9 @@ class Day11(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.AsciiBoolMapParser("#")
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the sum of the distances between shifted galaxies."""
-        data = parsed_input
+        data = puzzle_input
         distance = 1 if part_one else 1_000_000 - 1
         min_x, min_y, max_x, max_y = aoc.bounding_coords(data)
 

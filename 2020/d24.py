@@ -50,9 +50,9 @@ class Day24(aoc.Challenge):
     # aoc.TestCase(inputs=SAMPLE[0], part=2, want=2208),  # 100 rounds
   )
 
-  def part2(self, parsed_input: List[List[str]]) -> int:
+  def part2(self, puzzle_input: List[List[str]]) -> int:
     """Play Game of Life on a hex grid. See day 17."""
-    live = self.build_grid(parsed_input)
+    live = self.build_grid(puzzle_input)
     # Speed up tests for convenience.
     limit = 20 if self.testing else 100
     for _ in range(limit):
@@ -67,14 +67,14 @@ class Day24(aoc.Challenge):
 
     return len(live)
 
-  def part1(self, parsed_input: List[List[str]]) -> int:
+  def part1(self, puzzle_input: List[List[str]]) -> int:
     """Count flipped tiles after applying instructions."""
-    return len(self.build_grid(parsed_input))
+    return len(self.build_grid(puzzle_input))
 
-  def build_grid(self, parsed_input: List[List[str]]) -> Set[complex]:
+  def build_grid(self, puzzle_input: List[List[str]]) -> Set[complex]:
     """Convert a list of directions to a coord and flip that tile on/off."""
     flipped = set()  # type: Set[complex]
-    for line in parsed_input:
+    for line in puzzle_input:
       c = sum(DIRMAP[i] for i in line)
       if c in flipped:
         flipped.remove(c)

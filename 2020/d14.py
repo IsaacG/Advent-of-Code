@@ -30,17 +30,17 @@ class Day14(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=208),
   )
 
-  def part1(self, parsed_input: List[Tuple[str, ...]]) -> int:
-    return self.solve(parsed_input, self.write1)
+  def part1(self, puzzle_input: List[Tuple[str, ...]]) -> int:
+    return self.solve(puzzle_input, self.write1)
 
-  def part2(self, parsed_input: List[Tuple[str, ...]]) -> int:
-    return self.solve(parsed_input, self.write2)
+  def part2(self, puzzle_input: List[Tuple[str, ...]]) -> int:
+    return self.solve(puzzle_input, self.write2)
 
-  def solve(self, parsed_input: List[Tuple[str, ...]], mem_writer: Callable[[str, int, int], None]) -> int:
+  def solve(self, puzzle_input: List[Tuple[str, ...]], mem_writer: Callable[[str, int, int], None]) -> int:
     """Read input. Track mask. Apply writes with the mem_writer."""
     self.mem = {}  # type:Dict[int, int]
     mask = ''
-    for (op, val) in parsed_input:
+    for (op, val) in puzzle_input:
       if op == 'mask':
         mask = val
       else:

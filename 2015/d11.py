@@ -72,14 +72,14 @@ class Day11(aoc.Challenge):
         password = "".join(string.ascii_lowercase[i] for i in parts(num))
         return password
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Rotate once."""
         assert valid(parts(334140716))  # abcdffaa
         assert valid(parts(50460204602))  # ghjaabcc
 
-        return self.next_password(parsed_input)
+        return self.next_password(puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Rotate twice."""
-        password = self.next_password(parsed_input)
+        password = self.next_password(puzzle_input)
         return self.next_password(password)

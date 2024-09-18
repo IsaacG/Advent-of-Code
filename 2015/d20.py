@@ -41,8 +41,8 @@ class Day20(aoc.Challenge):
 
     INPUT_PARSER = aoc.parse_one_int
 
-    def part1(self, parsed_input: InputType) -> int:
-        target = parsed_input // 10
+    def part1(self, puzzle_input: InputType) -> int:
+        target = puzzle_input // 10
 
         limit = 1000000
         houses = [1] * limit
@@ -56,8 +56,8 @@ class Day20(aoc.Challenge):
 
         raise RuntimeError
 
-    def part2(self, parsed_input: InputType) -> int:
-        target = parsed_input // 11
+    def part2(self, puzzle_input: InputType) -> int:
+        target = puzzle_input // 11
 
         limit = 1000000
         houses = [1] * limit
@@ -71,11 +71,11 @@ class Day20(aoc.Challenge):
 
         raise RuntimeError
 
-    def part1_nope_a(self, parsed_input: InputType) -> int:
+    def part1_nope_a(self, puzzle_input: InputType) -> int:
         global primes
         if not primes:
             self.pre_run()
-        target = parsed_input // 10 - 1
+        target = puzzle_input // 10 - 1
 
         for i in range(1, 1000000):
             pfactors = prime_factors(i)

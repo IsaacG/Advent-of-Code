@@ -31,17 +31,17 @@ class Day04(aoc.Challenge):
         top = sorted((-v, k) for k, v in collections.Counter(name).items())
         return "".join(b for a, b in top[:5]) == checksum
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the sum of real sectors."""
         return sum(
             sector
-            for name, sector, checksum in parsed_input
+            for name, sector, checksum in puzzle_input
             if self.is_real(name, checksum)
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the sector with Northpole storage."""
-        for name, sector, checksum in parsed_input:
+        for name, sector, checksum in puzzle_input:
             if not self.is_real(name, checksum):
                 continue
             name = "".join(

@@ -50,9 +50,9 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=46),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Map ranges of seeds to a final value and return the min."""
-        seeds, translation_layers = parsed_input
+        seeds, translation_layers = puzzle_input
 
         # Convert p1 into p2 by changing each seed into a range of length 1.
         # [5, 6, 7] => [5, 1, 6, 1, 7, 1]

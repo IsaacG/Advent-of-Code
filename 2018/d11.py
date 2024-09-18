@@ -17,8 +17,8 @@ class Day11(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_int
 
-    def solver(self, parsed_input: int, part_one: bool) -> str:
-        serial = parsed_input
+    def solver(self, puzzle_input: int, part_one: bool) -> str:
+        serial = puzzle_input
 
         def power_level(x: int, y: int) -> int:
             rack_id = x + 10

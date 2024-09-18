@@ -35,11 +35,11 @@ class Day17(aoc.Challenge):
                     count[number] += 1
         return count
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the possible countainer combos which fit the eggnog."""
-        return sum(self.count(parsed_input).values())
+        return sum(self.count(puzzle_input).values())
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the possible countainer combos which use the min number of containers."""
-        count = self.count(parsed_input)
+        count = self.count(puzzle_input)
         return count[min(count)]

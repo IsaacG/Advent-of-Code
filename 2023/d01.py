@@ -37,10 +37,10 @@ class Day01(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str_per_line
 
-    def solver(self, parsed_input: list[str], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[str], part_one: bool) -> int:
         """Walk a string and extract numbers."""
         total = 0
-        for line in parsed_input:
+        for line in puzzle_input:
             numbers = []
             for i in range(len(line)):
                 if line[i:i + 1].isdigit():

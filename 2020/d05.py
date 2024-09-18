@@ -22,14 +22,14 @@ class Day05(aoc.Challenge):
     aoc.TestCase(inputs='BBFFBBFRLL', part=1, want=820),
   )
 
-  def part1(self, parsed_input: List[str]) -> int:
+  def part1(self, puzzle_input: List[str]) -> int:
     # Part one: max seat number
-    seats = {translate(r) for r in parsed_input}
+    seats = {translate(r) for r in puzzle_input}
     return max(seats)
 
-  def part2(self, parsed_input: List[str]) -> int:
+  def part2(self, puzzle_input: List[str]) -> int:
     # Part two: find a gap of one between two seats.
-    seats = {translate(r) for r in parsed_input}
+    seats = {translate(r) for r in puzzle_input}
 
     for s in seats:
       if (s + 1) not in seats and (s + 2) in seats:

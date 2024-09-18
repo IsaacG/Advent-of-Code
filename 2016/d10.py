@@ -23,7 +23,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=2 * 3 * 5),
     ]
 
-    def solver(self, parsed_input: list[str], param: bool) -> int:
+    def solver(self, puzzle_input: list[str], param: bool) -> int:
         """Simulate a bot factory."""
         want = [2, 5] if self.testing else [17, 61]
         bots = collections.defaultdict(list)
@@ -31,7 +31,7 @@ class Day10(aoc.Challenge):
         instructions = {}
 
         # Parse the input, setting up initial bot states and instructions.
-        for line in parsed_input:
+        for line in puzzle_input:
             match line.split():
                 case ["value", value, "goes", "to", "bot", bot]:
                     bots[int(bot)].append(int(value))

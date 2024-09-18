@@ -40,9 +40,9 @@ class Day17(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.int_map
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the minimum heat loss from start to end."""
-        board, end = parsed_input
+        board, end = puzzle_input
         max_distance = 3 if part_one else 10
         seen = {}
 

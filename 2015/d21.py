@@ -84,12 +84,12 @@ class Day21(aoc.Challenge):
             costs[self.player_wins(you, boss)].append(cost)
         return costs
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the min cost for the player to win."""
-        costs = self.simulate(dict(parsed_input))
+        costs = self.simulate(dict(puzzle_input))
         return min(costs[True])
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the max cost for the boss to win."""
-        costs = self.simulate(dict(parsed_input))
+        costs = self.simulate(dict(puzzle_input))
         return max(costs[False])

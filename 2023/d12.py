@@ -59,10 +59,10 @@ class Day12(aoc.Challenge):
 
         return count
 
-    def solver(self, parsed_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Return the total number of possible fits."""
         count = 0
-        for line in parsed_input:
+        for line in puzzle_input:
             springs_str, numbers_str = line.split()
             if not part_one:
                 springs_str = "?".join([springs_str] * 5)

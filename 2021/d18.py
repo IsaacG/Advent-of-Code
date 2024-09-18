@@ -204,16 +204,16 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=3993),
     )
 
-    def part1(self, parsed_input: list[Node]) -> int:
+    def part1(self, puzzle_input: list[Node]) -> int:
         """Sum a list of numbers."""
-        result = parsed_input[0]
-        for number in parsed_input[1:]:
+        result = puzzle_input[0]
+        for number in puzzle_input[1:]:
             result += number
         return result.magnitude()
 
-    def part2(self, parsed_input: list[Node]) -> int:
+    def part2(self, puzzle_input: list[Node]) -> int:
         """Compute the max magnitude from adding any two numbers."""
-        return max((a + b).magnitude() for a in parsed_input for b in parsed_input if a != b)
+        return max((a + b).magnitude() for a in puzzle_input for b in puzzle_input if a != b)
 
     def input_parser(self, puzzle_input: str) -> list[Node]:
         """Parse the input data."""

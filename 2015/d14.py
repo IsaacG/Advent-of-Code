@@ -27,23 +27,23 @@ class Day14(aoc.Challenge):
         rounds, extra = divmod(seconds, fly + rest)
         return speed * (rounds * fly + min(extra, fly))
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the longest distance at the end of the race."""
         race_len = 1000 if self.testing else 2503
         return max(
             self.distance(race_len, *data)
-            for _, *data in parsed_input
+            for _, *data in puzzle_input
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the biggest score at the end of the race."""
         race_len = 1000 if self.testing else 2503
-        points = {name: 0 for name, *_ in parsed_input}
+        points = {name: 0 for name, *_ in puzzle_input}
 
         for i in range(1, race_len + 1):
             positions = {
                 name: self.distance(i, speed, fly, rest)
-                for name, speed, fly, rest in parsed_input
+                for name, speed, fly, rest in puzzle_input
             }
             max_position = max(positions.values())
             for name, position in positions.items():

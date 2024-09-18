@@ -47,9 +47,9 @@ class Day19(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=167409079868000),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the sum points of the accepted items."""
-        rules, items = parsed_input
+        rules, items = puzzle_input
         result = 0
         # For each item, walk through the rules.
         for item in items:
@@ -102,9 +102,9 @@ class Day19(aoc.Challenge):
         recurse([], rules["in"])
         return accepted
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of possible accepted items."""
-        rules, _ = parsed_input
+        rules, _ = puzzle_input
 
         # Map constraint sets to accepted 4D intervals.
         all_intervals = []

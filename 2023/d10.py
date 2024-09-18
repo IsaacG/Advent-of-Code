@@ -87,8 +87,8 @@ class Day10(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.char_map
 
-    def solver(self, parsed_input: dict[complex, str], part_one: bool) -> int:
-        pipes = parsed_input
+    def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int:
+        pipes = puzzle_input
 
         # Figure out the start position details.
         start = next(pos for pos, char in pipes.items() if char == "S")

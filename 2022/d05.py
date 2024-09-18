@@ -40,9 +40,9 @@ class Day05(aoc.Challenge):
                     stack[i].append(crate)
         return stack
 
-    def part1(self, parsed_input: InputType) -> str:
+    def part1(self, puzzle_input: InputType) -> str:
         """Return crates after moving them with a CrateMover 9000."""
-        setup_block, moves = parsed_input
+        setup_block, moves = puzzle_input
         stack = self.build_stacks(setup_block)
 
         for move_count, src, dst in moves:
@@ -50,9 +50,9 @@ class Day05(aoc.Challenge):
                 stack[dst - 1].append(stack[src - 1].pop())
         return "".join(s.pop() for s in stack)
 
-    def part2(self, parsed_input: InputType) -> str:
+    def part2(self, puzzle_input: InputType) -> str:
         """Return crates after moving them with a CrateMover 9001."""
-        setup_block, moves = parsed_input
+        setup_block, moves = puzzle_input
         stack = self.build_stacks(setup_block)
 
         for move_count, src, dst in moves:

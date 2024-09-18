@@ -37,13 +37,13 @@ class Day12(aoc.Challenge):
             return sum(self.doc_sum(i, skip_red) for i in obj.values())
         raise ValueError(obj)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return sum ints."""
-        return self.doc_sum(parsed_input, False)
+        return self.doc_sum(puzzle_input, False)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return sum ints, excluding red objects."""
-        val = self.doc_sum(parsed_input, True)
+        val = self.doc_sum(puzzle_input, True)
         assert val < 191164
         return val
 

@@ -55,10 +55,10 @@ class Day10(aoc.Challenge):
             # string = "".join(f"{len(list(b))}{a}" for a, b in itertools.groupby(string))
         return len(string)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Look-say, 40 iterations."""
-        return self.look_say_loop(parsed_input, 40)
+        return self.look_say_loop(puzzle_input, 40)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Look-say, 50 iterations."""
-        return self.look_say_loop(parsed_input, 50)
+        return self.look_say_loop(puzzle_input, 50)

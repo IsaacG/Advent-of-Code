@@ -26,12 +26,12 @@ class Day02(aoc.Challenge):
         computer.run()
         return computer.memory[0]
 
-    def part1(self, parsed_input: str) -> int:
-        return self.run_with_inputs(parsed_input, 12, 2)
+    def part1(self, puzzle_input: str) -> int:
+        return self.run_with_inputs(puzzle_input, 12, 2)
 
-    def part2(self, parsed_input: str) -> int:
+    def part2(self, puzzle_input: str) -> int:
         for noun, verb in itertools.product(range(100), repeat=2):
-            if self.run_with_inputs(parsed_input, noun, verb) == 19690720:
+            if self.run_with_inputs(puzzle_input, noun, verb) == 19690720:
                 return 100 * noun + verb
 
 # vim:expandtab:sw=4:ts=4

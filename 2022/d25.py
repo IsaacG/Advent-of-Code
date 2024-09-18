@@ -76,10 +76,10 @@ class Day25(aoc.Challenge):
             msg = f"encode({decimal}) = {self.encode(int(decimal))}, want {snafu}"
             assert snafu == self.encode(int(decimal)), msg
 
-    def part1(self, parsed_input: InputType) -> str:
+    def part1(self, puzzle_input: InputType) -> str:
         """Return the SNAFU-encoded sum of SNAFU values."""
-        return self.encode(sum(self.decode(line) for line in parsed_input))
+        return self.encode(sum(self.decode(line) for line in puzzle_input))
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Placeholder."""
         return 1

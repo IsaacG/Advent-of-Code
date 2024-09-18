@@ -34,10 +34,10 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[8], part=2, want=0),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return how many lines follow rules 1."""
         total = 0
-        for line in parsed_input:
+        for line in puzzle_input:
             if (
                 sum(True for i in line if i in VOWELS) >= 3
                 and all(b not in line for b in BAD)
@@ -46,10 +46,10 @@ class Day05(aoc.Challenge):
                 total += 1
         return total
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return how many lines follow rules 2."""
         total = 0
-        for line in parsed_input:
+        for line in puzzle_input:
             repeated = False
             doubled = False
             for i in range(len(line) - 2):

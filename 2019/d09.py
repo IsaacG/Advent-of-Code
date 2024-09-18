@@ -22,8 +22,8 @@ class Day09(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_one_str
 
-    def part1(self, parsed_input: str) -> int:
-        computer = intcode.Computer(parsed_input, debug=self.DEBUG)
+    def part1(self, puzzle_input: str) -> int:
+        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
         if self.testing:
             computer.run()
             return ",".join(str(i) for i in computer.output)
@@ -35,8 +35,8 @@ class Day09(aoc.Challenge):
             raise RuntimeError(f"Test Failed! {results, output}")
         return output
 
-    def part2(self, parsed_input: str) -> int:
-        computer = intcode.Computer(parsed_input, debug=self.DEBUG)
+    def part2(self, puzzle_input: str) -> int:
+        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
         computer.input.append(2)
         computer.run()
         return computer.output.popleft()

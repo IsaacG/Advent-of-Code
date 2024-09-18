@@ -12,9 +12,9 @@ class Day17(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_int
 
-    def part1(self, parsed_input: int) -> int:
+    def part1(self, puzzle_input: int) -> int:
         """Step and insert 2017 times then return the next value."""
-        step = parsed_input
+        step = puzzle_input
         data = [0]
         pos = 0
         for i in range(1, 2017 + 1):
@@ -23,9 +23,9 @@ class Day17(aoc.Challenge):
 
         return data[(pos + 1) % len(data)]
 
-    def part2(self, parsed_input: int) -> int:
+    def part2(self, puzzle_input: int) -> int:
         """Return the value after 0 after 50M step-inserts."""
-        step = parsed_input
+        step = puzzle_input
         pos = 0
         last_insert = 0
         for i in range(1, 50000000 + 1):

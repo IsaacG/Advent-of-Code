@@ -27,10 +27,10 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=70),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Find the common element across the first and second half of each line."""
         score = 0
-        for line in parsed_input:
+        for line in puzzle_input:
             middle = len(line) // 2
             a, b = line[:middle], line[middle:]
             common = set(a) & set(b)
@@ -39,10 +39,10 @@ class Day03(aoc.Challenge):
 
         return score
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Find the common element across groups of three lines."""
         score = 0
-        for lines in more_itertools.chunked(parsed_input, 3):
+        for lines in more_itertools.chunked(puzzle_input, 3):
             common = set(lines[0]) & set(lines[1]) & set(lines[2])
             assert len(common) == 1
             score += SCORING.index(common.pop())

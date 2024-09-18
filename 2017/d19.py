@@ -31,9 +31,9 @@ class Day19(aoc.Challenge):
 
     INPUT_PARSER = aoc.ParseCharMap(lambda x: None if x == " " else x)
 
-    def solver(self, parsed_input: dict[complex, str], part_one: bool) -> int | str:
+    def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int | str:
         """Walk the maze and track steps/letters."""
-        maze = parsed_input
+        maze = puzzle_input
         # Initialize
         direction = complex(0, 1)
         location = next(i for i in maze if i.imag == 0)

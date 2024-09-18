@@ -23,7 +23,7 @@ class Day21(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
 
-    def solver(self, parsed_input: list[list[str]], part2: bool) -> str:
+    def solver(self, puzzle_input: list[list[str]], part2: bool) -> str:
         """Scramble a password following instructions."""
         if self.testing:
             input_word = "abcde"
@@ -37,9 +37,9 @@ class Day21(aoc.Challenge):
         # Rotate right, rotate left. Reversed for part 2.
         rotate_direction = {False: {"right": -1, "left": 1}, True: {"right": 1, "left": -1}}[part2]
         if part2:
-            parsed_input.reverse()
+            puzzle_input.reverse()
 
-        for instruction in parsed_input:
+        for instruction in puzzle_input:
             match instruction:
                 case ["swap", "position", reg_x, "with", "position", reg_y]:
                     data[int(reg_x)], data[int(reg_y)] = data[int(reg_y)], data[int(reg_x)]

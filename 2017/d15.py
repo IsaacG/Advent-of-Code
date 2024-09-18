@@ -21,13 +21,13 @@ class Day15(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_ints_per_line
 
-    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Count the number of generated pairs that have matching ends.
 
         NUC + cpython: 60s
         Desktop + pypy: 3s
         """
-        ((val_a,), (val_b,)) = parsed_input
+        ((val_a,), (val_b,)) = puzzle_input
 
         def gen(value, factor, mask):
             while True:

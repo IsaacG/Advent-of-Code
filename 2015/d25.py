@@ -19,9 +19,9 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the code given on a row/column."""
-        row, column = parsed_input[0]
+        row, column = puzzle_input[0]
         # Determine the code generation number based on row/column.
         code_num = 1
         for i in range(1, row):
@@ -35,5 +35,5 @@ class Day25(aoc.Challenge):
             code = (code * 252533) % 33554393
         return code
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         return 0

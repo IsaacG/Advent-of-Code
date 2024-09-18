@@ -26,9 +26,9 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=15),
     ]
 
-    def part1(self, parsed_input: InputType) -> str:
+    def part1(self, puzzle_input: InputType) -> str:
         """Return the order to work on jobs per a dependency graph."""
-        nodes, blocked = parsed_input
+        nodes, blocked = puzzle_input
         order = []
 
         available = [n for n in nodes if n not in blocked]
@@ -45,9 +45,9 @@ class Day07(aoc.Challenge):
                         del blocked[n]
         return "".join(order)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the time to complete tasks given dependencies and N workers."""
-        nodes, blocked = parsed_input
+        nodes, blocked = puzzle_input
         if self.testing:
             workers = 2
             base = ord("A") - 1

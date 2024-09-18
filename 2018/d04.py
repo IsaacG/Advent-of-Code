@@ -63,25 +63,25 @@ class Day04(aoc.Challenge):
                 max_count, max_time = count, start
         return max_count, max_time
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return which guard sleeps the most overall and at what time."""
         # Compute how many minutes overall each guard sleeps.
         asleep = {
             guard_id: sum(end - start for start, end in v)
-            for guard_id, v in parsed_input.items()
+            for guard_id, v in puzzle_input.items()
         }
         # Find the guard who sleeps the most minutes.
         guard_id, _ = max(asleep.items(), key=lambda i: i[1])
         # Find what time the guard is most likely to be asleep.
-        _, max_time = self.max_asleep_time(parsed_input[guard_id])
+        _, max_time = self.max_asleep_time(puzzle_input[guard_id])
         return guard_id * max_time
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the guard who is most likely to be asleep at any given minute."""
         guard_id, (_, max_time) = max(
             (
                 (guard_id, self.max_asleep_time(intervals))
-                for guard_id, intervals in parsed_input.items()
+                for guard_id, intervals in puzzle_input.items()
             ), key=lambda i: i[1][0]
         )
         return guard_id * max_time

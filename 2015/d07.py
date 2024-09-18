@@ -39,9 +39,9 @@ class Day07(aoc.Challenge):
 
     INPUT_PARSER = aoc.ParseOneWordPerLine(line_parser)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Solve for wire a."""
-        unresolved_parts = set(parsed_input)
+        unresolved_parts = set(puzzle_input)
         wire_val = {}
         prior = 0
 
@@ -86,11 +86,11 @@ class Day07(aoc.Challenge):
             return wire_val["a"]
         raise RuntimeError
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Solve for wire a after updating b."""
-        val_a = self.part1(parsed_input)
+        val_a = self.part1(puzzle_input)
         v2 = []
-        for out, op, a, b in parsed_input:
+        for out, op, a, b in puzzle_input:
             if op == "VAL" and out == "b":
                 a = str(val_a)
             v2.append((out, op, a, b))

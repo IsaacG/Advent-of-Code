@@ -60,9 +60,9 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want="6,4"),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> str:
         """Simulate wagons driving a track."""
-        turns, junctions, wagons = parsed_input
+        turns, junctions, wagons = puzzle_input
 
         for _ in range(20000):
             # Part 2: Return the location of the last cart.

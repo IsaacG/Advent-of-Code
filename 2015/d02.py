@@ -20,18 +20,18 @@ class Day02(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the amount of wrapping paper needed."""
         total = 0
-        for dims in parsed_input:
+        for dims in puzzle_input:
             sides = [a * b for a, b in itertools.combinations(dims, 2)]
             total += sum(sides) * 2 + min(sides)
         return total
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the amount of wrapping ribbon needed."""
         total = 0
-        for dims in parsed_input:
+        for dims in puzzle_input:
             perimeters = [a + b for a, b in itertools.combinations(dims, 2)]
             total += min(perimeters) * 2 + self.mult(dims)
         return total

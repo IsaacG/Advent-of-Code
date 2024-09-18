@@ -29,12 +29,12 @@ class Day09(aoc.Challenge):
             prior, following = self.get_prior_and_following(diffs)
         return line[0] - prior, line[-1] + following
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Compute the next value in a series using repeated first differences."""
         # Sum up the prior or following value from each line.
         return sum(
             self.get_prior_and_following(line)[1 if part_one else 0]
-            for line in parsed_input
+            for line in puzzle_input
         )
 
 # vim:expandtab:sw=4:ts=4

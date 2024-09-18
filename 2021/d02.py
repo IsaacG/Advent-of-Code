@@ -25,10 +25,10 @@ class Day02(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
-    def part1(self, parsed_input: list[tuple[str, int]]) -> int:
+    def part1(self, puzzle_input: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position and depth."""
         horiz, depth = 0, 0
-        for direction, num in parsed_input:
+        for direction, num in puzzle_input:
             if direction == "forward":
                 horiz += num
             if direction == "up":
@@ -38,10 +38,10 @@ class Day02(aoc.Challenge):
 
         return depth * horiz
 
-    def part2(self, parsed_input: list[tuple[str, int]]) -> int:
+    def part2(self, puzzle_input: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position, depth and aim."""
         horiz, depth, aim = 0, 0, 0
-        for direction, num in parsed_input:
+        for direction, num in puzzle_input:
             if direction == "forward":
                 horiz += num
                 depth += aim * num

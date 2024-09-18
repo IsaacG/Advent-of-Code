@@ -24,9 +24,9 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=7),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         # Brick ID to coordinates.
-        bricks = parsed_input
+        bricks = puzzle_input
 
         # Track which bricks exist by x-y column for faster lookups.
         footprints = {

@@ -19,7 +19,7 @@ class Day15(aoc.Challenge):
 
     ATTEMPTED = """
     Attempt to write a product() with better limiting:
-        names = list(parsed_input)
+        names = list(puzzle_input)
         n = len(names)
 
         combos = [[]]
@@ -91,21 +91,21 @@ class Day15(aoc.Challenge):
                 if sum(amounts) <= 100:
                     break
 
-    def solver(self, parsed_input: InputType, check_calories: bool) -> int:
+    def solver(self, puzzle_input: InputType, check_calories: bool) -> int:
         """Solve for the optimal recipe."""
         most = 0
-        _, names = list(zip(*self.sorted_limits(parsed_input, check_calories)))
-        for amounts in self.combo_generator(parsed_input, check_calories):
+        _, names = list(zip(*self.sorted_limits(puzzle_input, check_calories)))
+        for amounts in self.combo_generator(puzzle_input, check_calories):
             name_amounts = list(zip(names, amounts))
             if check_calories and sum(
-                amount * parsed_input[name]["calories"]
+                amount * puzzle_input[name]["calories"]
                 for name, amount in name_amounts
             ) != 500:
                 continue
             total = 1
             for prop in PROPERTIES:
                 total *= max(0, sum(
-                    amount * parsed_input[name][prop]
+                    amount * puzzle_input[name][prop]
                     for name, amount in name_amounts
                 ))
                 if total == 0:
@@ -114,11 +114,11 @@ class Day15(aoc.Challenge):
                 most = total
         return most
 
-    def part1(self, parsed_input: InputType) -> int:
-        return self.solver(parsed_input, check_calories=False)
+    def part1(self, puzzle_input: InputType) -> int:
+        return self.solver(puzzle_input, check_calories=False)
 
-    def part2(self, parsed_input: InputType) -> int:
-        return self.solver(parsed_input, check_calories=True)
+    def part2(self, puzzle_input: InputType) -> int:
+        return self.solver(puzzle_input, check_calories=True)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

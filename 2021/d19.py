@@ -149,9 +149,9 @@ class Day19(aoc.Challenge):
             # assert to_merge_count != len(to_merge)
         return merged_maps
 
-    def part1(self, parsed_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
+    def part1(self, puzzle_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
         """Return the number of beacons in the ocean."""
-        merged_map = self.merge(parsed_input)
+        merged_map = self.merge(puzzle_input)
         merged_beacons = set()
         for beacons, translation in merged_map.items():
             merged_beacons |= {
@@ -160,9 +160,9 @@ class Day19(aoc.Challenge):
             }
         return len(merged_beacons)
 
-    def part2(self, parsed_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
+    def part2(self, puzzle_input: frozenset[frozenset[tuple[int, int, int]]]) -> int:
         """Compute the maximum distance between any two sensors."""
-        scanners = self.merge(parsed_input).values()
+        scanners = self.merge(puzzle_input).values()
         distances = [sum(abs(i - j) for i, j in zip(a, b)) for a in scanners for b in scanners]
         return max(distances)
 

@@ -19,15 +19,15 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs="59414", part=2, want=2018),
     ]
 
-    def solver(self, parsed_input: str, part_one: bool) -> int | str:
+    def solver(self, puzzle_input: str, part_one: bool) -> int | str:
         """Solve for the target recipes."""
         # Compute target data.
-        p1_target = int(parsed_input)
+        p1_target = int(puzzle_input)
         p1_stop = p1_target + 10
         # Note: switching to dequeue made things slower.
-        p2_want = [int(i) for i in parsed_input]
+        p2_want = [int(i) for i in puzzle_input]
         p2_want_last = p2_want[-1]
-        p2_want_len = len(parsed_input)
+        p2_want_len = len(puzzle_input)
 
         # Initialize loop variables.
         recipes = [3, 7]

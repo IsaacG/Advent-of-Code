@@ -43,14 +43,14 @@ class Day12(aoc.Challenge):
                 to_visit.append(neighbor)
         raise RuntimeError("Not found.")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return steps from start to end."""
-        start, end, board = parsed_input
+        start, end, board = puzzle_input
         return self.get_steps([start], end, board)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return steps from any low point to end."""
-        _, end, board = parsed_input
+        _, end, board = puzzle_input
         starts = [
             point
             for point, height in board.items()

@@ -29,7 +29,7 @@ class Day07(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|[a-z]+")
 
-    def solver(self, parsed_input: list[list[int | str]], part_one: bool) -> int | str:
+    def solver(self, puzzle_input: list[list[int | str]], part_one: bool) -> int | str:
         node_weight: dict[str, int] = {}
         node_children: dict[str, set[str]] = collections.defaultdict(set)
         not_root: set[str] = set()
@@ -37,7 +37,7 @@ class Day07(aoc.Challenge):
         node: str
         weight: int
         children: list[str]
-        for (node, weight, *children) in parsed_input:  # type: ignore
+        for (node, weight, *children) in puzzle_input:  # type: ignore
             node_weight[node] = weight
             node_children[node].update(children)
             not_root.update(children)

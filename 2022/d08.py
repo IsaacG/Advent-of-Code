@@ -24,13 +24,13 @@ class Day08(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return how many trees are visible from outside.
 
         Walk the perimeter and peer into the forest.
         Record how many trees we can see along every line.
         """
-        board = parsed_input
+        board = puzzle_input
 
         visible: set[complex] = set()
 
@@ -57,9 +57,9 @@ class Day08(aoc.Challenge):
 
         return len(visible)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the highest scenic score in the forest."""
-        board = parsed_input
+        board = puzzle_input
         scores = []
 
         for tree in board:

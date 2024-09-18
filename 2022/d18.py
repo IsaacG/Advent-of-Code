@@ -38,9 +38,9 @@ class Day18(aoc.Challenge):
         aoc.ParseOneWord(set),
     ])
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of lava surfaces which are not touching another lava."""
-        points = parsed_input
+        points = puzzle_input
         directions = aoc.n_dim_directions(3)
         return sum(
             (x + a, y + b, z + c) not in points
@@ -48,9 +48,9 @@ class Day18(aoc.Challenge):
             for a, b, c in directions
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of exterior lava surfaces. Flood fill everything."""
-        points = parsed_input
+        points = puzzle_input
         directions = aoc.n_dim_directions(3)
 
         # Create a bounding box around all of the lava.

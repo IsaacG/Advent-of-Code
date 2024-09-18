@@ -12,9 +12,9 @@ class Day19(aoc.Challenge):
         aoc.TestCase(inputs="5", part=2, want=2),
     ]
 
-    def part1(self, parsed_input: int) -> int:
+    def part1(self, puzzle_input: int) -> int:
         """Solve the Josephus problem."""
-        circle = list(range(parsed_input))
+        circle = list(range(puzzle_input))
         while len(circle) > 1:
             odd = len(circle) % 2
             circle = circle[::2]
@@ -22,9 +22,9 @@ class Day19(aoc.Challenge):
                 circle = circle[1:]
         return circle[0] + 1
 
-    def part2(self, parsed_input: int) -> int:
+    def part2(self, puzzle_input: int) -> int:
         """Solve a variation on the Josephus problem."""
-        stop = parsed_input - 1
+        stop = puzzle_input - 1
 
         size = 1
         while True:

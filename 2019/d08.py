@@ -18,17 +18,17 @@ chunked = more_itertools.chunked
 class Day08(aoc.Challenge):
     """Day 8."""
 
-    def part1(self, parsed_input: str) -> int:
+    def part1(self, puzzle_input: str) -> int:
         """Find the min layer."""
-        layers = chunked(parsed_input, WIDTH * HEIGHT)
+        layers = chunked(puzzle_input, WIDTH * HEIGHT)
         count = sorted((collections.Counter(layer) for layer in layers), key=lambda x: x['0'])[0]
         return count['1'] * count['2']
 
-    def part2(self, parsed_input: str) -> int:
+    def part2(self, puzzle_input: str) -> int:
         """Flatten layers, handling transparent pixels."""
         image = [
             [row for row in chunked(layer, WIDTH)]
-            for layer in chunked(parsed_input, WIDTH * HEIGHT)
+            for layer in chunked(puzzle_input, WIDTH * HEIGHT)
         ]
         out = []
         for rw in range(HEIGHT):

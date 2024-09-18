@@ -55,14 +55,14 @@ class Day05(aoc.Challenge):
             ])
         return iterable
 
-    def part1(self, parsed_input: InputType) -> str:
+    def part1(self, puzzle_input: InputType) -> str:
         """Return a door code using the first 8 digests."""
-        gen = iter(self.digest_gen(parsed_input))
+        gen = iter(self.digest_gen(puzzle_input))
         return "".join(next(gen)[5] for _ in range(8))
 
-    def part2(self, parsed_input: InputType) -> str:
+    def part2(self, puzzle_input: InputType) -> str:
         """Return a door code using position-aware digests."""
-        gen = iter(self.digest_gen(parsed_input))
+        gen = iter(self.digest_gen(puzzle_input))
         out: dict[int, str] = {}
         while len(out) < 8:
             digest = next(gen)

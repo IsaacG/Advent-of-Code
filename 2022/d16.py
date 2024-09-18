@@ -49,11 +49,11 @@ class Day16(aoc.Challenge):
     INPUT_PARSER = aoc.parse_re_group_mixed(r"Valve (.*) has flow rate=(\d+); tunnels? leads? to valves? (.*)")
     TIMEOUT = 300
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         return 0
         data = [
             [room, rate, leads_to.split(", ")]
-            for room, rate, leads_to in parsed_input
+            for room, rate, leads_to in puzzle_input
         ]
         room_num = {room: i for i, (room, _, _) in enumerate(data)}
         room_name = {i: room for i, (room, _, _) in enumerate(data)}
@@ -260,9 +260,9 @@ class Day16(aoc.Challenge):
         assert answer == 3015
         return answer
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         rooms = {}
-        for room, rate, leads_to in parsed_input:
+        for room, rate, leads_to in puzzle_input:
             rooms[room] = (rate, leads_to.split(", "))
 
         might_open = {room for room, rate in rooms.items() if rate}

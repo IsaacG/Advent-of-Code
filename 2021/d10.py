@@ -55,15 +55,15 @@ class Day10(aoc.Challenge):
                     return char, stack
         return None, stack
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Find lines with a close bracket without a corresponding open bracket."""
         bracket_values = {")": 3, "]": 57, "}": 1197, ">": 25137}
         # Find the bad closing bracket for each line (or None).
-        bad_closing = [self.bracket_match(line)[0] for line in parsed_input]
+        bad_closing = [self.bracket_match(line)[0] for line in puzzle_input]
         # Sum up the value of the bad chars.
         return sum(bracket_values[char] for char in bad_closing if char)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Score the required closing brackets for each line to make it valid."""
         bracket_values = {"(": 1, "[": 2, "{": 3, "<": 4}
 
@@ -76,7 +76,7 @@ class Day10(aoc.Challenge):
             return value
 
         # Map each line to the bad closing bracket and remaining stack.
-        char_and_stacks = [self.bracket_match(line) for line in parsed_input]
+        char_and_stacks = [self.bracket_match(line) for line in puzzle_input]
         # Score lines without a bad closing bracket.
         scores = [evaluate_stack(stack) for char, stack in char_and_stacks if not char]
         # Return the middle score.

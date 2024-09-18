@@ -46,9 +46,9 @@ class Day14(aoc.Challenge):
             if found := triplets.search(digest):
                 yield i, found.group(1), digest
 
-    def solver(self, parsed_input: str, param: bool) -> int:
+    def solver(self, puzzle_input: str, param: bool) -> int:
         """Return the 64th key."""
-        gen = self.hash_gen(parsed_input, param)
+        gen = self.hash_gen(puzzle_input, param)
         queue = collections.deque((next(gen) for _ in range(1001)), maxlen=1001)
 
         found = 0

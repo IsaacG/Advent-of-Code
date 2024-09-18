@@ -20,7 +20,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=s[0], part=2, want=s[2]) for s in SAMPLE
     ]
 
-    def solver(self, parsed_input: str, find_longest: bool) -> int | str:
+    def solver(self, puzzle_input: str, find_longest: bool) -> int | str:
         """Compute the route through a maze or doors which lock and unlock."""
         todo: collections.deque[tuple[str, int, int]] = collections.deque()
         todo.append(("", 0, 0))
@@ -32,7 +32,7 @@ class Day17(aoc.Challenge):
 
         def options(steps) -> list[str]:
             """Return which doors are unlocked for a given set of steps taken."""
-            keys = hashlib.md5((parsed_input + steps).encode()).hexdigest()[:4]
+            keys = hashlib.md5((puzzle_input + steps).encode()).hexdigest()[:4]
             return [door for door, key in zip(doors, keys) if key in unlocked]
 
         while todo:

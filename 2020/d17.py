@@ -124,8 +124,8 @@ class Day17(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=848),
   )
 
-  def solve_game_of_life(self, parsed_input: List[str], dimensions: int) -> int:
-    board = GameOfLife(dimensions, parsed_input)
+  def solve_game_of_life(self, puzzle_input: List[str], dimensions: int) -> int:
+    board = GameOfLife(dimensions, puzzle_input)
     if dimensions == 4:
       func = board.fast_calc_next
     else:
@@ -134,8 +134,8 @@ class Day17(aoc.Challenge):
       func()
     return board.live_count()
 
-  def part1(self, parsed_input: List[str]) -> int:
-    return self.solve_game_of_life(parsed_input, 3)
+  def part1(self, puzzle_input: List[str]) -> int:
+    return self.solve_game_of_life(puzzle_input, 3)
 
-  def part2(self, parsed_input: List[str]) -> int:
-    return self.solve_game_of_life(parsed_input, 4)
+  def part2(self, puzzle_input: List[str]) -> int:
+    return self.solve_game_of_life(puzzle_input, 4)

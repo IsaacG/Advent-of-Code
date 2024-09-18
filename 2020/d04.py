@@ -87,12 +87,12 @@ def valid2(record) -> bool:
 
 class Day04(aoc.Challenge):
 
-  def part1(self, parsed_input: List[str]) -> int:
+  def part1(self, puzzle_input: List[str]) -> int:
     """Check the record has all the required fields."""
-    return len([1 for i in parsed_input if valid1(i)])
+    return len([1 for i in puzzle_input if valid1(i)])
 
-  def part2(self, parsed_input: List[str]) -> int:
-    return len([1 for i in parsed_input if valid2(i)])
+  def part2(self, puzzle_input: List[str]) -> int:
+    return len([1 for i in puzzle_input if valid2(i)])
 
   def input_parser(self, puzzle_input: str):
     return puzzle_input.split('\n\n')

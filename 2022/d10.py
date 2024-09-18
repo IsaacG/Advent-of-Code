@@ -178,17 +178,17 @@ class Day10(aoc.Challenge):
                 regx += int(parts[1])
         return regx_values
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the X value at various cycles."""
-        regx_values = self.run_program(parsed_input)
+        regx_values = self.run_program(puzzle_input)
         out = 0
         for cycle in range(20, 240, 40):
             out += regx_values[cycle - 1] * cycle
         return out
 
-    def part2(self, parsed_input: InputType) -> str:
+    def part2(self, puzzle_input: InputType) -> str:
         """Return the word drawn on the screen."""
-        regx_values = self.run_program(parsed_input)
+        regx_values = self.run_program(puzzle_input)
 
         pixels = []
         for cycle, regx in enumerate(regx_values):

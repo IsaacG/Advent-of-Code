@@ -32,14 +32,14 @@ class Day20(aoc.Challenge):
         """Return the Manhatten distance of a coordinate."""
         return sum(abs(i) for i in vals)
 
-    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Return particle metadata.
 
         Part one: return which particle will be farthest from the origin.
         Part two: return the number of particles after collisions.
         """
         pos, vel, acc = [
-            {idx: tuple(vals[i * 3:(i + 1) * 3]) for idx, vals in enumerate(parsed_input)}
+            {idx: tuple(vals[i * 3:(i + 1) * 3]) for idx, vals in enumerate(puzzle_input)}
             for i in range(3)
         ]
         # Simulate some ticks for collision removal. 40 is the min that works for my input.

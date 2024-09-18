@@ -123,10 +123,10 @@ class Day24(aoc.Challenge):
                     )
         return moves
 
-    def solver(self, parsed_input: Basin, part_one: bool) -> int:
+    def solver(self, puzzle_input: Basin, part_one: bool) -> int:
         """Solve for n trips across the basin."""
         moves = 0
         for i in range(1 if part_one else 3):
-            moves = self.navigate(parsed_input, bool(i % 2), moves)
+            moves = self.navigate(puzzle_input, bool(i % 2), moves)
             self.debug(f"{i}: {moves=}")
         return moves

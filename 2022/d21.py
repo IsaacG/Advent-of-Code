@@ -91,9 +91,9 @@ class Day21(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_mixed(r"[^ :]+")
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Solve for the root value of an equation."""
-        monkeys = {monkey: job for monkey, *job in parsed_input}
+        monkeys = {monkey: job for monkey, *job in puzzle_input}
         solved = {}
 
         # Resolve the integer literals.

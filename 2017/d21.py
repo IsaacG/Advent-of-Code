@@ -57,10 +57,10 @@ class Day21(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the number of pixels which are on after repeating the image enhancement."""
         pixels = START
-        replacements = parsed_input
+        replacements = puzzle_input
         size = 3
 
         for _ in range(2 if self.testing else 5 if part_one else 18):

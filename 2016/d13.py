@@ -16,7 +16,7 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: int, param: bool) -> int | str:
+    def solver(self, puzzle_input: int, param: bool) -> int | str:
         """Walk a cubicle maze."""
         want = complex(7, 4) if self.testing else complex(31, 39)
         # Calculate where the walls are vs open space.
@@ -25,7 +25,7 @@ class Day13(aoc.Challenge):
             complex(x, y)
             for x in range(size)
             for y in range(size)
-            if (x*x + 3*x + 2*x*y + y + y*y + parsed_input).bit_count() % 2 == 0
+            if (x*x + 3*x + 2*x*y + y + y*y + puzzle_input).bit_count() % 2 == 0
         }
 
         # Initialize.

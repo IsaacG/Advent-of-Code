@@ -63,9 +63,9 @@ class Day08(aoc.Challenge):
                 return step
         raise RuntimeError("Unreachable")
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Compute the number of steps to get through the maze."""
-        instructions, mapping = parsed_input
+        instructions, mapping = puzzle_input
         if part_one:
             locations = {"AAA"}
         else:
@@ -92,7 +92,7 @@ class Day08(aoc.Challenge):
         }
         return instructions, mapping
 
-    def pre_run(self, parsed_input: InputType) -> None:
+    def pre_run(self, puzzle_input: InputType) -> None:
         """Verify assumptions.
 
         The part two solution using LCM assumes that:
@@ -102,7 +102,7 @@ class Day08(aoc.Challenge):
         """
         if self.testing:
             return
-        instructions, mapping = parsed_input
+        instructions, mapping = puzzle_input
         locations = {i for i in mapping if i.endswith("A")}
         for location in locations:
             step = 0

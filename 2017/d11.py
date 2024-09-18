@@ -23,7 +23,7 @@ class Day11(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Walk a hex grid and compute distances."""
         location = complex(0, 0)
         farthest = 0
@@ -33,7 +33,7 @@ class Day11(aoc.Challenge):
             q, r = int(location.real), int(location.imag)
             return (abs(q) + abs(q + r) + abs(r)) // 2
 
-        for direction in parsed_input.split(","):
+        for direction in puzzle_input.split(","):
             location += OFFSETS[direction]
             farthest = max(farthest, axial_distance())
         return axial_distance() if part_one else farthest

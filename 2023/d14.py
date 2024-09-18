@@ -72,9 +72,9 @@ class Day14(aoc.Challenge):
 
         return moving
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Tilt the board north."""
-        (_, height), stationary, moving = parsed_input
+        (_, height), stationary, moving = puzzle_input
         north = complex(0, -1)
 
         post_move = set(stationary)
@@ -86,9 +86,9 @@ class Day14(aoc.Challenge):
 
         return int(sum(height - rock.imag for rock in moving))
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Tilt the board in four directions for many cycles."""
-        (_, height), stationary, moving = parsed_input
+        (_, height), stationary, moving = puzzle_input
 
         # Find a cycle in the rotation.
         step_to_map = []

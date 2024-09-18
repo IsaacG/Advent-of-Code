@@ -23,9 +23,9 @@ class Day12(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_ints_per_line
 
-    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         pipes = collections.defaultdict(set)
-        for one, *others in parsed_input:
+        for one, *others in puzzle_input:
             for other in others:
                 pipes[one].add(other)
                 pipes[other].add(one)

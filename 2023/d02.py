@@ -25,10 +25,10 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=2286),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return which games are valid based on a per-color limit."""
         return sum(
-            game_id for game_id, bunches in parsed_input.items()
+            game_id for game_id, bunches in puzzle_input.items()
             if all(
                 all(
                     bunch.get(color, 0) <= limit for color, limit in P1_LIMITS.items()
@@ -37,14 +37,14 @@ class Day02(aoc.Challenge):
             )
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the per-color minimum if all bunches are valid."""
         return sum(
             math.prod(
                 max(bunch.get(i, 0) for bunch in bunches)
                 for i in ["red", "green", "blue"]
             )
-            for bunches in parsed_input.values()
+            for bunches in puzzle_input.values()
         )
 
     def input_parser(self, puzzle_input: str) -> InputType:

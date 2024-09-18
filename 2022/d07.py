@@ -61,25 +61,25 @@ class Day07(aoc.Challenge):
                         dirs[p] += size
         return dirs
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the sum of all dirs over 100000 in size."""
         return sum(
             size
-            for size in parsed_input.values()
+            for size in puzzle_input.values()
             if size <= 100000
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the smallest directory to remove which gives the needed space."""
         # space_total = 70000000
         # target = 30000000
         # space_used = dirs[tuple()].rsize()
         # already_free = space_total - space_used
         # to_free = target - already_free
-        to_free = 30000000 - 70000000 + parsed_input[ROOT]
+        to_free = 30000000 - 70000000 + puzzle_input[ROOT]
 
         return min(
             size
-            for size in parsed_input.values()
+            for size in puzzle_input.values()
             if size >= to_free
         )

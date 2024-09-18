@@ -23,18 +23,18 @@ class Day04(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of fully contained overlaps."""
         return sum(
             True
-            for a1, a2, b1, b2 in parsed_input
+            for a1, a2, b1, b2 in puzzle_input
             if (a1 >= b1 and a2 <= b2) or (b1 >= a1 and b2 <= a2)
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of partial overlaps."""
         return sum(
             True
-            for a1, a2, b1, b2 in parsed_input
+            for a1, a2, b1, b2 in puzzle_input
             if b1 <= a1 <= b2 or a1 <= b1 <= a2
         )

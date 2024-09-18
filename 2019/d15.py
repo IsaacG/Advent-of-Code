@@ -102,9 +102,9 @@ class Day15(aoc.Challenge):
                 pos -= direction
                 move(-direction)
 
-    def solver(self, parsed_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Return the steps needed to find the oxygen or for the oxygen to fill the room."""
-        hall, wall, oxygen = self.explore(parsed_input)
+        hall, wall, oxygen = self.explore(puzzle_input)
         start = complex()
 
         total_space = len(hall)

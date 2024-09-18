@@ -34,14 +34,14 @@ class Day18(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
 
-    def solver(self, parsed_input: list[list[str]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[str]], part_one: bool) -> int:
         # Start at 0, 0 and track vertical trenches.
         position = complex(0)
         vertical_trenches = set()
         prior_direction = complex(0)
         perimeter_size = 0
         # Follow the instructions to compute all the perimeter lines.
-        for direction_letter, distance_str, color in parsed_input:
+        for direction_letter, distance_str, color in puzzle_input:
             if part_one:
                 distance = int(distance_str)
             else:

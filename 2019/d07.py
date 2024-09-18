@@ -31,7 +31,7 @@ class Day07(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         largest = 0
         input_shift = 0 if part_one else 5
         # Try all permutations of initial inputs.
@@ -40,7 +40,7 @@ class Day07(aoc.Challenge):
             queues[0].append(0)  # Initial input: 0
             # Chain five programs in serial.
             computers = [
-                intcode.Computer(parsed_input, input_q=i, output_q=o)
+                intcode.Computer(puzzle_input, input_q=i, output_q=o)
                 for i, o in zip(queues, queues[1:] + queues[:1])
             ]
             # Run all the programs until the last one is stopped.

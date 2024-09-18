@@ -29,9 +29,9 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=467835),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Sum up all engine part numbers."""
-        number_by_start, coord_to_number, engine_parts = parsed_input
+        number_by_start, coord_to_number, engine_parts = puzzle_input
         # Map engine parts to neighboring positions to unique part numbers.
         all_nums = {
             coord_to_number[neighbor]
@@ -41,9 +41,9 @@ class Day03(aoc.Challenge):
         }
         return sum(number_by_start[pos] for pos in all_nums)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Sum up all gear ratios."""
-        number_by_start, coord_to_number, engine_parts = parsed_input
+        number_by_start, coord_to_number, engine_parts = puzzle_input
         # Find gear parts and map them to neighboring numbers.
         ratios = (
             {

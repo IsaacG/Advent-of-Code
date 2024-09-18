@@ -28,16 +28,16 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=5),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the length of escaping chars compared to decoded version."""
         return sum(
             len(a) - len(eval(a))
-            for a in parsed_input
+            for a in puzzle_input
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the length of escaping chars compared to encoded version."""
         return sum(
             2 + a.count('"') + a.count("\\")
-            for a in parsed_input
+            for a in puzzle_input
         )

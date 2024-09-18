@@ -33,17 +33,17 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=12),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Find hot areas where lines overlap. Ignore diagonals."""
         # Filter for horizontal/vertical and call part 2.
-        parsed_input = [line for line in parsed_input if line.start.x == line.end.x or line.start.y == line.end.y]
-        return self.part2(parsed_input)
+        puzzle_input = [line for line in puzzle_input if line.start.x == line.end.x or line.start.y == line.end.y]
+        return self.part2(puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
-        """Find hot areas where parsed_input overlap. Include diagonals."""
+    def part2(self, puzzle_input: InputType) -> int:
+        """Find hot areas where puzzle_input overlap. Include diagonals."""
         # Count points that are on lines.
         count = collections.Counter(
-            itertools.chain.from_iterable(line.points() for line in parsed_input)
+            itertools.chain.from_iterable(line.points() for line in puzzle_input)
         )
         return sum(1 for v in count.values() if v > 1)
 

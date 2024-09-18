@@ -28,9 +28,9 @@ class Day24(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, param: bool) -> int:
+    def solver(self, puzzle_input: InputType, param: bool) -> int:
         """Return the shortest path through a maze which hits certain points."""
-        floor, wires = parsed_input
+        floor, wires = puzzle_input
 
         # For each wire, use Dijkstra to find the shortest path to every other wire.
         distances: dict[int, dict[int, int]] = collections.defaultdict(dict)

@@ -26,10 +26,10 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=i[0], part=2, want=i[1]) for i in SAMPLE[6:]
     ]
 
-    def solver(self, parsed_input: str, expand: bool) -> int:
+    def solver(self, puzzle_input: str, expand: bool) -> int:
         """Compute the length of an encoded sequence."""
         length = 0
-        data = list(reversed(parsed_input))
+        data = list(reversed(puzzle_input))
 
         while data:
             char = data.pop()

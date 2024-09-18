@@ -14,9 +14,9 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: list[str]) -> int:
+    def part1(self, puzzle_input: list[str]) -> int:
         """Find the starting value which generates a clock signal."""
-        computer = assembunny.Assembunny(parsed_input)
+        computer = assembunny.Assembunny(puzzle_input)
         return next(
             i for i in itertools.count(start=0)
             if computer.run(register_a=i)[1]

@@ -23,18 +23,18 @@ class Day15(aoc.Challenge):
             value = (value + ord(char)) * 17
         return value % 256
 
-    def part1(self, parsed_input: str) -> int:
+    def part1(self, puzzle_input: str) -> int:
         """Return summed hashes."""
-        return sum(self.hash(word) for word in parsed_input.split(","))
+        return sum(self.hash(word) for word in puzzle_input.split(","))
 
-    def part2(self, parsed_input: str) -> int:
+    def part2(self, puzzle_input: str) -> int:
         """Return which lenses are in the boxes."""
         boxes = collections.defaultdict(dict)
         
         def get_box(label):
             return boxes[self.hash(label)]
 
-        for word in parsed_input.split(","):
+        for word in puzzle_input.split(","):
             if word.endswith("-"):
                 label = word.removesuffix("-")
                 get_box(label).pop(label, None)

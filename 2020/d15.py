@@ -18,11 +18,11 @@ class Day15(aoc.Challenge):
     aoc.TestCase(inputs='2,1,3', part=1, want=10),
   )
 
-  def part1(self, parsed_input: List[List[int]]) -> int:
-    return self.solve(parsed_input, 2020)
+  def part1(self, puzzle_input: List[List[int]]) -> int:
+    return self.solve(puzzle_input, 2020)
 
-  def part2(self, parsed_input: List[List[int]]) -> int:
-    return self.solve(parsed_input, 30000000)
+  def part2(self, puzzle_input: List[List[int]]) -> int:
+    return self.solve(puzzle_input, 30000000)
 
   def solve(self, starting: List[int], end: int) -> int:
     """Solve Van Eck's n'th digit.

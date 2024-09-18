@@ -27,13 +27,13 @@ class Day15(aoc.Challenge):
     )
     TIMEOUT = 90
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the lowest cost path from start to end."""
-        return self.solve(parsed_input)
+        return self.solve(puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the lowest cost path from start to end ... with larger input."""
-        graph = parsed_input
+        graph = puzzle_input
         width = graph.width
         height = graph.height
 

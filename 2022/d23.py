@@ -78,9 +78,9 @@ class Day23(aoc.Challenge):
 
         return new_positions
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of unoccupied positions after 10 moves."""
-        positions = parsed_input
+        positions = puzzle_input
         for step in range(10):
             positions = self.simulate(positions, step)
         min_x = min(elf.real for elf in positions)
@@ -91,9 +91,9 @@ class Day23(aoc.Challenge):
         answer = int((max_x - min_x + 1) * (max_y - min_y + 1)) - len(positions)
         return answer
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of moves until the pattern is stable."""
-        positions = parsed_input
+        positions = puzzle_input
         for step in range(1500):
             new_positions = self.simulate(positions, step)
             if positions == new_positions:

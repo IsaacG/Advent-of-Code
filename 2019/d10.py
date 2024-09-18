@@ -38,18 +38,18 @@ class Day10(aoc.Challenge):
             for location in locations
         }
 
-    def part1(self, parsed_input: Set[complex]) -> int:
+    def part1(self, puzzle_input: Set[complex]) -> int:
         """Count the number of angles at which other astroids are seen from any given astroid."""
-        return max(self.count_by_angle(parsed_input).values())
+        return max(self.count_by_angle(puzzle_input).values())
 
-    def part2(self, parsed_input: Set[complex]) -> int:
+    def part2(self, puzzle_input: Set[complex]) -> int:
         """Simulation blasting astroids with a laser and find which astroid is #200."""
         # Figure out which astroid is the laser base.
-        counts = self.count_by_angle(parsed_input)
+        counts = self.count_by_angle(puzzle_input)
         base = [loc for loc, count in counts.items() if count == max(counts.values())][0]
 
         angle_map = collections.defaultdict(list)
-        for location in parsed_input:
+        for location in puzzle_input:
             if location == base:
                 continue
             # Rotate and flip the map so `atan` aligns with the laser's operating arc.

@@ -15,9 +15,9 @@ class Day05(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_int_per_line
 
-    def solver(self, parsed_input: list[int], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[int], part_one: bool) -> int:
         """Count how many steps of jumps it takes to exit the memory."""
-        mem = parsed_input
+        mem = puzzle_input
         size = len(mem)
         ptr = 0
 

@@ -26,9 +26,9 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=0),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Count the steps until the herds lock up and cease moving."""
-        right, down, width, height = parsed_input
+        right, down, width, height = puzzle_input
         herds = [(right, (1, 0)), (down, (0, 1))]
 
         change = True
@@ -52,7 +52,7 @@ class Day25(aoc.Challenge):
 
         raise RuntimeError("max steps reached")
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """No part2 on Christmas."""
         return 0
 

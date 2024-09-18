@@ -30,14 +30,14 @@ class Day05(aoc.Challenge):
                 unreacted.append(codepoint)
         return unreacted
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the polymer length after reactions."""
-        codepoints = [ord(i) for i in parsed_input]
+        codepoints = [ord(i) for i in puzzle_input]
         return len(self.reduce(codepoints, set()))
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the polymer length after reactions with one element removed."""
-        codepoints = [ord(i) for i in parsed_input]
+        codepoints = [ord(i) for i in puzzle_input]
         # Pre-reduce once to avoid repeated work.
         codepoints = self.reduce(codepoints, set())
         ord_a, ord_z = ord("A"), ord("Z")

@@ -48,17 +48,17 @@ class Day07(aoc.Challenge):
         ]
         return any(pattern in chunk for chunk in outer for pattern in patterns)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of lines with TLS patterns."""
         return sum(
             not any(self.tls(i) for i in inner)
             and any(self.tls(i) for i in outer)
-            for outer, inner in parsed_input
+            for outer, inner in puzzle_input
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of lines with SSL patterns."""
-        return sum(self.ssl(*line) for line in parsed_input)
+        return sum(self.ssl(*line) for line in puzzle_input)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

@@ -28,8 +28,8 @@ class Day05(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_one_str
 
-    def part1(self, parsed_input: str) -> int:
-        computer = intcode.Computer(parsed_input)
+    def part1(self, puzzle_input: str) -> int:
+        computer = intcode.Computer(puzzle_input)
         if not self.testing:
             computer.input.append(1)
         computer.run()
@@ -38,8 +38,8 @@ class Day05(aoc.Challenge):
             raise RuntimeError("Test Failed")
         return output
 
-    def part2(self, parsed_input: str) -> int:
-        computer = intcode.Computer(parsed_input)
+    def part2(self, puzzle_input: str) -> int:
+        computer = intcode.Computer(puzzle_input)
         computer.input.append(5)
         computer.run()
         return computer.output.popleft()

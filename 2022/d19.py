@@ -35,9 +35,9 @@ class Day19(aoc.Challenge):
     ]
     TIMEOUT = 300
 
-    def simulator(self, parsed_input: InputType, minutes: int) -> int:
+    def simulator(self, puzzle_input: InputType, minutes: int) -> int:
         scores = []
-        for idx, blueprint in enumerate(parsed_input, start=1):
+        for idx, blueprint in enumerate(puzzle_input, start=1):
             self.debug(f"Testing blueprint {idx}")
             max_spend = {rock: max(cost[rock] for cost in blueprint.values()) for rock in (ORE, CLAY, OBSIDIAN)}
             seen = set()
@@ -135,12 +135,12 @@ class Day19(aoc.Challenge):
             scores.append(highest)
         return scores
 
-    def part1(self, parsed_input: InputType) -> int:
-        scores = self.simulator(parsed_input, 24)
+    def part1(self, puzzle_input: InputType) -> int:
+        scores = self.simulator(puzzle_input, 24)
         return sum(idx * score for idx, score in enumerate(scores, start=1))
 
-    def part2(self, parsed_input: InputType) -> int:
-        return self.mult(self.simulator(parsed_input[:3], 32))
+    def part2(self, puzzle_input: InputType) -> int:
+        return self.mult(self.simulator(puzzle_input[:3], 32))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

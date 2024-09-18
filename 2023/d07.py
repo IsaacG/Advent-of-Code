@@ -63,9 +63,9 @@ class Day07(aoc.Challenge):
 
         return (primary, secondary)
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Sort hands then return the bid returns."""
-        parsed_input.sort(key=lambda x: self.sort(0 if part_one else 1, x))
-        return sum(idx * int(bid) for idx, (_, bid) in enumerate(parsed_input, start=1))
+        puzzle_input.sort(key=lambda x: self.sort(0 if part_one else 1, x))
+        return sum(idx * int(bid) for idx, (_, bid) in enumerate(puzzle_input, start=1))
 
 # vim:expandtab:sw=4:ts=4

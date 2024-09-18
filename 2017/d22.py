@@ -3,11 +3,6 @@
 
 from lib import aoc
 
-
-SAMPLE = """\
-..#
-#..
-..."""
 CLEAN, WEAKENED, INFECTED, FLAGGED = range(4)
 STATES_P1 = [CLEAN, INFECTED, CLEAN]
 STATES_P2 = [CLEAN, WEAKENED, INFECTED, FLAGGED, CLEAN]
@@ -23,15 +18,14 @@ class Day22(aoc.Challenge):
             aoc.AsciiBoolMapParser("#", origin_top_left=False),
         ]
     )
-
     TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=5587),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=2511944),
+        aoc.TestCase(part=1, inputs="..#\n#..\n...", want=5587),
+        aoc.TestCase(part=2, inputs="..#\n#..\n...", want=2511944),
     ]
 
-    def solver(self, parsed_input: tuple[int, set[complex]], part_one: bool) -> int:
+    def solver(self, puzzle_input: tuple[int, set[complex]], part_one: bool) -> int:
         """Simulate a virus and count the infections."""
-        dimension, initial_infected = parsed_input
+        dimension, initial_infected = puzzle_input
         board = {i: INFECTED for i in initial_infected}
         states = STATES_P1 if part_one else STATES_P2
         next_state = {a: b for a, b in zip(states[:-1], states[1:])}

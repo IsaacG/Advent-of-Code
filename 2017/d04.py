@@ -27,15 +27,15 @@ class Day04(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
 
-    def part1(self, parsed_input: list[list[str]]) -> int:
+    def part1(self, puzzle_input: list[list[str]]) -> int:
         """Count passphrases where no word is repeated."""
-        return sum(len(set(line)) == len(line) for line in parsed_input)
+        return sum(len(set(line)) == len(line) for line in puzzle_input)
 
-    def part2(self, parsed_input: list[list[str]]) -> int:
+    def part2(self, puzzle_input: list[list[str]]) -> int:
         """Count passphrases where no word is an anagram of another."""
         return sum(
             all(sorted(a) != sorted(b) for a, b in itertools.combinations(line, 2))
-            for line in parsed_input
+            for line in puzzle_input
         )
 
 # vim:expandtab:sw=4:ts=4

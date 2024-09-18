@@ -59,10 +59,10 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=1623178306),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the 1000th, 2000th, 3000th digit after mixing the list."""
         decryption_key = 1 if part_one else 811589153
-        nodelist = LinkedList.circular_list(i * decryption_key for i in parsed_input)
+        nodelist = LinkedList.circular_list(i * decryption_key for i in puzzle_input)
 
         self.debug(f"Node count: {len(nodelist.nodes)} == {nodelist.len}")
         for _ in range(1 if part_one else 10):

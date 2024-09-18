@@ -36,9 +36,9 @@ class Day09(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, parsed_input: str, part_one: bool) -> int | str:
+    def solver(self, puzzle_input: str, part_one: bool) -> int | str:
         """Parse bracket matching in a string."""
-        tokens = iter(parsed_input)
+        tokens = iter(puzzle_input)
 
         total_score = 0
         bracket_depth = 0

@@ -326,14 +326,14 @@ class Day24(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
 
-    def part1(self, parsed_input: list[tuple[str, ...]]) -> int:
+    def part1(self, puzzle_input: list[tuple[str, ...]]) -> int:
         """Return the max valid seriel number."""
-        ranges = self.solve_ranges(parsed_input)
+        ranges = self.solve_ranges(puzzle_input)
         return int("".join(str(ranges[i][1]) for i in range(14)))
 
-    def part2(self, parsed_input: list[tuple[str, ...]]) -> int:
+    def part2(self, puzzle_input: list[tuple[str, ...]]) -> int:
         """Return the min valid seriel number."""
-        ranges = self.solve_ranges(parsed_input)
+        ranges = self.solve_ranges(puzzle_input)
         return int("".join(str(ranges[i][0]) for i in range(14)))
 
     def build_ast(self, monad: list[tuple[str, ...]]) -> tuple[dict[int, Node], dict[int, Node]]:

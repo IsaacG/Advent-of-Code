@@ -21,7 +21,7 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want="5DB3"),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> str:
         """Walk a keypad following directions to compute a code."""
         pad_layout = "123\n456\n789" if part_one else "1\n234\n56789\nABC\nD"
         pad_rows = pad_layout.splitlines()
@@ -36,7 +36,7 @@ class Day02(aoc.Challenge):
         directions = aoc.LETTER_DIRECTIONS
 
         out = []
-        for line in parsed_input:
+        for line in puzzle_input:
             for val in line:
                 if cur + directions[val] in pad:
                     cur += directions[val]

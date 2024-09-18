@@ -29,14 +29,14 @@ class Day03(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_int
 
-    def solver(self, parsed_input: int, part_one: bool) -> int:
+    def solver(self, puzzle_input: int, part_one: bool) -> int:
         """Fill out a spiral matrix until we get to the input number."""
         location = complex(0, 0)
         direction = complex(0, -1)
         number = 1
 
         matrix = {location: number}
-        for number in range(2, parsed_input + 1):
+        for number in range(2, puzzle_input + 1):
             if location + direction * ROTATE_LEFT not in matrix:
                 direction *= ROTATE_LEFT
             location += direction
@@ -46,7 +46,7 @@ class Day03(aoc.Challenge):
                 value = sum(
                     matrix.get(location + offset, 0) for offset in aoc.EIGHT_DIRECTIONS)
             matrix[location] = value
-            if not part_one and value > parsed_input:
+            if not part_one and value > puzzle_input:
                 return value
 
         return int(abs(location.real) + abs(location.imag))

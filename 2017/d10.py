@@ -50,16 +50,16 @@ class Day10(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def part1(self, parsed_input: str) -> int:
+    def part1(self, puzzle_input: str) -> int:
         """Tie knots and return the product of the first two values."""
         # Parse the input as a list of numbers.
-        lengths = [int(i) for i in parsed_input.split(",")]
+        lengths = [int(i) for i in puzzle_input.split(",")]
         size = 5 if self.testing else 256
         data = tie_knots(lengths, size)
         return math.prod(data[:2])
 
-    def part2(self, parsed_input: str) -> str:
+    def part2(self, puzzle_input: str) -> str:
         """Tie knots 64 times then densify and hexify."""
         # Parse the input as a list of ASCII bytes.
-        lengths = [ord(i) for i in parsed_input] + [17, 31, 73, 47, 23]
+        lengths = [ord(i) for i in puzzle_input] + [17, 31, 73, 47, 23]
         return knot_hash(lengths)

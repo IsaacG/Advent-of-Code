@@ -28,12 +28,12 @@ class Day24(aoc.Challenge):
     INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     TIMEOUT = 60
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         start, end = {True: (7, 27), False: (START, END)}[self.testing]
 
         # Compute the line equation for each input. y = m * x + b
         equations = []
-        for idx, (px, py, pz, vx, vy, vz) in enumerate(parsed_input):
+        for idx, (px, py, pz, vx, vy, vz) in enumerate(puzzle_input):
             slope = vy / vx
             intersect = py - slope * px
             equations.append((idx, px, vx, slope, intersect))
@@ -57,7 +57,7 @@ class Day24(aoc.Challenge):
 
         return count
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         x = z3.Int("x")
         y = z3.Int("y")
         z = z3.Int("z")
@@ -66,7 +66,7 @@ class Day24(aoc.Challenge):
         vz = z3.Int("vz")
         ans = z3.Int("ans")
         solver = z3.Solver()
-        for idx, (x1, y1, z1, vx1, vy1, vz1) in enumerate(parsed_input[:3]):
+        for idx, (x1, y1, z1, vx1, vy1, vz1) in enumerate(puzzle_input[:3]):
             time = z3.Int(f"t{idx}")
             solver.add(x1 + vx1 * time == x + vx * time)
             solver.add(y1 + vy1 * time == y + vy * time)

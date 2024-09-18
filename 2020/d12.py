@@ -49,10 +49,10 @@ class Day12(aoc.Challenge):
     """Manhattan distance of a complex number."""
     return int(abs(num.real) + abs(num.imag))
 
-  def solve(self, parsed_input: list[tuple[str, int]], waypoint: complex, part: int) -> int:
+  def solve(self, puzzle_input: list[tuple[str, int]], waypoint: complex, part: int) -> int:
     """Track the ship's position - with a magical waypoint."""
     ship = 0 + 0j
-    for instruction, num in parsed_input:
+    for instruction, num in puzzle_input:
       if instruction in 'NEWS':
         change = num * self.MOD[instruction]
         if part == 1:
@@ -68,11 +68,11 @@ class Day12(aoc.Challenge):
         ship += num * waypoint
     return self.manhattan_dist(ship)
 
-  def part1(self, parsed_input: list[tuple[str, int]]) -> int:
-    return self.solve(parsed_input, 1, 1)
+  def part1(self, puzzle_input: list[tuple[str, int]]) -> int:
+    return self.solve(puzzle_input, 1, 1)
 
-  def part2(self, parsed_input: list[tuple[str, int]]) -> int:
-    return self.solve(parsed_input, (10 + 1j), 2)
+  def part2(self, puzzle_input: list[tuple[str, int]]) -> int:
+    return self.solve(puzzle_input, (10 + 1j), 2)
 
 
 # vim:ts=2:sw=2:expandtab

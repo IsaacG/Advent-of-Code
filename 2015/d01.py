@@ -19,14 +19,14 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=5),
     )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return Santa's final floor."""
-        return sum(MAPPING[i] for i in parsed_input)
+        return sum(MAPPING[i] for i in puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return when Santa hits the basement."""
         floor = 0
-        for count, i in enumerate(parsed_input, start=1):
+        for count, i in enumerate(puzzle_input, start=1):
             floor += MAPPING[i]
             if floor == -1:
                 return count

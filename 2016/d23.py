@@ -22,7 +22,7 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: list[str], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[str], part_one: bool) -> int:
         """Simulate a computer."""
-        computer = assembunny.Assembunny(parsed_input)
+        computer = assembunny.Assembunny(puzzle_input)
         return computer.run(register_a=7 if part_one else 12)[0]

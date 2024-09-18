@@ -28,9 +28,9 @@ class Day06(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_int_per_line
 
-    def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Reallocate blocks across banks until a loop is detected."""
-        banks = parsed_input[0]
+        banks = puzzle_input[0]
         seen: dict[int, int] = {}
         count = len(banks)
         for step in itertools.count():

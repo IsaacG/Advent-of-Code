@@ -29,8 +29,8 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
-        players, last = parsed_input[0]
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+        players, last = puzzle_input[0]
         # Multiple last value by 1 or 100 for parts 1, 2.
         last *= 1 if part_one else 100
 

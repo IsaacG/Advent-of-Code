@@ -85,9 +85,9 @@ class Day16(aoc.Challenge):
             case _:
                 raise ValueError("Unknown instruction")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of instructions which map to three or more potential operations."""
-        captures, _ = parsed_input
+        captures, _ = puzzle_input
         return sum(
             sum(
                 post[target] == self.compute(op, op_a, op_b, prior)
@@ -96,9 +96,9 @@ class Day16(aoc.Challenge):
             for prior, (_, op_a, op_b, target), post in captures
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Decode instruction mappings and run a program."""
-        captures, program = parsed_input
+        captures, program = puzzle_input
 
         # Assume all mappings are possible. Then resolve via elimination.
         op_possibilities = {i: set(range(16)) for i in range(16)}

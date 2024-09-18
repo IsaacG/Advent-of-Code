@@ -40,9 +40,9 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Simulate the circuit."""
-        module_types, outputs = parsed_input
+        module_types, outputs = puzzle_input
 
         memory_flipflips = {
             name: False for name, module_type in module_types.items() if module_type == FLIP_FLIP

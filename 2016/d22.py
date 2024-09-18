@@ -14,18 +14,18 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         count = 0
-        for used, _ in parsed_input.values():
+        for used, _ in puzzle_input.values():
             if used == 0:
                 continue
-            for _, avail in parsed_input.values():
+            for _, avail in puzzle_input.values():
                 if used <= avail:
                     count += 1
 
         return count
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Move the goal data into the 0, 0 position.
 
         This is an "8-puzzle" where there is one "hole" we can slide around
@@ -41,30 +41,30 @@ class Day22(aoc.Challenge):
         step_counter = 0
         # This is the empty "hole" used to move data.
         hole_pos, hole_size = next(
-            (i, avail) for i, (used, avail) in parsed_input.items()
+            (i, avail) for i, (used, avail) in puzzle_input.items()
             if used == 0
         )
-        max_x = max(x for x, y in parsed_input)
-        max_y = max(y for x, y in parsed_input)
+        max_x = max(x for x, y in puzzle_input)
+        max_y = max(y for x, y in puzzle_input)
         # This is the goal data we want to read.
         goal = (max_x, 0)
         # These are disks small enough to be used.
         fits = {
-            pos for pos, (used, avail) in parsed_input.items()
+            pos for pos, (used, avail) in puzzle_input.items()
             if used <= hole_size
         }
         # These are unmoveable blocks.
         oversized = {
-            pos for pos, (used, avail) in parsed_input.items()
+            pos for pos, (used, avail) in puzzle_input.items()
             if used > hole_size
         }
         # Validate all the "fits" blocks are useable.
         max_used = max(
-            used for pos, (used, avail) in parsed_input.items()
+            used for pos, (used, avail) in puzzle_input.items()
             if pos in fits
         )
         min_size = min(
-            used + avail for pos, (used, avail) in parsed_input.items()
+            used + avail for pos, (used, avail) in puzzle_input.items()
             if pos in fits
         )
         assert min_size >= max_used, f"{min_size=}, {max_used=}"

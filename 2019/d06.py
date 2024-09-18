@@ -23,11 +23,11 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=4),
     )
 
-    def part1(self, parsed_input: List[List[str]]) -> int:
+    def part1(self, puzzle_input: List[List[str]]) -> int:
         """Count total orbits."""
         # Build graph edges from COM outwards.
         orbits = collections.defaultdict(set)
-        for a, b in parsed_input:
+        for a, b in puzzle_input:
             orbits[a].add(b)
 
         # Walk the tree forwards, level by level.
@@ -43,12 +43,12 @@ class Day06(aoc.Challenge):
 
         return answer
 
-    def part2(self, parsed_input: List[List[str]]) -> int:
+    def part2(self, puzzle_input: List[List[str]]) -> int:
         """Count steps from YOU to SANta."""
         # Build a forward and reverse map between orbits.
         forward = collections.defaultdict(set)
         reverse = dict()
-        for a, b in parsed_input:
+        for a, b in puzzle_input:
             forward[a].add(b)
             reverse[b] = a
 

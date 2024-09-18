@@ -19,9 +19,9 @@ class Day21(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=444356092776315),
     )
 
-    def part1(self, parsed_input: tuple[int, int]) -> int:
+    def part1(self, puzzle_input: tuple[int, int]) -> int:
         """Play Dirac Dice to 100 points with deterministic dice."""
-        positions = list(parsed_input)
+        positions = list(puzzle_input)
         scores = [0, 0]
         dice = itertools.cycle(range(100))
         turn = 0
@@ -36,9 +36,9 @@ class Day21(aoc.Challenge):
             turn = 1 - turn
         return step * 3 * scores[1 - turn]
 
-    def part2(self, parsed_input: tuple[int, int]) -> int:
+    def part2(self, puzzle_input: tuple[int, int]) -> int:
         """Play Dirac Dice, Quantum Edition to 21 points."""
-        positions = parsed_input
+        positions = puzzle_input
         wins = self.play_quantum_round(0, 0, positions[0], positions[1])
         return max(wins)
 

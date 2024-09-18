@@ -22,20 +22,20 @@ class Day04(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=30),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Count how many winning numbers we have."""
         return sum(
             2 ** (count - 1)
-            for winning, has in parsed_input
+            for winning, has in puzzle_input
             if (count := len(winning & has))
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Count how many scorecards we have."""
         # Initialize the card count to one of each.
-        card_count = {i: 1 for i in range(len(parsed_input))}
+        card_count = {i: 1 for i in range(len(puzzle_input))}
 
-        for card_number, (winning, has) in enumerate(parsed_input):
+        for card_number, (winning, has) in enumerate(puzzle_input):
             points = len(winning & has)
             count = card_count[card_number]
             # For all copies we get, add `count` times more.

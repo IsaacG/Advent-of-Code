@@ -96,10 +96,10 @@ class Day18(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
-    def solver(self, parsed_input: list[list[str | int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[str | int]], part_one: bool) -> int:
         """Run two programs and get IO details."""
         # Create two programs.
-        programs = {i: program(parsed_input, i, part_one) for i in range(2)}
+        programs = {i: program(puzzle_input, i, part_one) for i in range(2)}
         # Initialize then run the programs.
         next(programs[0])
         vals = next(programs[1])

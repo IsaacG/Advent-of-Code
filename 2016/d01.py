@@ -25,14 +25,14 @@ class Day01(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_str(r"[LR]\d+")
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Compute how far we walked."""
         p2 = not part_one
         cur = complex(0, 0)
         seen = {cur}
         heading = complex(0, 1)
 
-        for instruction in parsed_input[0]:
+        for instruction in puzzle_input[0]:
             rot, dist = instruction[0], int(instruction[1:])
             heading *= {"R": -1j, "L": +1j}[rot]
             for _ in range(dist):

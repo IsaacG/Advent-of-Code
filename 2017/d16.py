@@ -22,12 +22,12 @@ class Day16(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> str:
         """Do the dance shuffle on a lineup."""
 
         size = 5 if self.testing else 16
         dances = 1 if part_one else 1_000_000_000
-        cmds = parsed_input
+        cmds = puzzle_input
 
 
         dance_line = collections.deque(string.ascii_lowercase[:size])

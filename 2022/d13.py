@@ -70,18 +70,18 @@ class Day13(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.ParseOneWordPerLine(json.loads)])
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of pairs which are in order."""
-        pairs = parsed_input
+        pairs = puzzle_input
         return sum(
             idx
             for idx, (fst, snd) in enumerate(pairs, start=1)
             if cmp(fst, snd) == -1
         )
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the position of two markers when added and sorted."""
-        pairs = parsed_input
+        pairs = puzzle_input
         dividers = ([[2]], [[6]])
         vals = list(dividers)
         for pair in pairs:

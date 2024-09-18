@@ -22,11 +22,11 @@ class Day08(aoc.Challenge):
 
     INPUT_PARSER = aoc.parse_re_group_mixed(r".*(rect|row|column)[^\d]+(\d+)[^\d]+(\d+)")
 
-    def solver(self, parsed_input: InputType, p2: bool) -> int | str:
+    def solver(self, puzzle_input: InputType, p2: bool) -> int | str:
         width, height = (7, 3) if self.testing else (50, 6)
         grid = [[False] * width for _ in range(height)]
 
-        for line in parsed_input:
+        for line in puzzle_input:
             match line:
                 case ["rect", cols, rows]:
                     for row in range(rows):

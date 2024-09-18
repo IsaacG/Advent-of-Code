@@ -38,11 +38,11 @@ class Day16(aoc.Challenge):
                 return i
         raise RuntimeError("Not found.")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Find the aunt who matches exactly."""
-        return self.matches(OPS, parsed_input)
+        return self.matches(OPS, puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Find the aunt who matches more fuzzy rules."""
         ops = OPS | {
             "cats": operator.gt,
@@ -50,7 +50,7 @@ class Day16(aoc.Challenge):
             "goldfish": operator.lt,
             "pomeranians": operator.lt,
         }
-        return self.matches(ops, parsed_input)
+        return self.matches(ops, puzzle_input)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

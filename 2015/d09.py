@@ -24,13 +24,13 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=982),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the shortest route."""
-        return min(parsed_input)
+        return min(puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the longest route."""
-        return max(parsed_input)
+        return max(puzzle_input)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input and generate the total cost for each route."""

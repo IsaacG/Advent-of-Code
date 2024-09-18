@@ -20,9 +20,9 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
-    def part1(self, parsed_input: InputType) -> str:
+    def part1(self, puzzle_input: InputType) -> str:
         length = 20 if self.testing else 272
-        data = parsed_input
+        data = puzzle_input
 
         # Expand with the Dragon Curve.
         while len(data) < length:
@@ -33,7 +33,7 @@ class Day16(aoc.Challenge):
             data = [a == b for a, b in more_itertools.chunked(data, 2)]
         return "".join("1" if i else "0" for i in data)
 
-    def part2(self, parsed_input: InputType) -> str:
+    def part2(self, puzzle_input: InputType) -> str:
         length = 35651584
 
         # Compute the size of the output.
@@ -76,7 +76,7 @@ class Day16(aoc.Challenge):
                     queue.append(queue.popleft() == queue.popleft())
                 yield queue.pop()
 
-        out_stream = checksum_gen(bit_gen(parsed_input, separator_gen()))
+        out_stream = checksum_gen(bit_gen(puzzle_input, separator_gen()))
         return "".join("1" if i else "0" for i in more_itertools.take(size, out_stream))
 
     def input_parser(self, puzzle_input: str) -> InputType:

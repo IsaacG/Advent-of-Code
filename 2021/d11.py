@@ -45,18 +45,18 @@ class Day11(aoc.Challenge):
         new.update({point: 0 for point in flashed})
         return new
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Count how many octopuses flash after 100 steps."""
-        octopuses = parsed_input
+        octopuses = puzzle_input
         flashes = 0
         for _ in range(100):
             octopuses = self.step(octopuses)
             flashes += sum(1 for v in octopuses.values() if v == 0)
         return flashes
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Count how many steps until all the octopuses flashed in the same step."""
-        octopuses = parsed_input
+        octopuses = puzzle_input
         # Stop after a bunch of steps, just in case this isn't working.
         for step in range(1, 5000):
             octopuses = self.step(octopuses)

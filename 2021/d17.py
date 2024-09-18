@@ -16,18 +16,18 @@ class Day17(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_re_group_int(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Compute the highest height that can be reached while hitting the target."""
-        y_max = max(y for x, y in self.find_velocities(*parsed_input[0]))
+        y_max = max(y for x, y in self.find_velocities(*puzzle_input[0]))
         # At an upwards speed of y and a constant deceleration of 1,
         # the height after each step is [y, y + (y-1), y + (y-1) + (y-2), ...]
         # until y-velocity = 0. The distance travelled is sum(1..y). This is also
         # y * (y + 1) / 2
         return int(y_max * (y_max + 1) // 2)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Compute how many velocities would work to hit the target."""
-        return len(self.find_velocities(*parsed_input[0]))
+        return len(self.find_velocities(*puzzle_input[0]))
 
     @staticmethod
     def find_velocities(x0, x1, y0, y1) -> list[tuple[int, int]]:

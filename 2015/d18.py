@@ -53,12 +53,12 @@ class Day18(aoc.Challenge):
             on.update(corner_points)
         return len(on)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of lights on, with corners not stuck."""
         cycles = 4 if self.testing else 100
-        return self.simulate(parsed_input, cycles, False)
+        return self.simulate(puzzle_input, cycles, False)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the number of lights on, with corners stuck on."""
         cycles = 5 if self.testing else 100
-        return self.simulate(parsed_input, cycles, True)
+        return self.simulate(puzzle_input, cycles, True)

@@ -27,14 +27,14 @@ class Day02(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_int_per_line
 
-    def part1(self, parsed_input: list[list[int]]) -> int:
+    def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum difference between the largest and smallest value on each line."""
         return sum(
             max(line) - min(line)
-            for line in parsed_input
+            for line in puzzle_input
         )
 
-    def part2(self, parsed_input: list[list[int]]) -> int:
+    def part2(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum quotient between two evenly divisible numbers on each line."""
         return sum(
             next(
@@ -42,7 +42,7 @@ class Day02(aoc.Challenge):
                 for a, b in itertools.combinations(sorted(line, reverse=True), 2)
                 if a % b == 0
             )
-            for line in parsed_input
+            for line in puzzle_input
         )
 
 # vim:expandtab:sw=4:ts=4

@@ -59,8 +59,8 @@ class Day19(aoc.Challenge):
 
     INPUT_PARSER = aoc.ParseBlocks([aoc.parse_multi_str_per_line, aoc.parse_one_str])
 
-    def part1(self, parsed_input: InputType) -> int:
-        mappings, start = parsed_input
+    def part1(self, puzzle_input: InputType) -> int:
+        mappings, start = puzzle_input
         found = set()
         length = len(start)
         for a, _, b in mappings:
@@ -69,8 +69,8 @@ class Day19(aoc.Challenge):
                     found.add(start[:x] + b + start[x + len(a):])
         return len(found)
 
-    def part2(self, parsed_input: InputType) -> int:
-        mappings, start = parsed_input
+    def part2(self, puzzle_input: InputType) -> int:
+        mappings, start = puzzle_input
         elements = re.findall(r"[A-Z][a-z]*", start)
         num_elements = len(elements)
         parens = elements.count("Rn") + elements.count("Ar")

@@ -30,12 +30,12 @@ class Day06(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_mixed(PARSE_RE)
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return how many lights are on after toggling them."""
         grid = []
         for i in range(1000):
             grid.append([False] * 1000)
-        for action, x1, y1, x2, y2 in parsed_input:
+        for action, x1, y1, x2, y2 in puzzle_input:
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
                     match action:
@@ -49,12 +49,12 @@ class Day06(aoc.Challenge):
                             raise ValueError(f"Unknown {action=}")
         return sum(i for row in grid for i in row)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return light levels after toggling them."""
         grid = []
         for i in range(1000):
             grid.append([0] * 1000)
-        for action, x1, y1, x2, y2 in parsed_input:
+        for action, x1, y1, x2, y2 in puzzle_input:
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
                     match action:

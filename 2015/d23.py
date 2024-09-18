@@ -57,10 +57,10 @@ class Day23(aoc.Challenge):
             ptr += jump_offset
         return registers["b"]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return reg b, starting with a=0."""
-        return self.solver(parsed_input, 0)
+        return self.solver(puzzle_input, 0)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return reg b, starting with a=1."""
-        return self.solver(parsed_input, 1)
+        return self.solver(puzzle_input, 1)

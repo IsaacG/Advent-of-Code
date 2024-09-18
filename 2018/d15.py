@@ -70,13 +70,13 @@ class Day15(aoc.Challenge):
         for part in [1, 2]
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Compute the number of rounds in an even battle."""
-        return self.simulate(*parsed_input, 3)
+        return self.simulate(*puzzle_input, 3)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Compute how much damage boost the Elves need to win without a fatality."""
-        spaces, og_units = parsed_input
+        spaces, og_units = puzzle_input
         elf_count = len(og_units["E"])
         for elf_damage in itertools.count(start=3):
             units = copy.deepcopy(og_units)

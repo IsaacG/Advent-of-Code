@@ -306,13 +306,13 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=44169),
     )
 
-    def part1(self, parsed_input: Board) -> int:
+    def part1(self, puzzle_input: Board) -> int:
         """Solve for room_size = 2."""
-        return AmphipodGame(2).solve(parsed_input)
+        return AmphipodGame(2).solve(puzzle_input)
 
-    def part2(self, parsed_input: Board) -> int:
+    def part2(self, puzzle_input: Board) -> int:
         """Solve for room_size = 4."""
-        pieces = parsed_input
+        pieces = puzzle_input
 
         # Add two rows of pieces.
         updated = []

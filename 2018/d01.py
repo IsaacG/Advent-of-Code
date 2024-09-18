@@ -12,13 +12,13 @@ from lib import aoc
 
 class Day01(aoc.Challenge):
 
-    def part1(self, parsed_input: List[int]) -> int:
-        return sum(parsed_input)
+    def part1(self, puzzle_input: List[int]) -> int:
+        return sum(puzzle_input)
 
-    def part2(self, parsed_input: List[int]) -> int:
+    def part2(self, puzzle_input: List[int]) -> int:
         seen = set()
         freq = 0
-        it = itertools.cycle(parsed_input)
+        it = itertools.cycle(puzzle_input)
         while freq not in seen:
             seen.add(freq)
             freq += next(it)

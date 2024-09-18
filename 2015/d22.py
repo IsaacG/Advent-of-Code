@@ -167,13 +167,13 @@ class Day22(aoc.Challenge):
 
         raise RuntimeError("No solution found.")
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return mana to win, easy mode."""
-        return self.simulate(dict(parsed_input), False)
+        return self.simulate(dict(puzzle_input), False)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return mana to win, hard mode."""
-        got = self.simulate(dict(parsed_input), True)
+        got = self.simulate(dict(puzzle_input), True)
         assert got > 900   # Attempt 1
         assert got < 1242  # Attempt 2
         assert got > 1189  # Attempt 3

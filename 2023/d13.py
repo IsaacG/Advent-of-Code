@@ -72,10 +72,10 @@ class Day13(aoc.Challenge):
                     return mirror
         raise RuntimeError("Unsolved")
 
-    def part1(self, parsed_input: InputType) -> int:
-        return sum(self.find_mirror(points, None) for points in parsed_input)
+    def part1(self, puzzle_input: InputType) -> int:
+        return sum(self.find_mirror(points, None) for points in puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
-        return sum(self.find_with_change(points) for points in parsed_input)
+    def part2(self, puzzle_input: InputType) -> int:
+        return sum(self.find_with_change(points) for points in puzzle_input)
 
 # vim:expandtab:sw=4:ts=4

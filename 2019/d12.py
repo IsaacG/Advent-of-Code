@@ -75,9 +75,9 @@ class Day12(aoc.Challenge):
     )
     INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
-    def part1(self, parsed_input: List[Tuple[int]]) -> int:
+    def part1(self, puzzle_input: List[Tuple[int]]) -> int:
         """Run the similation for N cycles and return total energy at the end."""
-        moons = [Moon(position) for position in parsed_input]
+        moons = [Moon(position) for position in puzzle_input]
         lim = 100 if self.testing else 1000
         for _ in range(lim):
             for a, b in itertools.permutations(moons, 2):
@@ -86,7 +86,7 @@ class Day12(aoc.Challenge):
                 a.apply_velocity()
         return sum(m.energy() for m in moons)
 
-    def part2(self, parsed_input: List[Tuple[int]]) -> int:
+    def part2(self, puzzle_input: List[Tuple[int]]) -> int:
         """Calculate how many cycles before looping back to the begining."""
 
         def fp(moons):
@@ -98,10 +98,10 @@ class Day12(aoc.Challenge):
 
         cycles = []
         # For each axis, count how many cycles until a repeat.
-        for axis in range(len(parsed_input[0])):
+        for axis in range(len(puzzle_input[0])):
             seen = set()
             steps = 0
-            moons = [Moon(position[axis:axis + 1]) for position in parsed_input]
+            moons = [Moon(position[axis:axis + 1]) for position in puzzle_input]
             fingerprint = fp(moons)
             perms = list(itertools.permutations(moons, 2))
 

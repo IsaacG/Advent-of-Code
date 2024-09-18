@@ -43,13 +43,13 @@ class Day13(aoc.Challenge):
             for order in itertools.permutations(people, len(people))
         )
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the max happiness for the guests."""
-        return self.max_happiness(*parsed_input)
+        return self.max_happiness(*puzzle_input)
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Return the max happiness for the guests and yourself."""
-        data, people = parsed_input
+        data, people = puzzle_input
         people.add("__yourself__")
         return self.max_happiness(data, people)
 

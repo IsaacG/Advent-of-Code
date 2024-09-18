@@ -54,7 +54,7 @@ class Day15(aoc.Challenge):
         # aoc.TestCase(inputs=SAMPLE, part=2, want=56000011),
     ]
 
-    def part1(self, parsed_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> int:
         """Return the number of coordinates on a given row which cannot contain the beacon.
 
         Collect a bunch of intervals for each sensor then aggregate them at the end into
@@ -63,7 +63,7 @@ class Day15(aoc.Challenge):
         row = 10 if self.testing else 2000000
 
         ranges = []
-        for sensor_x, sensor_y, sensor_range in parsed_input:
+        for sensor_x, sensor_y, sensor_range in puzzle_input:
             y_dist = abs(row - sensor_y)
             if y_dist > sensor_range:
                 continue
@@ -145,7 +145,7 @@ class Day15(aoc.Challenge):
         y_start, y_end = min(y_edges), max(y_edges)
         return (x_start, x_end + 1), (y_start, y_end + 1)
 
-    def part2_linesweep(self, parsed_input: InputType) -> int:
+    def part2_linesweep(self, puzzle_input: InputType) -> int:
         """Locate the distress beacon.
 
         For each row, start a cursor at the left.
@@ -154,7 +154,7 @@ class Day15(aoc.Challenge):
         When all sensors were applied, if the cursor is within the boundaries of the board,
         that is where the distress beacon is located.
         """
-        sensors = parsed_input
+        sensors = puzzle_input
 
         x_range, y_range = self.ranges(sensors)
         # Test each row until we find the beacon.
@@ -171,10 +171,10 @@ class Day15(aoc.Challenge):
                 return candidate_x * 4000000 + candidate_y
         raise RuntimeError("Beacon was not found.")
 
-    def part2(self, parsed_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> int:
         """Locate the distress beacon."""
-        return self.part2_line_intersections(parsed_input)
-        # return self.part2_linesweep(parsed_input)
+        return self.part2_line_intersections(puzzle_input)
+        # return self.part2_linesweep(puzzle_input)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse a line into a tuple of sensor's coordinates and range."""

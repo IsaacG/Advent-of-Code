@@ -250,9 +250,9 @@ class Day22(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.char_map, aoc.parse_re_findall_str(r"(L|R|\d+)")])
 
-    def solver(self, parsed_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the final location after wandering the map."""
-        points, instructions = parsed_input
+        points, instructions = puzzle_input
         map_class = FlatMap if part_one else CubeMap
         mapper = map_class(points)
 
