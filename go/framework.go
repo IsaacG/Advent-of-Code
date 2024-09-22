@@ -38,7 +38,7 @@ func (p Puzzle) Check(solver Solver) {
 	for i := 0; i < 2; i++ {
 		start := time.Now()
 		got := solver.Solve(i)
-		elapsed := time.Now().Sub(start)
+		elapsed := time.Since(start)
 		if got == solutions[i] {
 			fmt.Printf("%d/%02d.%d PASSED!  %12s\n", p.year, p.day, i+1, elapsed)
 		} else {
@@ -51,7 +51,7 @@ func (p Puzzle) Check(solver Solver) {
 // Solutions returns the solutions from the solution file.
 func (p Puzzle) Solutions() ([]string, error) {
 	filename := fmt.Sprintf("../solutions/%d.txt", p.year)
-	day := fmt.Sprintf("%d", p.day)
+	day := fmt.Sprintf("%02d", p.day)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic("Failed to read file")
