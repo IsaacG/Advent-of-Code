@@ -4,22 +4,22 @@ import (
 	"slices"
 )
 
-// P201702 solves 2017/02.
-type P201702 struct {
+// Day201702 solves 2017/02.
+type Day201702 struct {
 	data [][]int
 }
 
 // New201702 returns a new solver for 2017/02.
-func New201702() *P201702 {
-	return &P201702{}
+func New201702() *Day201702 {
+	return &Day201702{}
 }
 
 // SetInput handles input for this solver.
-func (p *P201702) SetInput(data string) {
+func (p *Day201702) SetInput(data string) {
 	p.data = ParseMultiNumbersPerLine(data)
 }
 
-func (p *P201702) one() int {
+func (p *Day201702) one() int {
 	total := 0
 	for _, line := range p.data {
 		total += slices.Max(line) - slices.Min(line)
@@ -27,7 +27,7 @@ func (p *P201702) one() int {
 	return total
 }
 
-func (p *P201702) two() int {
+func (p *Day201702) two() int {
 	total := 0
 outer:
 	for _, line := range p.data {
@@ -47,6 +47,6 @@ outer:
 }
 
 // Solve returns the solution for one part.
-func (p *P201702) Solve(part int) string {
+func (p *Day201702) Solve(part int) string {
 	return Itoa([]func() int{p.one, p.two}[part]())
 }

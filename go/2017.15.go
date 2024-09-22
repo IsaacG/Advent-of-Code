@@ -2,8 +2,8 @@ package main
 
 import "strings"
 
-// P201715 solves 2017/15.
-type P201715 struct {
+// Day201715 solves 2017/15.
+type Day201715 struct {
 	start      []int
 	factors    []int
 	steps      []int
@@ -16,8 +16,8 @@ const (
 )
 
 // New201715 returns a new solver for 2017/15.
-func New201715() *P201715 {
-	return &P201715{
+func New201715() *Day201715 {
+	return &Day201715{
 		start:      make([]int, 2),
 		factors:    []int{16807, 48271},
 		steps:      []int{40000000, 5000000},
@@ -26,7 +26,7 @@ func New201715() *P201715 {
 }
 
 // SetInput handles input for this solver.
-func (p *P201715) SetInput(data string) {
+func (p *Day201715) SetInput(data string) {
 	for l, line := range strings.Split(data, "\n") {
 		words := strings.Fields(line)
 		p.start[l] = Atoi(words[len(words)-1])
@@ -43,7 +43,7 @@ func generator(ch chan<- int, value, factor, mask, part int) {
 }
 
 // Solve returns the solution for one part.
-func (p *P201715) Solve(part int) string {
+func (p *Day201715) Solve(part int) string {
 	total := 0
 
 	var chs []chan int

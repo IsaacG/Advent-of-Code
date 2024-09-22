@@ -8,8 +8,8 @@ import (
 
 type virusState int
 
-// P201722 solves 2017/22.
-type P201722 struct {
+// Day201722 solves 2017/22.
+type Day201722 struct {
 	nodes     map[Location]virusState
 	center    int
 	steps     []int
@@ -47,8 +47,8 @@ func (s *simulation) run(steps int, states map[virusState]virusState) {
 }
 
 // New201722 returns a new solver for 2017/22.
-func New201722() *P201722 {
-	return &P201722{
+func New201722() *Day201722 {
+	return &Day201722{
 		steps: []int{10000, 10000000},
 		nextState: []map[virusState]virusState{
 			{clean: infected, infected: clean},
@@ -58,7 +58,7 @@ func New201722() *P201722 {
 }
 
 // SetInput handles input for this solver.
-func (p *P201722) SetInput(data string) {
+func (p *Day201722) SetInput(data string) {
 	lines := strings.Split(data, "\n")
 	slices.Reverse(lines)
 	p.nodes = make(map[Location]virusState)
@@ -73,7 +73,7 @@ func (p *P201722) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *P201722) Solve(part int) string {
+func (p *Day201722) Solve(part int) string {
 	s := simulation{
 		Robot:    &Robot{Location{p.center, p.center}, Direction{0, 1}},
 		nodes:    maps.Clone(p.nodes),

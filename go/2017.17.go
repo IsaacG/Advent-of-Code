@@ -1,7 +1,7 @@
 package main
 
-// P201717 solves 2017/17.
-type P201717 struct {
+// Day201717 solves 2017/17.
+type Day201717 struct {
 	steps int
 }
 
@@ -42,17 +42,17 @@ func partTwo(step int) int {
 }
 
 // New201717 returns a new solver for 2017/17.
-func New201717() *P201717 {
-	return &P201717{}
+func New201717() *Day201717 {
+	return &Day201717{}
 }
 
 // SetInput handles input for this solver.
-func (p *P201717) SetInput(data string) {
+func (p *Day201717) SetInput(data string) {
 	p.steps = Atoi(data)
 }
 
 // Solve returns the solution for one part.
-func (p *P201717) Solve(part int) string {
+func (p *Day201717) Solve(part int) string {
 	m := []func(int) int{partOne, partTwo}[part]
 	return Itoa(m(p.steps))
 }

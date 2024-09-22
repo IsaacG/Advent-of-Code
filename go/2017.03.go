@@ -1,22 +1,22 @@
 package main
 
-// P201703 solves 2017/03.
-type P201703 struct {
+// Day201703 solves 2017/03.
+type Day201703 struct {
 	steps int
 }
 
 // New201703 returns a new solver for 2017/03.
-func New201703() *P201703 {
-	return &P201703{}
+func New201703() *Day201703 {
+	return &Day201703{}
 }
 
 // SetInput handles input for this solver.
-func (p *P201703) SetInput(data string) {
+func (p *Day201703) SetInput(data string) {
 	p.steps = ParseOneNumber(data)
 }
 
 // Solve returns the solution for one part.
-func (p *P201703) Solve(part int) string {
+func (p *Day201703) Solve(part int) string {
 	board := make(map[Location]int)
 	robot := Robot{Location{0, 0}, Direction{0, -1}}
 	number := 1

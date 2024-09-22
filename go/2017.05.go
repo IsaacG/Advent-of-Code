@@ -2,25 +2,25 @@ package main
 
 import "slices"
 
-// P201705 solves 2017/05.
-type P201705 struct {
+// Day201705 solves 2017/05.
+type Day201705 struct {
 	data []int
 	size int
 }
 
 // New201705 returns a new solver for 2017/05.
-func New201705() *P201705 {
-	return &P201705{}
+func New201705() *Day201705 {
+	return &Day201705{}
 }
 
 // SetInput handles input for this solver.
-func (p *P201705) SetInput(data string) {
+func (p *Day201705) SetInput(data string) {
 	p.data = ParseOneNumberPerLine(data)
 	p.size = len(p.data)
 }
 
 // Solve returns the solution for one part.
-func (p *P201705) Solve(part int) string {
+func (p *Day201705) Solve(part int) string {
 	mem := slices.Clone(p.data)
 	step := 0
 	for ptr := 0; 0 <= ptr && ptr < p.size; step++ {
