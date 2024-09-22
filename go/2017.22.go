@@ -10,8 +10,10 @@ type virusState int
 
 // P201722 solves 2017/22.
 type P201722 struct {
-	nodes  map[Location]virusState
-	center int
+	nodes     map[Location]virusState
+	center    int
+	steps     []int
+	nextState []map[virusState]virusState
 }
 
 const (
@@ -21,22 +23,15 @@ const (
 	flagged  virusState = iota
 )
 
-var (
-	steps     = []int{10000, 10000000}
-	nextState = []map[virusState]virusState{
-		{clean: infected, infected: clean},
-		{clean: weakened, weakened: infected, infected: flagged, flagged: clean},
-	}
-	rotations = map[virusState]Rotation{clean: RotateLeft, weakened: RotateStraight, infected: RotateRight, flagged: RotateReverse}
-)
-
 type simulation struct {
 	*Robot
-	nodes    map[Location]virusState
-	infected int
+	nodes     map[Location]virusState
+	infected  int
+	nextState map[virusState]virusState
 }
 
 func (s *simulation) run(steps int, states map[virusState]virusState) {
+	rotations := map[virusState]Rotation{clean: RotateLeft, weakened: RotateStraight, infected: RotateRight, flagged: RotateReverse}
 	for range steps {
 		state, ok := s.nodes[s.Location]
 		if !ok {
@@ -53,7 +48,13 @@ func (s *simulation) run(steps int, states map[virusState]virusState) {
 
 // New201722 returns a new solver for 2017/22.
 func New201722() *P201722 {
-	return &P201722{}
+	return &P201722{
+		steps: []int{10000, 10000000},
+		nextState: []map[virusState]virusState{
+			{clean: infected, infected: clean},
+			{clean: weakened, weakened: infected, infected: flagged, flagged: clean},
+		},
+	}
 }
 
 // SetInput handles input for this solver.
@@ -78,6 +79,6 @@ func (p *P201722) Solve(part int) string {
 		nodes:    maps.Clone(p.nodes),
 		infected: 0,
 	}
-	s.run(steps[part], nextState[part])
+	s.run(p.steps[part], p.nextState[part])
 	return Itoa(s.infected)
 }

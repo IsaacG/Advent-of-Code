@@ -4,6 +4,11 @@ import (
 	"strconv"
 )
 
+const (
+	PartOne = 0
+	PartTwo = 1
+)
+
 // Rotation encodes a rotation of n * 90 degrees.
 type Rotation int
 
