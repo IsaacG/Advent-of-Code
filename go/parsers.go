@@ -37,3 +37,13 @@ func ParseOneLineMultiNumbers(data string) []int {
 	}
 	return numbers
 }
+
+func ParseMultiWordsPerLine(data string) [][]string {
+	lines := strings.Split(data, "\n")
+	words := make([][]string, len(lines))
+	for l, line := range lines {
+		words[l] = strings.Fields(line)
+	}
+	return words
+}
+

@@ -1,17 +1,23 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"time"
+)
 
 var puzzles = map[Puzzle]Solver{
 	Puzzle{2017, 1}: New201701(),
 	Puzzle{2017, 2}:  New201702(),
 	Puzzle{2017, 3}:  New201703(),
+	Puzzle{2017, 4}:  New201704(),
 	Puzzle{2017, 17}: New201717(),
 	Puzzle{2017, 22}: New201722(),
 	Puzzle{2020, 1}:  New202001(),
 }
 
 func main() {
+	fmt.Println(time.Now())
 	if len(os.Args) == 1 {
 		for puzzle, solver := range puzzles {
 			puzzle.Check(solver)
