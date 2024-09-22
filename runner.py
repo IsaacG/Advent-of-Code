@@ -101,15 +101,27 @@ class Runner:
 
     @property
     def base(self):
-        return pathlib.Path(__file__).parent / str(self.year)
+        return pathlib.Path(__file__).parent
+
+    @property
+    def year_path(self) -> pathlib.Path:
+        return self.base / f"{self.year}"
+
+    @property
+    def code_path(self) -> pathlib.Path:
+        return self.year_path / f"d{day:02}.py"
+
+    @property
+    def solution_path(self) -> pathlib.Path:
+        return self.base / f"solutions/{self.year}.txt"
 
     def from_template(self, day: int) -> None:
         """Create a new exercise file from template."""
-        filename = self.base / f"d{day:02}.py"
+        filename = self.code_path
         if filename.exists():
             print(f"{filename.name} already exists")
             return
-        template_file = self.base / "../shared/tmpl.py"
+        template_file = self.base / "shared/tmpl.py"
         template = string.Template(template_file.read_text())
         website = site.Website(self.year, day)
         out = template.substitute(
@@ -117,7 +129,6 @@ class Runner:
             sample=website.codeblocks(),
             title=website.title().strip("- "),
         )
-        filename = self.base / f"d{day:02}.py"
         filename.write_text(out)
         filename.chmod(0o700)
 
@@ -127,7 +138,7 @@ class Runner:
         start = datetime.datetime(year, 11, 30, tzinfo=EST)
         end = datetime.datetime(year, 12, 25, 1, tzinfo=EST)
         while start < self.now() < end:
-            solved = [int(line.split()[0]) for line in (self.base / "solutions.txt").read_text().splitlines()]
+            solved = [int(line.split()[0]) for line in self.solution_path.read_text().splitlines()]
             if self.now().day in solved:
                 print("Wait for tomorrow's problem to start and solve it.")
                 self.wait_solve(timeout)
@@ -188,7 +199,7 @@ class Runner:
         else:
             # Watch the file.
             inotify = inotify_simple.INotify()
-            inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
+            inotify.add_watch(self.year_path, inotify_simple.flags.CLOSE_WRITE)
             while events := inotify.read():
                 if not any(i.name == f"d{day:02}.py" for i in events):
                     continue
@@ -251,7 +262,7 @@ class Runner:
         if not solutions:
             solutions = {part: obj.run_solver(part, raw_data) for part in (1, 2)}
         inotify = inotify_simple.INotify()
-        inotify.add_watch(self.base, inotify_simple.flags.CLOSE_WRITE)
+        inotify.add_watch(self.year_path, inotify_simple.flags.CLOSE_WRITE)
 
         stop_at = self.now() + datetime.timedelta(hours=6)
         while self.now() < stop_at:
@@ -273,7 +284,7 @@ class Runner:
     def read_solutions(self) -> dict[int, dict[int, int | str]]:
         """Return solutions from file."""
         solutions: dict[int, dict[int, int | str]] = {}
-        for line in (self.base / "solutions.txt").read_text().splitlines():
+        for line in self.solution_path.read_text().splitlines():
             if not line:
                 continue
             parts = line.split()
@@ -319,8 +330,7 @@ class Runner:
             for line_day in sorted(existing)
         ]
 
-        solution_file = self.base / "solutions.txt"
-        solution_file.write_text("\n".join(lines) + "\n")
+        self.solution_path.write_text("\n".join(lines) + "\n")
 
 
 @click.command()

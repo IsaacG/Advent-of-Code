@@ -695,16 +695,30 @@ class Challenge(Helpers):
     @property
     def data_file(self) -> pathlib.Path:
         """Return the path to today's data file."""
-        return (self.data_dir / f'{self.day:02d}').with_suffix('.txt')
+        return (self.data_dir / f'{self.year}.{self.day:02d}.txt')
 
     @property
     def data_dir(self) -> pathlib.Path:
-        """Return the directory named "data" with the inputs."""
+        """Return the directory named "inputs" with the inputs."""
         for p in pathlib.Path(__file__).parents:
-            d = p / 'data'
+            d = p / 'inputs'
             if d.exists():
                 return d
         raise RuntimeError('No data dir found')
+
+    @property
+    def solutions_file(self) -> pathlib.Path:
+        """Return the path to today's data file."""
+        return (self.solutions_dir / f'{self.year}.txt')
+
+    @property
+    def solutions_dir(self) -> pathlib.Path:
+        """Return the directory named "solutions" with the solutions."""
+        for p in pathlib.Path(__file__).parents:
+            d = p / 'solutions'
+            if d.exists():
+                return d
+        raise RuntimeError('No solution dir found')
 
     @property
     def day(self) -> int:
@@ -830,7 +844,7 @@ class Challenge(Helpers):
 
     def check(self, input_file: Optional[str] = None) -> None:
         """Check the generated solutions match the contents of solutions.txt."""
-        lines = (self.data_dir.parent / 'solutions').with_suffix('.txt').read_text().strip().split('\n')
+        lines = self.solutions_file.read_text().strip().split('\n')
         solution = None
         for line in lines:
             parts = line.split()
