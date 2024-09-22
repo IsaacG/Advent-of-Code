@@ -2,7 +2,6 @@ package main
 
 import (
 	"slices"
-	"strings"
 )
 
 // P201702 solves 2017/02.
@@ -17,16 +16,7 @@ func New201702() *P201702 {
 
 // SetInput handles input for this solver.
 func (p *P201702) SetInput(data string) {
-	lines := strings.Split(data, "\n")
-	p.data = make([][]int, len(lines))
-	for l, line := range lines {
-		words := strings.Fields(line)
-		nums := make([]int, len(words))
-		for i, word := range words {
-			nums[i] = Atoi(word)
-		}
-		p.data[l] = nums
-	}
+	p.data = ParseMultiNumbersPerLine(data)
 }
 
 func (p *P201702) one() int {

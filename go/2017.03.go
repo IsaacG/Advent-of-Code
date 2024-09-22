@@ -12,7 +12,7 @@ func New201703() *P201703 {
 
 // SetInput handles input for this solver.
 func (p *P201703) SetInput(data string) {
-	p.steps = Atoi(data)
+	p.steps = ParseOneNumber(data)
 }
 
 // Solve returns the solution for one part.
