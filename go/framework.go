@@ -40,7 +40,7 @@ func (p Puzzle) Check(solver Solver) {
 		got := solver.Solve(i)
 		elapsed := time.Since(start)
 		if got == solutions[i] {
-			fmt.Printf("%d/%02d.%d PASSED!  %12s\n", p.year, p.day, i+1, elapsed)
+			fmt.Printf("%d/%02d.%d PASSED!  %15s\n", p.year, p.day, i+1, elapsed)
 		} else {
 			fmt.Printf("%d/%02d.%d FAILED!\n", p.year, p.day, i+1)
 			fmt.Printf("want %s but got %s\n", solutions[i], got)
