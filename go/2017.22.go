@@ -74,9 +74,11 @@ func (p *Day201722) SetInput(data string) {
 
 // Solve returns the solution for one part.
 func (p *Day201722) Solve(part int) string {
+	nodes := make(map[Location]virusState)
+	maps.Copy(nodes, p.nodes)
 	s := simulation{
 		Robot:    &Robot{Location{p.center, p.center}, Direction{0, 1}},
-		nodes:    maps.Clone(p.nodes),
+		nodes:    nodes,
 		infected: 0,
 	}
 	s.run(p.steps[part], p.nextState[part])
