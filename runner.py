@@ -109,7 +109,7 @@ class Runner:
 
     @property
     def code_path(self) -> pathlib.Path:
-        return self.year_path / f"d{day:02}.py"
+        return self.year_path / f"d{self.day:02}.py"
 
     @property
     def solution_path(self) -> pathlib.Path:
