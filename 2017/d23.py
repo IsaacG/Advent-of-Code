@@ -1,20 +1,9 @@
 #!/bin/python
 """Advent of Code, Day 23: Coprocessor Conflagration."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
 import math
-import re
 
 from lib import aoc
-
-SAMPLE = [
-]
-
-LineType = int
-InputType = list[LineType]
 
 
 class Day23(aoc.Challenge):
@@ -22,12 +11,12 @@ class Day23(aoc.Challenge):
 
     TESTS = [
         aoc.TestCase(part=1, inputs="", want=aoc.TEST_SKIP),
-        aoc.TestCase(part=2, inputs="", want=None),
+        aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[list[str | int]]) -> int:
+        """Simulate a program and count multiplications."""
         code = puzzle_input
         ptr = 0
         mul_count = 0
@@ -59,7 +48,8 @@ class Day23(aoc.Challenge):
                     ptr += val(Y) - 1
         raise RuntimeError("No solution found.")
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[list[str | int]]) -> int:
+        """Return the number of non-primes in a range. Derived by analysis."""
         return sum(
             1
             for b in range(105700, 122700 + 1, 17)
