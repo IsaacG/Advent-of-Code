@@ -22,7 +22,6 @@ class Day${day}(aoc.Challenge):
     DEBUG = True
     # Default is True. On live solve, submit one tests pass.
     # SUBMIT = {1: False, 2: False}
-    # PARAMETERIZED_INPUTS = [False, True]
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=None),
@@ -57,7 +56,7 @@ class Day${day}(aoc.Challenge):
     def part2(self, puzzle_input: InputType) -> int:
         raise NotImplementedError
 
-    def solver(self, puzzle_input: InputType, param: bool) -> int | str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
         raise NotImplementedError
 
     def input_parser(self, puzzle_input: str) -> InputType:
