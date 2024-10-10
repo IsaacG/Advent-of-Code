@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 25: The Halting Problem."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import math
 import re
 
 from lib import aoc
@@ -34,16 +29,11 @@ In state B:
     - Move one slot to the right.
     - Continue with state A."""
 
-LineType = int
-InputType = list[LineType]
+InputType = tuple[str, int, dict[str, list[tuple[bool, int, str]]]]
 
 
 class Day25(aoc.Challenge):
     """Day 25: The Halting Problem."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=3),
@@ -54,7 +44,7 @@ class Day25(aoc.Challenge):
         cursor = 0
         state, steps, rules = puzzle_input
         tape = set()
-        for step in range(steps):
+        for _ in range(steps):
             write, move, state = rules[state][cursor in tape]
             if write:
                 tape.add(cursor)
@@ -66,7 +56,9 @@ class Day25(aoc.Challenge):
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
         preamble, *rules = puzzle_input.split("\n\n")
-        m = re.match(r"Begin in state (.)\.\nPerform a diagnostic checksum after (\d+) steps.", preamble)
+        patt = r"Begin in state (.)\.\nPerform a diagnostic checksum after (\d+) steps."
+        m = re.match(patt, preamble)
+        assert m
         initial_state = m.group(1)
         steps = int(m.group(2))
 
@@ -82,7 +74,9 @@ class Day25(aoc.Challenge):
 
         res = {}
         for rule in rules:
-            start, w0, m0, n0, w1, m1, n1 = patt.match(rule).groups()
+            m = patt.match(rule)
+            assert m
+            start, w0, m0, n0, w1, m1, n1 = m.groups()
             res[start] = [
                     (w0 == "1", 1 if m0 == "right" else -1, n0),
                     (w1 == "1", 1 if m1 == "right" else -1, n1),
