@@ -16,6 +16,7 @@ var puzzles = map[Puzzle]Solver{
 	Puzzle{2017, 17}: New201717(),
 	Puzzle{2017, 22}: New201722(),
 	Puzzle{2017, 24}: New201724(),
+	Puzzle{2017, 25}: New201725(),
 	Puzzle{2020, 1}:  New202001(),
 }
 
