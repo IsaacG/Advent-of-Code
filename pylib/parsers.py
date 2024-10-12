@@ -59,6 +59,16 @@ class ParseOneWord(BaseParser):
         """Parse puzzle input as a single object and convert to a type."""
         return self.input_type(puzzle_input)
 
+@dataclasses.dataclass
+class ParseMultiWords(BaseParser):
+    """Parse an input which is a single line with multiple words."""
+
+    input_type: Callable[[str], Any]
+
+    def parse(self, puzzle_input: str) -> Any:
+        """Parse puzzle input as a single object and convert to a type."""
+        return [self.input_type(i) for i in puzzle_input.split()]
+
 
 @dataclasses.dataclass
 class ParseOneWordPerLine(BaseParser):
@@ -258,6 +268,7 @@ parse_one_int = ParseOneWord(int)
 # Convert the input into list[type], one per line.
 parse_one_str_per_line = ParseOneWordPerLine(str)
 parse_one_int_per_line = ParseOneWordPerLine(int)
+parse_multi_str_one_line = ParseMultiWords(str)
 
 # Convert the input into list[list[str]], splitting each line into multiple words.
 parse_multi_str_per_line = BaseParseMultiPerLine(input_to_strs)

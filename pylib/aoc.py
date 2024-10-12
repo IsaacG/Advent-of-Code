@@ -686,6 +686,7 @@ class Challenge(Helpers):
         self._site = None
         self._filecache: dict[pathlib.Path, str] = {}
         super().__init__()
+        self.print_input_stats()
 
     @functools.cached_property
     def site(self) -> site.Website:
@@ -734,6 +735,25 @@ class Challenge(Helpers):
         assert len(p) == 4 and p.isnumeric(), p
         return p
 
+    def print_input_stats(self):
+        """Print some stats about the input."""
+
+        def count(name: str, collection: list) -> None:
+            self.debug(f"{name}: {len(collection)} ({len(set(collection))} unique)")
+
+        # Line count, char count, uniq lines/chars. Min/max/count/unique ints.
+        raw_data = self.raw_data(None)
+        count("Lines", raw_data.splitlines())
+        count("Words", raw_data.split())
+        ints = [int(i) for i in RE_INT.findall(raw_data)]
+        if ints:
+            int_msg = f"Integers [({min(ints)})-({max(ints)})]"
+            if len(int_msg) > 60:
+                int_msg = int_msg[:50] + "...]"
+            count(int_msg, ints)
+        else:
+            self.debug("No numbers.")
+
     def part1(self, puzzle_input: Any) -> int | str:
         """Solve part 1."""
         raise NotImplementedError
@@ -771,13 +791,16 @@ class Challenge(Helpers):
         one_line = lines[0]
         if RE_INT.fullmatch(one_line):
             return parse_one_int_per_line if multi_lines else parse_one_int
-        if len(RE_BOUNDED_INT.findall(one_line)) > 1:
+        if len(RE_BOUNDED_INT.findall(one_line)) > 1 and multi_lines:
             lines = [re.sub("  +", " ", line) for line in lines[:4]]
             one_line = lines[0]
             template = re.compile(RE_BOUNDED_INT.sub(lambda x: RE_BOUNDED_INT.pattern, one_line))
             if all(template.fullmatch(line) for line in lines):
                 return parse_re_findall_int(RE_BOUNDED_INT)
-        return parse_one_str_per_line if multi_lines else parse_one_str
+        word_count = max(len(line.split()) for line in data.splitlines())
+        if word_count == 1:
+            return parse_one_str_per_line if multi_lines else parse_one_str
+        return parse_multi_str_per_line if multi_lines else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
