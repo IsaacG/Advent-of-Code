@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"fmt"
@@ -15,12 +15,12 @@ type Solver interface {
 
 // Puzzle is the challenge for a day.
 type Puzzle struct {
-	year, day int
+	Year, Day int
 }
 
 // ReadData returns the puzzle input data.
 func (p Puzzle) ReadData() string {
-	filename := fmt.Sprintf("../inputs/%d.%02d.txt", p.year, p.day)
+	filename := fmt.Sprintf("../inputs/%d.%02d.txt", p.Year, p.Day)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic("Failed to read file")
@@ -40,9 +40,9 @@ func (p Puzzle) Check(solver Solver) {
 		got := solver.Solve(i)
 		elapsed := time.Since(start)
 		if got == solution {
-			fmt.Printf("%d/%02d.%d PASSED!  %15s\n", p.year, p.day, i+1, elapsed)
+			fmt.Printf("%d/%02d.%d PASSED!  %15s\n", p.Year, p.Day, i+1, elapsed)
 		} else {
-			fmt.Printf("%d/%02d.%d FAILED!\n", p.year, p.day, i+1)
+			fmt.Printf("%d/%02d.%d FAILED!\n", p.Year, p.Day, i+1)
 			fmt.Printf("want %s but got %s\n", solutions[i], got)
 		}
 	}
@@ -50,8 +50,8 @@ func (p Puzzle) Check(solver Solver) {
 
 // Solutions returns the solutions from the solution file.
 func (p Puzzle) Solutions() ([]string, error) {
-	filename := fmt.Sprintf("../solutions/%d.txt", p.year)
-	day := fmt.Sprintf("%02d", p.day)
+	filename := fmt.Sprintf("../solutions/%d.txt", p.Year)
+	day := fmt.Sprintf("%02d", p.Day)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic("Failed to read file")
