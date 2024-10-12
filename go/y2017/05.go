@@ -1,26 +1,27 @@
-package main
+package y2017
 
 import "slices"
+import "isaacgood.com/aoc/helpers"
 
-// Day201705 solves 2017/05.
-type Day201705 struct {
+// Day05 solves 2017/05.
+type Day05 struct {
 	data []int
 	size int
 }
 
-// New201705 returns a new solver for 2017/05.
-func New201705() *Day201705 {
-	return &Day201705{}
+// New05 returns a new solver for 2017/05.
+func New05() *Day05 {
+	return &Day05{}
 }
 
 // SetInput handles input for this solver.
-func (p *Day201705) SetInput(data string) {
-	p.data = ParseOneNumberPerLine(data)
+func (p *Day05) SetInput(data string) {
+	p.data = helpers.ParseOneNumberPerLine(data)
 	p.size = len(p.data)
 }
 
 // Solve returns the solution for one part.
-func (p *Day201705) Solve(part int) string {
+func (p *Day05) Solve(part int) string {
 	mem := slices.Clone(p.data)
 	step := 0
 	for ptr := 0; 0 <= ptr && ptr < p.size; step++ {
@@ -32,5 +33,5 @@ func (p *Day201705) Solve(part int) string {
 		}
 		ptr += offset
 	}
-	return Itoa(step)
+	return helpers.Itoa(step)
 }

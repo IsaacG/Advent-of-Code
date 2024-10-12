@@ -1,3 +1,3 @@
-module aoc
+module isaacgood.com/aoc
 
 go 1.22

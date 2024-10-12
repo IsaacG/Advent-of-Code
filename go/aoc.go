@@ -4,20 +4,23 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"isaacgood.com/aoc/helpers"
+	"isaacgood.com/aoc/y2017"
+	"isaacgood.com/aoc/y2020"
 )
 
 var puzzles = map[Puzzle]Solver{
-	Puzzle{2017, 1}: New201701(),
-	Puzzle{2017, 2}:  New201702(),
-	Puzzle{2017, 3}:  New201703(),
-	Puzzle{2017, 4}:  New201704(),
-	Puzzle{2017, 5}:  New201705(),
-	Puzzle{2017, 15}: New201715(),
-	Puzzle{2017, 17}: New201717(),
-	Puzzle{2017, 22}: New201722(),
-	Puzzle{2017, 24}: New201724(),
-	Puzzle{2017, 25}: New201725(),
-	Puzzle{2020, 1}:  New202001(),
+	Puzzle{2017, 1}: y2017.New01(),
+	Puzzle{2017, 2}:  y2017.New02(),
+	Puzzle{2017, 3}:  y2017.New03(),
+	Puzzle{2017, 4}:  y2017.New04(),
+	Puzzle{2017, 5}:  y2017.New05(),
+	Puzzle{2017, 15}: y2017.New15(),
+	Puzzle{2017, 17}: y2017.New17(),
+	Puzzle{2017, 22}: y2017.New22(),
+	Puzzle{2017, 24}: y2017.New24(),
+	Puzzle{2017, 25}: y2017.New25(),
+	Puzzle{2020, 1}:  y2020.New01(),
 }
 
 func main() {
@@ -27,14 +30,14 @@ func main() {
 			puzzle.Check(solver)
 		}
 	} else if len(os.Args) == 2 {
-		year := Atoi(os.Args[1])
+		year := helpers.Atoi(os.Args[1])
 		for puzzle, solver := range puzzles {
 			if puzzle.year == year {
 				puzzle.Check(solver)
 			}
 		}
 	} else if len(os.Args) == 3 {
-		p := Puzzle{Atoi(os.Args[1]), Atoi(os.Args[2])}
+		p := Puzzle{helpers.Atoi(os.Args[1]), helpers.Atoi(os.Args[2])}
 		s, ok := puzzles[p]
 		if !ok {
 			panic("That solver does not exist")

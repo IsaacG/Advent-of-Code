@@ -1,8 +1,9 @@
-package main
+package y2017
 
 import (
 	"regexp"
 	"strings"
+	"isaacgood.com/aoc/helpers"
 )
 
 var preambleRe = regexp.MustCompile(`Begin in state (.)\.\nPerform a diagnostic checksum after ([0-9]+) steps.`)
@@ -30,24 +31,24 @@ func newTuringRule(parts []string) *turingRule {
 	}
 }
 
-// Day201725 solves 2017/25.
-type Day201725 struct {
+// Day25 solves 2017/25.
+type Day25 struct {
 	rules map[string][2]*turingRule
 	initialState string
 	steps int
 }
 
-// New201725 returns a new solver for 2017/25.
-func New201725() *Day201725 {
-	return &Day201725{}
+// New25 returns a new solver for 2017/25.
+func New25() *Day25 {
+	return &Day25{}
 }
 
 // SetInput handles input for this solver.
-func (p *Day201725) SetInput(data string) {
+func (p *Day25) SetInput(data string) {
 	chunks := strings.Split(data, "\n\n")
 	matches := preambleRe.FindStringSubmatch(chunks[0])
 	p.initialState = matches[1]
-	p.steps = Atoi(matches[2])
+	p.steps = helpers.Atoi(matches[2])
 	p.rules = make(map[string][2]*turingRule)
 	for _, chunk := range chunks[1:] {
 		matches = ruleRe.FindStringSubmatch(chunk)
@@ -59,7 +60,7 @@ func (p *Day201725) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day201725) Solve(part int) string {
+func (p *Day25) Solve(part int) string {
 	state := p.initialState
 	cursor := 0
 	tape := make(map[int]interface{})
@@ -79,5 +80,5 @@ func (p *Day201725) Solve(part int) string {
 		cursor += rule.move
 		state = rule.nextState
 	}
-        return Itoa(len(tape))
+        return helpers.Itoa(len(tape))
 }

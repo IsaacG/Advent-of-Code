@@ -35,11 +35,11 @@ func (p Puzzle) Check(solver Solver) {
 		fmt.Println("failed to load solutions: %v", err)
 	}
 	solver.SetInput(p.ReadData())
-	for i := 0; i < 2; i++ {
+	for i, solution := range(solutions) {
 		start := time.Now()
 		got := solver.Solve(i)
 		elapsed := time.Since(start)
-		if got == solutions[i] {
+		if got == solution {
 			fmt.Printf("%d/%02d.%d PASSED!  %15s\n", p.year, p.day, i+1, elapsed)
 		} else {
 			fmt.Printf("%d/%02d.%d FAILED!\n", p.year, p.day, i+1)

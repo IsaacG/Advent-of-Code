@@ -1,16 +1,17 @@
-package main
+package y2017
 
 import (
 	"maps"
 	"slices"
 	"strings"
+	"isaacgood.com/aoc/helpers"
 )
 
 type virusState int
 
-// Day201722 solves 2017/22.
-type Day201722 struct {
-	nodes     map[Location]virusState
+// Day22 solves 2017/22.
+type Day22 struct {
+	nodes     map[helpers.Location]virusState
 	center    int
 	steps     []int
 	nextState []map[virusState]virusState
@@ -24,14 +25,14 @@ const (
 )
 
 type simulation struct {
-	*Robot
-	nodes     map[Location]virusState
+	*helpers.Robot
+	nodes     map[helpers.Location]virusState
 	infected  int
 	nextState map[virusState]virusState
 }
 
 func (s *simulation) run(steps int, states map[virusState]virusState) {
-	rotations := map[virusState]Rotation{clean: RotateLeft, weakened: RotateStraight, infected: RotateRight, flagged: RotateReverse}
+	rotations := map[virusState]helpers.Rotation{clean: helpers.RotateLeft, weakened: helpers.RotateStraight, infected: helpers.RotateRight, flagged: helpers.RotateReverse}
 	for range steps {
 		state, ok := s.nodes[s.Location]
 		if !ok {
@@ -46,9 +47,9 @@ func (s *simulation) run(steps int, states map[virusState]virusState) {
 	}
 }
 
-// New201722 returns a new solver for 2017/22.
-func New201722() *Day201722 {
-	return &Day201722{
+// New22 returns a new solver for 2017/22.
+func New22() *Day22 {
+	return &Day22{
 		steps: []int{10000, 10000000},
 		nextState: []map[virusState]virusState{
 			{clean: infected, infected: clean},
@@ -58,14 +59,14 @@ func New201722() *Day201722 {
 }
 
 // SetInput handles input for this solver.
-func (p *Day201722) SetInput(data string) {
+func (p *Day22) SetInput(data string) {
 	lines := strings.Split(data, "\n")
 	slices.Reverse(lines)
-	p.nodes = make(map[Location]virusState)
+	p.nodes = make(map[helpers.Location]virusState)
 	for y, line := range lines {
 		for x, char := range line {
 			if char == '#' {
-				p.nodes[Location{x, y}] = infected
+				p.nodes[helpers.Location{x, y}] = infected
 			}
 		}
 	}
@@ -73,14 +74,14 @@ func (p *Day201722) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day201722) Solve(part int) string {
-	nodes := make(map[Location]virusState)
+func (p *Day22) Solve(part int) string {
+	nodes := make(map[helpers.Location]virusState)
 	maps.Copy(nodes, p.nodes)
 	s := simulation{
-		Robot:    &Robot{Location{p.center, p.center}, Direction{0, 1}},
+		Robot:    &helpers.Robot{helpers.Location{p.center, p.center}, helpers.Direction{0, 1}},
 		nodes:    nodes,
 		infected: 0,
 	}
 	s.run(p.steps[part], p.nextState[part])
-	return Itoa(s.infected)
+	return helpers.Itoa(s.infected)
 }

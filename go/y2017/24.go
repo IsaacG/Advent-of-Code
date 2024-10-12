@@ -1,6 +1,7 @@
-package main
+package y2017
 
 import "strings"
+import "isaacgood.com/aoc/helpers"
 
 // magneticComponent represents a magnetic component with two ports, each of which have a fixed number of pins.
 type magneticComponent struct {
@@ -23,27 +24,27 @@ func (mc magneticComponent) strength() int {
 	return mc.one + mc.two
 }
 
-// Day201724 solves 2017/24.
-type Day201724 struct {
+// Day24 solves 2017/24.
+type Day24 struct {
 	components []magneticComponent
 }
 
-// New201724 returns a new solver for 2017/24.
-func New201724() *Day201724 {
-	return &Day201724{}
+// New24 returns a new solver for 2017/24.
+func New24() *Day24 {
+	return &Day24{}
 }
 
 // SetInput handles input for this solver.
-func (p *Day201724) SetInput(data string) {
+func (p *Day24) SetInput(data string) {
 	lines := strings.Split(data, "\n")
 	for _, line := range lines {
 		ports := strings.Split(line, "/")
-		p.components = append(p.components, magneticComponent{Atoi(ports[0]), Atoi(ports[1])})
+		p.components = append(p.components, magneticComponent{helpers.Atoi(ports[0]), helpers.Atoi(ports[1])})
 	}
 }
 
 // Function build returns the max strength of a bridge which can be built with a set of components and starting with start pins.
-func (p *Day201724) build(start int, components []magneticComponent) (int, int, int) {
+func (p *Day24) build(start int, components []magneticComponent) (int, int, int) {
 	maxStrongest, maxLongest, maxLength := 0, 0, 0
 	// lastIndex is a helper to access the last index, used to swap (removing an element from the slice).
 	lastIndex := len(components) - 1
@@ -79,7 +80,7 @@ func (p *Day201724) build(start int, components []magneticComponent) (int, int, 
 }
 
 // Solve returns the solution for one part.
-func (p *Day201724) Solve(part int) string {
+func (p *Day24) Solve(part int) string {
 	strongest, longest, _ := p.build(0, p.components)
 	var result int
 	if part == 0 {
@@ -87,5 +88,5 @@ func (p *Day201724) Solve(part int) string {
 	} else {
 		result = longest
 	}
-	return Itoa(result)
+	return helpers.Itoa(result)
 }

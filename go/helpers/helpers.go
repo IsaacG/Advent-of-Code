@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"strconv"
@@ -22,7 +22,7 @@ const (
 
 // Direction tracks a 2D vector.
 type Direction struct {
-	dx, dy int
+	Dx, Dy int
 }
 
 var (
@@ -34,29 +34,29 @@ var (
 func (d *Direction) Rotate(rotation Rotation) {
 	switch rotation {
 	case RotateRight:
-		d.dx, d.dy = +1*d.dy, -1*d.dx
+		d.Dx, d.Dy = +1*d.Dy, -1*d.Dx
 	case RotateLeft:
-		d.dx, d.dy = -1*d.dy, +1*d.dx
+		d.Dx, d.Dy = -1*d.Dy, +1*d.Dx
 	case RotateReverse:
-		d.dx, d.dy = -1*d.dx, -1*d.dy
+		d.Dx, d.Dy = -1*d.Dx, -1*d.Dy
 	case RotateStraight:
 	}
 }
 
 // Rotated returns a new Direction with a rotation applied.
 func (d *Direction) Rotated(rotation Rotation) Direction{
-	n := &Direction{d.dx, d.dy}
+	n := &Direction{d.Dx, d.Dy}
 	n.Rotate(rotation)
 	return *n
 }
 
 // Location tracks a 2D Cartesian coordinate.
 type Location struct {
-	x, y int
+	X, Y int
 }
 
 func (l Location) ManhattanDistance() int {
-	return Abs(l.x) + Abs(l.y)
+	return Abs(l.X) + Abs(l.Y)
 }
 
 // Robot is an object with a Cartesian location and direction. It can advance and rotate.
@@ -67,13 +67,13 @@ type Robot struct {
 
 // Advance the robot by the Direction.
 func (r *Robot) Advance() {
-	r.x += r.dx
-	r.y += r.dy
+	r.X += r.Dx
+	r.Y += r.Dy
 }
 
 // Return the Location if we were to move in a given Direction.
 func (r *Robot) Peak(direction Direction) Location {
-	return Location{r.x + direction.dx, r.y + direction.dy}
+	return Location{r.X + direction.Dx, r.Y + direction.Dy}
 }
 
 // Atoi is a convenience wrapper around strconv.Atoi

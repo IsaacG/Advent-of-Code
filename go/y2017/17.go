@@ -1,7 +1,9 @@
-package main
+package y2017
 
-// Day201717 solves 2017/17.
-type Day201717 struct {
+import "isaacgood.com/aoc/helpers"
+
+// Day17 solves 2017/17.
+type Day17 struct {
 	steps int
 }
 
@@ -41,18 +43,18 @@ func partTwo(step int) int {
 	return lastVal
 }
 
-// New201717 returns a new solver for 2017/17.
-func New201717() *Day201717 {
-	return &Day201717{}
+// New17 returns a new solver for 2017/17.
+func New17() *Day17 {
+	return &Day17{}
 }
 
 // SetInput handles input for this solver.
-func (p *Day201717) SetInput(data string) {
-	p.steps = Atoi(data)
+func (p *Day17) SetInput(data string) {
+	p.steps = helpers.Atoi(data)
 }
 
 // Solve returns the solution for one part.
-func (p *Day201717) Solve(part int) string {
+func (p *Day17) Solve(part int) string {
 	m := []func(int) int{partOne, partTwo}[part]
-	return Itoa(m(p.steps))
+	return helpers.Itoa(m(p.steps))
 }

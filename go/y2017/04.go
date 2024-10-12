@@ -1,27 +1,28 @@
-package main
+package y2017
 
 import (
 	"slices"
 	"strings"
+	"isaacgood.com/aoc/helpers"
 )
 
-// Day201704 solves 2017/04.
-type Day201704 struct {
+// Day04 solves 2017/04.
+type Day04 struct {
 	data [][]string
 }
 
-// New201704 returns a new solver for 2017/04.
-func New201704() *Day201704 {
-	return &Day201704{}
+// New04 returns a new solver for 2017/04.
+func New04() *Day04 {
+	return &Day04{}
 }
 
 // SetInput handles input for this solver.
-func (p *Day201704) SetInput(data string) {
-	p.data = ParseMultiWordsPerLine(data)
+func (p *Day04) SetInput(data string) {
+	p.data = helpers.ParseMultiWordsPerLine(data)
 }
 
 // Solve returns the solution for one part.
-func (p *Day201704) Solve(part int) string {
+func (p *Day04) Solve(part int) string {
 	transform := []func(string) string{
 		func(s string) string { return s },
 		func(s string) string {
@@ -43,5 +44,5 @@ outer:
 		}
 		total++
 	}
-	return Itoa(total)
+	return helpers.Itoa(total)
 }
