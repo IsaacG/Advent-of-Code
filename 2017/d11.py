@@ -21,7 +21,6 @@ class Day11(aoc.Challenge):
     ] + [
         aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Walk a hex grid and compute distances."""

@@ -20,7 +20,6 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=1),
         aoc.TestCase(inputs=SAMPLE, part=2, want=10),
     ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def solver(self, puzzle_input: list[list[str]], part_one: bool) -> int:
         """Apply conditional logic to update registers."""

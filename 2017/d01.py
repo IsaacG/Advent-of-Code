@@ -29,17 +29,17 @@ class Day01(aoc.Challenge):
         for part, dataset in enumerate(SAMPLE, 1)
         for data in dataset
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: int, part_one: bool) -> int:
         """Sum all digits which match the corresponding digit."""
         # Part one: compare digits to subsequent digit.
         # Part two: compare digits to digits halfway around the list.
-        offset = 1 if part_one else len(puzzle_input) // 2
-        shifted_list = puzzle_input[offset:] + puzzle_input[:offset]
+        numbers = str(puzzle_input)
+        offset = 1 if part_one else len(numbers) // 2
+        shifted_list = numbers[offset:] + numbers[:offset]
         return sum(
             int(digit)
-            for digit, corresponding in zip(puzzle_input, shifted_list)
+            for digit, corresponding in zip(numbers, shifted_list)
             if digit == corresponding
         )
 

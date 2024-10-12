@@ -27,7 +27,6 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs="1024", part=1, want=31),
         aoc.TestCase(inputs="747", part=2, want=806),
     ]
-    INPUT_PARSER = aoc.parse_one_int
 
     def solver(self, puzzle_input: int, part_one: bool) -> int:
         """Fill out a spiral matrix until we get to the input number."""

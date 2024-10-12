@@ -25,7 +25,6 @@ class Day04(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=2),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=3),
     ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def part1(self, puzzle_input: list[list[str]]) -> int:
         """Count passphrases where no word is repeated."""

@@ -25,7 +25,6 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=18),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=9),
     ]
-    INPUT_PARSER = aoc.parse_multi_int_per_line
 
     def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum difference between the largest and smallest value on each line."""

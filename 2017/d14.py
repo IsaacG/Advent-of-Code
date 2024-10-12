@@ -47,7 +47,6 @@ class Day14(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=8108),
         aoc.TestCase(part=2, inputs=SAMPLE, want=1242),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         # Compute all the Knot Hashes as lines of binary values.

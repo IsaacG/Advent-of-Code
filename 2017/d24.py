@@ -22,6 +22,7 @@ class Day24(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=31),
         aoc.TestCase(part=2, inputs=SAMPLE, want=19),
     ]
+    INPUT_PARSER = aoc.parse_ints_per_line
 
     def strongest(self, start: int, options: set[tuple[int, int]]) -> tuple[int, int, int]:
         strength = 0
@@ -43,16 +44,9 @@ class Day24(aoc.Challenge):
                 longest_strength = n_long_str
         return strength, longest_length + 1, longest_strength
 
-    def solver(self, puzzle_input: set[tuple[int, int]], part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Compute the strongest (longest) magnetic bridge which can be built."""
-
-        return self.strongest(0, puzzle_input)[0 if part_one else 2]
-
-    def input_parser(self, puzzle_input: str) -> set[tuple[int, int]]:
-        """Parse the input data."""
-        lines = puzzle_input.splitlines()
-        pairs = {tuple(sorted(int(i) for i in line.split("/"))) for line in lines}
-        assert len(pairs) == len(lines)
-        return pairs  # type: ignore
+        data = {tuple(i) for i in puzzle_input}
+        return self.strongest(0, data)[0 if part_one else 2]
 
 # vim:expandtab:sw=4:ts=4

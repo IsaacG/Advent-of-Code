@@ -10,7 +10,6 @@ class Day17(aoc.Challenge):
         aoc.TestCase(part=1, inputs="3", want=638),
         aoc.TestCase(part=2, inputs="3", want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_int
 
     def part1(self, puzzle_input: int) -> int:
         """Step and insert 2017 times then return the next value."""

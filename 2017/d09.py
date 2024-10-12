@@ -34,7 +34,6 @@ class Day09(aoc.Challenge):
         for part, pairs in enumerate(SAMPLE, 1)
         for data, val in pairs
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int | str:
         """Parse bracket matching in a string."""

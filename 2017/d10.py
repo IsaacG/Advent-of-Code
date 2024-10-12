@@ -48,7 +48,6 @@ class Day10(aoc.Challenge):
         aoc.TestCase(part=2, inputs="1,2,3", want="3efbe78a8d82f29979031a4aa0b16a9d"),
         aoc.TestCase(part=2, inputs="1,2,4", want="63960835bcdc130f0b66d7ff4f6a5a8e"),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, puzzle_input: str) -> int:
         """Tie knots and return the product of the first two values."""

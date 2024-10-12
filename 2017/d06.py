@@ -26,7 +26,6 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=5),
         aoc.TestCase(inputs=SAMPLE, part=2, want=4),
     ]
-    INPUT_PARSER = aoc.parse_multi_int_per_line
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Reallocate blocks across banks until a loop is detected."""
