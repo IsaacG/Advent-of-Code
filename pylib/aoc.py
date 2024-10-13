@@ -796,7 +796,9 @@ class Challenge(Helpers):
             one_line = lines[0]
             template = re.compile(RE_BOUNDED_INT.sub(lambda x: RE_BOUNDED_INT.pattern, one_line))
             if all(template.fullmatch(line) for line in lines):
-                return parse_re_findall_int(RE_BOUNDED_INT)
+                return parse_ints_per_line
+        elif not multi_lines and all(RE_INT.fullmatch(i) for i in one_line.split()):
+            return parse_ints_one_line
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_lines else parse_one_str

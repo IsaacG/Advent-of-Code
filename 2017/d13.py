@@ -20,7 +20,6 @@ class Day13(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=24),
         aoc.TestCase(part=2, inputs=SAMPLE, want=10),
     ]
-    INPUT_PARSER = aoc.parse_ints_per_line
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Compute a path through a firewall scanner.

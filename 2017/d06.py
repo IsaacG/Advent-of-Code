@@ -29,7 +29,7 @@ class Day06(aoc.Challenge):
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Reallocate blocks across banks until a loop is detected."""
-        banks = puzzle_input[0]
+        banks = puzzle_input
         seen: dict[int, int] = {}
         count = len(banks)
         for step in itertools.count():

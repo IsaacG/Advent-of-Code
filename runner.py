@@ -414,7 +414,7 @@ def main(
 
     if not watch or all_days:
         if all_days:
-            days = sorted(int(p.stem) for p in year_dir.glob("d[0-2][0-9].py"))
+            days = sorted(int(p.stem.removeprefix("d")) for p in year_dir.glob("d[0-2][0-9].py"))
         else:
             days = [day]
 

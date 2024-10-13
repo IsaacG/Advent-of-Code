@@ -22,7 +22,6 @@ class Day24(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=31),
         aoc.TestCase(part=2, inputs=SAMPLE, want=19),
     ]
-    INPUT_PARSER = aoc.parse_ints_per_line
 
     def strongest(self, start: int, options: set[tuple[int, int]]) -> tuple[int, int, int]:
         strength = 0
