@@ -91,8 +91,9 @@ class Day15(aoc.Challenge):
                 if sum(amounts) <= 100:
                     break
 
-    def solver(self, puzzle_input: InputType, check_calories: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Solve for the optimal recipe."""
+        check_calories = not part_one
         most = 0
         _, names = list(zip(*self.sorted_limits(puzzle_input, check_calories)))
         for amounts in self.combo_generator(puzzle_input, check_calories):
@@ -113,12 +114,6 @@ class Day15(aoc.Challenge):
             if total > most:
                 most = total
         return most
-
-    def part1(self, puzzle_input: InputType) -> int:
-        return self.solver(puzzle_input, check_calories=False)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        return self.solver(puzzle_input, check_calories=True)
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
