@@ -7,6 +7,7 @@ import (
 	"isaacgood.com/aoc/helpers"
 	"isaacgood.com/aoc/y2017"
 	"isaacgood.com/aoc/y2020"
+	"isaacgood.com/aoc/y2024"
 )
 
 var puzzles = map[helpers.Puzzle]helpers.Solver{
@@ -21,6 +22,7 @@ var puzzles = map[helpers.Puzzle]helpers.Solver{
 	helpers.Puzzle{2017, 24}: y2017.New24(),
 	helpers.Puzzle{2017, 25}: y2017.New25(),
 	helpers.Puzzle{2020, 1}:  y2020.New01(),
+	helpers.Puzzle{2024, 1}:  y2024.New01(),
 }
 
 func main() {
