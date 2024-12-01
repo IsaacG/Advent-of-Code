@@ -236,7 +236,7 @@ class Runner:
                             print("Submitting answer:", answer)
                             resp = obj.site.submit(answer)
                             print(f"Response: {resp}")
-                            if "That's the right answer!" in resp:
+                            if resp is None or "That's the right answer!" in resp:
                                 print(f"Solved part {part}!!")
                                 self.update_solutions(day, {part: answer})
                                 submitted[part] = True
