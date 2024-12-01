@@ -53,11 +53,9 @@ class Day${day}(aoc.Challenge):
         print("\n".join(["==="] + [f"{k}={v!r}" for k, v in locals().items()] + ["==="]))
         return None
 
-    def part2(self, puzzle_input: InputType) -> int:
-        raise NotImplementedError
+    # def part2(self, puzzle_input: InputType) -> int:
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
-        raise NotImplementedError
+    # def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
