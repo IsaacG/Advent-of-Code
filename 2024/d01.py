@@ -23,14 +23,13 @@ class Day01(aoc.Challenge):
 
     def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum of differences between the sorted lists."""
-        a = sorted(l[0] for l in puzzle_input)
-        b = sorted(l[1] for l in puzzle_input)
-        return sum(abs(i - j) for i, j in zip(a, b))
+        lists = (sorted(l) for l in zip(*puzzle_input))
+        return sum(abs(i - j) for i, j in zip(*lists))
 
     def part2(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum of items times counts."""
-        a = [l[0] for l in puzzle_input]
-        b = collections.Counter(l[1] for l in puzzle_input)
-        return sum(i * b[i] for i in a)
+        a, b = zip(*puzzle_input)
+        counts = collections.Counter(b)
+        return sum(i * counts[i] for i in a)
 
 # vim:expandtab:sw=4:ts=4
