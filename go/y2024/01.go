@@ -3,7 +3,6 @@ package y2024
 import (
 	"isaacgood.com/aoc/helpers"
 	"slices"
-	"strings"
 )
 
 const (
@@ -18,7 +17,7 @@ func check(err error) {
 
 // Day01 solves 2024/01.
 type Day01 struct {
-	lists [2][]int
+	lists [][]int
 }
 
 // New01 returns a new solver for 2024/01.
@@ -28,11 +27,7 @@ func New01() *Day01 {
 
 // SetInput handles input for this solver.
 func (p *Day01) SetInput(data string) {
-	for _, line := range strings.Split(data, "\n") {
-		for idx, num := range strings.SplitN(line, " ", 2) {
-			p.lists[idx] = append(p.lists[idx], helpers.Atoi(strings.TrimSpace(num)))
-		}
-	}
+	p.lists = helpers.Transpose(helpers.ParseMultiNumbersPerLine(data))
 }
 
 // Function partOne computes the abs diff of the sorted elements.
@@ -41,11 +36,7 @@ func (p *Day01) partOne() int {
 	slices.Sort(p.lists[1])
 	total := 0
 	for idx := range p.lists[0] {
-		diff := p.lists[0][idx] - p.lists[1][idx]
-		if diff < 0 {
-			diff = -diff
-		}
-		total += diff
+		total += helpers.Abs(p.lists[0][idx] - p.lists[1][idx])
 	}
 	return total
 }

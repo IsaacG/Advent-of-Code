@@ -90,9 +90,25 @@ func Itoa(i int) string{
 	return strconv.Itoa(i)
 }
 
+// Abs returns the absolute int value.
 func Abs(i int) int {
 	if i >= 0 {
 		return i
 	}
 	return -i
+}
+
+// Transpose a rectangular 2D list.
+func Transpose[T any](data [][]T) [][]T {
+	transposed := make([][]T, len(data[0]))
+	columns := len(data)
+	for row := range data[0] {
+		transposed[row] = make([]T, columns)
+	}
+	for row, vals := range data {
+		for col, val := range vals {
+			transposed[col][row] = val
+		}
+	}
+	return transposed
 }

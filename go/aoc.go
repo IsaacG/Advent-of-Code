@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
 	"isaacgood.com/aoc/helpers"
 	"isaacgood.com/aoc/y2017"
 	"isaacgood.com/aoc/y2020"
 	"isaacgood.com/aoc/y2024"
+	"os"
+	"time"
 )
 
 var puzzles = map[helpers.Puzzle]helpers.Solver{
-	helpers.Puzzle{2017, 1}: y2017.New01(),
+	helpers.Puzzle{2017, 1}:  y2017.New01(),
 	helpers.Puzzle{2017, 2}:  y2017.New02(),
 	helpers.Puzzle{2017, 3}:  y2017.New03(),
 	helpers.Puzzle{2017, 4}:  y2017.New04(),
