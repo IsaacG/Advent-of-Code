@@ -495,6 +495,14 @@ def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) 
     return "\n".join(rows)
 
 
+def sign(number: int) -> int:
+    """Return the "sign" of a number, i.e. 1 or -1."""
+    if number > 0:
+        return 1
+    if number < 0:
+        return -1
+    return 0
+
 
 def reading_order(data: Sequence[complex]) -> list[complex]:
     return sorted(data, key=lambda x: (x.imag, x.real))
@@ -802,7 +810,7 @@ class Challenge(Helpers):
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_lines else parse_one_str
-        return parse_multi_str_per_line if multi_lines else parse_one_str
+        return parse_multiple_words_per_line if multi_lines else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""

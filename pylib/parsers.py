@@ -36,6 +36,13 @@ def input_to_strs(inputs: Iterable[str]) -> list[str]:
     return [str(i) for i in inputs]
 
 
+def input_to_auto(inputs: Iterable[str]) -> list[int | str]:
+    """Return a list of int or str values from an iterable."""
+    if all(RE_INT.fullmatch(i) for i in inputs):
+        return input_to_ints(inputs)
+    return input_to_strs(inputs)
+
+
 def input_to_mixed(inputs: Iterable[str]) -> list[int | str]:
     """Return a list of int | str values from an iterable."""
     return [int(i) if RE_INT.fullmatch(i) else str(i) for i in inputs]
@@ -288,6 +295,8 @@ parse_multi_mixed_per_line = BaseParseMultiPerLine(input_to_mixed)
 parse_re_group_mixed = lambda x: BaseParseReGroups(x, input_to_mixed)
 parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
 parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
+
+parse_multiple_words_per_line = BaseParseMultiPerLine(input_to_auto)
 
 char_map = ParseCharMap(str)
 int_map = ParseCharMap(int)
