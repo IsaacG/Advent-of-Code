@@ -5,16 +5,6 @@ import (
 	"slices"
 )
 
-const (
-	target = 2024
-)
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 // Day01 solves 2024/01.
 type Day01 struct {
 	lists [][]int
@@ -36,7 +26,7 @@ func (p *Day01) partOne() int {
 	slices.Sort(p.lists[1])
 	total := 0
 	for idx := range p.lists[0] {
-		total += helpers.Abs(p.lists[0][idx] - p.lists[1][idx])
+		total += abs(p.lists[0][idx] - p.lists[1][idx])
 	}
 	return total
 }
@@ -57,5 +47,5 @@ func (p *Day01) partTwo() int {
 // Solve returns the solution for one part.
 func (p *Day01) Solve(part int) string {
 	m := []func() int{p.partOne, p.partTwo}[part]
-	return helpers.Itoa(m())
+	return itoa(m())
 }

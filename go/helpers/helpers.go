@@ -90,6 +90,17 @@ func Itoa(i int) string{
 	return strconv.Itoa(i)
 }
 
+// Sign returns the sign of an int value.
+func Sign(i int) int {
+	if i > 0 {
+		return 1
+	}
+	if i < 0 {
+		return -1
+	}
+	return 0
+}
+
 // Abs returns the absolute int value.
 func Abs(i int) int {
 	if i >= 0 {
