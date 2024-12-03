@@ -17,3 +17,4 @@ func check(err error) {
 func abs(n int) int     { return helpers.Abs(n) }
 func sign(n int) int    { return helpers.Sign(n) }
 func itoa(n int) string { return helpers.Itoa(n) }
+func atoi(n string) int { return helpers.Atoi(n) }
