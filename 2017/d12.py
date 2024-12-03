@@ -21,7 +21,7 @@ class Day12(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=6),
         aoc.TestCase(part=2, inputs=SAMPLE, want=2),
     ]
-    INPUT_PARSER = aoc.parse_ints_per_line
+    INPUT_PARSER = aoc.parse_ints
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         pipes = collections.defaultdict(set)

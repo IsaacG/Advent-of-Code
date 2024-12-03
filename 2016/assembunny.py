@@ -32,8 +32,7 @@ class Assembunny:
     def __init__(self, instructions: list[str]):
         """Initialize, parse the instructions."""
         inst = []
-        for line in instructions:
-            instruction = line.split()
+        for instruction in instructions:
             inst.append([Operation[instruction[0].upper()].value] + instruction[1:])
         self.instructions = inst
         self.instruction_count = len(instructions)

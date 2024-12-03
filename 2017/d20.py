@@ -24,7 +24,7 @@ class Day20(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=0),
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=1),
     ]
-    INPUT_PARSER = aoc.parse_ints_per_line
+    INPUT_PARSER = aoc.parse_ints
 
     @staticmethod
     def distance(vals: tuple[int, ...]) -> int:

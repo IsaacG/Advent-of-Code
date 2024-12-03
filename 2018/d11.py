@@ -15,7 +15,6 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want="90,269,16"),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want="232,251,12"),
     ]
-    INPUT_PARSER = aoc.parse_one_int
 
     def solver(self, puzzle_input: int, part_one: bool) -> str:
         serial = puzzle_input

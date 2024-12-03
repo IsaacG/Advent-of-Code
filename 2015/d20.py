@@ -29,17 +29,11 @@ def prime_factors(num: int) -> list[int]:
 class Day20(aoc.Challenge):
     """Day 20: Infinite Elves and Infinite Houses."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=8),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-
-    INPUT_PARSER = aoc.parse_one_int
 
     def part1(self, puzzle_input: InputType) -> int:
         target = puzzle_input // 10

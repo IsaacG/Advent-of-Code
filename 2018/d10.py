@@ -48,7 +48,6 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want="HI"),
         aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
-    INPUT_PARSER = aoc.parse_ints
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
         """Return the message in the moving stars."""

@@ -14,7 +14,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=45),
         aoc.TestCase(inputs=SAMPLE, part=2, want=112),
     )
-    INPUT_PARSER = aoc.parse_re_group_int(r"target area: x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)")
+    INPUT_PARSER = aoc.parse_ints
 
     def part1(self, puzzle_input: InputType) -> int:
         """Compute the highest height that can be reached while hitting the target."""

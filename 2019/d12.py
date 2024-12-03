@@ -73,7 +73,6 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=2772),
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
     )
-    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
 
     def part1(self, puzzle_input: List[Tuple[int]]) -> int:
         """Run the similation for N cycles and return total energy at the end."""
