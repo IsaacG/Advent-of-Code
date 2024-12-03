@@ -25,7 +25,6 @@ class Day24(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=2),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_re_findall_int(aoc.RE_INT)
     TIMEOUT = 60
 
     def part1(self, puzzle_input: InputType) -> int:

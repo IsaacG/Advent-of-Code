@@ -283,7 +283,6 @@ parse_re_group_str = lambda x: BaseParseReGroups(x, input_to_strs)
 parse_re_findall_str = lambda x: BaseParseReFindall(x, input_to_strs)
 
 # Convert the input into list[list[int]], splitting each line into multiple words.
-parse_multi_int_per_line = BaseParseMultiPerLine(input_to_ints)
 parse_re_group_int = lambda x: BaseParseReGroups(x, input_to_ints)
 parse_re_findall_int = lambda x: BaseParseReFindall(x, input_to_ints)
 parse_ints = BaseParseReFindall(RE_INT, input_to_ints)

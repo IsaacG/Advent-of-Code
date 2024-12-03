@@ -32,7 +32,6 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=62),
         aoc.TestCase(inputs=SAMPLE, part=2, want=952408144115),
     ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def solver(self, puzzle_input: list[list[str]], part_one: bool) -> int:
         # Start at 0, 0 and track vertical trenches.

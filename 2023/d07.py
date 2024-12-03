@@ -33,7 +33,6 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=6440),
         aoc.TestCase(inputs=SAMPLE, part=2, want=5905),
     ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def sort(self, part_two: int, line: list[str]) -> tuple[int, int]:
         """Sort cards based on ranking then highest card."""

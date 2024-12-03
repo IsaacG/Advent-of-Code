@@ -23,7 +23,6 @@ class Day20(aoc.Challenge):
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=0),
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=1),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
     INPUT_PARSER = aoc.parse_ints_per_line
 

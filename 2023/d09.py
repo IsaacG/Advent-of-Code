@@ -18,7 +18,6 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=114),
         aoc.TestCase(inputs=SAMPLE, part=2, want=2),
     ]
-    INPUT_PARSER = aoc.parse_multi_int_per_line
 
     def get_prior_and_following(self, line) -> tuple[int, int]:
         """Return the prior and following value of a line using recursive first differences."""

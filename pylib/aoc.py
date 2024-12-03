@@ -63,7 +63,7 @@ HEX_AXIAL_DIRS_FLAT_TOP = {
 }
 
 RE_INT = re.compile(r"[+-]?\d+")
-RE_BOUNDED_INT = re.compile(r"\b[+-]?\d+\b")
+RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
 OPERATORS = {
     ">": operator.gt,
     ">=": operator.ge,
@@ -797,8 +797,14 @@ class Challenge(Helpers):
         lines = data.splitlines()
         multi_lines = len(lines) > 1
         one_line = lines[0]
-        if RE_INT.fullmatch(one_line):
+
+        # Only numbers on each line.
+        if all(RE_INT.fullmatch(line) for line in lines):
             return parse_one_int_per_line if multi_lines else parse_one_int
+        number_line = re.compile(r"^[+-]?\d+( +[+-]?\d+)+$")
+        if all(number_line.fullmatch(line) for line in lines):
+            return parse_ints_per_line if multi_lines else parse_ints_one_line
+
         if len(RE_BOUNDED_INT.findall(one_line)) > 1 and multi_lines:
             lines = [re.sub("  +", " ", line) for line in lines[:4]]
             one_line = lines[0]
@@ -810,7 +816,7 @@ class Challenge(Helpers):
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_lines else parse_one_str
-        return parse_multiple_words_per_line if multi_lines else parse_one_str
+        return parse_multi_str_per_line if multi_lines else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""

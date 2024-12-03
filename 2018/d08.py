@@ -14,11 +14,10 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=138),
         aoc.TestCase(inputs=SAMPLE, part=2, want=66),
     ]
-    INPUT_PARSER = aoc.parse_multi_int_per_line
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the sum of all nodes."""
-        reader = iter(puzzle_input[0])
+        reader = iter(puzzle_input)
 
         def parser():
             child_count = next(reader)
@@ -31,7 +30,7 @@ class Day08(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Return the value of the root node."""
-        reader = iter(puzzle_input[0])
+        reader = iter(puzzle_input)
 
         def parser():
             child_count = next(reader)
