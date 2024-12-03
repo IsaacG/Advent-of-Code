@@ -24,7 +24,6 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, puzzle_input: str) -> int:
         """Count how many block tiles are printed."""

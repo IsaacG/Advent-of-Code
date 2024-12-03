@@ -31,7 +31,3 @@ class Day01(aoc.Challenge):
             if floor == -1:
                 return count
         raise RuntimeError("No solution found.")
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return puzzle_input

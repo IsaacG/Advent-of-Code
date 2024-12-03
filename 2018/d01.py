@@ -23,6 +23,3 @@ class Day01(aoc.Challenge):
             seen.add(freq)
             freq += next(it)
         return freq
-
-    def input_parser(self, puzzle_input: str) -> List[int]:
-        return [int(i) for i in puzzle_input.split('\n')]

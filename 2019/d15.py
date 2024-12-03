@@ -27,7 +27,6 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     @functools.cache
     def explore(self, program: str) -> tuple[set[complex], set[complex], complex]:

@@ -44,6 +44,3 @@ class Day02(aoc.Challenge):
             if hamming_distance(a, b) == 1:
                 return "".join(i for i, j in zip(a, b) if i == j)
         raise RuntimeError
-
-    def input_parser(self, puzzle_input: str) -> List[str]:
-        return puzzle_input.split('\n')

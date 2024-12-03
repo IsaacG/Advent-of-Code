@@ -14,11 +14,11 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=45),
         aoc.TestCase(inputs=SAMPLE, part=2, want=112),
     )
-    INPUT_PARSER = aoc.parse_ints
+    INPUT_PARSER = aoc.parse_ints_one_line
 
     def part1(self, puzzle_input: InputType) -> int:
         """Compute the highest height that can be reached while hitting the target."""
-        y_max = max(y for x, y in self.find_velocities(*puzzle_input[0]))
+        y_max = max(y for x, y in self.find_velocities(*puzzle_input))
         # At an upwards speed of y and a constant deceleration of 1,
         # the height after each step is [y, y + (y-1), y + (y-1) + (y-2), ...]
         # until y-velocity = 0. The distance travelled is sum(1..y). This is also
@@ -27,7 +27,7 @@ class Day17(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Compute how many velocities would work to hit the target."""
-        return len(self.find_velocities(*puzzle_input[0]))
+        return len(self.find_velocities(*puzzle_input))
 
     @staticmethod
     def find_velocities(x0, x1, y0, y1) -> list[tuple[int, int]]:

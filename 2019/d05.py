@@ -26,7 +26,6 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs="3,3,1107,-1,8,3,4,3,99", part=2, want=1),    # input  < 8 IMM Mode
         aoc.TestCase(inputs="3,3,1107,-1,5,3,4,3,99", part=2, want=0),    # input  < 5 IMM Mode
     )
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, puzzle_input: str) -> int:
         computer = intcode.Computer(puzzle_input)

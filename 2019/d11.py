@@ -14,7 +14,6 @@ class Day11(aoc.Challenge):
         aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, program: str, part_one: bool) -> int | str:
         computer = intcode.Computer(program, debug=self.DEBUG)

@@ -13,7 +13,8 @@ import itertools
 import re
 from typing import Any, Callable, Iterable
 
-RE_INT = re.compile(r"[+-]?\d+")
+RE_INT = re.compile(r"[+-]?\d{1,1000}")
+RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
 RE_POINT = re.compile(r"[+-]?\d+,[+-]?\d+")
 
 
@@ -54,6 +55,32 @@ class BaseParser:
     def parse(self, puzzle_input: str) -> Any:
         """Parse a puzzle input."""
         raise NotImplementedError
+
+
+class ParseIntergers:
+    """Get integers from input."""
+
+    NUMBER_LINE = re.compile(r"^[+-]?\d+( +[+-]?\d+)*$")
+
+    def matches(self, puzzle_input) -> bool:
+        """Check if the input is all numbers."""
+        return all(self.NUMBER_LINE.fullmatch(line) for line in puzzle_input.splitlines())
+
+    def parse(self, puzzle_input: str) -> int | list[int] | list[list[int]]:
+        """Parse a puzzle input."""
+        lines = puzzle_input.splitlines()
+        multi_line = len(lines) > 1
+        multi_word = any(len(line.split()) > 1 for line in lines)
+        numbers = [[int(word) for word in line.split()] for line in lines]
+        if multi_line:
+            if multi_word:
+                return numbers
+            return [words[0] for words in numbers]
+        else:
+            if multi_word:
+                return numbers[0]
+            else:
+                return numbers[0][0]
 
 
 @dataclasses.dataclass

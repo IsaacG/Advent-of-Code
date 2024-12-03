@@ -36,7 +36,3 @@ class Day03(aoc.Challenge):
             if all((a, b) not in seen_twice for a in range(x, x + w) for b in range(y, y + h)):
                 return i
         raise RuntimeError
-
-    def input_parser(self, puzzle_input: str) -> List[List[int]]:
-        r = re.compile(r'^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$')
-        return [[int(i) for i in r.match(line).groups()] for line in puzzle_input.split('\n')]

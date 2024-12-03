@@ -18,6 +18,8 @@ chunked = more_itertools.chunked
 class Day08(aoc.Challenge):
     """Day 8."""
 
+    INPUT_PARSER = aoc.parse_one_str
+
     def part1(self, puzzle_input: str) -> int:
         """Find the min layer."""
         layers = chunked(puzzle_input, WIDTH * HEIGHT)
@@ -43,6 +45,3 @@ class Day08(aoc.Challenge):
         # print('\n'.join(out))
         # Meaningless number to use in the solutions file.
         return self.mult(sum(True for i in row if i != ' ') for row in out)
-
-    def input_parser(self, puzzle_input: str):
-        return puzzle_input
