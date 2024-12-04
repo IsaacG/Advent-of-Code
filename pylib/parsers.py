@@ -57,7 +57,7 @@ class BaseParser:
         raise NotImplementedError
 
 
-class ParseIntergers:
+class ParseIntergers(BaseParser):
     """Get integers from input."""
 
     NUMBER_LINE = re.compile(r"^[+-]?\d+( +[+-]?\d+)*$")
