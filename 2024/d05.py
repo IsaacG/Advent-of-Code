@@ -1,13 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 5: Print Queue."""
-from __future__ import annotations
 
 import collections
-import functools
-import itertools
-import math
-import re
-
 from lib import aoc
 
 SAMPLE = """\
@@ -41,7 +35,7 @@ SAMPLE = """\
 97,13,75,29,47"""
 
 InputType = list[list[list[int]]]
-Reports: list[list[int]]
+Reports = list[list[int]]
 
 
 class Day05(aoc.Challenge):
@@ -53,16 +47,14 @@ class Day05(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.parse_ints])
 
-    def expand_rules(self, rules: list[list[int]]) -> dict[int, set[int]]:
+    def expand_rules(self, pairs: list[list[int]]) -> dict[int, set[int]]:
         """Expand the prerequisite tree to a flattened set."""
         prereq_tree = collections.defaultdict(set)
-        for a, b in rules:
+        for a, b in pairs:
             prereq_tree[b].add(a)
 
         expanded = collections.defaultdict(set)
-        for node in list(prereq_tree):
-            todo = list(prereq_tree[node])
-            seen = set()
+        for node, todo in list(prereq_tree.items()):
             while todo:
                 got = todo.pop()
                 expanded[node].add(got)
@@ -71,22 +63,17 @@ class Day05(aoc.Challenge):
 
     def categorize(self, reports: Reports, rules: dict[int, set[int]]) -> tuple[Reports, Reports]:
         """Sort reports into valid and invalid."""
-        groups = {True: [], False: []}
+        groups: dict[bool, Reports] = {True: [], False: []}
         for report in reports:
-            valid = True
-            for idx, node in enumerate(report):
-                req = rules[node]
-                for after in report[idx + 1:]:
-                    if after in req:
-                        valid = False
-                    if not valid:
-                        break
-                if not valid:
-                    break
+            valid = all(
+                after not in rules[node]
+                for idx, node in enumerate(report)
+                for after in report[idx + 1:]
+            )
             groups[valid].append(report)
         return groups[True], groups[False]
 
-    def fix_invalid(self, invalid: Reports, expanded: dict[int, set[int]]) -> Reports:
+    def fix_invalid(self, invalid: Reports, rules: dict[int, set[int]]) -> Reports:
         """Reorder invalid reports to make them valid."""
         fixed_reports = []
         for report in invalid:
@@ -96,10 +83,7 @@ class Day05(aoc.Challenge):
                 found = next(
                     node
                     for node in list(to_order)
-                    if all(
-                        after not in expanded[node]
-                        for after in to_order
-                    )
+                    if all(after not in rules[node] for after in to_order)
                 )
                 to_order.remove(found)
                 ordered.append(found)
@@ -108,11 +92,11 @@ class Day05(aoc.Challenge):
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the sum of the middle number of reports."""
-        rules, reports = puzzle_input
-        expanded = self.expand_rules(rules)
-        reports, invalid = self.categorize(reports, expanded)
+        pairs, reports = puzzle_input
+        rules = self.expand_rules(pairs)
+        reports, invalid = self.categorize(reports, rules)
         if not part_one:
-            reports = self.fix_invalid(invalid, expanded)
+            reports = self.fix_invalid(invalid, rules)
         return sum(report[len(report) // 2] for report in reports)
 
 # vim:expandtab:sw=4:ts=4
