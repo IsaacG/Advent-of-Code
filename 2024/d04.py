@@ -23,34 +23,33 @@ class Day04(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=18),
         aoc.TestCase(part=2, inputs=SAMPLE, want=9),
     ]
-    INPUT_PARSER = aoc.char_map
+    INPUT_PARSER = aoc.CharCoordParser()
 
     def part1(self, puzzle_input: dict[complex, str]) -> int:
         """Count occurances of XMAS in the word search."""
         return sum(
             all(
-                puzzle_input.get(start + distance * direction) == letter
-                for distance, letter in enumerate("XMAS")
+                (start + distance * direction) in puzzle_input[letter]
+                for distance, letter in enumerate("MAS", start=1)
             )
-            for start in puzzle_input
+            for start in puzzle_input["X"]
             for direction in aoc.EIGHT_DIRECTIONS
         )
 
     def part2(self, puzzle_input: dict[complex, str]) -> int:
         """Count occurances of MAS in an X shape in the word search."""
         want = {
-            complex(0, 0): "M",
-            complex(0, 2): "M",
-            complex(1, 1): "A",
-            complex(2, 2): "S",
-            complex(2, 0): "S",
+            complex(-1, -1): "M",
+            complex(-1, 1): "M",
+            complex(1, 1): "S",
+            complex(1, -1): "S",
         }
         return sum(
             all(
-                puzzle_input.get(start + offset * 1j ** rotation) == letter
+                (start + offset * 1j ** rotation) in puzzle_input[letter]
                 for offset, letter in want.items()
             )
-            for start in puzzle_input
+            for start in puzzle_input["A"]
             for rotation in range(4)
         )
 

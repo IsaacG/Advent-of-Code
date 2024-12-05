@@ -6,6 +6,7 @@ The Parser class shall have a `parse()` method which takes the puzzle input
 and returns the parsed value.
 """
 
+import collections
 import collections.abc
 import dataclasses
 import inspect
@@ -250,6 +251,24 @@ class Transform(BaseParser):
     def parse(self, puzzle_input: Any) -> Any:
         """Apply a transformation."""
         return self.func(puzzle_input)
+
+
+@dataclasses.dataclass
+class CharCoordParser(BaseParser):
+    """Parse a map of chars, returning a set of coords for each char."""
+
+    origin_top_left: bool = True
+
+    def parse(self, puzzle_input: str) -> dict[str, set[complex]]:
+        """Parse ASCII to find points in a map which are "on"."""
+        lines = puzzle_input.splitlines()
+        if not self.origin_top_left:
+            lines.reverse()
+        data = collections.defaultdict(set)
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                data[char].add(complex(x, y))
+        return dict(data)
 
 
 @dataclasses.dataclass
