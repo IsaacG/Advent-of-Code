@@ -41,6 +41,7 @@ SAMPLE = """\
 97,13,75,29,47"""
 
 InputType = list[list[list[int]]]
+Reports: list[list[int]]
 
 
 class Day05(aoc.Challenge):
@@ -68,12 +69,13 @@ class Day05(aoc.Challenge):
 
         return expanded
 
-    def categorize(self, reports, expanded) -> dict[bool, list[list[int]]]:
+    def categorize(self, reports: Reports, rules: dict[int, set[int]]) -> tuple[Reports, Reports]:
+        """Sort reports into valid and invalid."""
         groups = {True: [], False: []}
         for report in reports:
             valid = True
             for idx, node in enumerate(report):
-                req = expanded[node]
+                req = rules[node]
                 for after in report[idx + 1:]:
                     if after in req:
                         valid = False
@@ -82,38 +84,35 @@ class Day05(aoc.Challenge):
                 if not valid:
                     break
             groups[valid].append(report)
-        return groups
+        return groups[True], groups[False]
 
-    def expand_and_group(self, puzzle_input: InputType) -> int:
-        rules, reports = puzzle_input
-        expanded = self.expand_rules(rules)
-        return expanded, self.categorize(reports, expanded)
-
-    def part1(self, puzzle_input: InputType) -> int:
-        expanded, grouped = self.expand_and_group(puzzle_input)
-        return sum(report[len(report) // 2] for report in grouped[True])
-
-    def part2(self, puzzle_input: InputType) -> int:
-        expanded, grouped = self.expand_and_group(puzzle_input)
-        invalid = grouped[False]
-
+    def fix_invalid(self, invalid: Reports, expanded: dict[int, set[int]]) -> Reports:
+        """Reorder invalid reports to make them valid."""
         fixed_reports = []
         for report in invalid:
-            todo = set(report)
+            to_order = set(report)
             ordered = []
-            while todo:
+            while to_order:
                 found = next(
                     node
-                    for node in list(todo)
+                    for node in list(to_order)
                     if all(
                         after not in expanded[node]
-                        for after in todo
+                        for after in to_order
                     )
                 )
-                todo.remove(found)
+                to_order.remove(found)
                 ordered.append(found)
             fixed_reports.append(ordered)
+        return fixed_reports
 
-        return sum(report[len(report) // 2] for report in fixed_reports)
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+        """Return the sum of the middle number of reports."""
+        rules, reports = puzzle_input
+        expanded = self.expand_rules(rules)
+        reports, invalid = self.categorize(reports, expanded)
+        if not part_one:
+            reports = self.fix_invalid(invalid, expanded)
+        return sum(report[len(report) // 2] for report in reports)
 
 # vim:expandtab:sw=4:ts=4
