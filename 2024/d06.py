@@ -1,12 +1,5 @@
 #!/bin/python
-"""Advent of Code, Title."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
+"""Advent of Code, Guard Gallivant."""
 
 from lib import aoc
 
@@ -21,56 +14,43 @@ SAMPLE = """....#.....
 #.........
 ......#..."""
 
-LineType = int
-InputType = list[LineType]
+InputType = tuple[set[complex], set[complex], complex, complex]
 
 
 class Day06(aoc.Challenge):
-    """Title."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
+    """Guard Gallivant: simulate a guard walking a floor."""
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=41),
         aoc.TestCase(part=2, inputs=SAMPLE, want=6),
     ]
 
-    INPUT_PARSER = aoc.CharCoordParser()
-
-    def walk(self, all_spots, blocked, pos, direction):
-        spots = set()
-        seen = set()
+    def walk(self, all_spots: set[complex], blocked: set[complex], pos: complex, direction: complex) -> tuple[set[complex], bool]:
+        """Walk the map until hitting the edge or entering a loop."""
+        spots: set[complex] = set()
+        seen: set[tuple[complex, complex]] = set()
         while pos in all_spots:
             spots.add(pos)
             if (pos, direction) in seen:
-                break
+                return spots, True
             seen.add((pos, direction))
             while pos + direction in blocked:
                 direction *= 1j
             pos += direction
-        return spots, (pos, direction) in seen
+        return spots, False
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         all_spots, blocked, start_pos, start_dir = puzzle_input
         spots, is_loop = self.walk(all_spots, blocked, start_pos, start_dir)
-        return len(spots)
+        # Part one: return the length of the path until the edge.
+        if part_one:
+            return len(spots)
 
-    def part2(self, puzzle_input: InputType) -> int:
-        all_spots, blocked, start_pos, start_dir = puzzle_input
-
-        spots, is_loop = self.walk(all_spots, blocked, start_pos, start_dir)
-        spots.remove(start_pos)
-
-        found = set()
-        for option in spots:
-            _, is_loop = self.walk(all_spots, blocked | {option}, start_pos, start_dir)
-            if is_loop:
-                found.add(option)
-
-        count = len(found)
-        return count
+        # Part two: count how many loops can be made by adding one obstable.
+        return sum(
+            self.walk(all_spots, blocked | {option}, start_pos, start_dir)[1]
+            for option in spots - {start_pos}
+        )
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
@@ -79,10 +59,12 @@ class Day06(aoc.Challenge):
         blocked = set()
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
+                # Record all board spots to detect when we walk off the edge.
                 all_spots.add(complex(x, y))
                 if char == "#":
                     blocked.add(complex(x, y))
-                if char in "<>v^":
+                # Starting position and direction.
+                if char in aoc.ARROW_DIRECTIONS:
                     start_pos = complex(x, y)
                     start_dir = aoc.ARROW_DIRECTIONS[char]
         return all_spots, blocked, start_pos, start_dir
