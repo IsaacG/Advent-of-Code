@@ -873,8 +873,10 @@ class Challenge(Helpers):
         for part in self.parts_to_run:
             self.debug(f'Running part {part}:')
             try:
+                start = time.perf_counter_ns()
                 got = self.run_solver(part, self.raw_data(input_file))
-                print(got)
+                end = time.perf_counter_ns()
+                print(f'{self.year}/{self.day:02d} Part {part}: GOT {got!r:20} {format_ns(end - start)}!')
             except NotImplementedError:
                 print(f'Part {part}: Not implemented')
 
