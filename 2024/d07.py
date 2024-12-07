@@ -28,16 +28,14 @@ class Day07(aoc.Challenge):
 
         def valid(result: int, numbers: list[int]) -> bool:
             """Return if the numbers can give the result."""
-            if len(numbers) == 1:
-                return result == numbers[0]
-            # Small optimization. Numbers never decrease. If the first number is too big, abort.
-            if result < numbers[0]:
-                return False
-            return (
-                valid(result, [numbers[0] + numbers[1]] + numbers[2:])
-                or valid(result, [numbers[0] * numbers[1]] + numbers[2:]) 
-                or (not part_one and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:]))
-            )
+            options = {numbers[0]}
+            for number in numbers[1:]:
+                next_options = {option + number for option in options}
+                next_options |= {option * number for option in options}
+                if not part_one:
+                    next_options |= {int(str(option) + str(number)) for option in options}
+                options = {o for o in next_options if o <= result}
+            return result in options
 
         return sum(
             result
