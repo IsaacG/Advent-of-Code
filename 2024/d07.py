@@ -28,19 +28,34 @@ class Day07(aoc.Challenge):
 
         def valid(result: int, numbers: list[int]) -> bool:
             """Return if the numbers can give the result."""
-            options = {numbers[0]}
-            for number in numbers[1:]:
-                next_options = {option + number for option in options}
-                next_options |= {option * number for option in options}
-                if not part_one:
-                    next_options |= {int(str(option) + str(number)) for option in options}
-                options = {o for o in next_options if o <= result}
-            return result in options
+            if len(numbers) == 1:
+                return result == numbers[0]
+            # Working from right to left allows much more aggressive pruning and much faster runtimes.
+            # However, it is much less intuitive code.
+            return (
+				# Addition
+                valid(result - numbers[0], numbers[1:])
+                # Multiplication ... if the result is divisible by the last number.
+                or (result % numbers[0] == 0 and valid(result // numbers[0], numbers[1:]))
+                # Concatenation if the result ends in the number.
+                or (
+                    not part_one
+                    and result != numbers[0]
+                    and str(result).endswith(str(numbers[0]))
+                    and valid(int(str(result).removesuffix(str(numbers[0]))), numbers[1:])
+                )
+            )
+            # Slower left-to-right logic:
+            # return (
+            #     valid(result, [numbers[0] + numbers[1]] + numbers[2:])
+            #     or valid(result, [numbers[0] * numbers[1]] + numbers[2:]) 
+            #     or (not part_one and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:]))
+        	# )
 
         return sum(
             result
             for result, *numbers in puzzle_input
-            if valid(result, numbers)
+            if valid(result, list(reversed(numbers)))
         )
 
 # vim:expandtab:sw=4:ts=4
