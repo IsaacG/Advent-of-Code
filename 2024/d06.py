@@ -28,14 +28,15 @@ class Day06(aoc.Challenge):
     def walk(self, all_spots: set[complex], blocked: set[complex], pos: complex, direction: complex) -> tuple[set[complex], bool]:
         """Walk the map until hitting the edge or entering a loop."""
         spots: set[complex] = set()
-        seen: set[tuple[complex, complex]] = set()
+        seen: set[complex] = set()
         while pos in all_spots:
             spots.add(pos)
-            if (pos, direction) in seen:
-                return spots, True
-            seen.add((pos, direction))
-            while pos + direction in blocked:
-                direction *= 1j
+            if pos + direction in blocked:
+                if pos in seen:
+                    return spots, True
+                seen.add(pos)
+                while pos + direction in blocked:
+                    direction *= 1j
             pos += direction
         return spots, False
 
