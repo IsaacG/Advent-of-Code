@@ -301,6 +301,23 @@ class Map:
     blank_char: str
     non_blank_chars: str
 
+    @property
+    def width(self) -> int:
+        return self.max_x + 1
+
+    @property
+    def height(self) -> int:
+        return self.max_y + 1
+
+    @property
+    def size(self) -> int:
+        if self.max_x != self.max_y:
+            raise ValueError(f"The input is {self.width, self.height} and not square!")
+        return self.width
+
+    def get_coords(self, chars: collections.abc.Iterable[str]) -> list[set[complex]]:
+        return [self.coords[char] for char in chars]
+
 
 @dataclasses.dataclass
 class CoordinatesParser(BaseParser):

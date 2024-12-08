@@ -28,8 +28,6 @@ class Day21(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
     TIMEOUT = 60
-    # Get coordinates of start, garden.
-    INPUT_PARSER = aoc.CharCoordinatesParser("S.")
 
     def walk(self, start: set[complex], garden: set[complex], steps: int) -> int:
         """Return reachable coordinates after walking N steps from the start."""
@@ -44,7 +42,7 @@ class Day21(aoc.Challenge):
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the number of reachable locations in 64 steps."""
-        _, (start, garden) = puzzle_input
+        start, garden = puzzle_input.get_coords("S.")
         garden.update(start)
         steps = 64
         if self.testing:
@@ -53,7 +51,7 @@ class Day21(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Return the number of reachable locations in many steps."""
-        (size, _), (start, garden) = puzzle_input
+        size, (start, garden) = puzzle_input.size, puzzle_input.get_coords("S.")
         garden.update(start)
         steps = 26501365
 

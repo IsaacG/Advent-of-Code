@@ -14,7 +14,7 @@ SAMPLE = """....#.....
 #.........
 ......#..."""
 
-InputType = tuple[set[complex], set[complex], complex, complex]
+InputType = aoc.Map
 
 
 class Day06(aoc.Challenge):
@@ -41,7 +41,14 @@ class Day06(aoc.Challenge):
         return spots, False
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        all_spots, blocked, start_pos, start_dir = puzzle_input
+        all_spots = puzzle_input.all_coords
+        blocked = puzzle_input.coords["#"]
+        start_pos, start_dir = next(
+            (puzzle_input.coords[arrow].copy().pop(), aoc.ARROW_DIRECTIONS[arrow])
+            for arrow in "<>v^"
+            if arrow in puzzle_input.coords
+        )
+
         spots, is_loop = self.walk(all_spots, blocked, start_pos, start_dir)
         # Part one: return the length of the path until the edge.
         if part_one:
@@ -52,22 +59,5 @@ class Day06(aoc.Challenge):
             self.walk(all_spots, blocked | {option}, start_pos, start_dir)[1]
             for option in spots - {start_pos}
         )
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        lines = puzzle_input.splitlines()
-        all_spots = set()
-        blocked = set()
-        for y, line in enumerate(lines):
-            for x, char in enumerate(line):
-                # Record all board spots to detect when we walk off the edge.
-                all_spots.add(complex(x, y))
-                if char == "#":
-                    blocked.add(complex(x, y))
-                # Starting position and direction.
-                if char in aoc.ARROW_DIRECTIONS:
-                    start_pos = complex(x, y)
-                    start_dir = aoc.ARROW_DIRECTIONS[char]
-        return all_spots, blocked, start_pos, start_dir
 
 # vim:expandtab:sw=4:ts=4

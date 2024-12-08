@@ -810,6 +810,9 @@ class Challenge(Helpers):
                 return parse_ints_per_line
         elif not multi_lines and all(RE_INT.fullmatch(i) for i in one_line.split()):
             return parse_ints_one_line
+
+        if len(lines) > 5 and len(lines[0]) > 5 and len(lines) == len(lines[0]):
+            return CoordinatesParser()
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_lines else parse_one_str

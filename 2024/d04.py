@@ -23,16 +23,15 @@ class Day04(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=18),
         aoc.TestCase(part=2, inputs=SAMPLE, want=9),
     ]
-    INPUT_PARSER = aoc.CharCoordParser()
 
     def part1(self, puzzle_input: dict[complex, str]) -> int:
         """Count occurances of XMAS in the word search."""
         return sum(
             all(
-                (start + distance * direction) in puzzle_input[letter]
+                (start + distance * direction) in puzzle_input.coords[letter]
                 for distance, letter in enumerate("MAS", start=1)
             )
-            for start in puzzle_input["X"]
+            for start in puzzle_input.coords["X"]
             for direction in aoc.EIGHT_DIRECTIONS
         )
 
@@ -46,10 +45,10 @@ class Day04(aoc.Challenge):
         }
         return sum(
             all(
-                (start + offset * 1j ** rotation) in puzzle_input[letter]
+                (start + offset * 1j ** rotation) in puzzle_input.coords[letter]
                 for offset, letter in want.items()
             )
-            for start in puzzle_input["A"]
+            for start in puzzle_input.coords["A"]
             for rotation in range(4)
         )
 

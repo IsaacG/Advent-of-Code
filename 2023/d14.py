@@ -26,7 +26,6 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=136),
         aoc.TestCase(inputs=SAMPLE, part=2, want=64),
     ]
-    INPUT_PARSER = aoc.CharCoordinatesParser("#O")
 
     def cycle(self, moving, stationary):
         """Tilt the board in four directions."""
@@ -74,7 +73,7 @@ class Day14(aoc.Challenge):
 
     def part1(self, puzzle_input: InputType) -> int:
         """Tilt the board north."""
-        (_, height), (stationary, moving) = puzzle_input
+        height, (stationary, moving) = puzzle_input.height, puzzle_input.get_coords("#O")
         north = complex(0, -1)
 
         post_move = set(stationary)
@@ -88,7 +87,7 @@ class Day14(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Tilt the board in four directions for many cycles."""
-        (_, height), (stationary, moving) = puzzle_input
+        height, (stationary, moving) = puzzle_input.height, puzzle_input.get_coords("#O")
 
         # Find a cycle in the rotation.
         step_to_map = []
