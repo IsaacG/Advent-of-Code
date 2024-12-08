@@ -26,22 +26,19 @@ class Day08(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=14),
         aoc.TestCase(part=2, inputs=SAMPLE, want=34),
     ]
-    INPUT_PARSER = aoc.CharCoordParser()
+    INPUT_PARSER = aoc.CoordinatesParser()
 
     def solver(self, puzzle_input: dict[str, set[complex]], part_one: bool) -> int:
-        all_locations = set().union(*puzzle_input.values())
+        all_locations = puzzle_input.all_coords
         antinodes = set()
-        for freq, coords in puzzle_input.items():
-            if freq == ".":
-                continue
-            for a, b in itertools.combinations(coords, 2):
-                delta = b - a
-
+        for freq in puzzle_input.non_blank_chars:
+            for a, b in itertools.combinations(puzzle_input.coords[freq], 2):
                 if part_one:
                     sequences = ([2], [-1])
                 else:
                     sequences = (itertools.count(), itertools.count(step=-1))
 
+                delta = b - a
                 for steps in sequences:
                     for i in steps:
                         if (node := a + i * delta) in all_locations:

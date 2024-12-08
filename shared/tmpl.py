@@ -45,6 +45,7 @@ class Day${day}(aoc.Challenge):
     # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
     # INPUT_PARSER = aoc.AsciiBoolMapParser("#")
     # INPUT_PARSER = aoc.char_map
+    # INPUT_PARSER = aoc.CoordinatesParser(chars=None, origin_top_left=True)
     # ---
     # INPUT_PARSER = aoc.CharCoordinatesParser("S.#")
     # (width, height), start, garden, rocks = puzzle_input

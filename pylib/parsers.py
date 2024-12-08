@@ -292,6 +292,63 @@ class AsciiBoolMapParser(BaseParser):
 
 
 @dataclasses.dataclass
+class Map:
+    max_x: int
+    max_y: int
+    chars: dict[complex, str]
+    coords: dict[str, set[complex]]
+    all_coords: set[complex]
+    blank_char: str
+    non_blank_chars: str
+
+
+@dataclasses.dataclass
+class CoordinatesParser(BaseParser):
+    """Generate coordinate sets for multiple characters."""
+
+    chars: collections.abc.Iterable[str] | None = None
+    origin_top_left: bool = True
+
+    def parse(self, puzzle_input: str) -> Map:
+        """Parse a map and return the coordinates of different chars."""
+        lines = puzzle_input.splitlines()
+
+        if not self.origin_top_left:
+            lines.reverse()
+
+        x, y = (len(lines[0]), len(lines))
+        if not all(len(line) == x for line in lines):
+            raise ValueError("Input is not rectangular.")
+
+        all_chars = set(i for line in lines for i in line)
+        want_chars = set(self.chars) if self.chars else all_chars
+
+        coords_by_char = collections.defaultdict(set)
+        char_by_coord = {}
+        all_coords = set()
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                pos = complex(x, y)
+                all_coords.add(pos)
+                if char in want_chars:
+                    coords_by_char[char].add(pos)
+                    char_by_coord[pos] = char
+
+        blank_char = max(coords_by_char, key=lambda x: len(coords_by_char[x]))
+        non_blank_chars = set(coords_by_char) - {blank_char}
+
+        return Map(
+            max_x=x,
+            max_y=y,
+            chars=char_by_coord,
+            coords=dict(coords_by_char),
+            all_coords=all_coords,
+            blank_char=blank_char,
+            non_blank_chars=non_blank_chars,
+        )
+
+
+@dataclasses.dataclass
 class CharCoordinatesParser(BaseParser):
     """Generate coordinate sets for multiple characters."""
 
