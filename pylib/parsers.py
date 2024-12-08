@@ -339,6 +339,10 @@ class CoordinatesParser(BaseParser):
 
         all_chars = set(i for line in lines for i in line)
         want_chars = set(self.chars) if self.chars else all_chars
+        if all(i.isdigit() for i in all_chars):
+            transform = int
+        else:
+            transform = str
 
         coords_by_char = collections.defaultdict(set)
         char_by_coord = {}
@@ -348,8 +352,8 @@ class CoordinatesParser(BaseParser):
                 pos = complex(x, y)
                 all_coords.add(pos)
                 if char in want_chars:
-                    coords_by_char[char].add(pos)
-                    char_by_coord[pos] = char
+                    coords_by_char[transform(char)].add(pos)
+                    char_by_coord[pos] = transform(char)
 
         blank_char = max(coords_by_char, key=lambda x: len(coords_by_char[x]))
         non_blank_chars = set(coords_by_char) - {blank_char}

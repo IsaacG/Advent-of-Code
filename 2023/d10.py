@@ -85,13 +85,12 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=4),
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=8),
     ]
-    INPUT_PARSER = aoc.char_map
 
     def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int:
-        pipes = puzzle_input
+        pipes = puzzle_input.chars
 
         # Figure out the start position details.
-        start = next(pos for pos, char in pipes.items() if char == "S")
+        start = puzzle_input.coords["S"].copy().pop()
         start_neighbors = [
             (direction, options)
             for direction, options in START_NEIGHBORS.items()

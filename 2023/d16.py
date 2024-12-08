@@ -23,7 +23,6 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=46),
         aoc.TestCase(inputs=SAMPLE, part=2, want=51),
     ]
-    INPUT_PARSER = aoc.char_map
 
     def energized(self, board: dict[complex, str], start_pos: complex, start_dir: complex) -> int:
         """Compute the number of energized tiles."""
@@ -74,31 +73,32 @@ class Day16(aoc.Challenge):
 
     def part1(self, puzzle_input: dict[complex, str]) -> int:
         """Return the number of energized tiles, assuming a given start."""
-        return self.energized(puzzle_input, complex(-1), RIGHT)
+        return self.energized(puzzle_input.chars, complex(-1), RIGHT)
 
     def part2(self, puzzle_input: dict[complex, str]) -> int:
         """Return the number of energized tiles, across all starts."""
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(puzzle_input)
+        char_map = puzzle_input.chars
+        min_x, min_y, max_x, max_y = aoc.bounding_coords(char_map)
 
         return max(
             # Left edge.
             max(
-                self.energized(puzzle_input, complex(min_x - 1, y), RIGHT)
+                self.energized(char_map, complex(min_x - 1, y), RIGHT)
                 for y in range(min_y, max_y + 1)
             ),
             # Right edge.
             max(
-                self.energized(puzzle_input, complex(max_x + 1, y), LEFT)
+                self.energized(char_map, complex(max_x + 1, y), LEFT)
                 for y in range(min_y, max_y + 1)
             ),
             # Top.
             max(
-                self.energized(puzzle_input, complex(x, min_y - 1), DOWN)
+                self.energized(char_map, complex(x, min_y - 1), DOWN)
                 for x in range(min_x, max_x + 1)
             ),
             # Bottom.
             max(
-                self.energized(puzzle_input, complex(x, max_y + 1), UP)
+                self.energized(char_map, complex(x, max_y + 1), UP)
                 for x in range(min_x, max_x + 1)
             ),
         )

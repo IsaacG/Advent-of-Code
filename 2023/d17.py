@@ -38,7 +38,6 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=94),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=71),
     ]
-    INPUT_PARSER = aoc.int_map
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the minimum heat loss from start to end."""

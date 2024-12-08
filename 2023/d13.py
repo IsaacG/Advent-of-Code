@@ -30,7 +30,7 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=405),
         aoc.TestCase(inputs=SAMPLE, part=2, want=400),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.AsciiBoolMapParser("#")])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParser()])
 
     def find_mirror(self, points: set[complex], point: complex | None) -> int | None:
         """Find the row/column around which the data is mirrored.
@@ -73,9 +73,9 @@ class Day13(aoc.Challenge):
         raise RuntimeError("Unsolved")
 
     def part1(self, puzzle_input: InputType) -> int:
-        return sum(self.find_mirror(points, None) for points in puzzle_input)
+        return sum(self.find_mirror(points.coords["#"], None) for points in puzzle_input)
 
     def part2(self, puzzle_input: InputType) -> int:
-        return sum(self.find_with_change(points) for points in puzzle_input)
+        return sum(self.find_with_change(points.coords["#"]) for points in puzzle_input)
 
 # vim:expandtab:sw=4:ts=4

@@ -39,12 +39,11 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=94),
         aoc.TestCase(inputs=SAMPLE, part=2, want=154),
     ]
-    INPUT_PARSER = aoc.char_map
     TIMEOUT = 45
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the max steps to the end, taking slopes into account."""
-        board = puzzle_input
+        board = puzzle_input.chars
         _, min_y, _, max_y = aoc.bounding_coords(board)
         start = next(i for i, char in board.items() if i.imag == min_y and char == ".")
         end = next(i for i, char in board.items() if i.imag == max_y and char == ".")
@@ -124,7 +123,7 @@ class Day23(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         """Return the max steps to the end, ignoring slopes."""
-        board = {pos for pos, char in puzzle_input.items() if char != "#"}
+        board = {pos for pos, char in puzzle_input.chars.items() if char != "#"}
         longest_dist, start, end = self.compressed_graph(board)
 
         # The end node is connected to exactly one fork.
