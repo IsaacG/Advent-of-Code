@@ -1,0 +1,2 @@
+[tool.pylint]
+disable = ["abstract-method"]

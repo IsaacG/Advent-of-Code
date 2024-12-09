@@ -51,7 +51,8 @@ class Day07(aoc.Challenge):
             #     valid(result, [numbers[0] + numbers[1]] + numbers[2:])
             #     or valid(result, [numbers[0] * numbers[1]] + numbers[2:])
             #     or (
-            #         not part_one and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:])
+            #         not part_one
+            #         and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:])
             #     )
         	# )
 
