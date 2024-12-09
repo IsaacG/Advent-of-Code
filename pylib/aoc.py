@@ -864,10 +864,15 @@ class Challenge(Helpers):
         self.debug('=====')
         self.testing = False
 
-    def debug(self, msg):
-        """Maybe print a message."""
+    def tprint(self, *args):
+        """Print a message but only for testing."""
+        if self.testing:
+            print(*args)
+
+    def debug(self, *args):
+        """Print a message if debug is enabled."""
         if self.DEBUG:
-            print(msg)
+            print(*args)
 
     def pre_run(self, puzzle_input: Any) -> None:
         """Hook to run things prior to tests and actual."""

@@ -18,16 +18,10 @@ InputType = str
 class Day09(aoc.Challenge):
     """Day 9: Disk Fragmenter."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=1928),
         aoc.TestCase(part=2, inputs=SAMPLE, want=2858),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_one_str
     # INPUT_PARSER = aoc.parse_one_str_per_line
     # INPUT_PARSER = aoc.parse_multi_str_per_line
@@ -74,27 +68,26 @@ class Day09(aoc.Challenge):
 
     def part2(self, puzzle_input: InputType) -> int:
         is_file = True
-        fileno = 0
-        disk = []
-        filesizes = dict(enumerate(int(i) for i in puzzle_input[::2]))
+        file_number = 0
+        offset = 0
+        sizes = dict(enumerate(int(i) for i in puzzle_input[::2]))
         holes = {}
-        files = {}
-        for digit in puzzle_input:
+        starts = {}
+        for digit in (int(i) for i in puzzle_input):
             if is_file:
-                files[int(digit)] = len(disk)
-                disk.extend([fileno] * int(digit))
-                fileno += 1
+                starts[file_number] = offset
+                file_number += 1
             else:
-                holes[len(disk)] = int(digit)
-                disk.extend([None] * int(digit))
+                holes[offset] = digit
             is_file = not is_file
+            offset += digit
 
-        for fileno in sorted(filesizes, reverse=True)[:-1]:
-            if fileno and not fileno % 500:
-                print(fileno)
-            # print("".join([str(i) if i is not None else "." for i in disk]))
-            file_start = disk.index(fileno)
-            file_size = filesizes[fileno]
+        self.tprint(starts)
+        self.tprint(holes)
+
+        for file_number in sorted(sizes, reverse=True)[:-1]:
+            file_start = starts[file_number]
+            file_size = sizes[file_number]
             location, size = next(
                 (
                     (location, size)
@@ -102,46 +95,13 @@ class Day09(aoc.Challenge):
                     if size >= file_size
                 ), (None, None)
             )
-            if fileno == 2:
-                print(2, location, size)
             if location is None or location >= file_start:
                 continue
             del holes[location]
             holes[location + file_size] = size - file_size
 
-            for i in range(file_size):
-                disk[location + i] = fileno
-                disk[file_start + i] = None
+            starts[file_number] = location
             
-        print("".join([str(i) if i is not None else "." for i in disk]))
-        return sum(idx * val for idx, val in enumerate(disk) if val)
-
-    # def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
+        return sum(file_number * (file_start + i) for file_number, file_start in starts.items() for i in range(sizes[file_number]))
 
 # vim:expandtab:sw=4:ts=4
