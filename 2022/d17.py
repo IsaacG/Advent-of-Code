@@ -41,13 +41,13 @@ class Day17(aoc.Challenge):
     def pre_run(self, puzzle_input: InputType) -> None:
         """Parse the rock shapes from ASCII art."""
         rocks = []
-        parser = aoc.AsciiBoolMapParser("#")
+        parser = aoc.CoordinatesParser()
         for block in ROCKS.strip().split("\n\n"):
             block = block.replace(" ", "")
             # Flip rocks upside down so Y increases from the bottom to the top.
             # Most my parsing assumes Y increases as you move down through text.
             block = "\n".join(reversed(block.splitlines()))
-            rocks.append(parser.parse(block))
+            rocks.append(parser.parse(block)["#"])
         self.rocks = rocks
         self.rock_heights = [int(max(i.imag for i in r)) for r in rocks]
 

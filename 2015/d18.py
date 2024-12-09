@@ -21,15 +21,14 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=4),
         aoc.TestCase(inputs=SAMPLE, part=2, want=17),
     ]
-    INPUT_PARSER = aoc.ParseCharMap(lambda x: x == "#")
 
-    def simulate(self, bitmap: dict[complex, bool], cycles: int, corners: bool) -> int:
+    def simulate(self, bitmap: aoc.Map, cycles: int, corners: bool) -> int:
         """Run Conway's Game of Life and return number of lights on at end."""
         # The number of neighbors which will turn a light on.
         want = {True: (2, 3), False: (3,)}
         # Track just the lights which are on.
-        on = {p for p, v in bitmap.items() if v}
-        corner_points = aoc.Board(bitmap).corners
+        on = bitmap["#"]
+        corner_points = bitmap.corners
 
         for _ in range(cycles):
             if corners:

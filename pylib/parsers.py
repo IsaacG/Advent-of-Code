@@ -227,22 +227,6 @@ class ParseChain(BaseMultiParser):
 
 
 @dataclasses.dataclass
-class ParseCharMap(BaseParser):
-    """Parse a map of values, generating a set[complex]."""
-
-    transform: Callable[[str], Any]
-
-    def parse(self, puzzle_input: str) -> dict[complex, Any]:
-        """Parse a map."""
-        out: dict[complex, Any] = {}
-        for y, line in enumerate(puzzle_input.splitlines()):
-            for x, char in enumerate(line):
-                if (val := self.transform(char)) is not None:
-                    out[complex(x, y)] = val
-        return out
-
-
-@dataclasses.dataclass
 class Transform(BaseParser):
     """Apply an arbitrary transform to the data."""
 
@@ -251,44 +235,6 @@ class Transform(BaseParser):
     def parse(self, puzzle_input: Any) -> Any:
         """Apply a transformation."""
         return self.func(puzzle_input)
-
-
-@dataclasses.dataclass
-class CharCoordParser(BaseParser):
-    """Parse a map of chars, returning a set of coords for each char."""
-
-    origin_top_left: bool = True
-
-    def parse(self, puzzle_input: str) -> dict[str, set[complex]]:
-        """Parse ASCII to find points in a map which are "on"."""
-        lines = puzzle_input.splitlines()
-        if not self.origin_top_left:
-            lines.reverse()
-        data = collections.defaultdict(set)
-        for y, line in enumerate(lines):
-            for x, char in enumerate(line):
-                data[char].add(complex(x, y))
-        return dict(data)
-
-
-@dataclasses.dataclass
-class AsciiBoolMapParser(BaseParser):
-    """Parse a map of on/off values to build a set of "on" points."""
-
-    on_chars: str
-    origin_top_left: bool = True
-
-    def parse(self, puzzle_input: str) -> set[complex]:
-        """Parse ASCII to find points in a map which are "on"."""
-        lines = puzzle_input.splitlines()
-        if not self.origin_top_left:
-            lines.reverse()
-        return {
-            complex(x, y)
-            for y, line in enumerate(lines)
-            for x, char in enumerate(line)
-            if char in self.on_chars
-        }
 
 
 @dataclasses.dataclass
@@ -304,6 +250,14 @@ class Map:
     def __post_init__(self) -> None:
         self.width = self.max_x + 1
         self.height = self.max_y + 1
+
+    def __sub__(self, key: str) -> set[complex]:
+        return self.all_coords - self[key]
+
+    def __contains__(self, item) -> bool:
+        if not isinstance(item, complex):
+            raise TypeError(f"contains not defined for {type(item)}")
+        return item in self.all_coords
 
     def __getitem__(self, key: str | complex) -> str | int | set[complex] | list[set[complex]]:
         if isinstance(key, complex):
@@ -325,6 +279,15 @@ class Map:
     def get_coords(self, chars: collections.abc.Iterable[str]) -> list[set[complex]]:
         return [self.coords[char] for char in chars]
 
+    @property
+    def corners(self) -> tuple[complex, complex, complex, complex]:
+        return (
+            0,
+            complex(0, self.max_y),
+            complex(self.max_x, 0),
+            complex(self.max_x, self.max_y)
+        )
+
 
 @dataclasses.dataclass
 class CoordinatesParser(BaseParser):
@@ -332,6 +295,7 @@ class CoordinatesParser(BaseParser):
 
     chars: collections.abc.Iterable[str] | None = None
     origin_top_left: bool = True
+    ignore: str | None = None
 
     def parse(self, puzzle_input: str) -> Map:
         """Parse a map and return the coordinates of different chars."""
@@ -344,6 +308,8 @@ class CoordinatesParser(BaseParser):
 
         all_chars = set(i for line in lines for i in line)
         want_chars = set(self.chars) if self.chars else all_chars
+        if self.ignore:
+            want_chars -= set(self.ignore)
         transform: Callable[[str], str | int]
         if all(i.isdigit() for i in all_chars):
             transform = int
@@ -375,28 +341,6 @@ class CoordinatesParser(BaseParser):
         )
 
 
-@dataclasses.dataclass
-class CharCoordinatesParser(BaseParser):
-    """Generate coordinate sets for multiple characters."""
-
-    chars: collections.abc.Iterable[str]
-
-    def parse(self, puzzle_input: str) -> tuple[tuple[int, int], list[set[complex]]]:
-        """Parse a map and return the coordinates of different chars."""
-        lines = puzzle_input.splitlines()
-        size = (len(lines[0]), len(lines))
-        maps = [
-            {
-                complex(x, y)
-                for y, line in enumerate(lines)
-                for x, got in enumerate(line)
-                if got == want
-            }
-            for want in self.chars
-        ]
-        return size, maps
-
-
 # Convert the entire input into one str.
 parse_one_str = ParseOneWord(str)
 # Convert the entire input into one int.
@@ -415,9 +359,9 @@ parse_re_findall_str = lambda x: BaseParseReFindall(x, input_to_strs)
 # Convert the input into list[list[int]], splitting each line into multiple words.
 parse_re_group_int = lambda x: BaseParseReGroups(x, input_to_ints)
 parse_re_findall_int = lambda x: BaseParseReFindall(x, input_to_ints)
-parse_ints = BaseParseReFindall(RE_INT, input_to_ints)
 parse_ints_one_line = BaseParseReFindall(RE_INT, input_to_ints, one_line=True)
 parse_ints_per_line = BaseParseReFindall(RE_INT, input_to_ints, one_line=False)
+parse_ints = parse_ints_per_line
 
 # Convert the input into list[list[int | str]], splitting each line into multiple words.
 parse_multi_mixed_per_line = BaseParseMultiPerLine(input_to_mixed)
@@ -426,6 +370,3 @@ parse_re_findall_mixed = lambda x: BaseParseReFindall(x, input_to_mixed)
 parse_re_findall_points = BaseParseReFindall(RE_POINT, input_to_complex)
 
 parse_multiple_words_per_line = BaseParseMultiPerLine(input_to_auto)
-
-char_map = ParseCharMap(str)
-int_map = ParseCharMap(int)

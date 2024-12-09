@@ -15,7 +15,7 @@ class Day22(aoc.Challenge):
     INPUT_PARSER = aoc.ParseMultiple(
         [
             aoc.Transform(lambda x: len(x.splitlines())),
-            aoc.AsciiBoolMapParser("#", origin_top_left=False),
+            aoc.CoordinatesParser(origin_top_left=False),
         ]
     )
     TESTS = [
@@ -25,8 +25,8 @@ class Day22(aoc.Challenge):
 
     def solver(self, puzzle_input: tuple[int, set[complex]], part_one: bool) -> int:
         """Simulate a virus and count the infections."""
-        dimension, initial_infected = puzzle_input
-        board = {i: INFECTED for i in initial_infected}
+        dimension, mapper = puzzle_input
+        board = {i: INFECTED for i in mapper["#"]}
         states = STATES_P1 if part_one else STATES_P2
         next_state = dict(zip(states[:-1], states[1:]))
         direction = complex(0, 1)

@@ -99,11 +99,9 @@ class Day13(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        # tracks = aoc.AsciiBoolMapParser("/\-|+^v<>").parse(puzzle_input)
-        junctions = aoc.AsciiBoolMapParser("+").parse(puzzle_input)
-        turns = aoc.ParseCharMap(lambda x: CORNERS.get(x, None)).parse(puzzle_input)
-        wagons_directions = aoc.ParseCharMap(
-            lambda x: DIRECTIONS.get(x, None)
-        ).parse(puzzle_input)
+        parsed = aoc.CoordinatesParser().parse(puzzle_input)
+        junctions = parsed.coords.get("+", set())
+        turns = {coord: CORNERS[char] for char in "/\\" for coord in parsed.coords.get(char, [])}
+        wagons_directions = {coord: direction for char, direction in DIRECTIONS.items() for coord in parsed.coords.get(char, [])}
         wagons = {location: (direction, 0) for location, direction in wagons_directions.items()}
         return (turns, junctions, wagons)

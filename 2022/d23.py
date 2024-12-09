@@ -1,7 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 23: Unstable Diffusion. Spread elves out across a field to plant trees."""
 
-from typing import Optional
+from typing import cast, Optional
 
 from lib import aoc
 
@@ -14,8 +14,6 @@ SAMPLE = """\
 ##.#.##
 .#..#.."""
 
-
-InputType = set[complex]
 
 N, S, E, W = -1j, 1j, 1, -1
 DIRECTIONS = [
@@ -33,7 +31,6 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=110),
         aoc.TestCase(inputs=SAMPLE, part=2, want=20),
     ]
-    INPUT_PARSER = aoc.AsciiBoolMapParser("#")
 
     def simulate(self, positions: set[complex], step: int) -> set[complex]:
         """Simulate cycles of elves spreading out."""
@@ -78,9 +75,9 @@ class Day23(aoc.Challenge):
 
         return new_positions
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: aoc.Map) -> int:
         """Return the number of unoccupied positions after 10 moves."""
-        positions = puzzle_input
+        positions = cast(set[complex], puzzle_input["#"])
         for step in range(10):
             positions = self.simulate(positions, step)
         min_x = min(elf.real for elf in positions)
@@ -91,9 +88,9 @@ class Day23(aoc.Challenge):
         answer = int((max_x - min_x + 1) * (max_y - min_y + 1)) - len(positions)
         return answer
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: aoc.Map) -> int:
         """Return the number of moves until the pattern is stable."""
-        positions = puzzle_input
+        positions = cast(set[complex], puzzle_input["#"])
         for step in range(1500):
             new_positions = self.simulate(positions, step)
             if positions == new_positions:
