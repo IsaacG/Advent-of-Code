@@ -36,8 +36,9 @@ class Day09(aoc.Challenge):
 
         return sum(idx * val for idx, val in enumerate(disk) if val != HOLE)
 
-    def part2(self, puzzle_input: str) -> int:
-        """Defragment a disk, one file at a time."""
+    def build_lists(self, puzzle_input: str) -> tuple[list[list[int]], list[tuple[int, int, int]]]:
+        """Parse the input and build part two data structures."""
+        # Pad the input to be an even number of digits so we can iterate pairwise.
         if len(puzzle_input) % 2:
             puzzle_input += "0"
 
@@ -45,33 +46,45 @@ class Day09(aoc.Challenge):
         holes = []
         offset = 0
 
+        # Create lists of the holes and files.
         combined_sizes = (int(i) for i in puzzle_input)
-        for file_number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
-            files.append([file_number, file_size, offset])
+        for number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
+            files.append([number, file_size, offset])
             offset += file_size
-            holes.append((offset, hole_size))
+            holes.append((number, offset, hole_size))
             offset += hole_size
 
-        largest_file = max(file_size for _, file_size, _ in files)
+        # Check files from right to left.
         files.reverse()
+        return files, holes
 
-        smallest_file = 0
-        for hole_offset, hole_size in holes:
-            smallest_seen = largest_file
-            if hole_size < smallest_file:
-                continue
-            for idx, (file_number, file_size, file_offset) in enumerate(files):
+    def part2(self, puzzle_input: str) -> int:
+        """Defragment a disk, one file at a time."""
+        files, holes = self.build_lists(puzzle_input)
+        smallest_file = 1
+        for hole_number, hole_offset, hole_size in holes:
+            smallest_seen = 9
+            for file_info in files:
                 if hole_size < smallest_file:
                     break
+                file_number, file_size, file_offset = file_info
                 if file_size <= hole_size and hole_offset < file_offset:
-                    files[idx][2] = hole_offset
+                    # Move files into the hole.
+                    file_info[2] = hole_offset
                     hole_offset += file_size
                     hole_size -= file_size
                 elif hole_offset < file_offset:
+                    # Only count right to the right of the hole.
                     smallest_seen = min(smallest_seen, file_size)
-            else:
-                smallest_file = smallest_seen
+                if file_number < hole_number:
+                    # Stop when the remaining files are all to the left of the hole.
+                    smallest_file = smallest_seen
+                    break
 
-        return sum(file_number * (file_offset + i) for file_number, file_size, file_offset in files for i in range(file_size))
+        return sum(
+            file_number * (file_offset + i)
+            for file_number, file_size, file_offset in files
+            for i in range(file_size)
+        )
 
 # vim:expandtab:sw=4:ts=4
