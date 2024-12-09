@@ -24,7 +24,7 @@ class Day04(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE, want=9),
     ]
 
-    def part1(self, puzzle_input: dict[complex, str]) -> int:
+    def part1(self, puzzle_input: aoc.Map) -> int:
         """Count occurances of XMAS in the word search."""
         return sum(
             all(
@@ -35,7 +35,7 @@ class Day04(aoc.Challenge):
             for direction in aoc.EIGHT_DIRECTIONS
         )
 
-    def part2(self, puzzle_input: dict[complex, str]) -> int:
+    def part2(self, puzzle_input: aoc.Map) -> int:
         """Count occurances of MAS in an X shape in the word search."""
         want = {
             complex(-1, -1): "M",

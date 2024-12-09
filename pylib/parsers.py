@@ -38,7 +38,7 @@ def input_to_strs(inputs: Iterable[str]) -> list[str]:
     return [str(i) for i in inputs]
 
 
-def input_to_auto(inputs: Iterable[str]) -> list[int | str]:
+def input_to_auto(inputs: Iterable[str]) -> list[int] | list[str]:
     """Return a list of int or str values from an iterable."""
     if all(RE_INT.fullmatch(i) for i in inputs):
         return input_to_ints(inputs)
@@ -299,7 +299,7 @@ class Map:
     coords: dict[str, set[complex]]
     all_coords: set[complex]
     blank_char: str
-    non_blank_chars: str
+    non_blank_chars: set[str]
 
     @property
     def width(self) -> int:
@@ -334,11 +334,10 @@ class CoordinatesParser(BaseParser):
             lines.reverse()
 
         x, y = (len(lines[0]), len(lines))
-        if not all(len(line) == x for line in lines):
-            raise ValueError("Input is not rectangular.")
 
         all_chars = set(i for line in lines for i in line)
         want_chars = set(self.chars) if self.chars else all_chars
+        transform: Callable[[str], str | int]
         if all(i.isdigit() for i in all_chars):
             transform = int
         else:

@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Title."""
 
+import collections
 import itertools
 from lib import aoc
 
@@ -28,11 +29,12 @@ class Day08(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.CoordinatesParser()
 
-    def solver(self, puzzle_input: dict[str, set[complex]], part_one: bool) -> int:
+    def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         all_locations = puzzle_input.all_coords
         antinodes = set()
         for freq in puzzle_input.non_blank_chars:
             for a, b in itertools.combinations(puzzle_input.coords[freq], 2):
+                sequences: tuple[collections.abc.Iterable[int], collections.abc.Iterable[int]]
                 if part_one:
                     sequences = ([2], [-1])
                 else:

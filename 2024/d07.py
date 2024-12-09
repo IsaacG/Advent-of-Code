@@ -30,7 +30,8 @@ class Day07(aoc.Challenge):
             """Return if the numbers can give the result."""
             if len(numbers) == 1:
                 return result == numbers[0]
-            # Working from right to left allows much more aggressive pruning and much faster runtimes.
+            # Working from right to left allows much more aggressive pruning
+            # and much faster runtimes.
             # However, it is much less intuitive code.
             return (
 				# Addition
@@ -48,8 +49,10 @@ class Day07(aoc.Challenge):
             # Slower left-to-right logic:
             # return (
             #     valid(result, [numbers[0] + numbers[1]] + numbers[2:])
-            #     or valid(result, [numbers[0] * numbers[1]] + numbers[2:]) 
-            #     or (not part_one and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:]))
+            #     or valid(result, [numbers[0] * numbers[1]] + numbers[2:])
+            #     or (
+            #         not part_one and valid(result, [int(str(numbers[0]) + str(numbers[1]))] + numbers[2:])
+            #     )
         	# )
 
         return sum(

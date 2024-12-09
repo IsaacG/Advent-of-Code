@@ -14,7 +14,6 @@ SAMPLE = """....#.....
 #.........
 ......#..."""
 
-InputType = aoc.Map
 
 
 class Day06(aoc.Challenge):
@@ -25,7 +24,9 @@ class Day06(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE, want=6),
     ]
 
-    def walk(self, all_spots: set[complex], blocked: set[complex], pos: complex, direction: complex) -> tuple[set[complex], bool]:
+    def walk(
+        self, all_spots: set[complex], blocked: set[complex], pos: complex, direction: complex
+    ) -> tuple[set[complex], bool]:
         """Walk the map until hitting the edge or entering a loop."""
         spots: set[complex] = set()
         seen: set[complex] = set()
@@ -40,7 +41,7 @@ class Day06(aoc.Challenge):
             pos += direction
         return spots, False
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         all_spots = puzzle_input.all_coords
         blocked = puzzle_input.coords["#"]
         start_pos, start_dir = next(
@@ -49,7 +50,7 @@ class Day06(aoc.Challenge):
             if arrow in puzzle_input.coords
         )
 
-        spots, is_loop = self.walk(all_spots, blocked, start_pos, start_dir)
+        spots, _ = self.walk(all_spots, blocked, start_pos, start_dir)
         # Part one: return the length of the path until the edge.
         if part_one:
             return len(spots)
