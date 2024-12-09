@@ -47,7 +47,7 @@ class Day09(aoc.Challenge):
 
         combined_sizes = (int(i) for i in puzzle_input)
         for file_number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
-            files.append((file_number, file_size, offset))
+            files.append([file_number, file_size, offset])
             offset += file_size
             holes.append((offset, hole_size))
             offset += hole_size
@@ -55,27 +55,23 @@ class Day09(aoc.Challenge):
         largest_file = max(file_size for _, file_size, _ in files)
         files.reverse()
 
-        moved_files = []
         smallest_file = 0
         for hole_offset, hole_size in holes:
-            if hole_size >= smallest_file:
-                smallest_seen = largest_file
-                moved = []
-                for idx, (file_number, file_size, file_offset) in enumerate(files):
-                    if file_size <= hole_size and hole_offset < file_offset:
-                        moved_files.append((file_number, file_size, hole_offset))
-                        moved.append(idx)
-                        hole_offset += file_size
-                        hole_size -= file_size
-                    elif file_offset < hole_offset:
-                        moved_files.append((file_number, file_size, file_offset))
-                        moved.append(idx)
-                    else:
-                        smallest_seen = min(smallest_seen, file_size)
+            smallest_seen = largest_file
+            if hole_size < smallest_file:
+                continue
+            for idx, (file_number, file_size, file_offset) in enumerate(files):
+                if hole_size < smallest_file:
+                    break
+                if file_size <= hole_size and hole_offset < file_offset:
+                    files[idx][2] = hole_offset
+                    hole_offset += file_size
+                    hole_size -= file_size
+                elif hole_offset < file_offset:
+                    smallest_seen = min(smallest_seen, file_size)
+            else:
                 smallest_file = smallest_seen
-                for idx in reversed(moved):
-                    del files[idx]
 
-        return sum(file_number * (file_offset + i) for file_number, file_size, file_offset in files + moved_files for i in range(file_size))
+        return sum(file_number * (file_offset + i) for file_number, file_size, file_offset in files for i in range(file_size))
 
 # vim:expandtab:sw=4:ts=4
