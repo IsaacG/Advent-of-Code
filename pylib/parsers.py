@@ -61,7 +61,7 @@ class BaseParser:
 class ParseIntergers(BaseParser):
     """Get integers from input."""
 
-    NUMBER_LINE = re.compile(r"^[+-]?\d+( +[+-]?\d+)*$")
+    NUMBER_LINE = re.compile(r"^[+-]?\d{1,1000}( +[+-]?\d{1,1000})*$")
 
     def matches(self, puzzle_input) -> bool:
         """Check if the input is all numbers."""

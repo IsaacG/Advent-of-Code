@@ -2,17 +2,10 @@
 """Advent of Code, Day 9: Disk Fragmenter."""
 from __future__ import annotations
 
-import collections
-import functools
 import itertools
-import math
-import re
-
 from lib import aoc
 
 SAMPLE = '2333133121414131402'
-
-InputType = str
 
 
 class Day09(aoc.Challenge):
@@ -22,26 +15,8 @@ class Day09(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=1928),
         aoc.TestCase(part=2, inputs=SAMPLE, want=2858),
     ]
-    INPUT_PARSER = aoc.parse_one_str
-    # INPUT_PARSER = aoc.parse_one_str_per_line
-    # INPUT_PARSER = aoc.parse_multi_str_per_line
-    # INPUT_PARSER = aoc.parse_one_int
-    # INPUT_PARSER = aoc.parse_one_int_per_line
-    # INPUT_PARSER = aoc.parse_ints_one_line
-    # INPUT_PARSER = aoc.parse_ints_per_line
-    # INPUT_PARSER = aoc.parse_re_group_str(r"(a) .* (b) .* (c)")
-    # INPUT_PARSER = aoc.parse_re_findall_str(r"(a|b|c)")
-    # INPUT_PARSER = aoc.parse_multi_mixed_per_line
-    # INPUT_PARSER = aoc.parse_re_group_mixed(r"(foo) .* (\d+)")
-    # INPUT_PARSER = aoc.parse_re_findall_mixed(r"\d+|foo|bar")
-    # INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_str_per_line, aoc.parse_re_findall_int(r"\d+")])
-    # INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
-    # INPUT_PARSER = aoc.CoordinatesParser(chars=None, origin_top_left=True)
-    # ---
-    # (width, height), start, garden, rocks = puzzle_input
-    # max_x, max_y = width - 1, height - 1
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: str) -> int:
         is_file = True
         fileno = 0
         disk = []
@@ -66,39 +41,40 @@ class Day09(aoc.Challenge):
 
         return sum(idx * val for idx, val in enumerate(disk) if val)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: str) -> int:
         is_file = True
         file_number = 0
         offset = 0
         sizes = dict(enumerate(int(i) for i in puzzle_input[::2]))
-        holes = {}
+        holes = []
         starts = {}
         for digit in (int(i) for i in puzzle_input):
             if is_file:
                 starts[file_number] = offset
                 file_number += 1
             else:
-                holes[offset] = digit
+                holes.append((offset, digit))
             is_file = not is_file
             offset += digit
 
-        self.tprint(starts)
-        self.tprint(holes)
-
-        for file_number in sorted(sizes, reverse=True)[:-1]:
+        for file_number in range(file_number - 1, 1, -1):
             file_start = starts[file_number]
             file_size = sizes[file_number]
-            location, size = next(
+            def predicate(x):
+                return x[1][0] < file_start
+            hole_idx, location, size = next(
                 (
-                    (location, size)
-                    for location, size in sorted(holes.items())
+                    (hole_idx, location, size)
+                    for hole_idx, (location, size) in enumerate(holes)
                     if size >= file_size
-                ), (None, None)
+                ), (None, None, None)
             )
             if location is None or location >= file_start:
                 continue
-            del holes[location]
-            holes[location + file_size] = size - file_size
+            del holes[hole_idx]
+            if new_size := size - file_size:
+                holes.append((location + file_size, new_size))
+            holes.sort()
 
             starts[file_number] = location
             
