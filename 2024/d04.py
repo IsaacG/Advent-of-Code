@@ -28,10 +28,10 @@ class Day04(aoc.Challenge):
         """Count occurances of XMAS in the word search."""
         return sum(
             all(
-                (start + distance * direction) in puzzle_input.coords[letter]
+                (start + distance * direction) in puzzle_input[letter]
                 for distance, letter in enumerate("MAS", start=1)
             )
-            for start in puzzle_input.coords["X"]
+            for start in puzzle_input["X"]
             for direction in aoc.EIGHT_DIRECTIONS
         )
 
@@ -45,10 +45,10 @@ class Day04(aoc.Challenge):
         }
         return sum(
             all(
-                (start + offset * 1j ** rotation) in puzzle_input.coords[letter]
+                (start + offset * 1j ** rotation) in puzzle_input[letter]
                 for offset, letter in want.items()
             )
-            for start in puzzle_input.coords["A"]
+            for start in puzzle_input["A"]
             for rotation in range(4)
         )
 

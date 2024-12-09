@@ -295,19 +295,26 @@ class AsciiBoolMapParser(BaseParser):
 class Map:
     max_x: int
     max_y: int
-    chars: dict[complex, str]
-    coords: dict[str, set[complex]]
+    chars: dict[complex, str | int]
+    coords: dict[str | int, set[complex]]
     all_coords: set[complex]
     blank_char: str
     non_blank_chars: set[str]
 
-    @property
-    def width(self) -> int:
-        return self.max_x + 1
+    def __post_init__(self) -> None:
+        self.width = self.max_x + 1
+        self.height = self.max_y + 1
 
-    @property
-    def height(self) -> int:
-        return self.max_y + 1
+    def __getitem__(self, key: str | complex) -> str | int | set[complex] | list[set[complex]]:
+        if isinstance(key, complex):
+            return self.chars[key]
+        if isinstance(key, int):
+            return self.coords[key]
+        if isinstance(key, str) and len(key) == 1:
+            return self.coords[key]
+        if isinstance(key, collections.abc.Sequence):
+            return [self.coords[k] for k in key]
+        raise ValueError(f"Could not index on {key}")
 
     @property
     def size(self) -> int:

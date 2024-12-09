@@ -29,7 +29,7 @@ class Day11(aoc.Challenge):
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the sum of the distances between shifted galaxies."""
-        data = puzzle_input.coords["#"]
+        data = puzzle_input["#"]
         distance = 1 if part_one else 1_000_000 - 1
         min_x, min_y, max_x, max_y = aoc.bounding_coords(data)
 

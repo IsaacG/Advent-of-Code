@@ -43,9 +43,9 @@ class Day06(aoc.Challenge):
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         all_spots = puzzle_input.all_coords
-        blocked = puzzle_input.coords["#"]
+        blocked = puzzle_input["#"]
         start_pos, start_dir = next(
-            (puzzle_input.coords[arrow].copy().pop(), aoc.ARROW_DIRECTIONS[arrow])
+            (puzzle_input[arrow].copy().pop(), aoc.ARROW_DIRECTIONS[arrow])
             for arrow in "<>v^"
             if arrow in puzzle_input.coords
         )
