@@ -4,6 +4,8 @@ import re
 import requests  # type: ignore
 import subprocess
 
+import click
+from lxml import etree  # type: ignore
 from typing import Optional
 from urllib import parse
 
@@ -49,8 +51,38 @@ class Website:
     def uri_day(self) -> str:
         return parse.urljoin(self.BASE, f'{self.year}/day/{self.day}')
 
+    def title(self) -> str:
+        et = etree.HTML(self.text())
+        return et.xpath("//main/article/h2/text()")[0]
+
+    def codeblocks(self) -> str:
+        et = etree.HTML(self.text())
+        sample = ['[']
+        blocks = [c.strip() for c in et.xpath('//code/text()')]
+        for num, block in enumerate(blocks):
+            if "\n" in block:
+                if "\\" in block:
+                    sample.append('    r"""' + block + f'""",  # {num}')
+                else:
+                    sample.append('    """\\')
+                    sample.append(block + f'""",  # {num}')
+            else:
+                sample.append(f"    {block!r},  # {num}")
+        sample.append("]")
+        return "\n".join(sample)
+
     def assert_logged_in(self):
-        return
+        resp = self.session.get(self.BASE)
+        resp.raise_for_status()
+
+        db = os.environ['SQL_DB']
+        query = "UPDATE cookies SET value = '$cookie' WHERE key = 'aoc';"
+
+        if "[Log In]" in etree.HTML(resp.content).xpath('//a/text()'):
+            print(f"sqlite3 {db}")
+            print(query)
+            print(self.session.headers["cookie"])
+            raise RuntimeError("Did your cookie expire? It does not seem valid!")
 
     def get_input(self) -> str:
         resp = self.session.get(f"{self.uri_day}/input")
@@ -89,6 +121,12 @@ class Website:
         et = etree.HTML(resp.content)
         output = ''.join(et.xpath('//main/article//text()'))
         return output
+
+
+@click.command()
+@click.option("--set_cookie", type=str, required=True)
+def main(set_cookie: str) -> None:
+    Website(0, 0, False).set_cookie(set_cookie)
 
 
 if __name__ == "__main__":
