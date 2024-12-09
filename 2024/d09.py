@@ -1,11 +1,11 @@
 #!/bin/python
 """Advent of Code, Day 9: Disk Fragmenter."""
-from __future__ import annotations
 
 import itertools
 from lib import aoc
 
-SAMPLE = '2333133121414131402'
+SAMPLE = "2333133121414131402"
+HOLE = -1
 
 
 class Day09(aoc.Challenge):
@@ -17,37 +17,34 @@ class Day09(aoc.Challenge):
     ]
 
     def part1(self, puzzle_input: str) -> int:
-        is_file = True
-        fileno = 0
+        """Defragment a disk, one block at a time."""
         disk = []
-        for digit in puzzle_input:
-            if is_file:
-                disk.extend([fileno] * int(digit))
-                fileno += 1
-            else:
-                disk.extend([None] * int(digit))
-            is_file = not is_file
+
+        # Add a trailing 0 so we can read file and hole sizes in batches of 2 numbers.
+        combined_sizes = (int(i) for i in puzzle_input + "0")
+        for file_number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
+            disk.extend([file_number] * file_size)
+            disk.extend([HOLE] * hole_size)
 
         start, end = 0, len(disk) - 1
         while start < end:
-            # print("".join([str(i) if i is not None else "." for i in disk]))
-            while disk[start] is not None:
+            while disk[start] != HOLE:  # Find a hole to fill.
                 start += 1
-            while end >= 0 and disk[end] is None:
+            while end > start and disk[end] == HOLE:  # Find a block to move.
                 end -= 1
-            if start >= end:
-                break
             disk[start], disk[end] = disk[end], disk[start]
 
-        return sum(idx * val for idx, val in enumerate(disk) if val)
+        return sum(idx * val for idx, val in enumerate(disk) if val != HOLE)
 
     def part2(self, puzzle_input: str) -> int:
+        """Defragment a disk, one file at a time."""
         is_file = True
         file_number = 0
         offset = 0
         sizes = dict(enumerate(int(i) for i in puzzle_input[::2]))
         holes = []
         starts = {}
+
         for digit in (int(i) for i in puzzle_input):
             if is_file:
                 starts[file_number] = offset
