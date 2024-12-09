@@ -38,43 +38,44 @@ class Day09(aoc.Challenge):
 
     def part2(self, puzzle_input: str) -> int:
         """Defragment a disk, one file at a time."""
-        is_file = True
-        file_number = 0
-        offset = 0
-        sizes = dict(enumerate(int(i) for i in puzzle_input[::2]))
+        if len(puzzle_input) % 2:
+            puzzle_input += "0"
+
+        files = []
         holes = []
-        starts = {}
+        offset = 0
 
-        for digit in (int(i) for i in puzzle_input):
-            if is_file:
-                starts[file_number] = offset
-                file_number += 1
-            else:
-                holes.append((offset, digit))
-            is_file = not is_file
-            offset += digit
+        combined_sizes = (int(i) for i in puzzle_input)
+        for file_number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
+            files.append((file_number, file_size, offset))
+            offset += file_size
+            holes.append((offset, hole_size))
+            offset += hole_size
 
-        for file_number in range(file_number - 1, 1, -1):
-            file_start = starts[file_number]
-            file_size = sizes[file_number]
-            def predicate(x):
-                return x[1][0] < file_start
-            hole_idx, location, size = next(
-                (
-                    (hole_idx, location, size)
-                    for hole_idx, (location, size) in enumerate(holes)
-                    if size >= file_size
-                ), (None, None, None)
-            )
-            if location is None or location >= file_start:
-                continue
-            del holes[hole_idx]
-            if new_size := size - file_size:
-                holes.append((location + file_size, new_size))
-            holes.sort()
+        largest_file = max(file_size for _, file_size, _ in files)
+        files.reverse()
 
-            starts[file_number] = location
-            
-        return sum(file_number * (file_start + i) for file_number, file_start in starts.items() for i in range(sizes[file_number]))
+        moved_files = []
+        smallest_file = 0
+        for hole_offset, hole_size in holes:
+            if hole_size >= smallest_file:
+                smallest_seen = largest_file
+                moved = []
+                for idx, (file_number, file_size, file_offset) in enumerate(files):
+                    if file_size <= hole_size and hole_offset < file_offset:
+                        moved_files.append((file_number, file_size, hole_offset))
+                        moved.append(idx)
+                        hole_offset += file_size
+                        hole_size -= file_size
+                    elif file_offset < hole_offset:
+                        moved_files.append((file_number, file_size, file_offset))
+                        moved.append(idx)
+                    else:
+                        smallest_seen = min(smallest_seen, file_size)
+                smallest_file = smallest_seen
+                for idx in reversed(moved):
+                    del files[idx]
+
+        return sum(file_number * (file_offset + i) for file_number, file_size, file_offset in files + moved_files for i in range(file_size))
 
 # vim:expandtab:sw=4:ts=4
