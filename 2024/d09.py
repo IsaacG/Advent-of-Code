@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 9: Disk Fragmenter."""
 
+import heapq
 import itertools
 from lib import aoc
 
@@ -36,22 +37,24 @@ class Day09(aoc.Challenge):
 
         return sum(idx * val for idx, val in enumerate(disk) if val != HOLE)
 
-    def build_lists(self, puzzle_input: str) -> tuple[list[list[int]], list[tuple[int, int, int]]]:
+    def build_lists(self, puzzle_input: str) -> tuple[list[list[int]], dict[int, list[int]]]:
         """Parse the input and build part two data structures."""
         # Pad the input to be an even number of digits so we can iterate pairwise.
         if len(puzzle_input) % 2:
             puzzle_input += "0"
 
         files = []
-        holes = []
+        holes: dict[int, list[int]] = {i: [] for i in range(1, 10)}
         offset = 0
 
         # Create lists of the holes and files.
         combined_sizes = (int(i) for i in puzzle_input)
         for number, (file_size, hole_size) in enumerate(itertools.batched(combined_sizes, 2)):
-            files.append([number, file_size, offset])
+            if file_size:
+                files.append([number, file_size, offset])
             offset += file_size
-            holes.append((number, offset, hole_size))
+            if hole_size:
+                heapq.heappush(holes[hole_size], offset)
             offset += hole_size
 
         # Check files from right to left.
@@ -61,25 +64,19 @@ class Day09(aoc.Challenge):
     def part2(self, puzzle_input: str) -> int:
         """Defragment a disk, one file at a time."""
         files, holes = self.build_lists(puzzle_input)
-        smallest_file = 1
-        for hole_number, hole_offset, hole_size in holes:
-            smallest_seen = 9
-            for file_info in files:
-                if hole_size < smallest_file:
-                    break
-                file_number, file_size, file_offset = file_info
-                if file_size <= hole_size and hole_offset < file_offset:
-                    # Move files into the hole.
-                    file_info[2] = hole_offset
-                    hole_offset += file_size
-                    hole_size -= file_size
-                elif hole_offset < file_offset:
-                    # Only count right to the right of the hole.
-                    smallest_seen = min(smallest_seen, file_size)
-                if file_number < hole_number:
-                    # Stop when the remaining files are all to the left of the hole.
-                    smallest_file = smallest_seen
-                    break
+        for file_info in files:
+            file_number, file_size, file_offset = file_info
+            candidates = (
+                (hole_size, hole_q)
+                for hole_size, hole_q in holes.items()
+                if hole_size >= file_size and hole_q and hole_q[0] < file_offset
+            )
+            hole_size, hole_q = min(candidates, key=lambda x: x[1][0], default=(None, None))
+            if hole_q is not None and hole_size is not None:
+                hole_offset = heapq.heappop(hole_q)
+                file_info[2] = hole_offset
+                if hole_size != file_size:
+                    heapq.heappush(holes[hole_size - file_size], hole_offset + file_size)
 
         return sum(
             file_number * (file_offset + i)
