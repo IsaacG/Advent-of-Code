@@ -95,7 +95,9 @@ class Day12(aoc.Challenge):
         perimeter = self.perimeter1 if part_one else self.perimeter2
         return sum(
             len(region) * perimeter(region)
-            for _, region in aoc.partition_regions(puzzle_input.chars)
+            for region in aoc.partition_regions(
+                puzzle_input.chars, predicate=lambda a, b: puzzle_input[a] == puzzle_input[b]
+            )
         )
 
 # vim:expandtab:sw=4:ts=4

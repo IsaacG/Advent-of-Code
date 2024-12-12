@@ -3,8 +3,6 @@
 
 from lib import aoc
 
-InputType = dict[complex, int]
-
 SAMPLE = ["""\
 2199943210
 3987894921
@@ -21,70 +19,31 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=15),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),
     )
+    INPUT_PARSER = aoc.CoordinatesParser()
 
     @classmethod
-    def lows(cls, depths: aoc.Board) -> list[complex]:
+    def lows(cls, depths: aoc.Map) -> list[complex]:
         """Return all the minimum points on the map."""
         return [
             point
             for point, depth in depths.items()
             if all(
-                depth < v for v in depths.neighbors(point).values()
+                depth < depths.get(n, 10) for n in aoc.neighbors(point)
             )
         ]
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: aoc.Map) -> int:
         """Find all the low points on the map."""
         depths = puzzle_input
-        return sum(depths[point] + 1 for point in self.lows(puzzle_input))
+        return sum(depths[point] + 1 for point in self.lows(puzzle_input.chars))
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: aoc.Map) -> int:
         """Find the largest three basins.
 
         Simply remove 9's from the map and find the size of each island."""
         # Remove borders around the islands, i.e. points of height 9.
-        unexplored = {point for point, depth in puzzle_input.items() if depth != 9}
-        basin_sizes = []
-        # Group points into islands. Pick any point and flood fill to neighboring points.
-        while unexplored:
-            in_basin = set()
-            queue = set([unexplored.pop()])
-            while queue:
-                point = queue.pop()
-                in_basin.add(point)
-                for neighbor in puzzle_input.neighbors(point):
-                    if neighbor not in unexplored:
-                        continue
-                    queue.add(neighbor)
-                    unexplored.remove(neighbor)
-            basin_sizes.append(len(in_basin))
+        unexplored = {point for point, depth in puzzle_input.chars.items() if depth != 9}
+        basins = aoc.partition_regions(unexplored, predicate=lambda a, b: True)
+        basin_sizes = (len(basin) for basin in basins)
 
         return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
-
-    def part2_slow(self, puzzle_input: InputType) -> int:
-        """Find the largest three basins. Flood fill."""
-        depths = puzzle_input
-        basin_sizes = []
-        # For each minimum, explore the basin.
-        for lowpoint in self.lows(depths):
-            in_basin = set()
-            # Djiksta's algorithm.
-            todo = set([lowpoint])
-            while todo:
-                # Flood fill, lowest depths to highest.
-                point = sorted(todo, key=lambda x: depths[x])[0]
-                todo.remove(point)
-                # Examine all neighboring spots that are not yet added to the basin.
-                neighbors = [n for n in self.neighbors(point) if n in depths and n not in in_basin]
-                # If this spot is lower/equal to all unflooded neighbors, add it to the basin.
-                if all(depths[n] >= depths[point] for n in neighbors):
-                    in_basin.add(point)
-                    # Add all neighbors as possible basic members. Do not include 9's.
-                    todo.update(n for n in neighbors if depths[n] != 9)
-            basin_sizes.append(len(in_basin))
-
-        return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input, diagonal=False)
