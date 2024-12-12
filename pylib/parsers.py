@@ -14,6 +14,8 @@ import itertools
 import re
 from typing import Any, Callable, Iterable
 
+from .helpers import *
+
 RE_INT = re.compile(r"[+-]?\d{1,1000}")
 RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
 RE_POINT = re.compile(r"[+-]?\d+,[+-]?\d+")
@@ -235,58 +237,6 @@ class Transform(BaseParser):
     def parse(self, puzzle_input: Any) -> Any:
         """Apply a transformation."""
         return self.func(puzzle_input)
-
-
-@dataclasses.dataclass
-class Map:
-    max_x: int
-    max_y: int
-    chars: dict[complex, str | int]
-    coords: dict[str | int, set[complex]]
-    all_coords: set[complex]
-    blank_char: str
-    non_blank_chars: set[str]
-
-    def __post_init__(self) -> None:
-        self.width = self.max_x + 1
-        self.height = self.max_y + 1
-
-    def __sub__(self, key: str) -> set[complex]:
-        return self.all_coords - self[key]
-
-    def __contains__(self, item) -> bool:
-        if not isinstance(item, complex):
-            raise TypeError(f"contains not defined for {type(item)}")
-        return item in self.all_coords
-
-    def __getitem__(self, key: str | complex) -> str | int | set[complex] | list[set[complex]]:
-        if isinstance(key, complex):
-            return self.chars[key]
-        if isinstance(key, int):
-            return self.coords[key]
-        if isinstance(key, str) and len(key) == 1:
-            return self.coords[key]
-        if isinstance(key, collections.abc.Sequence):
-            return [self.coords[k] for k in key]
-        raise ValueError(f"Could not index on {key}")
-
-    @property
-    def size(self) -> int:
-        if self.max_x != self.max_y:
-            raise ValueError(f"The input is {self.width, self.height} and not square!")
-        return self.width
-
-    def get_coords(self, chars: collections.abc.Iterable[str]) -> list[set[complex]]:
-        return [self.coords[char] for char in chars]
-
-    @property
-    def corners(self) -> tuple[complex, complex, complex, complex]:
-        return (
-            0,
-            complex(0, self.max_y),
-            complex(self.max_x, 0),
-            complex(self.max_x, self.max_y)
-        )
 
 
 @dataclasses.dataclass

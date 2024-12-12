@@ -3,7 +3,6 @@
 
 from lib import aoc
 
-InputType = dict[complex, int]
 SAMPLE = ["""\
 5483143223
 2745854711
@@ -29,7 +28,7 @@ class Day11(aoc.Challenge):
     def step(self, octopuses: dict[complex, int]) -> dict[complex, int]:
         """Apply one clock step to the octopuses."""
         # Add one energy to each octopus.
-        new = aoc.Board({point: energy + 1 for point, energy in octopuses.items()}, diagonal=True)
+        new = {point: energy + 1 for point, energy in octopuses.items()}
         # Handle octopus flashing, updating neighbors as needed, until all
         # octopuses are done flashing.
         to_flash = set(point for point, energy in new.items() if energy == 10)
@@ -37,7 +36,9 @@ class Day11(aoc.Challenge):
         while to_flash:
             point = to_flash.pop()
             flashed.add(point)
-            for neighbor in octopuses.neighbors(point):
+            for neighbor in aoc.neighbors(point, directions=aoc.EIGHT_DIRECTIONS):
+                if neighbor not in octopuses:
+                    continue
                 new[neighbor] += 1
                 if new[neighbor] == 10:
                     to_flash.add(neighbor)
@@ -45,25 +46,21 @@ class Day11(aoc.Challenge):
         new.update({point: 0 for point in flashed})
         return new
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: aoc.Map) -> int:
         """Count how many octopuses flash after 100 steps."""
-        octopuses = puzzle_input
+        octopuses = puzzle_input.chars
         flashes = 0
         for _ in range(100):
             octopuses = self.step(octopuses)
             flashes += sum(1 for v in octopuses.values() if v == 0)
         return flashes
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: aoc.Map) -> int:
         """Count how many steps until all the octopuses flashed in the same step."""
-        octopuses = puzzle_input
+        octopuses = puzzle_input.chars
         # Stop after a bunch of steps, just in case this isn't working.
         for step in range(1, 5000):
             octopuses = self.step(octopuses)
             if all(v == 0 for v in octopuses.values()):
                 return step
         raise RuntimeError("Could not solve in allocated steps.")
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return aoc.Board.from_int_block(puzzle_input, diagonal=True)

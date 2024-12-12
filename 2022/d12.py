@@ -13,7 +13,7 @@ accszExk
 acctuvwj
 abdefghi"""
 
-InputType = tuple[complex, complex, aoc.Board]
+InputType = tuple[complex, complex, dict[complex, int]]
 
 
 class Day12(aoc.Challenge):
@@ -24,23 +24,24 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=29),
     ]
 
-    def get_steps(self, starts: list[complex], end: complex, board: aoc.Board) -> int:
+    def get_steps(self, starts: list[complex], end: complex, board: dict[complex, int]) -> int:
         """Return the min steps from start to end."""
         step_count = {point: 0 for point in starts}
-        to_visit = collections.deque(starts)
+        to_visit = collections.deque([(p, 0) for p in starts])
 
         while to_visit:
-            point = to_visit.popleft()
-            for neighbor, height in board.neighbors(point).items():
+            point, height = to_visit.popleft()
+            for neighbor in aoc.neighbors(point):
+                n_height = board.get(neighbor, 99)
                 # Cannot climb a steep hill.
-                if height - 1 > board[point]:
+                if n_height - 1 > height:
                     continue
                 if neighbor in step_count:
                     continue
                 if neighbor == end:
                     return step_count[point] + 1
                 step_count[neighbor] = step_count[point] + 1
-                to_visit.append(neighbor)
+                to_visit.append((neighbor, n_height))
         raise RuntimeError("Not found.")
 
     def part1(self, puzzle_input: InputType) -> int:
@@ -60,18 +61,13 @@ class Day12(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        heights = {}
-        start, end = None, None
-        for y, row in enumerate(puzzle_input.splitlines()):
-            for x, char in enumerate(row):
-                if char == "S":
-                    start = complex(x, y)
-                    char = "a"
-                if char == "E":
-                    end = complex(x, y)
-                    char = "z"
-                heights[complex(x, y)] = string.ascii_lowercase.index(char)
+        parser = aoc.CoordinatesParser()
+        data = parser.parse(puzzle_input)
+        start = data["S"].pop()
+        end = data["E"].pop()
+        heights = {b: a for a, b in enumerate(string.ascii_lowercase)}
+        heights["S"] = heights["a"]
+        heights["E"] = heights["z"]
+        height_map = {p: heights[c] for p, c in data.chars.items()}
 
-        if start is None or end is None:
-            raise ValueError("Failed to find start and end.")
-        return start, end, aoc.Board(heights, diagonal=False)
+        return start, end, height_map

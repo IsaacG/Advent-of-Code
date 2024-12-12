@@ -12,7 +12,7 @@ SAMPLE = [
 35390"""
 ]
 
-InputType = aoc.Board
+InputType = aoc.Map
 
 
 class Day08(aoc.Challenge):

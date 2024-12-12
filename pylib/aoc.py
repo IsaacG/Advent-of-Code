@@ -22,63 +22,14 @@ import re
 import time
 from typing import Any, Callable, Generator, Iterable, Iterator, List, Optional, Sequence, TypeVar
 
+from .helpers import *
 from .parsers import *
 from . import parsers
 from . import site
 
 
-COLOR_SOLID = '█'
-COLOR_EMPTY = ' '
-
 TEST_SKIP = "__DO_NOT_RUN__"
 T = TypeVar("T")
-
-# 4 cardinal directions
-UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
-FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
-# UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
-ARROW_DIRECTIONS = {"^": UP, "v": DOWN, ">": RIGHT, "<": LEFT}
-LETTER_DIRECTIONS = {"U": UP, "D": DOWN, "R": RIGHT, "L": LEFT}
-COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
-STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
-DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
-EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
-ALL_NEIGHBORS = EIGHT_DIRECTIONS
-
-HEX_AXIAL_DIRS_POINTY_TOP = {
-  'e':  +1 +0j,
-  'w':  -1 +0j,
-  'ne': +1 +1j,
-  'nw': +0 +1j,
-  'se': +0 -1j,
-  'sw': -1 -1j,
-}
-
-HEX_AXIAL_DIRS_FLAT_TOP = {
-  'n':  +0 +1j,
-  's':  +0 -1j,
-  'ne': +1 +0j,
-  'nw': -1 +1j,
-  'se': +1 -1j,
-  'sw': -1 +0j,
-}
-
-RE_INT = re.compile(r"[+-]?\d{1,1000")
-RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
-OPERATORS = {
-    ">": operator.gt,
-    ">=": operator.ge,
-    "<": operator.lt,
-    "<=": operator.le,
-    "==": operator.eq,
-    "!=": operator.ne,
-    "=": operator.eq,
-    "+": operator.add,
-    "-": operator.sub,
-    "*": operator.mul,
-    "/": operator.floordiv,
-}
-Interval = tuple[int, int]
 
 OCR_MAP = {
     # 2022/10: 6x5
@@ -285,11 +236,6 @@ class OCR:
         while len(rows[0]) % width:
             rows = [row + [False] for row in rows]
         return cls(rows)
-
-
-def neighbors(point: complex, directions: Sequence[complex] = STRAIGHT_NEIGHBORS) -> Iterable[complex]:
-    """Return the 4/8 neighbors of a point."""
-    return (point + offset for offset in directions)
 
 
 def bounding_coords(points: Iterable[complex]) -> tuple[int, int, int, int]:
@@ -826,6 +772,8 @@ class Challenge(Helpers):
         multi_lines = len(lines) > 1
         one_line = lines[0]
 
+        if len(lines) > 5 and len(lines[0]) > 5 and len(lines) == len(lines[0]):
+            return CoordinatesParser()
         if ParseIntergers().matches(data):
             return ParseIntergers()
 
@@ -839,8 +787,6 @@ class Challenge(Helpers):
         elif not multi_lines and all(RE_INT.fullmatch(i) for i in one_line.split()):
             return parse_ints_one_line
 
-        if len(lines) > 5 and len(lines[0]) > 5 and len(lines) == len(lines[0]):
-            return CoordinatesParser()
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_lines else parse_one_str

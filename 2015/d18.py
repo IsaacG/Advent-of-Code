@@ -11,7 +11,7 @@ SAMPLE = """\
 #.#..#
 ####.."""
 
-InputType = aoc.Board
+InputType = aoc.Map
 
 
 class Day18(aoc.Challenge):
