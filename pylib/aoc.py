@@ -20,7 +20,7 @@ import operator
 import pathlib
 import re
 import time
-from typing import Any, Callable, Generator, Iterable, List, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generator, Iterable, Iterator, List, Optional, Sequence, TypeVar
 
 from .parsers import *
 from . import parsers
@@ -165,14 +165,6 @@ def format_ns(ns: float) -> str:
     else:
         unit = "hr"
     return f"{ns:>7.3f} {unit:>2}"
-
-
-from collections.abc import Iterable
-from collections.abc import Iterator
-from typing import TypeVar
-
-
-T = TypeVar('T')
 
 
 class CachedIterable(Iterable[T]):
@@ -509,19 +501,6 @@ def reading_order(data: Sequence[complex]) -> list[complex]:
     return sorted(data, key=lambda x: (x.imag, x.real))
 
 
-def partition_regions(data: dict[complex, T], directions: list[complex] = FOUR_DIRECTIONS) -> list[tuple[T, set[complex]]]:
-    """Partition a map into regions."""
-    regions = []
-    todo = set(data)
-    while todo:
-        cur = todo.pop()
-        val = data[cur]
-        region = floodfill(data, cur)
-        todo -= region
-        regions.append((val, region))
-    return regions
-
-
 def floodfill(data: dict[complex, T], start: complex, directions: list[complex] = FOUR_DIRECTIONS) -> set[complex]:
     """Expand a point to its region by flood filling so long as the char matches."""
     todo = {start}
@@ -535,6 +514,19 @@ def floodfill(data: dict[complex, T], start: complex, directions: list[complex] 
             if p not in region and data.get(p) == val
         )
     return region
+
+
+def partition_regions(data: dict[complex, T], directions: list[complex] = FOUR_DIRECTIONS) -> list[tuple[T, set[complex]]]:
+    """Partition a map into regions."""
+    regions = []
+    todo = set(data)
+    while todo:
+        cur = todo.pop()
+        val = data[cur]
+        region = floodfill(data, cur, directions)
+        todo -= region
+        regions.append((val, region))
+    return regions
 
 
 def interval_overlap(one: Interval, two: Interval) -> tuple[Interval | None, Interval | None, Interval | None]:

@@ -1,12 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 12: Garden Groups."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -72,41 +65,37 @@ class Day12(aoc.Challenge):
         )
 
     def perimeter2(self, region: set[complex]) -> int:
-        """Walk the edge of a region and count turns."""
-        area = len(region)
-        if area == 1:
-            return 4
+        """Count the number of edge-runs.
 
-        perimeters = 0
-        unwalked_walls = {r for r in region if any(n not in region for n in aoc.neighbors(r))}
-        while unwalked_walls:
-            cur = next(r for r in unwalked_walls if any(n not in region for n in aoc.neighbors(r)))
-            unwalked_walls.remove(cur)
-            direction = next(d for d in aoc.FOUR_DIRECTIONS if cur + d not in region)
-            while cur + direction not in region:
-                direction *= -1j
-            start_pos = cur
-            start_dir = direction
-
-            perimeter = 0
-            while cur != start_pos or direction != start_dir or perimeter < 1:
-                unwalked_walls.discard(cur)
-                if cur + direction * 1j in region:
-                    direction *= 1j
-                    perimeter += 1
-                while cur + direction not in region:
-                    direction *= -1j
-                    perimeter += 1
-                if cur == start_pos and direction == start_dir and perimeter:
-                    break
-                if cur + direction in region:
-                    cur += direction
-                    unwalked_walls.discard(cur)
-            perimeters += perimeter
-        return perimeters
+        This can be computed by counting the number of "corners" a region has.
+        A point is a convex corner if it no neighbors in two adjacent directions (eg up and right).
+        A point is a concave corner if there are neighbors in
+        two adjacent directions (eg up and right) but not diagonal in those directions.
+        """
+        d1, d2, d3 = complex(1, 0), complex(0, 1), complex(1, 1)
+        convex_corners = sum(
+            1
+            for coord in region
+            for rotation in aoc.FOUR_DIRECTIONS
+            if coord + d1 * rotation not in region and coord + d2 * rotation not in region
+        )
+        concave_corners = sum(
+            1
+            for coord in region
+            for rotation in aoc.FOUR_DIRECTIONS
+            if (
+                coord + d1 * rotation in region
+                and coord + d2 * rotation in region
+                and coord + d3 * rotation not in region
+            )
+        )
+        return convex_corners + concave_corners
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         perimeter = self.perimeter1 if part_one else self.perimeter2
-        return sum(len(region) * perimeter(region) for _, region in aoc.partition_regions(puzzle_input.chars))
+        return sum(
+            len(region) * perimeter(region)
+            for _, region in aoc.partition_regions(puzzle_input.chars)
+        )
 
 # vim:expandtab:sw=4:ts=4
