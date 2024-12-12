@@ -28,7 +28,7 @@ class Day11(aoc.Challenge):
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=55312),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
+        aoc.TestCase(part=2, inputs=SAMPLE, want=65601038650482),
     ]
 
     def solver(self, puzzle_input: list[int], part_one: bool) -> int:

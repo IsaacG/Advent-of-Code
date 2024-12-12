@@ -866,7 +866,7 @@ class Challenge(Helpers):
 
     def tprint(self, *args):
         """Print a message but only for testing."""
-        if self.testing:
+        if self.testing and self.DEBUG:
             print(*args)
 
     def debug(self, *args):
