@@ -3,7 +3,6 @@
 
 import collections
 import functools
-from typing import List
 
 from lib import aoc
 
@@ -66,7 +65,7 @@ class Day10(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=19208),
   )
 
-  def part1(self, puzzle_input: List[int]) -> int:
+  def part1(self, puzzle_input: list[int]) -> int:
     """Count the 1-steps and 3-steps."""
     # Sort the plugs.
     nums = sorted(puzzle_input)
@@ -79,7 +78,7 @@ class Day10(aoc.Challenge):
     counts = collections.Counter(diffs)
     return counts[1] * counts[3]
 
-  def part2(self, puzzle_input: List[int]) -> int:
+  def part2(self, puzzle_input: list[int]) -> int:
     """Count all possible paths from 0 to dest."""
     nums = [0] + sorted(puzzle_input) + [max(puzzle_input) + 3]
 
@@ -102,6 +101,6 @@ class Day10(aoc.Challenge):
         j for j in range(i + 1, min(i + 4, len(nums)))
         if nums[j] - nums[i] <= 3
       ]
-      return self.sum_map(valid, possible_paths_from)
+      return sum(possible_paths_from(i) for i in valid)
 
     return possible_paths_from(0)

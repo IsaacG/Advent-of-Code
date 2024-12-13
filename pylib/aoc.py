@@ -20,7 +20,7 @@ import operator
 import pathlib
 import re
 import time
-from typing import Any, Callable, Generator, Iterable, Iterator, List, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generator, Iterable, Iterator, Optional, Sequence, TypeVar
 
 from .helpers import *
 from .parsers import *
@@ -441,12 +441,6 @@ class Helpers:
     """A collection of helper functions."""
 
     _primes = [2, 3, 5]
-    _gcd: dict[tuple[int, int], int] = {}
-
-    @staticmethod
-    def sum_map(lines: List[str], func: Callable[[str], int]) -> int:
-        """sum_map(lines, func)"""
-        return sum(func(line) for line in lines)
 
     def primes(self) -> Generator[int, None, None]:
         """Yield primes without end."""
@@ -465,33 +459,12 @@ class Helpers:
 
     def angle(self, c: complex) -> complex:
         """Return the angle given by a complex number."""
-        return c / self.gcd(int(c.real), int(c.imag))
+        return c / math.gcd(int(c.real), int(c.imag))
 
     @staticmethod
     def sum_series(n: int) -> int:
         """Return the sum of the series [1..n]."""
         return n * (n + 1) // 2
-
-    def gcd(self, a: int, b: int) -> int:
-        """Return the GCD of two numbers."""
-        a, b = abs(a), abs(b)
-        if a > b:
-            a, b = b, a
-        if a == 0:
-            return b if b else 1
-        tple = (a, b)
-        if tple not in self._gcd:
-            gcd = 1
-            p = 1
-            pgen = self.primes()
-            while p < a:
-                p = next(pgen)
-                while (a % p == 0 and b % p == 0):
-                    a //= p
-                    b //= p
-                    gcd *= p
-            self._gcd[tple] = gcd
-        return self._gcd[tple]
 
 
 @dataclasses.dataclass(slots=True)

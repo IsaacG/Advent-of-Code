@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from lib import aoc
-from typing import List
 
 SAMPLE = [
   'abc\n\na\nb\nc\n\nab\nac\n\na\na\na\na\n\nb',
@@ -16,11 +15,11 @@ class Day06(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=6),
   )
 
-  def part1(self, data: List[str]) -> int:
+  def part1(self, data: list[str]) -> int:
     """Part 1: count the unique chars, joining all lines."""
-    return self.sum_map(data, lambda l: len(set(l.replace('\n', ''))))
+    return sum(len(set(l.replace('\n', ''))) for l in data)
 
-  def part2(self, data: List[str]) -> int:
+  def part2(self, data: list[str]) -> int:
     """Part 2: count num of chars found on all lines."""
     total = 0
     for r in data:
