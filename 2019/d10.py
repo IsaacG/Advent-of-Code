@@ -27,6 +27,10 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=802),
     )
 
+    def angle(self, c: complex) -> complex:
+        """Return the angle given by a complex number."""
+        return c / math.gcd(int(c.real), int(c.imag))
+
     def count_by_angle(self, locations: Set[complex]) -> Dict[complex, int]:
         """Count the unique angles at which astroids can be seen for all astroids."""
         return {

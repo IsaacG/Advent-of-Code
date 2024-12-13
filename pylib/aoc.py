@@ -437,36 +437,6 @@ class TestCase:
     part: int
 
 
-class Helpers:
-    """A collection of helper functions."""
-
-    _primes = [2, 3, 5]
-
-    def primes(self) -> Generator[int, None, None]:
-        """Yield primes without end."""
-        s = 0
-        for s in self._primes:
-            yield s
-        while True:
-            s += 2
-            for p in self._primes:
-                if s % p == 0:
-                    break
-                if p * p > s:
-                    self._primes.append(s)
-                    yield s
-                    break
-
-    def angle(self, c: complex) -> complex:
-        """Return the angle given by a complex number."""
-        return c / math.gcd(int(c.real), int(c.imag))
-
-    @staticmethod
-    def sum_series(n: int) -> int:
-        """Return the sum of the series [1..n]."""
-        return n * (n + 1) // 2
-
-
 @dataclasses.dataclass(slots=True)
 class Node:
     """Node in a double linked list."""
@@ -536,7 +506,7 @@ class LinkedList:
         node.prev.next, node.next.prev = node, node
 
 
-class Challenge(Helpers):
+class Challenge:
     """Daily Challenge."""
 
     INPUT_PARSER: Optional[parsers.BaseParser] = None
