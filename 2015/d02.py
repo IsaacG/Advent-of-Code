@@ -2,6 +2,7 @@
 """Advent of Code: Day 02."""
 
 import itertools
+import math
 
 from lib import aoc
 
@@ -33,5 +34,5 @@ class Day02(aoc.Challenge):
         total = 0
         for dims in puzzle_input:
             perimeters = [a + b for a, b in itertools.combinations(dims, 2)]
-            total += min(perimeters) * 2 + self.mult(dims)
+            total += min(perimeters) * 2 + math.prod(dims)
         return total

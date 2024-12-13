@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 19: Not Enough Minerals."""
 
+import math
 import re
 
 from lib import aoc
@@ -140,7 +141,7 @@ class Day19(aoc.Challenge):
         return sum(idx * score for idx, score in enumerate(scores, start=1))
 
     def part2(self, puzzle_input: InputType) -> int:
-        return self.mult(self.simulator(puzzle_input[:3], 32))
+        return math.prod(self.simulator(puzzle_input[:3], 32))
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""

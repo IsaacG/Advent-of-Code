@@ -75,7 +75,7 @@ class Day20(aoc.Challenge):
             pfactors = prime_factors(i)
             factors = set(pfactors)
             for l in range(2, len(pfactors)):
-                factors.update(self.mult(c) for c in itertools.combinations(pfactors, l))
+                factors.update(math.prod(c) for c in itertools.combinations(pfactors, l))
 
             amount = sum(factors) + 1 + i
             if amount >= target:

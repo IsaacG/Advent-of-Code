@@ -359,13 +359,23 @@ def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) 
     return "\n".join(rows)
 
 
-def sign(number: int) -> int:
+def sign(number: float) -> int:
     """Return the "sign" of a number, i.e. 1 or -1."""
     if number > 0:
         return 1
     if number < 0:
         return -1
     return 0
+
+
+def cmp(a: float, b: float) -> int:
+    """Compare two numbers like Perl <=>.
+
+    Binary "<=>" returns -1, 0, or 1 depending on whether the left argument
+    is numerically less than, equal to, or greater than the right argument.
+    """
+    return sign(a - b)
+
 
 
 def reading_order(data: Sequence[complex]) -> list[complex]:
@@ -432,27 +442,6 @@ class Helpers:
 
     _primes = [2, 3, 5]
     _gcd: dict[tuple[int, int], int] = {}
-
-    @staticmethod
-    def cmp(a: float, b: float) -> int:
-        """Compare two numbers like Perl <=>.
-
-        Binary "<=>" returns -1, 0, or 1 depending on whether the left argument
-        is numerically less than, equal to, or greater than the right argument.
-        """
-        if a < b:
-            return -1
-        if a > b:
-            return +1
-        return 0
-
-    @staticmethod
-    def mult(nums: Iterable[int]) -> int:
-        """Product of all values. Like sum() but with multiplication."""
-        p = 1
-        for n in nums:
-            p *= n
-        return p
 
     @staticmethod
     def sum_map(lines: List[str], func: Callable[[str], int]) -> int:

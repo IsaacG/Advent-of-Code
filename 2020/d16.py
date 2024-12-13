@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Train tickets."""
 
+import math
 from lib import aoc
 
 # Fudge the second sample to include departure rows
@@ -133,4 +134,4 @@ class Day16(aoc.Challenge):
         candidates.remove(column)
 
     # Multiply all the fields that start with "departure".
-    return self.mult(v for k, v in completed_ticket.items() if k.startswith('departure'))
+    return math.prod(v for k, v in completed_ticket.items() if k.startswith('departure'))

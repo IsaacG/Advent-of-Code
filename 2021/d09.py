@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code: Day 09."""
 
+import math
 from lib import aoc
 
 SAMPLE = ["""\
@@ -46,4 +47,4 @@ class Day09(aoc.Challenge):
         basins = aoc.partition_regions(unexplored, predicate=lambda a, b: True)
         basin_sizes = (len(basin) for basin in basins)
 
-        return aoc.Helpers.mult(sorted(basin_sizes, reverse=True)[:3])
+        return math.prod(sorted(basin_sizes, reverse=True)[:3])

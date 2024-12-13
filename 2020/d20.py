@@ -4,6 +4,7 @@
 from lib import aoc
 import collections
 import enum
+import math
 from typing import Dict, List, Tuple
 import data
 
@@ -290,7 +291,7 @@ class Day20(aoc.Challenge):
     # Four corners. Top left, top right, bottom left, bottom right.
     line = list(range(4))
     corners = zip(line, line[1:] + line[:1])
-    return self.mult(
+    return math.prod(
       self.find_corner(tiles, corner)
       for corner in corners
     )

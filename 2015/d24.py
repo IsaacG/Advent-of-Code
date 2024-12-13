@@ -2,6 +2,7 @@
 """Advent of Code, Day 24: It Hangs in the Balance. Balance numbers into groups with contraints."""
 
 import itertools
+import math
 
 from lib import aoc
 
@@ -26,7 +27,7 @@ class Day24(aoc.Challenge):
         for package_count in range(1, len(packages)):
             for group in itertools.combinations(packages, package_count):
                 if sum(group) == group_size:
-                    candidates.append(self.mult(group))
+                    candidates.append(math.prod(group))
             if candidates:
                 break
         return min(candidates)

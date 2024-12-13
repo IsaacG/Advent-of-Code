@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 8: Treetop Tree House. Compute tree visibility."""
 
+import math
 from lib import aoc
 
 SAMPLE = [
@@ -73,6 +74,6 @@ class Day08(aoc.Challenge):
                         break
                     cur += direction
                 visible.append(num)
-            scores.append(self.mult(visible))
+            scores.append(math.prod(visible))
 
         return max(scores)

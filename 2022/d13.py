@@ -3,6 +3,7 @@
 
 import functools
 import json
+import math
 from typing import Any
 
 from lib import aoc
@@ -35,7 +36,7 @@ SAMPLE = """\
 InputType = list[list[Any]]
 
 # cmp for integers.
-int_cmp = aoc.Helpers.cmp
+int_cmp = aoc.cmp
 
 
 def cmp(first: Any, second: Any) -> int:
@@ -87,4 +88,4 @@ class Day13(aoc.Challenge):
         for pair in pairs:
             vals.extend(pair)
         vals.sort(key=functools.cmp_to_key(cmp))
-        return self.mult(vals.index(divider) + 1 for divider in dividers)
+        return math.prod(vals.index(divider) + 1 for divider in dividers)

@@ -96,7 +96,7 @@ class Day11(aoc.Challenge):
                     monkeys[next_monkey].items.append(item)
                 monkey.items = []
         inspected = sorted(monkey.inspected for monkey in monkeys)
-        return self.mult(inspected[-2:])
+        return math.prod(inspected[-2:])
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
