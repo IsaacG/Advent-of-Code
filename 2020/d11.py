@@ -29,7 +29,7 @@ class Seating:
     self.stable = False
 
   def __eq__(self, other):
-    """Board equality."""
+    """Seating equality."""
     return isinstance(other, type(self)) and self.board == other.board
 
   @classmethod

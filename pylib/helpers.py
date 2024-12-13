@@ -117,6 +117,6 @@ class Map:
 
     def neighbors(self, point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> dict[complex, T]:
         """Return neighboring points and values which are in the map."""
-        return [(n, self.chars[n]) for n in neighbors(directions) if n in self.all_coords]
+        return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
 
 

@@ -12,8 +12,6 @@ SAMPLE = [
 35390"""
 ]
 
-InputType = aoc.Map
-
 
 class Day08(aoc.Challenge):
     """Day 8: Treetop Tree House."""
@@ -22,15 +20,14 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=21),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=8),
     ]
-    INPUT_PARSER = aoc.ParseOneWord(aoc.Board.from_int_block)
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: aoc.Map) -> int:
         """Return how many trees are visible from outside.
 
         Walk the perimeter and peer into the forest.
         Record how many trees we can see along every line.
         """
-        board = puzzle_input
+        board = puzzle_input.chars
 
         visible: set[complex] = set()
 
@@ -57,9 +54,9 @@ class Day08(aoc.Challenge):
 
         return len(visible)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: aoc.Map) -> int:
         """Return the highest scenic score in the forest."""
-        board = puzzle_input
+        board = puzzle_input.chars
         scores = []
 
         for tree in board:
