@@ -35,10 +35,10 @@ class Day13(aoc.Challenge):
     def _part1(self, puzzle_input: list[list[int]]) -> int:
         tokens = 0
         wins = 0
-        for chunk in puzzle_input:
-            b_a = complex(*chunk[0])
-            b_b = complex(*chunk[1])
-            dest = complex(*chunk[2])
+        for chunks in puzzle_input:
+            b_a = complex(*chunks[0])
+            b_b = complex(*chunks[1])
+            dest = complex(*chunks[2])
             # print(b_a, b_b, dest)
             cost = None
             for p_a, p_b in itertools.product(range(101), repeat=2):
@@ -59,23 +59,38 @@ class Day13(aoc.Challenge):
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int | str:
         tokens = 0
-        for chunk in puzzle_input:
+        for chunks in puzzle_input:
             if not part_one:
-                chunk[2] = [i + 10000000000000 for i in chunk[2]]
+                chunks[2] = [i + 10000000000000 for i in chunks[2]]
+            k, l, s = (i[0] for i in chunks)  # x values for a, b, dest
+            m, n, t = (i[1] for i in chunks)  # y values for a, b, dest
             # Linear Diophantine equations?
-            if chunk[2][0] % math.gcd(chunk[0][0], chunk[1][0]) or chunk[2][1] % math.gcd(chunk[0][1], chunk[1][1]):
+            if chunks[2][0] % math.gcd(chunks[0][0], chunks[1][0]) or chunks[2][1] % math.gcd(chunks[0][1], chunks[1][1]):
                 continue
 
             push_a = z3.Int("push_a")
             push_b = z3.Int("push_b")
             cost = z3.Int("cost")
             solver = z3.Optimize()
-            solver.add(chunk[0][0] * push_a + chunk[1][0] * push_b == chunk[2][0])
-            solver.add(chunk[0][1] * push_a + chunk[1][1] * push_b == chunk[2][1])
+            solver.add(chunks[0][0] * push_a + chunks[1][0] * push_b == chunks[2][0])
+            solver.add(chunks[0][1] * push_a + chunks[1][1] * push_b == chunks[2][1])
             solver.add(cost == 3 * push_a + push_b)
             solver.minimize(cost)
-            if solver.check() == z3.sat:
-                tokens += solver.model()[cost].as_long()
+            if solver.check() != z3.sat:
+                continue
+
+            cost = solver.model()[cost].as_long()
+            tokens += cost
+
+            b = (l * t - m * s) / (n * k - m * l)
+            a = (s - b * l) / k
+            got = 3 * a + b
+            if a != round(a) or b != round(b):
+                print(f"Rounding doesn't work. {a=}, {b=}")
+            if got == cost:
+                print("Yes")
+            else:
+                print("No")
 
         return tokens
 
