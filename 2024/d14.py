@@ -1,6 +1,8 @@
 #!/bin/python
 """Advent of Code, Day 14: Restroom Redoubt."""
 
+import collections
+import dataclasses
 import itertools
 import math
 import operator
@@ -22,9 +24,25 @@ p=2,4 v=2,-3
 p=9,5 v=-3,-3"""
 
 
+@dataclasses.dataclass
+class Robot:
+
+    pos_x: int
+    pos_y: int
+    vel_x: int
+    vel_y: int
+    wrap_x: int
+    wrap_y: int
+
+    def step(self, steps: int) -> None:
+        self.pos_x = (self.pos_x + steps * self.vel_x) % self.wrap_x
+        self.pos_y = (self.pos_y + steps * self.vel_y) % self.wrap_y
+
+
 class Day14(aoc.Challenge):
     """Day 14: Restroom Redoubt."""
 
+    DEBUG = False  # prints tree
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE, want=12),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
@@ -33,42 +51,44 @@ class Day14(aoc.Challenge):
 
     def part1(self, puzzle_input: list[list[int]]) -> int:
         """Simulate robots for 100 steps."""
-        robots = []
         width, height = (11, 7) if self.testing else (101, 103)
-        for px, py, vx, vy in puzzle_input:
-            robots.append((complex(px, py), complex(vx, vy)))
-        steps = 100
+        robots = [
+            Robot(pos_x=px, pos_y=py, vel_x=vx, vel_y=vy, wrap_x=width, wrap_y=height)
+            for px, py, vx, vy in puzzle_input
+        ]
+        for robot in robots:
+            robot.step(100)
         half_width = (width - 1) // 2
         half_height = (height - 1) // 2
-        final_pos = [pos + vel * steps for pos, vel in robots]
-        final_pos = [complex(pos.real % width, pos.imag % height) for pos in final_pos]
         counts = [
-            sum(op_a(robot.real, half_width) and op_b(robot.imag, half_height) for robot in final_pos)
+            sum(op_a(robot.pos_x, half_width) and op_b(robot.pos_y, half_height) for robot in robots)
             for op_a, op_b in itertools.product([operator.gt, operator.lt], repeat=2)
         ]
         return math.prod(counts)
 
     def part2(self, puzzle_input: list[list[int]]) -> int:
         """Simulate robots until an image is drawn."""
-        pos = []
-        vel = []
-        width, height = (101, 103)
-        skip_steps = 7000
-        for px, py, vx, vy in puzzle_input:
-            pos.append(complex(px + skip_steps * vx, py + skip_steps * vy))
-            vel.append(complex(vx, vy))
-        dense_centers = []
-        for step in range(skip_steps, 8000):
-            centered_y = sum(35 < p.real < 67 for p in pos)
-            centered_x = sum( 44 < p.imag < 78 for p in pos)
-            if centered_x > 350 and centered_y > 300:
-                dense_centers.append(step)
-                self.debug(aoc.render(set(pos)) + "\n")
-            pos = [p + v for p, v in zip(pos, vel)]
-            pos = [complex(p.real % width, p.imag % height) for p in pos]
+        width, height = 101, 103
+        robots = [
+            Robot(pos_x=px, pos_y=py, vel_x=vx, vel_y=vy, wrap_x=width, wrap_y=height)
+            for px, py, vx, vy in puzzle_input
+        ]
+        for step in range(10000):
+            centered_x = sum(33 < robot.pos_x < 69 for robot in robots)
+            centered_y = sum(40 < robot.pos_y < 80 for robot in robots)
+            if centered_x > 175 and centered_y > 225:
+                break
+            for robot in robots:
+                robot.step(1)
+        for step in range(step, 10000, height):
+            centered_y = sum(44 < robot.pos_y < 78 for robot in robots)
+            centered_x = sum(35 < robot.pos_x < 67 for robot in robots)
+            if centered_x > 300 and centered_y > 350:
+                break
+            for robot in robots:
+                robot.step(height)
 
-        if len(dense_centers) == 1:
-            return dense_centers[0]
-        raise RuntimeError("Did not solve")
+        self.debug(aoc.render(set(complex(robot.pos_x, robot.pos_y) for robot in robots)) + "\n")
+        return step
 
 # vim:expandtab:sw=4:ts=4
