@@ -29,7 +29,6 @@ from . import site
 
 
 TEST_SKIP = "__DO_NOT_RUN__"
-T = TypeVar("T")
 
 OCR_MAP = {
     # 2022/10: 6x5
@@ -385,7 +384,7 @@ def reading_order(data: Sequence[complex]) -> list[complex]:
 def floodfill(
     data: set[complex],
     start: complex,
-    predicate: Callable[[T, T], bool],
+    predicate: Callable[[complex, complex], bool],
     directions: list[complex] = FOUR_DIRECTIONS
 ) -> set[complex]:
     """Expand a point to its region by flood filling so long as the char matches."""
@@ -402,8 +401,8 @@ def floodfill(
 
 
 def partition_regions(
-    data: set[complex, T],
-    predicate: Callable[[T, T], bool],
+    data: set[complex],
+    predicate: Callable[[complex, complex], bool],
     directions: list[complex] = FOUR_DIRECTIONS,
 ) -> list[set[complex]]:
     """Partition a map into regions."""
