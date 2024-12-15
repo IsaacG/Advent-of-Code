@@ -70,12 +70,14 @@ class Day15(aoc.Challenge):
             distance = 1
             while robot + distance * direction in boxes:
                 distance += 1
-            if robot + distance * direction not in walls:
-                new_robot = robot + direction
-                if distance > 1:
-                    boxes.remove(new_robot)
-                    boxes.add(robot + distance * direction)
-                robot = new_robot
+            if robot + distance * direction in walls:
+                # Hit a wall. Cannot move in this direction.
+                continue
+            new_robot = robot + direction
+            if distance > 1:
+                boxes.remove(new_robot)
+                boxes.add(robot + distance * direction)
+            robot = new_robot
 
         return int(sum(b.imag * 100 + b.real for b in boxes))
 
@@ -89,21 +91,22 @@ class Day15(aoc.Challenge):
 
         directions = (aoc.ARROW_DIRECTIONS[i] for i in instructions.replace("\n", ""))
         for direction in directions:
-            # Sideways pushing, box size is one.
             if direction in [1, -1]:
+                # Sideways pushing, box size is one.
                 distance = 1
                 box_offset = 0 if direction == 1 else 1
                 while robot + (distance + box_offset) * direction in boxes:
                     distance += 2
                 if robot + distance * direction not in walls:
                     box = robot + direction * (1 if direction == 1 else 2)
-                    robot += direction
+                    # Shift boxes over by 1.
                     while box in boxes:
                         boxes.remove(box)
                         boxes.add(box + direction)
                         box += 2 * direction
-            # Vertical movement. Track which coordinates on each row are affected.
+                    robot += direction
             else:
+                # Vertical movement. Track which coordinates on each row are affected.
                 pushing = {robot + direction}
                 boxes_moved = set()
                 while all(i not in walls for i in pushing):
@@ -123,8 +126,7 @@ class Day15(aoc.Challenge):
                 if all(i not in walls for i in pushing):
                     robot += direction
                     boxes -= boxes_moved
-                    for box in boxes_moved:
-                        boxes.add(box + direction)
+                    boxes |= {b + direction for b in boxes_moved}
 
         return int(sum(b.imag * 100 + b.real for b in boxes))
 
