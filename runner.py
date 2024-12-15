@@ -333,6 +333,26 @@ class Runner:
         self.solution_path.write_text("\n".join(lines) + "\n")
 
 
+def show_parsers():
+    for year_dir in pathlib.Path(__file__).parent.glob("20*"):
+        sys.path.append(str(year_dir))
+        days = sorted(int(p.stem.removeprefix("d")) for p in year_dir.glob("d[0-2][0-9].py"))
+        year = year_dir.name
+        for day in days:
+            try:
+                c = ChallengeRunner(year, day)
+                p = c.challenge()._parser()
+                try:
+                    print(p.__class__.__name__)
+                except Exception:
+                    print(p)
+            except Exception:
+                pass
+        sys.path.remove(str(year_dir))
+    return
+
+
+
 @click.command()
 @click.option("--date", "-d", type=str, required=False, help="YYYY/dd")
 @click.option("--day", type=int, required=False, help="AoC day")

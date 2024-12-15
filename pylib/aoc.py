@@ -618,6 +618,7 @@ class Challenge:
 
     @functools.cache
     def _parser(self) -> parsers.BaseParser:
+        # print("Code defined" if self.INPUT_PARSER is not None else "Heuristic determined")
         if self.INPUT_PARSER is not None:
             if not isinstance(self.INPUT_PARSER, BaseParser):
                 raise ValueError(f"{self.INPUT_PARSER!r} is a class and not an instance!")
