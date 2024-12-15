@@ -119,4 +119,14 @@ class Map:
         """Return neighboring points and values which are in the map."""
         return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
 
+def render_char_map(chars: dict[complex, str], height: int, width: int) -> str:
+    """Render the map as a string."""
+    lines = []
+    for y in range(height):
+        line = []
+        for x in range(width):
+            line.append(chars.get(complex(x, y), " "))
+        lines.append("".join(line))
+    return "\n".join(lines)
+
 
