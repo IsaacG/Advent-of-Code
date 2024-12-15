@@ -19,8 +19,6 @@ chunked = more_itertools.chunked
 class Day08(aoc.Challenge):
     """Day 8."""
 
-    INPUT_PARSER = aoc.parse_one_str
-
     def part1(self, puzzle_input: str) -> int:
         """Find the min layer."""
         layers = chunked(puzzle_input, WIDTH * HEIGHT)

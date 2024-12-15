@@ -16,7 +16,6 @@ SAMPLE = """\
 class Day12(aoc.Challenge):
     """Day 12: Hot Springs."""
 
-    INPUT_PARSER = aoc.parse_one_str_per_line
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=21),
         aoc.TestCase(inputs=SAMPLE, part=2, want=525152),
@@ -62,8 +61,7 @@ class Day12(aoc.Challenge):
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Return the total number of possible fits."""
         count = 0
-        for line in puzzle_input:
-            springs_str, numbers_str = line.split()
+        for springs_str, numbers_str in puzzle_input:
             if not part_one:
                 springs_str = "?".join([springs_str] * 5)
                 numbers_str = ",".join([numbers_str] * 5)

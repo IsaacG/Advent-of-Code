@@ -626,28 +626,32 @@ class Challenge:
         # Use heuristics to guess at an input parser.
         data = self.raw_data(None)
         lines = data.splitlines()
-        multi_lines = len(lines) > 1
+        multi_line = len(lines) > 1
         one_line = lines[0]
 
         if len(lines) > 5 and len(lines[0]) > 5 and len(lines) == len(lines[0]):
             return CoordinatesParser()
-        if ParseIntergers().matches(data):
-            return ParseIntergers()
+        pi = ParseIntergers(multi_line=multi_line)
+        if pi.matches(data):
+            return pi
 
-        if len(RE_INT.findall(one_line)) > 1 and multi_lines:
-            lines = [re.sub("  +", " ", line) for line in lines[:4]]
+        if len(RE_INT.findall(one_line)) > 1 and multi_line:
+            lines = lines[:4]
+            for char in "?()+*":
+                lines = [l.replace(char, "\\" + char) for l in lines]
+            lines = [re.sub("  +", " ", line) for line in lines]
             one_line = lines[0]
             template = re.compile(RE_INT.sub(lambda x: RE_INT.pattern, one_line))
-            print(template)
+            # print(template)
             if all(template.fullmatch(line) for line in lines):
                 return parse_ints_per_line
-        elif not multi_lines and all(RE_INT.fullmatch(i) for i in one_line.split()):
+        elif not multi_line and all(RE_INT.fullmatch(i) for i in one_line.split()):
             return parse_ints_one_line
 
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
-            return parse_one_str_per_line if multi_lines else parse_one_str
-        return parse_multi_str_per_line if multi_lines else parse_one_str
+            return parse_one_str_per_line if multi_line else parse_one_str
+        return parse_multi_str_per_line if multi_line else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""

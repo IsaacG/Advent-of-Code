@@ -17,7 +17,6 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs="1969", part=2, want=966),
         aoc.TestCase(inputs="100756", part=2, want=50346),
     ]
-    INPUT_PARSER = aoc.parse_one_int_per_line
 
     def fuel(self, mass):
         """Sum fuel needed for some mass and all its fuel."""

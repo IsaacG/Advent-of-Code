@@ -27,16 +27,13 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=288),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=71503),
     ]
-    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Compute how long to charge the car in order to win the race."""
-        lines = [line.split(":")[1].strip() for line in puzzle_input]
-
         if part_one:
-            times, distances = ([int(i) for i in line.split()] for line in lines)
+            times, distances = ([int(i) for i in line[1:]] for line in puzzle_input)
         else:
-            times, distances = ([int(line.replace(" ", ""))] for line in lines)
+            times, distances = ([int("".join(line[1:]))] for line in puzzle_input)
 
         # See notes for explanation.
         result = 1

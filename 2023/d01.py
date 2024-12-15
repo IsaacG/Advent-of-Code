@@ -35,7 +35,6 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs="eightwo", part=2, want=82),
         aoc.TestCase(inputs="hczrldvxffninemzbhsv2two5eightwozfh", part=2, want=92),
     ]
-    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def solver(self, puzzle_input: list[str], part_one: bool) -> int:
         """Walk a string and extract numbers."""

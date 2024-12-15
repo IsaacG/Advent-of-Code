@@ -48,7 +48,6 @@ class Day25(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want="2=-1=0"),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def encode(self, dec: int) -> str:
         """Return the SNAFU encoding of a number."""

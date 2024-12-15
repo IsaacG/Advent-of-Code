@@ -20,7 +20,6 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=1, want="1125899906842624"),
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     )
-    INPUT_PARSER = aoc.parse_one_str
 
     def part1(self, puzzle_input: str) -> int:
         computer = intcode.Computer(puzzle_input, debug=self.DEBUG)

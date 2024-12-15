@@ -60,9 +60,11 @@ class BaseParser:
         raise NotImplementedError
 
 
+@dataclasses.dataclass
 class ParseIntergers(BaseParser):
     """Get integers from input."""
 
+    multi_line: bool | None = None
     NUMBER_LINE = re.compile(r"^[+-]?\d{1,1000}( +[+-]?\d{1,1000})*$")
 
     def matches(self, puzzle_input) -> bool:
@@ -72,7 +74,7 @@ class ParseIntergers(BaseParser):
     def parse(self, puzzle_input: str) -> int | list[int] | list[list[int]]:
         """Parse a puzzle input."""
         lines = puzzle_input.splitlines()
-        multi_line = len(lines) > 1
+        multi_line = len(lines) > 1 if self.multi_line is None else self.multi_line
         multi_word = any(len(line.split()) > 1 for line in lines)
         numbers = [[int(word) for word in line.split()] for line in lines]
         if multi_line:

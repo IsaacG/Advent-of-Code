@@ -14,7 +14,6 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=1320),
         aoc.TestCase(inputs=SAMPLE, part=2, want=145),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def hash(self, word: str) -> int:
         """Compute the HASH of a word."""
