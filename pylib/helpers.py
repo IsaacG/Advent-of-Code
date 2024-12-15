@@ -41,7 +41,7 @@ HEX_AXIAL_DIRS_FLAT_TOP = {
   'sw': -1 +0j,
 }
 
-RE_INT = re.compile(r"[+-]?\d{1,1000")
+RE_INT = re.compile(r"[+-]?\d{1,1000}")
 RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
 OPERATORS = {
     ">": operator.gt,

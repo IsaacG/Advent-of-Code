@@ -39,12 +39,9 @@ ROT_LEFT = complex(0, -1)
 ROT_STRAIGHT = complex(1, -0)
 ROT_RIGHT = complex(0, 1)
 ROTATIONS = [ROT_LEFT, ROT_STRAIGHT, ROT_RIGHT]
-UP = complex(0, -1)
-DOWN = complex(0, 1)
-LEFT = complex(-1, 0)
-RIGHT = complex(1, 0)
+UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
 
-DIRECTIONS = {"^": UP, "v": DOWN, "<": LEFT, ">": RIGHT}
+DIRECTIONS = aoc.ARROW_DIRECTIONS
 CORNERS = {
     "/": {UP: RIGHT, LEFT: DOWN, RIGHT: UP, DOWN: LEFT},
     "\\": {UP: LEFT, LEFT: UP, RIGHT: DOWN, DOWN: RIGHT},

@@ -7,12 +7,7 @@ from lib import aoc
 
 SAMPLE = ["^>v<", "^v^v^v^v^v"]
 InputType = list[str]
-MAPPING = {
-    "^": complex(0, +1),
-    "v": complex(0, -1),
-    "<": complex(-1, 0),
-    ">": complex(+1, 0),
-}
+MAPPING = aoc.ARROW_DIRECTIONS
 
 
 class Day03(aoc.Challenge):

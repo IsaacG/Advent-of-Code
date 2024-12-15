@@ -69,7 +69,7 @@ class Basin:
                 if char == ".":
                     continue
                 positions[char].add(complex(x_pos, y_pos))
-        char_to_dir = {">": 1, "<": -1, "v": 1j, "^": -1j}
+        char_to_dir = aoc.ARROW_DIRECTIONS
         blizzards = {direction: positions[char] for char, direction in char_to_dir.items()}
         return cls(
             walls=positions["#"],

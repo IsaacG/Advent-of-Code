@@ -59,7 +59,7 @@ class Day17(aoc.Challenge):
         stream = puzzle_input
         stream_size = len(stream)
         # Wind directions, translated to a number.
-        wind_direction = [{"<": -1, ">": 1}[i] for i in stream]
+        wind_direction = [aoc.ARROW_DIRECTIONS[i] for i in stream]
         # Index counter which wraps around.
         wind_idx_iter = itertools.cycle(range(stream_size))
 
