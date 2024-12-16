@@ -1,2 +1,3 @@
 [tool.pylint]
 disable = ["abstract-method"]
+max-line-length = 120
