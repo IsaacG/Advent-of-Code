@@ -52,6 +52,29 @@ class Day16(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=64),
     ]
 
+    def networkx_solver(self, open_space: set[complex], start: complex, end: complex, part_one: bool) -> int:
+        """Solve using networkx.DiGraph."""
+        import networkx
+        G = networkx.DiGraph()
+        # Build the graph.
+        for p in open_space:
+            for d in aoc.FOUR_DIRECTIONS:
+                if p + d in open_space:
+                    G.add_edge((p, d), (p + d, d), weight=1)
+                G.add_edge((p, d), (p, d * 1j), weight=1000)
+                G.add_edge((p, d), (p, d * -1j), weight=1000)
+        # Add the start and ends.
+        G.add_edge("start", (start, complex(1)), weight=0)
+        for d in aoc.FOUR_DIRECTIONS:
+            G.add_edge((end, d), "end", weight=0)
+
+        if part_one:
+            return networkx.path_weight(G, networkx.shortest_path(G, "start", "end", weight="weight"), "weight")
+        nodes = {node for path in networkx.all_shortest_paths(G, "start", "end", weight="weight") for node in path}
+        nodes -= {"start", "end"}
+        nodes = {node[0] for node in nodes}
+        return len(nodes)
+
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         """Find the cheapest paths through a maze."""
         starts = puzzle_input.coords["S"]
@@ -60,6 +83,9 @@ class Day16(aoc.Challenge):
 
         start = starts.pop()
         end = ends.pop()
+
+        if False:
+            return self.networkx_solver(open_space, start, end, part_one)
 
         def score(p: complex) -> int:
             """Score a position -- distance to the end. A* heuristic."""
