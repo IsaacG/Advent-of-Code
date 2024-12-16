@@ -1,6 +1,8 @@
 #!/bin/python
 """Advent of Code, Day 13: Claw Contraption."""
 import math
+import numpy as np
+import scipy.linalg
 import z3
 
 from lib import aoc
@@ -79,18 +81,24 @@ class Day13(aoc.Challenge):
             if solver.check() != z3.sat:
                 continue
 
-            cost = solver.model()[cost].as_long()
+            arr_ab = np.array([[chunks[0][0], chunks[1][0]], [chunks[0][1], chunks[1][1]]])
+            arr_dest = np.array(chunks[2])
+            got = scipy.linalg.solve(arr_ab, arr_dest)
+            assert np.allclose(got, np.round(got), atol=0.01)
+            got = np.round(got).astype(int)
+            cost = round(got[0]) * 3 + round(got[1])
             tokens += cost
 
-            b = (l * t - m * s) / (n * k - m * l)
-            a = (s - b * l) / k
-            got = 3 * a + b
-            if a != round(a) or b != round(b):
-                print(f"Rounding doesn't work. {a=}, {b=}")
-            if got == cost:
-                print("Yes")
-            else:
-                print("No")
+            if False:
+                b = (l * t - m * s) / (n * k - m * l)
+                a = (s - b * l) / k
+                got = 3 * a + b
+                if a != round(a) or b != round(b):
+                    print(f"Rounding doesn't work. {a=}, {b=}")
+                if got == cost:
+                    print("Yes")
+                else:
+                    print("No")
 
         return tokens
 
