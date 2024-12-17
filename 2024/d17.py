@@ -32,7 +32,8 @@ class Day17(aoc.Challenge):
 
     INPUT_PARSER = aoc.ParseBlocks([aoc.ParseIntergers()])
 
-    def simulate(self, reg, instructions) -> list[int]:
+    def simulate(self, reg: dict[str, int], instructions: list[int]) -> list[int]:
+        """Simulate a CPU."""
         ptr = 0
 
         def val(i):
@@ -41,27 +42,26 @@ class Day17(aoc.Challenge):
             return reg[{4: "A", 5: "B", 6: "C"}[i]]
 
         out = []
-        while ptr < len(instructions) - 1:
-            instruction, op = instructions[ptr], instructions[ptr + 1]
+        while ptr + 1 < len(instructions):
+            instruction, op = instructions[ptr:ptr + 2]
             ptr += 2
-
-            if instruction == 0: # adv
-                reg["A"] = reg["A"] // (2 ** val(op))
-            if instruction == 1: # bxl
-                reg["B"] = reg["B"] ^ op
-            if instruction == 2: # bst
-                reg["B"] = val(op) % 8
-            if instruction == 3: # jnz
-                if reg["A"] != 0:
+            match instruction:
+                case 0: # adv
+                    reg["A"] = reg["A"] // (2 ** val(op))
+                case 1: # bxl
+                    reg["B"] = reg["B"] ^ op
+                case 2: # bst
+                    reg["B"] = val(op) % 8
+                case 3 if reg["A"] != 0: # jnz
                     ptr = op
-            if instruction == 4: # bxc
-                reg["B"] = reg["B"] ^ reg["C"]
-            if instruction == 5: # out
-                out.append((val(op) % 8))
-            if instruction == 6: # bdv
-                reg["B"] = reg["A"] // (2 ** val(op))
-            if instruction == 7: # cdv
-                reg["C"] = reg["A"] // (2 ** val(op))
+                case 4: # bxc
+                    reg["B"] = reg["B"] ^ reg["C"]
+                case 5: # out
+                    out.append((val(op) % 8))
+                case 6: # bdv
+                    reg["B"] = reg["A"] // (2 ** val(op))
+                case 7: # cdv
+                    reg["C"] = reg["A"] // (2 ** val(op))
 
         return out
 
@@ -95,9 +95,7 @@ class Day17(aoc.Challenge):
                 reg_a = reg_a >> 3
             return out
 
-        SHIFTED_MASK = (1 << 10) - 8
-
-        def solve(given: int, output_pos: int, preserve: int) -> int:
+        def solve(given: int, output_pos: int, preserve: int) -> int | None:
             """Solve for the next digit of the output.
 
             Each output digit is composed on the right-most (3 bit) byte, int_one,
@@ -142,18 +140,21 @@ class Day17(aoc.Challenge):
                     # Record the new number as a candidate, along with the updated preserve mask.
                     candidates.add((new_num, preserve | 7 | (7 << shift)))
 
+            reg_a_vals: set[int]
             if output_pos == 0:
                 # We got all digits. Select the min candidate.
-                reg_a_vals = [i[0] for i in candidates]
+                reg_a_vals = {i[0] for i in candidates}
             else:
                 # Try using the number to generate the next digit(s).
                 reg_a_vals = set()
-                for option, preserve in candidates:
-                    if (got := solve(option, output_pos - 1, preserve)) is not None:
-                        reg_a_vals.add(got)
+                for option, new_preserve in candidates:
+                    if (next_step := solve(option, output_pos - 1, new_preserve)) is not None:
+                        reg_a_vals.add(next_step)
             return min(reg_a_vals) if reg_a_vals else None
 
-        return solve(0, len(instructions) - 1, 0)
-                    
+        result = solve(0, len(instructions) - 1, 0)
+        if result is None:
+            raise RuntimeError("No solution found.")
+        return result
 
 # vim:expandtab:sw=4:ts=4
