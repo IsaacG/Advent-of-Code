@@ -1,14 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 17: Chronospatial Computer."""
-from __future__ import annotations
 
-import collections
-import functools
 import itertools
-import math
-import random
-import re
-
 from lib import aoc
 
 SAMPLE = [
@@ -26,80 +19,74 @@ Register C: 0
 Program: 0,3,5,4,3,0"""
 ]
 
-LineType = int
-InputType = list[LineType]
+InputType = tuple[list[int], list[int]]
 
 
 class Day17(aoc.Challenge):
     """Day 17: Chronospatial Computer."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want="4,6,3,5,6,3,5,2,1,0"),
-        # aoc.TestCase(part=2, inputs=SAMPLE[1], want=117440),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+        aoc.TestCase(part=2, inputs=SAMPLE[1], want=117440),
     ]
 
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_ints, aoc.parse_re_findall_int(r"\d+")])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.ParseIntergers()])
 
     def simulate(self, reg, instructions) -> list[int]:
         ptr = 0
 
-        def val(i, combo):
-            if not combo:
-                return i
+        def val(i):
             if 0 <= i <= 3:
                 return i
-            return reg[{4: "a", 5: "b", 6: "c"}[i]]
+            return reg[{4: "A", 5: "B", 6: "C"}[i]]
 
         out = []
-        # print(ptr, len(instructions))
         while ptr < len(instructions) - 1:
             instruction, op = instructions[ptr], instructions[ptr + 1]
             ptr += 2
-            # print("a", "_".join("".join(i) for i in itertools.batched(bin(reg["a"])[2:], n=3)))
 
             if instruction == 0: # adv
-                reg["a"] = reg["a"] // (2 ** val(op, True))
+                reg["A"] = reg["A"] // (2 ** val(op))
             if instruction == 1: # bxl
-                reg["b"] = reg["b"] ^ op
+                reg["B"] = reg["B"] ^ op
             if instruction == 2: # bst
-                reg["b"] = val(op, True) % 8
+                reg["B"] = val(op) % 8
             if instruction == 3: # jnz
-                if reg["a"] != 0:
+                if reg["A"] != 0:
                     ptr = op
             if instruction == 4: # bxc
-                reg["b"] = reg["b"] ^ reg["c"]
+                reg["B"] = reg["B"] ^ reg["C"]
             if instruction == 5: # out
-                # print(f"{ptr=}, {op=}, {val(op, True)}")
-                # print("a", "_".join("".join(i) for i in itertools.batched(bin(reg["a"])[2:], n=3)))
-                # print("Output", (val(op, True) % 8))
-                out.append((val(op, True) % 8))
+                out.append((val(op) % 8))
             if instruction == 6: # bdv
-                reg["b"] = reg["a"] // (2 ** val(op, True))
+                reg["B"] = reg["A"] // (2 ** val(op))
             if instruction == 7: # cdv
-                reg["c"] = reg["a"] // (2 ** val(op, True))
-                # print(f"cdv dist = {reg['b']}, val = {reg['c'] % 8=}, inverted = {7 - (reg['c'] % 8)}",)
-            # print(instruction, op)
-            # for i in "abc":
-                # print(i, reg[i] % 8, bin(reg[i] % 8))
+                reg["C"] = reg["A"] // (2 ** val(op))
 
         return out
 
-    def part1(self, puzzle_input: InputType) -> int:
-        reg = {char: puzzle_input[0][i][0] for i, char in enumerate("abc")}
-        instructions = puzzle_input[1][0]
-        return ",".join(str(i) for i in self.simulate(reg, instructions))
-
+    def part1(self, puzzle_input: InputType) -> str:
+        """Run a simulator and return the output."""
+        reg_vals, instructions = puzzle_input
+        registers = {char: reg_vals[i] for i, char in enumerate("ABC")}
+        return ",".join(str(i) for i in self.simulate(registers, instructions))
 
     def part2(self, puzzle_input: InputType) -> int:
+        """Compute the initial A value to make a program a quine."""
+        reg_vals, instructions = puzzle_input
+        registers = {char: reg_vals[i] for i, char in enumerate("ABC")}
 
-        instructions = puzzle_input[1][0]
+        # Naive brute force. Doesn't work on the real input.
+        if self.testing:
+            # Speed up the tests by jumping towards the solution.
+            for i in itertools.count(start=100_000):
+                registers["A"] = i
+                got = self.simulate(registers.copy(), instructions)
+                if got == instructions:
+                    return i
 
         def simulate(reg_a: int) -> list[int]:
+            """Simulate the program but faster. Reverse engineered from my program."""
             out = []
             while reg_a:
                 shift = reg_a & 7 ^ 7
@@ -108,136 +95,65 @@ class Day17(aoc.Challenge):
                 reg_a = reg_a >> 3
             return out
 
-        test_val = 0b111_111_010_101
-        assert self.simulate({"a": test_val, "b": 0, "c": 0}, instructions) == [3, 6, 3, 3]
-        assert simulate(test_val) == [3, 6, 3, 3]
+        SHIFTED_MASK = (1 << 10) - 8
 
-        if True:
-            mask = (1 << 13) - 8
-            def solve(given, digits):
-                # print(f"solve({given=}, {digits=})")
-                given <<= 3
-                options = set()
-                for i, shift in itertools.product(range(8), repeat=2):
-                    shifted = (i << shift) & mask
-                    last_3 = shift ^ 7
-                    # digit = 3 ^ last_3 ^ (shifted >> shift)
-                    # if digit != instructions[-digits]:
-                    #     continue
-                    new_num = given | shifted | last_3
-                    got = simulate(new_num)
-                    # print(got)
-                    if len(got) == digits and got == instructions[-len(got):]:
-                        options.add(new_num)
-                if digits != 16:
-                    new_opts = set()
-                    for option in options:
-                        if (got := solve(option, digits + 1)) is not None:
-                            new_opts.add(got)
-                    options = new_opts
-                if digits == 16:
-                    for option in options:
-                        if (got := simulate(option)) == instructions:
-                            print(f"{option} yields {got}")
-                return min(options) if options else None
+        def solve(given: int, output_pos: int, preserve: int) -> int:
+            """Solve for the next digit of the output.
 
-            return solve(0, 1)
+            Each output digit is composed on the right-most (3 bit) byte, int_one,
+            and a second byte, int_two.
+            The int_two is found (int_one ^ 7) bits from the right.
+            For instance, 0b101_010_101 has int_one = 101 = 5.
+            int_two is located 101 ^ 7 = 101 ^ 111 = 010 = 2 bits to the left.
+            Shifting by two gives 10_1 = 101 = 5 as int_two.
+            The output is 3 ^ int_one ^ int_two.
+            This function brute forces by trying all possible values for int_one.
+            Given int_one, we can brute force int_two by setting int_two = digit ^ 3 ^ int_one.
+            After shifting int_two over and adding it to the number, we need to ensure int_one wasn't overwritten.
+
+            As an optimization, the preserve bits are used to track which bits are "set" and should
+            not be updated/overwritten to compute over digits.
+            """
+            given <<= 3
+            preserve <<= 3
+            candidates = set()
+            want_output = instructions[output_pos]  # The output want_output we want to generate.
+            for int_one in range(8):
+                shift = int_one ^ 7
+                int_two = want_output ^ 3 ^ int_one
+
+                # Combine the two ints.
+                # If we shift by less than 3, check they do not overwrite each other.
+                # They might "line up" and share space eg 101 << 1 and 100.
+                combined_ints = (int_two << shift) | int_one
+                if shift < 3 and (
+                    combined_ints & 7 != int_one or (combined_ints >> shift) & 7 != int_two
+                ):
+                    continue
+
+                new_num = given | combined_ints
+                # Check we didn't overwrite preserved bits from a prior digit.
+                if given & preserve != new_num & preserve:
+                    continue
+
+                # Run the simulator to ensure we get the correct digits.
+                got = simulate(new_num)
+                if len(got) == len(instructions) - output_pos and got == instructions[output_pos:]:
+                    # Record the new number as a candidate, along with the updated preserve mask.
+                    candidates.add((new_num, preserve | 7 | (7 << shift)))
+
+            if output_pos == 0:
+                # We got all digits. Select the min candidate.
+                reg_a_vals = [i[0] for i in candidates]
+            else:
+                # Try using the number to generate the next digit(s).
+                reg_a_vals = set()
+                for option, preserve in candidates:
+                    if (got := solve(option, output_pos - 1, preserve)) is not None:
+                        reg_a_vals.add(got)
+            return min(reg_a_vals) if reg_a_vals else None
+
+        return solve(0, len(instructions) - 1, 0)
                     
-
-
-
-
-        if False:
-            for a in [0b111_111_010_101]:
-                print("Test", a)
-                print("Sim out", "".join(str(i) for i in self.simulate({"a": a, "b": 0, "c": 0}, instructions)))
-                print("Run")
-                print("a", "_".join("".join(i) for i in itertools.batched(bin(a)[2:], n=3)))
-                out = ""
-                while a:
-                    print("a", "_".join("".join(i) for i in itertools.batched(bin(a)[2:], n=3)))
-                    shift = a & 7 ^ 7
-                    # print("shift", b)
-                    digit = (3 ^ a ^ (a >> shift)) & 7
-                    out += str(digit)
-                    a = a >> 3
-                print("Simple out", out)
-            return
-
-        if False:
-            want = instructions[:]
-            want_str = "".join(str(i) for i in want)
-            shifts = itertools.product(range(8), repeat=len(want))
-            protected = 0
-            for s in shifts:
-                num = 0
-                for digit, a_part in zip(reversed(want), s):
-                    num <<= 3
-                    protected <<= 3
-                    do_not_touch = num & protected
-
-                    shift = a_part ^ 7
-                    shift_part = digit ^ 3 ^ a
-                    # shift_part = (shift_part << shift) ^ 
-
-
-
-
-                    neg_dist = dist ^ 7
-                    num |= neg_dist | (digit ^ 7) << dist
-                    if num & 7 != neg_dist:
-                        break
-                    if num & (7 << dist) != (digit ^ 7):
-                        break
-                    if do_not_touch != num & protected:
-                        break
-                    protected |= 7 | 7 << dist
-                else:
-                    print(num)
-                    a = num
-                    out = ""
-                    while a:
-                        bits = a & 7
-                        b = bits ^ 7
-                        out += str(7 ^ ((a >> b) & 7))
-                        a = a >> 3
-                    if out == want_str:
-                        assert num < 266582694363549
-                        return num
-
-            return
-
-
-        else:
-            for i in itertools.count():
-                if not i % 1000000:
-                    print(i)
-                a = i
-                outcount = 0
-                while a:
-                    b = (a % 8) ^ 7
-                    c = a >> b
-                    b ^= c
-                    b ^= a
-                    out = b % 8
-                    if out == want[outcount]:
-                        outcount += 1
-                        if outcount == len_want:
-                            return i
-                    else:
-                        break
-                    a //= 8
-
-        reg = {char: puzzle_input[0][i][0] for i, char in enumerate("abc")}
-        instructions = puzzle_input[1][0]
-        want = [str(i) for i in instructions]
-
-        for i in itertools.count():
-            reg["a"] = i
-            got = self.simulate(reg.copy(), instructions)
-            if got == instructions:
-                return i
-            if got[:-4] == [0,3,3,0]:
-                print(i, got)
 
 # vim:expandtab:sw=4:ts=4

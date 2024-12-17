@@ -74,9 +74,10 @@ class ParseIntergers(BaseParser):
     def parse(self, puzzle_input: str) -> int | list[int] | list[list[int]]:
         """Parse a puzzle input."""
         lines = puzzle_input.splitlines()
-        multi_line = len(lines) > 1 if self.multi_line is None else self.multi_line
-        multi_word = any(len(line.split()) > 1 for line in lines)
-        numbers = [[int(word) for word in line.split()] for line in lines]
+        numbers = [[int(num) for num in RE_BOUNDED_INT.findall(line)] for line in lines]
+        numbers = [n for n in numbers if n]
+        multi_line = len(numbers) > 1 if self.multi_line is None else self.multi_line
+        multi_word = any(len(line) > 1 for line in numbers)
         if multi_line:
             if multi_word:
                 return numbers
