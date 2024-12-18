@@ -1,38 +1,10 @@
 #!/bin/python
 """Advent of Code, Day 18: RAM Run."""
 
-# TODO: switch from complex to tuples.
-# TODO: generic binary search
-
 import queue
 from lib import aoc
 
-SAMPLE = """\
-5,4
-4,2
-4,5
-3,0
-2,1
-6,3
-2,4
-1,5
-0,6
-3,3
-2,6
-5,1
-1,2
-5,5
-2,5
-6,5
-1,4
-0,4
-6,4
-1,1
-6,1
-1,0
-0,5
-1,6
-2,0"""
+SAMPLE = "5,4\n4,2\n4,5\n3,0\n2,1\n6,3\n2,4\n1,5\n0,6\n3,3\n2,6\n5,1\n1,2\n5,5\n2,5\n6,5\n1,4\n0,4\n6,4\n1,1\n6,1\n1,0\n0,5\n1,6\n2,0"
 
 
 class Day18(aoc.Challenge):
@@ -45,27 +17,26 @@ class Day18(aoc.Challenge):
 
     def maze_solver(self, puzzle_input: list[list[int]], steps: int) -> int | None:
         """Return the number of steps needed to complete the maze."""
-        fallen = set(complex(*i) for i in puzzle_input[:steps])
+        fallen = set(tuple(i) for i in puzzle_input[:steps])
         size = 7 if self.testing else 71
-        spaces = {complex(x, y) for x in range(size) for y in range(size)}
+        spaces = {(x, y) for x in range(size) for y in range(size)}
         spaces -= fallen
 
-        start = complex(0)
-        end = complex(size - 1, size - 1)
+        start = (0, 0)
+        end = (size - 1, size - 1)
 
-        todo: queue.PriorityQueue[tuple[int, float, float]] = queue.PriorityQueue()
-        todo.put((0, start.real, start.imag))
+        todo: queue.PriorityQueue[tuple[int, tuple[int, int]]] = queue.PriorityQueue()
+        todo.put((0, start))
         seen = set()
         while not todo.empty():
-            cost, x, y = todo.get()
-            p = complex(x, y)
+            cost, p = todo.get()
             if p == end:
                 return cost
-            for n in aoc.neighbors(p):
+            for n in aoc.t_neighbors4(p):
                 if n in seen or n not in spaces:
                     continue
                 seen.add(n)
-                todo.put((cost + 1, n.real, n.imag))
+                todo.put((cost + 1, n))
 
         return None
 

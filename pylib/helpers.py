@@ -64,6 +64,15 @@ def neighbors(point: complex, directions: collections.abc.Sequence[complex] = ST
     return (point + offset for offset in directions)
 
 
+def t_neighbors4(point: collections.abc.Sequence[int]) -> collections.abc.Iterable[tuple[int, int]]:
+    """Return the 4 neighbors of a point."""
+    x, y = point
+    yield x + 1, y
+    yield x - 1, y
+    yield x, y + 1
+    yield x, y - 1
+
+
 @dataclasses.dataclass
 class Map:
     max_x: int
@@ -130,3 +139,15 @@ def render_char_map(chars: dict[complex, str], height: int, width: int) -> str:
     return "\n".join(lines)
 
 
+def binary_search(low: int, high: int, predicate: collections.abc.Callable[[int], bool]) -> int:
+    """Perform a binary search and return when the function matches.
+
+    The predicate should return -1 for "lower", 0 for "match" and +1 for higher.
+    """
+    while low < high:
+        cur = (high + low) // 2
+        if predicate(cur):
+            high = cur
+        else:
+            low = cur + 1
+    return high
