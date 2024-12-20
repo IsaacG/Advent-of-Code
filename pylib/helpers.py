@@ -86,6 +86,10 @@ class Map:
     def __post_init__(self) -> None:
         self.width = self.max_x + 1
         self.height = self.max_y + 1
+        self.t_coords = {
+            char: {(int(p.real), int(p.imag)) for p in points}
+            for char, points in self.coords.items()
+        }
 
     def __sub__(self, key: str) -> set[complex]:
         return self.all_coords - self[key]
