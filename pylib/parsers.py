@@ -104,10 +104,11 @@ class ParseMultiWords(BaseParser):
     """Parse an input which is a single line with multiple words."""
 
     input_type: Callable[[str], Any]
+    separator: str | None = None
 
     def parse(self, puzzle_input: str) -> Any:
         """Parse puzzle input as a single object and convert to a type."""
-        return [self.input_type(i) for i in puzzle_input.split()]
+        return [self.input_type(i) for i in puzzle_input.split(self.separator)]
 
 
 @dataclasses.dataclass
