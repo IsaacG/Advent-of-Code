@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 21: Keypad Conundrum."""
-from __future__ import annotations
 
 import collections
 import functools
@@ -8,50 +7,49 @@ import itertools
 
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 029A
 980A
 179A
 456A
-379A""",  # 37
-]
+379A"""
+DIGITS_LAYOUT = """\
+789
+456
+123
+X0A"""
+ARROWS_LAYOUT = """\
+X^A
+<v>"""
 
-LineType = int
-InputType = list[LineType]
+
+def pad_parse(layout: str) -> tuple[dict[str, complex], complex]:
+    """Parse a keypad layout."""
+    pad = {
+        char: complex(x, y)
+        for y, line in enumerate(layout.splitlines())
+        for x, char in enumerate(line)
+    }
+    return pad, pad["X"]
+
+
+DIGIT_PAD, DIGIT_X = pad_parse(DIGITS_LAYOUT)
+ARROW_PAD, ARROW_X = pad_parse(ARROWS_LAYOUT)
 
 
 class Day21(aoc.Challenge):
     """Day 21: Keypad Conundrum."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=126384),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+        aoc.TestCase(part=1, inputs=SAMPLE, want=126384),
+        aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        NUMPAD_LAYOUT = "789\n456\n123\nX0A"
-        ARRPAD_LAYOUT = "X^A\n<v>"
-        NUMPAD = {
-            char: complex(x, y)
-            for y, line in enumerate(NUMPAD_LAYOUT.splitlines())
-            for x, char in enumerate(line)
-        }
-        ARRPAD = {
-            char: complex(x, y)
-            for y, line in enumerate(ARRPAD_LAYOUT.splitlines())
-            for x, char in enumerate(line)
-        }
-        X_ARR = ARRPAD["X"]
-        X_DIG = NUMPAD["X"]
+    def solver(self, puzzle_input: list[str], part_one: bool) -> int:
 
         def digipad(src, dst):
-            p_src = NUMPAD[src]
-            offset = NUMPAD[dst] - p_src
+            p_src = DIGIT_PAD[src]
+            offset = DIGIT_PAD[dst] - p_src
             parts = []
             if offset.real > 0:
                 parts.append( ">" * int(offset.real))
@@ -63,15 +61,15 @@ class Day21(aoc.Challenge):
                 parts.append( "^" * -int(offset.imag))
 
             options = []
-            if p_src + complex(offset.real, 0) != X_DIG:
+            if p_src + complex(offset.real, 0) != DIGIT_X:
                 options.append(parts[0] + parts[1] + "A")
-            if p_src + complex(0, offset.imag) != X_DIG:
+            if p_src + complex(0, offset.imag) != DIGIT_X:
                 options.append( parts[1] + parts[0] + "A")
             return options
 
         def arrpad(src, dst):
-            p_src = ARRPAD[src]
-            offset = ARRPAD[dst] - p_src
+            p_src = ARROW_PAD[src]
+            offset = ARROW_PAD[dst] - p_src
             parts = []
             if offset.real > 0:
                 parts.append( ">" * int(offset.real))
@@ -83,9 +81,9 @@ class Day21(aoc.Challenge):
                 parts.append( "^" * -int(offset.imag))
 
             options = set()
-            if p_src + complex(offset.real, 0) != X_ARR:
+            if p_src + complex(offset.real, 0) != ARROW_X:
                 options.add(parts[0] + parts[1])
-            if p_src + complex(0, offset.imag) != X_ARR:
+            if p_src + complex(0, offset.imag) != ARROW_X:
                 options.add( parts[1] + parts[0])
             return options
 
@@ -93,9 +91,6 @@ class Day21(aoc.Challenge):
         def arrseq_a(seq):
             v = [arrpad(src, dst) for src, dst in zip("A" + seq, seq + "A")]
             return [collections.Counter(i) for i in itertools.product(*v)]
-
-        def arrseq(seq, count):
-            return [{k: v * count for k, v in c.items()} for c in arrseq_a(seq)]
 
         @functools.cache
         def explode_seq(seq, remaining):
@@ -126,7 +121,6 @@ class Day21(aoc.Challenge):
             )
 
             complexity = size * int(line.removesuffix("A"))
-            print(f"{lineno=}, {line=}, {size=}, {complexity=}")
             total += complexity
 
         return total
