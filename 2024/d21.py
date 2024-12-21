@@ -46,86 +46,52 @@ class Day21(aoc.Challenge):
     ]
 
     def solver(self, puzzle_input: list[str], part_one: bool) -> int:
+        """Figure out the shortest way to open a door through multiple indirections."""
 
-        def digipad(src, dst):
-            p_src = DIGIT_PAD[src]
-            offset = DIGIT_PAD[dst] - p_src
+        def walk_pad(pad: dict[str, complex], src: str, dst: str) -> set[str]:
+            """Return the possible ways to get from one char to another on the keypad."""
+            p_src = pad[src]
+            offset = pad[dst] - p_src
+            pos_x = pad["X"]
+            h_sign = aoc.sign(offset.real)
+            v_sign = aoc.sign(offset.imag)
+
             parts = []
-            if offset.real > 0:
-                parts.append( ">" * int(offset.real))
-            else:
-                parts.append( "<" * -int(offset.real))
-            if offset.imag > 0:
-                parts.append( "v" * int(offset.imag))
-            else:
-                parts.append( "^" * -int(offset.imag))
-
-            options = []
-            if p_src + complex(offset.real, 0) != DIGIT_X:
-                options.append(parts[0] + parts[1] + "A")
-            if p_src + complex(0, offset.imag) != DIGIT_X:
-                options.append( parts[1] + parts[0] + "A")
-            return options
-
-        def arrpad(src, dst):
-            p_src = ARROW_PAD[src]
-            offset = ARROW_PAD[dst] - p_src
-            parts = []
-            if offset.real > 0:
-                parts.append( ">" * int(offset.real))
-            else:
-                parts.append( "<" * -int(offset.real))
-            if offset.imag > 0:
-                parts.append( "v" * int(offset.imag))
-            else:
-                parts.append( "^" * -int(offset.imag))
+            parts.append({1: ">", -1: "<", 0: ""}[h_sign] * (int(offset.real) * h_sign))
+            parts.append({1: "v", -1: "^", 0: ""}[v_sign] * (int(offset.imag) * v_sign))
 
             options = set()
-            if p_src + complex(offset.real, 0) != ARROW_X:
+            if p_src + complex(offset.real, 0) != pos_x:
                 options.add(parts[0] + parts[1])
-            if p_src + complex(0, offset.imag) != ARROW_X:
-                options.add( parts[1] + parts[0])
+            if p_src + complex(0, offset.imag) != pos_x:
+                options.add(parts[1] + parts[0])
             return options
 
         @functools.cache
-        def arrseq_a(seq):
-            v = [arrpad(src, dst) for src, dst in zip("A" + seq, seq + "A")]
-            return [collections.Counter(i) for i in itertools.product(*v)]
-
-        @functools.cache
-        def explode_seq(seq, remaining):
-            if remaining == 0:
-                return len(seq) + 1
-            ways = arrseq_a(seq)
+        def explode_seq(sequence: str, indirections: int) -> int:
+            """Return the minimum keypresses to enter a key sequence through a number of indirections."""
+            if indirections == 0:
+                return len(sequence) + 1
+            # Memoize these two lines for 4x faster code.
+            paths = [walk_pad(ARROW_PAD, src, dst) for src, dst in zip("A" + sequence, sequence + "A")]
+            ways = [collections.Counter(i) for i in itertools.product(*paths)]
             return min(
-                sum((explode_seq(s, remaining - 1)) * c for s, c in way.items())
+                sum((explode_seq(subsequence, indirections - 1)) * count for subsequence, count in way.items())
                 for way in ways
             )
 
+        steps = 2 if part_one else 25
         total = 0
-        for lineno, line in enumerate(puzzle_input):
-            options = {""}
-            for src, dst in zip("A" + line, line):
-                n = set()
-                for opt_a in digipad(src, dst):
-                    for opt_b in options:
-                        n.add(opt_a + opt_b)
-                options = n
-            outputs = {frozenset(collections.Counter(o.rstrip("A").split("A")).items()) for o in options}
-
-            steps = 2 if part_one else 25
-
+        for line in puzzle_input:
+            paths = [walk_pad(DIGIT_PAD, src, dst) for src, dst in zip("A" + line, line)]
+            digit_paths = [frozenset(collections.Counter(i).items()) for i in itertools.product(*paths)]
             size = min(
-                sum(explode_seq(seq, steps) * count for seq, count in one_input)
-                for one_input in outputs
+                sum(explode_seq(sequence, steps) * count for sequence, count in one_input)
+                for one_input in digit_paths
             )
-
             complexity = size * int(line.removesuffix("A"))
             total += complexity
 
         return total
-
-
-
 
 # vim:expandtab:sw=4:ts=4
