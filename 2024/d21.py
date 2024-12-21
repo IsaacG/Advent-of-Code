@@ -5,8 +5,6 @@ from __future__ import annotations
 import collections
 import functools
 import itertools
-import math
-import re
 
 from lib import aoc
 
@@ -91,13 +89,26 @@ class Day21(aoc.Challenge):
                 options.add( parts[1] + parts[0])
             return options
 
-        def arrseq(seq, count):
+        @functools.cache
+        def arrseq_a(seq):
             v = [arrpad(src, dst) for src, dst in zip("A" + seq, seq + "A")]
-            counts = [collections.Counter(i) for i in itertools.product(*v)]
-            return [{k: v * count for k, v in c.items()} for c in counts]
+            return [collections.Counter(i) for i in itertools.product(*v)]
+
+        def arrseq(seq, count):
+            return [{k: v * count for k, v in c.items()} for c in arrseq_a(seq)]
+
+        @functools.cache
+        def explode_seq(seq, remaining):
+            if remaining == 0:
+                return len(seq) + 1
+            ways = arrseq_a(seq)
+            return min(
+                sum((explode_seq(s, remaining - 1)) * c for s, c in way.items())
+                for way in ways
+            )
 
         total = 0
-        for line in puzzle_input:
+        for lineno, line in enumerate(puzzle_input):
             options = {""}
             for src, dst in zip("A" + line, line):
                 n = set()
@@ -105,44 +116,30 @@ class Day21(aoc.Challenge):
                     for opt_b in options:
                         n.add(opt_a + opt_b)
                 options = n
-            outputs = options
-            outputs = [
-                collections.Counter(o.rstrip("A").split("A"))
-                for o in outputs
-            ]
-            if False:
-                outputs = []
-                for option in options:
-                    segments = collections.Counter(option.split("A"))
-                    opt = [({segment}, count) for segment, count in segments.items()]
-                    outputs.append(opt)
+            outputs = {frozenset(collections.Counter(o.rstrip("A").split("A")).items()) for o in options}
 
-            for _ in range(2 if part_one else 25):
+            for step in range(2 if part_one else 25):
                 inputs = outputs
-                outputs = []
-                # print(line, inputs)
+                outputs = set()
                 for one_input in inputs:
-                    # print(line, one_input)
-                    ways = [arrseq(seq, count) for seq, count in one_input.items()]
-                    # print("ways", ways)
-                    options = list(itertools.product(*ways))
+                    ways = [arrseq(seq, count) for seq, count in one_input]
+                    options = itertools.product(*ways)
                     for opt in options:
                         coll = collections.defaultdict(int)
                         for group in opt:
                             for k, v in group.items():
                                 coll[k] += v
-                        outputs.append(coll)
+                        outputs.add(frozenset(coll.items()))
 
-            # print(outputs[0])
-            costs = [sum((len(k) + 1) * v for k, v in output.items()) for output in outputs]
+                if len(outputs) > 2000:
+                    outputs = set(sorted(outputs, key=lambda o: sum((len(k) + 1) * v for k, v in o))[:2000])
+
+            costs = [sum((len(k) + 1) * v for k, v in output) for output in outputs]
             size = min(costs)
             complexity = size * int(line.removesuffix("A"))
-            # print(f"{line}: complexity = {size} * {int(line.removesuffix("A"))} = {complexity}")
+            print(f"{lineno=}, {line=}, {size=}, {complexity=}")
             total += complexity
 
-        if not self.testing and part_one:
-            assert total != 155462
-            assert total < 157942
         return total
 
 
