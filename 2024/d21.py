@@ -118,24 +118,13 @@ class Day21(aoc.Challenge):
                 options = n
             outputs = {frozenset(collections.Counter(o.rstrip("A").split("A")).items()) for o in options}
 
-            for step in range(2 if part_one else 25):
-                inputs = outputs
-                outputs = set()
-                for one_input in inputs:
-                    ways = [arrseq(seq, count) for seq, count in one_input]
-                    options = itertools.product(*ways)
-                    for opt in options:
-                        coll = collections.defaultdict(int)
-                        for group in opt:
-                            for k, v in group.items():
-                                coll[k] += v
-                        outputs.add(frozenset(coll.items()))
+            steps = 2 if part_one else 25
 
-                if len(outputs) > 2000:
-                    outputs = set(sorted(outputs, key=lambda o: sum((len(k) + 1) * v for k, v in o))[:2000])
+            size = min(
+                sum(explode_seq(seq, steps) * count for seq, count in one_input)
+                for one_input in outputs
+            )
 
-            costs = [sum((len(k) + 1) * v for k, v in output) for output in outputs]
-            size = min(costs)
             complexity = size * int(line.removesuffix("A"))
             print(f"{lineno=}, {line=}, {size=}, {complexity=}")
             total += complexity
