@@ -49,8 +49,12 @@ class Day21(aoc.Challenge):
             for x, char in enumerate(line)
         }
 
+        regular = True
+
         def pushpad(pad, src, dst):
-            offset = pad[dst] - pad[src]
+            nonlocal regular
+            p_src = pad[src]
+            offset = pad[dst] - p_src
             parts = []
             if offset.real > 0:
                 parts.append( ">" * int(offset.real))
@@ -60,8 +64,18 @@ class Day21(aoc.Challenge):
                 parts.append( "v" * int(offset.imag))
             else:
                 parts.append( "^" * -int(offset.imag))
-            return parts[0] + parts[1] + "A"
-            return [parts[0] + parts[1] + "A", parts[1] + parts[0] + "A"]
+            if regular:
+                if p_src + complex(offset.real, 0) == pad["X"]:
+                    regular = not regular
+                    return parts[1] + parts[0] + "A"
+                else:
+                    return parts[0] + parts[1] + "A"
+            else:
+                if p_src + complex(0, offset.imag) == pad["X"]:
+                    regular = not regular
+                    return parts[0] + parts[1] + "A"
+                else:
+                    return parts[1] + parts[0] + "A"
 
         total = 0
         if False:
@@ -107,16 +121,10 @@ class Day21(aoc.Challenge):
 
         if True:
             for line in puzzle_input:
-                print(line)
+                regular = True
                 pushes = "".join(pushpad(NUMPAD, src, dst) for src, dst in zip("A" + line, line))
-                if line == "179A":
-                    print(pushes)
                 pushes = "".join(pushpad(ARRPAD, src, dst) for src, dst in zip("A" + pushes, pushes))
-                if line == "179A":
-                    print(pushes)
                 pushes = "".join(pushpad(ARRPAD, src, dst) for src, dst in zip("A" + pushes, pushes))
-                if line == "179A":
-                    print(pushes)
                 complexity = len(pushes) * int(line.removesuffix("A"))
                 print(f"{line}: complexity = {len(pushes)} * {int(line.removesuffix("A"))} = {complexity}")
                 total += complexity
@@ -124,6 +132,7 @@ class Day21(aoc.Challenge):
 
         if not self.testing:
             assert total != 155462
+            assert total < 157942
         return total
 
     # def part2(self, puzzle_input: InputType) -> int:
