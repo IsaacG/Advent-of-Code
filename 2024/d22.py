@@ -62,7 +62,6 @@ class Day22(aoc.Challenge):
         # print("\n".join(["==="] + [f"{k}={v!r}" for k, v in locals().items()] + ["==="]))
 
     def part2(self, puzzle_input: InputType) -> int:
-
         def rand(number):
             number = (number ^ (number * 64)) % 16777216
             number = (number ^ (number // 32)) % 16777216
@@ -76,25 +75,26 @@ class Day22(aoc.Challenge):
                 yield number % 10
 
 
-        total = 0
-        sequences = [list(seq(number)) for number in puzzle_input]
-        print("Generated sequences")
 
-        seq_deltas = [
-            [
-                ([b - a for a, b in zip(nums, nums[1:])], nums[-1])
-                for nums in [sequence[i:i+5] for i in range(len(sequence) - 4)]
-            ]
-            for sequence in sequences
-        ]
+        delta_collections = []
+        for number in puzzle_input:
+            sequence = list(seq(number))
+            coll = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(dict)))
+            for i in range(len(sequence) - 4):
+                nums = sequence[i:i + 5]
+                deltas = [b - a for a, b in zip(nums, nums[1:])]
+                coll[deltas[0]][deltas[1]][deltas[2]].append((deltas, nums[-1]))
+            delta_collections.append(coll)
         print("Generated deltas")
 
         def test(opt):
             return sum(
-                next((j for i, j in sq if i == opt), 0)
-                for sq in seq_deltas
+                next((j for i, j in sq[opt[0]][opt[1]][opt[2]] if i == opt), 0)
+                for sq in delta_collections
             )
 
+        if False:  # testing
+            return test([-2,1,-1,3]) # want 23
 
         def brute():
             m = 0
@@ -106,34 +106,6 @@ class Day22(aoc.Challenge):
 
         return brute()
 
-        return total
 
-    # def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
 
 # vim:expandtab:sw=4:ts=4
