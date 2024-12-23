@@ -129,12 +129,13 @@ class ParseOneWordPerLine(BaseParser):
 class BaseParseMultiPerLine(BaseParser):
     """Parse an input which is multiple lines with multiple words per line."""
 
-    convert: Callable[[Iterable[str]], Any]
+    convert: Callable[[Iterable[str]], Any] = lambda x: x
+    word_separator: str | None = None
 
     def parse(self, puzzle_input: str) -> list[list[Any]]:
         """Parse puzzle lines, converting each line to a list of types."""
         return [
-            self.convert(line.split())
+            self.convert(line.split(self.word_separator))
             for line in puzzle_input.splitlines()
         ]
 
