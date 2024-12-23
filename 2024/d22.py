@@ -39,7 +39,7 @@ class Day22(aoc.Challenge):
     def part2(self, puzzle_input: list[int]) -> int:
         """Find the delta-pattern which maximizes returns."""
 
-        def delta_values():
+        def delta_values(puzzle_input):
             """Generate the deltas between the last digit of 2000 prices."""
             patterns_seen = set()
             delta_collections = []
