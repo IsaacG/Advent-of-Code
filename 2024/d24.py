@@ -6,6 +6,7 @@ import collections
 import dataclasses
 import functools
 import itertools
+import operator
 import pathlib
 import math
 import re
@@ -78,6 +79,79 @@ LineType = int
 InputType = list[LineType]
 
 
+class Solver:
+    def __init__(self, gates):
+        self.gates = gates
+        self.parents = {gate: [a, b] for gate, (a, _, b) in self.gates.items()}
+        ops = {"AND": operator.and_, "OR": operator.or_, "XOR": operator.xor}
+        self.ops = {gate: ops[op] for gate, (_, op, _) in self.gates.items()}
+        every_other = 0
+        for i in range(22):
+            every_other <<= 2
+            every_other += 1
+        patterns = [(2**46 - 1, 2**46 - 1), (0, 0), (0, 2**46 - 1), (every_other, every_other), (every_other << 1, every_other << 1)]
+        patterns = [(2**46 - 1, 2**46 - 1)]
+        state = []
+        for x, y in patterns:
+            z = x + y
+            gate_values = {}
+            want_values = {}
+            for i in range(46):
+                j = f"{i:02}"
+                gate_values[f"x{j}"] = bool(x & (1 << i))
+                gate_values[f"y{j}"] = bool(y & (1 << i))
+                want_values[f"z{j}"] = bool(z & (1 << i))
+            # print(x, y, z)
+            # print(gate_values, want_values)
+            state.append((gate_values, want_values))
+        self.state = state
+
+    def solve(self):
+        solved_gates = {f"x{bit:02}" for bit in range(45)}
+        solved_gates |= {f"y{bit:02}" for bit in range(45)}
+
+        for bit in range(46):
+            bit_n = f"{bit:02}"
+            todo = {f"z{bit_n}"}
+            required_gates = set()
+            while todo:
+                gate = todo.pop()
+                if gate not in solved_gates:
+                    required_gates.add(gate)
+                if gate not in self.gates:
+                    continue
+                for parent in self.parents[gate]:
+                    if parent not in solved_gates:
+                        todo.add(parent)
+            solutions = []
+            for gate_values, want_values in self.state:
+                new_values = {}
+                combined = collections.ChainMap(gate_values, new_values)
+                todo = required_gates.copy()
+                assert required_gates.isdisjoint(gate_values), required_gates - set(gate_values)
+                while todo:
+                    gate = next(i for i in todo if all(parent in combined for parent in self.parents[i]))
+                    todo.remove(gate)
+                    op = self.ops[gate]
+                    vals = [combined[parent] for parent in self.parents[gate]]
+                    new_values[gate] = op(*vals)
+                assert set(new_values) == required_gates
+                valid = new_values[f"z{bit_n}"] == want_values[f"z{bit_n}"]
+                if not valid:
+                    print(gate_values[f"x{bit_n}"], gate_values[f"y{bit_n}"], new_values[f"z{bit_n}"])
+                    print(f'{new_values[f"z{bit_n}"]} != {want_values[f"z{bit_n}"]}')
+                solutions.append((new_values, valid))
+            if all(valid for new_values, valid in solutions):
+                print(f"Successfully computed bit {bit}")
+                for (gate_values, _), (new_values, _) in zip(self.state, solutions):
+                    assert not set(gate_values) & set(new_values), set(gate_values) & set(new_values)
+                    gate_values.update(new_values)
+                    print(len(gate_values), len(new_values))
+            else:
+                raise RuntimeError(f"Failed to compute bit {bit}: {required_gates} has an issue")
+            solved_gates.update(required_gates)
+
+
 @dataclasses.dataclass
 class Node:
     a: Node | None
@@ -97,18 +171,19 @@ class Node:
             self.a, self.b = self.b, self.a
 
         match self.a.type, self.op, self.b.type:
-            case ["PRE", "OR", "UPPER"]:
-                self.type = "CARRY"
-            case ["INPUT", "XOR", "INPUT"]:
-                self.type = "LOWER"
-            case ["INPUT", "AND", "INPUT"]:
-                self.type = "UPPER"
             case ["CARRY", "XOR", "LOWER"] if self.name.startswith("z"):
                 self.type = "OUTPUT"
             case ["LOWER", "AND", "UPPER"] if self.a.num == "01" and self.b.num == "00":
                 self.type = "PRE"
-            case ["CARRY", "AND", "LOWER"]:
-                self.type = "PRE"
+        patterns = {
+            ("PRE", "OR", "UPPER"): "CARRY",
+            ("INPUT", "XOR", "INPUT"): "LOWER",
+            ("INPUT", "AND", "INPUT"): "UPPER",
+            ("CARRY", "AND", "LOWER"): "PRE",
+        }
+        for (a, op, b), n_type in patterns.items():
+            if {self.a.type, self.b.type} < {"XXX", a, b} and self.op == op:
+                self.type = n_type
 
         if self.name == "z00" or self.name == "z01":
             self.type = "OUTPUT"
@@ -216,11 +291,18 @@ class Day24(aoc.Challenge):
         for a, op, b, _, out in raw_gates:
             gates[out] = (a, op, b)
 
+        solver = Solver(gates)
+        solver.solve()
+        known = {a for a, b in raw_inputs}
+        unknown = set(gates)
+
         swaps = [("z34", "wcb"), ("cvp", "wjb"), ("z14", "qbw"), ("z10", "mkk")]
         for a, b in swaps:
             gates[a], gates[b] = gates[b], gates[a]
 
-        known = {a for a, b in raw_inputs}
+        solver = Solver(gates)
+        solver.solve()
+
         todo = set(gates)
         nodes = {}
         for g in known:
@@ -241,16 +323,6 @@ class Day24(aoc.Challenge):
                 continue
             out.append(f"{node.a} -> {node}")
             out.append(f"{node.b} -> {node}")
-            n = str(node)
-            if n in ["z00", "z01", "z45"]:
-                continue
-            parents = sorted(str(i) for i in [node.a, node.b])
-            if n.startswith("z") and not (parents[0].startswith("CARRY") and parents[1].startswith("LOWER")):
-                print(n, node.name, parents)
-            if n.startswith("CARRY") and not (parents[0].startswith("PRE") and parents[1].startswith("UPPER")):
-                print(n, node.name, parents)
-            if n.startswith("PRE") and not (parents[0].startswith("CARRY") and parents[1].startswith("LOWER")):
-                print(n, node.name, parents)
         out.append("}")
         pathlib.Path("a.dot").write_text("\n".join(out))
         return ",".join(sorted(i for swap in swaps for i in swap))
