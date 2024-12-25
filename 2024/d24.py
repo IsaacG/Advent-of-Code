@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import collections
+import copy
 import dataclasses
 import functools
 import itertools
@@ -77,20 +78,19 @@ tnw OR pbm -> gnj""",  # 37
 
 LineType = int
 InputType = list[LineType]
+OPS = {"AND": operator.and_, "OR": operator.or_, "XOR": operator.xor}
 
 
 class Solver:
     def __init__(self, gates):
         self.gates = gates
-        self.parents = {gate: [a, b] for gate, (a, _, b) in self.gates.items()}
-        ops = {"AND": operator.and_, "OR": operator.or_, "XOR": operator.xor}
-        self.ops = {gate: ops[op] for gate, (_, op, _) in self.gates.items()}
+
+    def build_state(self):
         every_other = 0
         for i in range(22):
             every_other <<= 2
             every_other += 1
         patterns = [(2**46 - 1, 2**46 - 1), (0, 0), (0, 2**46 - 1), (every_other, every_other), (every_other << 1, every_other << 1)]
-        patterns = [(2**46 - 1, 2**46 - 1)]
         state = []
         for x, y in patterns:
             z = x + y
@@ -98,58 +98,101 @@ class Solver:
             want_values = {}
             for i in range(46):
                 j = f"{i:02}"
-                gate_values[f"x{j}"] = bool(x & (1 << i))
-                gate_values[f"y{j}"] = bool(y & (1 << i))
+                if i != 45:
+                    gate_values[f"x{j}"] = bool(x & (1 << i))
+                    gate_values[f"y{j}"] = bool(y & (1 << i))
                 want_values[f"z{j}"] = bool(z & (1 << i))
             # print(x, y, z)
             # print(gate_values, want_values)
             state.append((gate_values, want_values))
-        self.state = state
+        return state
+
+    def required_gates(self, to_compute, all_gates, solved_gates, parents):
+        todo = to_compute.copy()
+        required_gates = set()
+        seen = set()
+        while todo:
+            gate = todo.pop()
+            seen.add(gate)
+            if gate not in solved_gates:
+                required_gates.add(gate)
+            if gate not in all_gates:
+                continue
+            for parent in parents[gate]:
+                if parent not in solved_gates and parent not in seen:
+                    todo.add(parent)
+        return required_gates
+
+    def solve_for_bit(self, bit, solved_gates, required_gates, state, ops, parents):
+        bit_n = f"{bit:02}"
+        valid = True
+
+        solutions = []
+        for gate_values, want_values in state:
+            new_values = {}
+            combined = collections.ChainMap(gate_values, new_values)
+            todo = required_gates.copy()
+            assert required_gates.isdisjoint(gate_values), required_gates - set(gate_values)
+            while todo:
+                gate = next((i for i in todo if all(parent in combined for parent in parents[i])), None)
+                if gate is None:
+                    return [], False
+                todo.remove(gate)
+                op = ops[gate]
+                vals = [combined[parent] for parent in parents[gate]]
+                new_values[gate] = op(*vals)
+            assert set(new_values) == required_gates
+            valid = valid and (new_values[f"z{bit_n}"] == want_values[f"z{bit_n}"])
+            # if not valid:
+            #     print(gate_values[f"x{bit_n}"], gate_values[f"y{bit_n}"], new_values[f"z{bit_n}"])
+            #     print(f'{new_values[f"z{bit_n}"]} != {want_values[f"z{bit_n}"]}')
+            solutions.append(new_values)
+        return solutions, valid
+
+    def solve_from(self, start_bit, swaps_left, solved_gates, gates, state):
+        parents = {gate: [a, b] for gate, (a, _, b) in gates.items()}
+        ops = {gate: OPS[op] for gate, (_, op, _) in gates.items()}
+        swaps = []
+
+        for bit in range(start_bit, 45):
+            bit_n = f"{bit:02}"
+            required_gates = self.required_gates({f"z{bit_n}"}, gates, solved_gates, parents)
+            solutions, valid = self.solve_for_bit(bit, solved_gates, required_gates, state, ops, parents)
+            if valid:
+                # print(f"Successfully computed bit {bit}")
+                for (gate_values, _), new_values in zip(state, solutions):
+                    gate_values.update(new_values)
+            elif not swaps_left:
+                return [], False
+            else:
+                candidates = self.required_gates({f"z{bit_n}", f"z{bit + 1:02}"} & set(gates), gates, solved_gates, parents)
+                viable = []
+                # print(f"Failed to compute bit {bit}: {candidates} has an issue")
+                for a, b in itertools.combinations(candidates, 2):
+                    try_gates = self.gates.copy()
+                    try_gates[a], try_gates[b] = try_gates[b], try_gates[a]
+
+                    parents = {gate: [a, b] for gate, (a, _, b) in try_gates.items()}
+                    ops = {gate: OPS[op] for gate, (_, op, _) in try_gates.items()}
+                    required_gates = self.required_gates({f"z{bit_n}"}, try_gates, solved_gates, parents)
+                    solutions, valid = self.solve_for_bit(bit, solved_gates, required_gates, state, ops, parents)
+                    if not valid: continue
+                    print("Try swapping", a, b, swaps_left)
+
+                    subswaps, valid = self.solve_from(bit, swaps_left - 1, solved_gates.copy(), try_gates.copy(), copy.deepcopy(state))
+                    if valid:
+                        print(f"{a=}, {b=}, {subswaps=}")
+                        return [a, b] + subswaps, True
+                return [], False
+            solved_gates.update(required_gates)
+        return [], True
 
     def solve(self):
         solved_gates = {f"x{bit:02}" for bit in range(45)}
         solved_gates |= {f"y{bit:02}" for bit in range(45)}
+        state = self.build_state()
 
-        for bit in range(46):
-            bit_n = f"{bit:02}"
-            todo = {f"z{bit_n}"}
-            required_gates = set()
-            while todo:
-                gate = todo.pop()
-                if gate not in solved_gates:
-                    required_gates.add(gate)
-                if gate not in self.gates:
-                    continue
-                for parent in self.parents[gate]:
-                    if parent not in solved_gates:
-                        todo.add(parent)
-            solutions = []
-            for gate_values, want_values in self.state:
-                new_values = {}
-                combined = collections.ChainMap(gate_values, new_values)
-                todo = required_gates.copy()
-                assert required_gates.isdisjoint(gate_values), required_gates - set(gate_values)
-                while todo:
-                    gate = next(i for i in todo if all(parent in combined for parent in self.parents[i]))
-                    todo.remove(gate)
-                    op = self.ops[gate]
-                    vals = [combined[parent] for parent in self.parents[gate]]
-                    new_values[gate] = op(*vals)
-                assert set(new_values) == required_gates
-                valid = new_values[f"z{bit_n}"] == want_values[f"z{bit_n}"]
-                if not valid:
-                    print(gate_values[f"x{bit_n}"], gate_values[f"y{bit_n}"], new_values[f"z{bit_n}"])
-                    print(f'{new_values[f"z{bit_n}"]} != {want_values[f"z{bit_n}"]}')
-                solutions.append((new_values, valid))
-            if all(valid for new_values, valid in solutions):
-                print(f"Successfully computed bit {bit}")
-                for (gate_values, _), (new_values, _) in zip(self.state, solutions):
-                    assert not set(gate_values) & set(new_values), set(gate_values) & set(new_values)
-                    gate_values.update(new_values)
-                    print(len(gate_values), len(new_values))
-            else:
-                raise RuntimeError(f"Failed to compute bit {bit}: {required_gates} has an issue")
-            solved_gates.update(required_gates)
+        return self.solve_from(0, 4, solved_gates, self.gates, self.build_state())
 
 
 @dataclasses.dataclass
@@ -237,54 +280,6 @@ class Day24(aoc.Challenge):
             s = (s << 1) + int(values[w])
         return s
 
-    def test_gates(self, gates, x, y):
-        values = {}
-        og = gates.copy()
-        gates = gates.copy()
-        for i in range(45):
-            mask = 1 << i
-            values[f"x{i:02}"] = x & mask
-            values[f"y{i:02}"] = y & mask
-        z = x + y
-        want = {}
-        for i in range(46):
-            mask = 1 << i
-            want[f"z{i:02}"] = z & (1 << i)
-
-        todo = set(gates)
-        while todo:
-            done = []
-            for out, (a, op, b) in gates.items():
-                if out not in todo:
-                    continue
-                if a not in values or b not in values:
-                    continue
-                todo.remove(out)
-                done.append(out)
-                if op == "AND":
-                    values[out] = values[a] and values[b]
-                elif op == "OR":
-                    values[out] = values[a] or values[b]
-                elif op == "XOR":
-                    values[out] = values[a] ^ values[b]
-            if not done:
-                raise ValueError("Cannot solve")
-            for d in done:
-                del gates[d]
-        incorrect = {i for i, j in want.items() if values[i] != j}
-        return incorrect
-
-    def get_bad(self, gates):
-        candidates = self.test_gates(gates, 0, 2**46-1)
-        candidates |= self.test_gates(gates, 2**23-1, 0)
-        candidates |= self.test_gates(gates, (2**23-1) << 22, 0)
-        x = 0
-        for i in range(22):
-            x <<= 2
-            x += 1
-        candidates |= self.test_gates(gates, x, 0)
-        return candidates
-
     def part2(self, puzzle_input: InputType) -> int:
         raw_inputs, raw_gates = puzzle_input
         gates = {}
@@ -292,11 +287,11 @@ class Day24(aoc.Challenge):
             gates[out] = (a, op, b)
 
         solver = Solver(gates)
-        solver.solve()
+        return ",".join(sorted(solver.solve()[0]))
         known = {a for a, b in raw_inputs}
         unknown = set(gates)
 
-        swaps = [("z34", "wcb"), ("cvp", "wjb"), ("z14", "qbw"), ("z10", "mkk")]
+        swaps = [("z10", "mkk"), ("z14", "qbw"), ("cvp", "wjb"), ("z34", "wcb")]
         for a, b in swaps:
             gates[a], gates[b] = gates[b], gates[a]
 
@@ -326,25 +321,6 @@ class Day24(aoc.Challenge):
         out.append("}")
         pathlib.Path("a.dot").write_text("\n".join(out))
         return ",".join(sorted(i for swap in swaps for i in swap))
-
-
-        target = len(self.get_bad(gates))
-        print(target)
-        return
-        weird = set("cbv mfk mkk qcn mcb fdg cvp fqv z25 z26 pnm mpd cgh wcb mpd wcb".split())
-        for a, b in itertools.combinations(weird, 2):
-            for c, d in itertools.combinations(weird - {a, b}, 2):
-                g = gates.copy()
-                swaps = [(a, b), (c, d)]
-                for a, b in swaps:
-                    g[a], g[b] = g[b], g[a]
-                    try:
-                        got = len(self.get_bad(g))
-                        if got < target:
-                            print(got, a, b, c, d)
-                    except:
-                        pass
-
 
 
 
