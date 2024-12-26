@@ -55,7 +55,7 @@ class Day25(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParser()])
 
-    def part1(self, puzzle_input: list[list[str]]) -> int:
+    def part1(self, puzzle_input: list[aoc.Map]) -> int:
         """Count how many keys (loosely) fit inside a locks."""
         return sum(
             a.coords["#"].isdisjoint(b.coords["#"])

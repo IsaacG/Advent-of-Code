@@ -1,17 +1,11 @@
 #!/bin/python
 """Advent of Code, Day 24: Crossed Wires."""
-from __future__ import annotations
 
 import collections
 import copy
-import dataclasses
-import functools
 import itertools
 import operator
-import pathlib
-import math
-import re
-
+import random
 from lib import aoc
 
 SAMPLE = [
@@ -25,7 +19,7 @@ y02: 0
 
 x00 AND y00 -> z00
 x01 XOR y01 -> z01
-x02 OR y02 -> z02""",  # 17
+x02 OR y02 -> z02""",
     """\
 x00: 1
 x01: 0
@@ -73,41 +67,72 @@ bqk OR frj -> z07
 y03 OR x01 -> nrd
 hwm AND bqk -> z03
 tgd XOR rvg -> z12
-tnw OR pbm -> gnj""",  # 37
+tnw OR pbm -> gnj""",
 ]
 
-LineType = int
-InputType = list[LineType]
 OPS = {"AND": operator.and_, "OR": operator.or_, "XOR": operator.xor}
 
 
+def compute(gates, values):
+    gates = gates.copy()
+    values = values.copy()
+    assert len(values) == 2 * 45
+    todo = set(gates)
+    while todo:
+        out = next(out for out in todo if gates[out][0] in values and gates[out][2] in values)
+        a, op, b = gates[out]
+        del gates[out]
+        todo.remove(out)
+        values[out] = OPS[op](values[a], values[b])
+    z_vals = sorted(((i, j) for i, j in values.items() if i.startswith("z")), reverse=True)
+    z_bits = "".join("1" if val else "0" for _, val in z_vals)
+    return int(z_bits, 2)
+
+
+def validate(gates, swaps):
+    gates = gates.copy()
+    for a, b in swaps:
+        gates[a], gates[b] = gates[b], gates[a]
+    inputs = {}
+    patterns = [(random.randint(0, (1 << 45) - 1), random.randint(0, (1 << 45) - 1)) for _ in range(20)]
+    for x, y in patterns:
+        for idx, (char_x, char_y) in enumerate(zip(reversed(f"{x:045b}"), reversed(f"{y:045b}"))):
+            inputs[f"x{idx:02}"] = bool(int(char_x))
+            inputs[f"y{idx:02}"] = bool(int(char_y))
+        got = compute(gates, inputs)
+        want = x + y
+        if got != x + y:
+            print(f"Adder does not compute. {x} + {y} = {want} but got {got}")
+            return False
+    return True
+
+
 class Solver:
-    def __init__(self, gates):
-        self.gates = gates
 
     def build_state(self):
         every_other = 0
         for i in range(22):
             every_other <<= 2
             every_other += 1
-        patterns = [(2**46 - 1, 2**46 - 1), (0, 0), (0, 2**46 - 1), (every_other, every_other), (every_other << 1, every_other << 1)]
         state = []
+        patterns = [(random.randint(0, (1 << 45) - 1), random.randint(0, (1 << 45) - 1)) for _ in range(20)]
         for x, y in patterns:
             z = x + y
+            assert x & (1 << 45) == 0
+            assert y & (1 << 45) == 0
             gate_values = {}
             want_values = {}
-            for i in range(46):
-                j = f"{i:02}"
-                if i != 45:
-                    gate_values[f"x{j}"] = bool(x & (1 << i))
-                    gate_values[f"y{j}"] = bool(y & (1 << i))
-                want_values[f"z{j}"] = bool(z & (1 << i))
-            # print(x, y, z)
-            # print(gate_values, want_values)
+            assert x & (1 << 45) == 0
+            assert y & (1 << 45) == 0
+            for idx, (char_x, char_y, char_z) in enumerate(zip(reversed(f"{x:046b}"), reversed(f"{y:046b}"), reversed(f"{z:046b}"))):
+                j = f"{idx:02}"
+                gate_values["x" + j] = bool(int(char_x))
+                gate_values["y" + j] = bool(int(char_y))
+                want_values["z" + j] = bool(int(char_z))
             state.append((gate_values, want_values))
         return state
 
-    def required_gates(self, to_compute, all_gates, solved_gates, parents):
+    def required_gates(self, to_compute, gates, solved_gates):
         todo = to_compute.copy()
         required_gates = set()
         seen = set()
@@ -116,16 +141,17 @@ class Solver:
             seen.add(gate)
             if gate not in solved_gates:
                 required_gates.add(gate)
-            if gate not in all_gates:
+            if gate not in gates:
                 continue
-            for parent in parents[gate]:
+            for parent in gates[gate][::2]:
                 if parent not in solved_gates and parent not in seen:
                     todo.add(parent)
         return required_gates
 
-    def solve_for_bit(self, bit, solved_gates, required_gates, state, ops, parents):
+    def solve_for_bit(self, bit, gates, solved_gates, state):
         bit_n = f"{bit:02}"
         valid = True
+        required_gates = self.required_gates({f"z{bit_n}"}, gates, solved_gates)
 
         solutions = []
         for gate_values, want_values in state:
@@ -134,120 +160,57 @@ class Solver:
             todo = required_gates.copy()
             assert required_gates.isdisjoint(gate_values), required_gates - set(gate_values)
             while todo:
-                gate = next((i for i in todo if all(parent in combined for parent in parents[i])), None)
+                gate = next((i for i in todo if all(parent in combined for parent in gates[i][::2])), None)
                 if gate is None:
                     return [], False
                 todo.remove(gate)
-                op = ops[gate]
-                vals = [combined[parent] for parent in parents[gate]]
+                op = OPS[gates[gate][1]]
+                vals = [combined[parent] for parent in gates[gate][::2]]
                 new_values[gate] = op(*vals)
             assert set(new_values) == required_gates
             valid = valid and (new_values[f"z{bit_n}"] == want_values[f"z{bit_n}"])
-            # if not valid:
-            #     print(gate_values[f"x{bit_n}"], gate_values[f"y{bit_n}"], new_values[f"z{bit_n}"])
-            #     print(f'{new_values[f"z{bit_n}"]} != {want_values[f"z{bit_n}"]}')
             solutions.append(new_values)
         return solutions, valid
 
     def solve_from(self, start_bit, swaps_left, solved_gates, gates, state):
-        parents = {gate: [a, b] for gate, (a, _, b) in gates.items()}
-        ops = {gate: OPS[op] for gate, (_, op, _) in gates.items()}
         swaps = []
 
-        for bit in range(start_bit, 45):
+        for bit in range(start_bit, 46):
             bit_n = f"{bit:02}"
-            required_gates = self.required_gates({f"z{bit_n}"}, gates, solved_gates, parents)
-            solutions, valid = self.solve_for_bit(bit, solved_gates, required_gates, state, ops, parents)
+            solutions, valid = self.solve_for_bit(bit, gates, solved_gates, state)
             if valid:
-                # print(f"Successfully computed bit {bit}")
                 for (gate_values, _), new_values in zip(state, solutions):
                     gate_values.update(new_values)
             elif not swaps_left:
                 return [], False
             else:
-                candidates = self.required_gates({f"z{bit_n}", f"z{bit + 1:02}"} & set(gates), gates, solved_gates, parents)
+                candidates = self.required_gates({f"z{bit_n}", f"z{bit + 1:02}"} & set(gates), gates, solved_gates)
                 viable = []
-                # print(f"Failed to compute bit {bit}: {candidates} has an issue")
-                for a, b in itertools.combinations(candidates, 2):
-                    try_gates = self.gates.copy()
+                for a, b in itertools.combinations(sorted(candidates), 2):
+                    try_gates = gates.copy()
                     try_gates[a], try_gates[b] = try_gates[b], try_gates[a]
 
-                    parents = {gate: [a, b] for gate, (a, _, b) in try_gates.items()}
-                    ops = {gate: OPS[op] for gate, (_, op, _) in try_gates.items()}
-                    required_gates = self.required_gates({f"z{bit_n}"}, try_gates, solved_gates, parents)
-                    solutions, valid = self.solve_for_bit(bit, solved_gates, required_gates, state, ops, parents)
-                    if not valid: continue
-                    print("Try swapping", a, b, swaps_left)
+                    solutions, valid = self.solve_for_bit(bit, try_gates, solved_gates, state)
+                    if valid:
+                        viable.append((a, b))
+                if viable:
+                    print(f"Bit {bit} is broken. Swaps which fix this bit: {viable}")
+
+                for a, b in viable:
+                    try_gates = gates.copy()
+                    try_gates[a], try_gates[b] = try_gates[b], try_gates[a]
 
                     subswaps, valid = self.solve_from(bit, swaps_left - 1, solved_gates.copy(), try_gates.copy(), copy.deepcopy(state))
                     if valid:
-                        print(f"{a=}, {b=}, {subswaps=}")
-                        return [a, b] + subswaps, True
+                        return sorted([(a, b)] + subswaps), True
                 return [], False
+            required_gates = self.required_gates({f"z{bit_n}"}, gates, solved_gates)
             solved_gates.update(required_gates)
-        return [], True
+        return [], validate(gates, [])
 
-    def solve(self):
-        solved_gates = {f"x{bit:02}" for bit in range(45)}
-        solved_gates |= {f"y{bit:02}" for bit in range(45)}
-        state = self.build_state()
-
-        return self.solve_from(0, 4, solved_gates, self.gates, self.build_state())
-
-
-@dataclasses.dataclass
-class Node:
-    a: Node | None
-    b: Node | None
-    op: str
-    name: str
-
-    def __post_init__(self):
-        self.type = "XXX"
-        self.num = None
-        if not self.a:
-            self.num = self.name.removeprefix("x").removeprefix("y")
-            self.type = "INPUT"
-            return
-        self.num = max(self.a.num, self.b.num)
-        if self.a.type > self.b.type:
-            self.a, self.b = self.b, self.a
-
-        match self.a.type, self.op, self.b.type:
-            case ["CARRY", "XOR", "LOWER"] if self.name.startswith("z"):
-                self.type = "OUTPUT"
-            case ["LOWER", "AND", "UPPER"] if self.a.num == "01" and self.b.num == "00":
-                self.type = "PRE"
-        patterns = {
-            ("PRE", "OR", "UPPER"): "CARRY",
-            ("INPUT", "XOR", "INPUT"): "LOWER",
-            ("INPUT", "AND", "INPUT"): "UPPER",
-            ("CARRY", "AND", "LOWER"): "PRE",
-        }
-        for (a, op, b), n_type in patterns.items():
-            if {self.a.type, self.b.type} < {"XXX", a, b} and self.op == op:
-                self.type = n_type
-
-        if self.name == "z00" or self.name == "z01":
-            self.type = "OUTPUT"
-        self.num = max(self.a.num, self.b.num)
-
-        if self.type == "XXX":
-            print(f"Bad node {self.a.type}, {self.op}, {self.b.type}, {self.name}")
-
-    def __str__(self):
-        parts = [self.type, self.name]
-        if self.num:
-            parts.append(self.num)
-        return "_".join(parts)
-        
 
 class Day24(aoc.Challenge):
     """Day 24: Crossed Wires."""
-
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
 
     TESTS = [
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=4),
@@ -256,73 +219,27 @@ class Day24(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.BaseParseMultiPerLine(word_separator=": "), aoc.parse_multi_str_per_line])
 
-    def part1(self, puzzle_input: InputType) -> int:
-        initial, gatesa = puzzle_input
-        values = {a: bool(int(b)) for a, b in initial}
+    def part1(self, puzzle_input: tuple[list[str], list[str]]) -> int:
+        raw_inputs, raw_gates = puzzle_input
+        values = {a: bool(int(b)) for a, b in raw_inputs}
         gates = {}
-        for a, op, b, _, out in gatesa:
+        for a, op, b, _, out in raw_gates:
             gates[out] = (a, op, b)
-        todo = set(gates)
-        while todo:
-            out = next(out for out in todo if gates[out][0] in values and gates[out][2] in values)
-            a, op, b = gates[out]
-            del gates[out]
-            todo.remove(out)
-            if op == "AND":
-                values[out] = values[a] and values[b]
-            elif op == "OR":
-                values[out] = values[a] or values[b]
-            elif op == "XOR":
-                values[out] = values[a] ^ values[b]
-        v = sorted((i for i in values if i.startswith("z")), reverse=True)
-        s = 0
-        for w in v:
-            s = (s << 1) + int(values[w])
-        return s
+        return compute(gates, values)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: tuple[list[str], list[str]]) -> int:
         raw_inputs, raw_gates = puzzle_input
         gates = {}
         for a, op, b, _, out in raw_gates:
             gates[out] = (a, op, b)
 
-        solver = Solver(gates)
-        return ",".join(sorted(solver.solve()[0]))
-        known = {a for a, b in raw_inputs}
-        unknown = set(gates)
+        solver = Solver()
+        state = solver.build_state()
+        known_values = set(state[0][0])
+        swaps, _ = solver.solve_from(0, 4, known_values, gates, state)
 
-        swaps = [("z10", "mkk"), ("z14", "qbw"), ("cvp", "wjb"), ("z34", "wcb")]
-        for a, b in swaps:
-            gates[a], gates[b] = gates[b], gates[a]
-
-        solver = Solver(gates)
-        solver.solve()
-
-        todo = set(gates)
-        nodes = {}
-        for g in known:
-            nodes[g] = Node(None, None, "SET", g)
-        while todo:
-            do = next(g for g in todo if gates[g][0] in known and gates[g][2] in known)
-            a, op, b = gates[do]
-            todo.remove(do)
-            known.add(do)
-            nodes[do] = Node(nodes[a], nodes[b], op, do)
-
-        out = []
-        out.append("digraph {")
-        for node in nodes.values():
-            color = {"INPUT": "blue", "UPPER": "red", "LOWER": "green", "PRE": "yellow", "OUTPUT": "brown", "CARRY": "coral3", "XXX": "black"}
-            out.append(f'{node} [style=filled color="{color[node.type]}"]')
-            if node.a is None:
-                continue
-            out.append(f"{node.a} -> {node}")
-            out.append(f"{node.b} -> {node}")
-        out.append("}")
-        pathlib.Path("a.dot").write_text("\n".join(out))
-        return ",".join(sorted(i for swap in swaps for i in swap))
-
-
-
+        print(f"Validating swaps {swaps}...")
+        print(validate(gates, swaps))
+        return ",".join(sorted(a for swap in swaps for a in swap))
 
 # vim:expandtab:sw=4:ts=4
