@@ -73,58 +73,55 @@ tnw OR pbm -> gnj""",
 OPS = {"AND": operator.and_, "OR": operator.or_, "XOR": operator.xor}
 
 
-def compute(gates, values):
-    gates = gates.copy()
-    values = values.copy()
-    assert len(values) == 2 * 45
-    todo = set(gates)
-    while todo:
-        out = next(out for out in todo if gates[out][0] in values and gates[out][2] in values)
-        a, op, b = gates[out]
-        del gates[out]
-        todo.remove(out)
-        values[out] = OPS[op](values[a], values[b])
-    z_vals = sorted(((i, j) for i, j in values.items() if i.startswith("z")), reverse=True)
-    z_bits = "".join("1" if val else "0" for _, val in z_vals)
-    return int(z_bits, 2)
+class Day24(aoc.Challenge):
+    """Day 24: Crossed Wires. Simulate a digital circuit then swap gates to make it a valid adder."""
 
+    TESTS = [
+        aoc.TestCase(part=1, inputs=SAMPLE[0], want=4),
+        aoc.TestCase(part=1, inputs=SAMPLE[1], want=2024),
+        aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+    ]
+    # Split the input into two blocks. Convert each block into a list of words for each line.
+    INPUT_PARSER = aoc.ParseBlocks([aoc.BaseParseMultiPerLine(word_separator=": "), aoc.parse_multi_str_per_line])
 
-def validate(gates, swaps):
-    gates = gates.copy()
-    for a, b in swaps:
-        gates[a], gates[b] = gates[b], gates[a]
-    inputs = {}
-    patterns = [(random.randint(0, (1 << 45) - 1), random.randint(0, (1 << 45) - 1)) for _ in range(20)]
-    for x, y in patterns:
-        for idx, (char_x, char_y) in enumerate(zip(reversed(f"{x:045b}"), reversed(f"{y:045b}"))):
-            inputs[f"x{idx:02}"] = bool(int(char_x))
-            inputs[f"y{idx:02}"] = bool(int(char_y))
-        got = compute(gates, inputs)
-        want = x + y
-        if got != x + y:
-            print(f"Adder does not compute. {x} + {y} = {want} but got {got}")
-            return False
-    return True
+    def compute(self, gates: dict[str, tuple[str, str, str]], values: dict[str, bool]):
+        """Propagate values through a bunch of gates to compute the final z value."""
+        values = values.copy()
+        todo = set(gates)
+        while todo:
+            out = next(out for out in todo if gates[out][0] in values and gates[out][2] in values)
+            a, op, b = gates[out]
+            todo.remove(out)
+            values[out] = op(values[a], values[b])
+        z_vals = sorted(((i, j) for i, j in values.items() if i.startswith("z")), reverse=True)
+        z_bits = "".join("1" if val else "0" for _, val in z_vals)
+        return int(z_bits, 2)
 
-
-class Solver:
-
-    def build_state(self):
-        every_other = 0
-        for i in range(22):
-            every_other <<= 2
-            every_other += 1
-        state = []
+    def validate(self, gates, swaps):
+        gates = gates.copy()
+        for a, b in swaps:
+            gates[a], gates[b] = gates[b], gates[a]
+        inputs = {}
         patterns = [(random.randint(0, (1 << 45) - 1), random.randint(0, (1 << 45) - 1)) for _ in range(20)]
         for x, y in patterns:
+            for idx, (char_x, char_y) in enumerate(zip(reversed(f"{x:045b}"), reversed(f"{y:045b}"))):
+                inputs[f"x{idx:02}"] = bool(int(char_x))
+                inputs[f"y{idx:02}"] = bool(int(char_y))
+            got = self.compute(gates, inputs)
+            want = x + y
+            if got != x + y:
+                self.debug(f"Adder does not compute. {x} + {y} = {want} but got {got}")
+                return False
+        return True
+
+    def build_state(self):
+        patterns = [(random.randint(0, (1 << 45) - 1), random.randint(0, (1 << 45) - 1)) for _ in range(20)]
+        state = []
+        for x, y in patterns:
             z = x + y
-            assert x & (1 << 45) == 0
-            assert y & (1 << 45) == 0
             gate_values = {}
             want_values = {}
-            assert x & (1 << 45) == 0
-            assert y & (1 << 45) == 0
-            for idx, (char_x, char_y, char_z) in enumerate(zip(reversed(f"{x:046b}"), reversed(f"{y:046b}"), reversed(f"{z:046b}"))):
+            for idx, (char_x, char_y, char_z) in enumerate(zip(*[reversed(f"{i:046b}") for i in [x, y, z]])):
                 j = f"{idx:02}"
                 gate_values["x" + j] = bool(int(char_x))
                 gate_values["y" + j] = bool(int(char_y))
@@ -158,16 +155,14 @@ class Solver:
             new_values = {}
             combined = collections.ChainMap(gate_values, new_values)
             todo = required_gates.copy()
-            assert required_gates.isdisjoint(gate_values), required_gates - set(gate_values)
             while todo:
                 gate = next((i for i in todo if all(parent in combined for parent in gates[i][::2])), None)
                 if gate is None:
                     return [], False
                 todo.remove(gate)
-                op = OPS[gates[gate][1]]
+                op = gates[gate][1]
                 vals = [combined[parent] for parent in gates[gate][::2]]
                 new_values[gate] = op(*vals)
-            assert set(new_values) == required_gates
             valid = valid and (new_values[f"z{bit_n}"] == want_values[f"z{bit_n}"])
             solutions.append(new_values)
         return solutions, valid
@@ -194,7 +189,7 @@ class Solver:
                     if valid:
                         viable.append((a, b))
                 if viable:
-                    print(f"Bit {bit} is broken. Swaps which fix this bit: {viable}")
+                    self.debug(f"Bit {bit} is broken. Swaps which fix this bit: {viable}")
 
                 for a, b in viable:
                     try_gates = gates.copy()
@@ -206,40 +201,24 @@ class Solver:
                 return [], False
             required_gates = self.required_gates({f"z{bit_n}"}, gates, solved_gates)
             solved_gates.update(required_gates)
-        return [], validate(gates, [])
+        return [], self.validate(gates, [])
 
-
-class Day24(aoc.Challenge):
-    """Day 24: Crossed Wires."""
-
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=4),
-        aoc.TestCase(part=1, inputs=SAMPLE[1], want=2024),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
-    ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.BaseParseMultiPerLine(word_separator=": "), aoc.parse_multi_str_per_line])
-
-    def part1(self, puzzle_input: tuple[list[str], list[str]]) -> int:
+    def part1(self, puzzle_input: tuple[list[list[str]], list[list[str]]]) -> int:
         raw_inputs, raw_gates = puzzle_input
         values = {a: bool(int(b)) for a, b in raw_inputs}
-        gates = {}
-        for a, op, b, _, out in raw_gates:
-            gates[out] = (a, op, b)
-        return compute(gates, values)
+        gates = {out: (a, OPS[op], b) for a, op, b, _, out in raw_gates}
+        return self.compute(gates, values)
 
-    def part2(self, puzzle_input: tuple[list[str], list[str]]) -> int:
+    def part2(self, puzzle_input: tuple[list[list[str]], list[list[str]]]) -> int:
         raw_inputs, raw_gates = puzzle_input
-        gates = {}
-        for a, op, b, _, out in raw_gates:
-            gates[out] = (a, op, b)
+        gates = {out: (a, OPS[op], b) for a, op, b, _, out in raw_gates}
 
-        solver = Solver()
-        state = solver.build_state()
+        state = self.build_state()
         known_values = set(state[0][0])
-        swaps, _ = solver.solve_from(0, 4, known_values, gates, state)
+        swaps, _ = self.solve_from(0, 4, known_values, gates, state)
 
-        print(f"Validating swaps {swaps}...")
-        print(validate(gates, swaps))
+        self.debug(f"Validating swaps {swaps}...")
+        self.debug(self.validate(gates, swaps))
         return ",".join(sorted(a for swap in swaps for a in swap))
 
 # vim:expandtab:sw=4:ts=4
