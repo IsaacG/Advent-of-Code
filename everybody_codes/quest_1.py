@@ -1,49 +1,41 @@
 import itertools
 import pathlib
 
-def part1():
-    data = pathlib.Path("inputs/01.1.txt").read_text().rstrip()
-    costs = {"A": 0, "B": 1, "C": 3}
-    return sum(costs[char] for char in data) 
+TESTS = [
+    (1, "ABBAC", 5),
+    (2, "AxBCDDCAxD", 28),
+    (3, "xBxAAABCDxCC", 30),
+]
 
-def part2():
-    actual_data = pathlib.Path("inputs/01.2.txt").read_text().rstrip()
-    test_data = "AxBCDDCAxD"
+def solve(part: int, data: str) -> int:
     costs = {"A": 0, "B": 1, "C": 3, "D": 5, "x": 0}
-
-    def solve(data):
-        total = 0
-        for a, b in zip(data[::2], data[1::2]):
-            total += costs[a] + costs[b]
-            if "x" not in [a, b]:
-                total += 2
-        return total
-
-    assert solve(test_data) == 28, solve(test_data)
-    return solve(actual_data)
-
-def part3():
-    actual_data = pathlib.Path("inputs/01.3.txt").read_text().rstrip()
-    test_data = "xBxAAABCDxCC"
-    costs = {"A": 0, "B": 1, "C": 3, "D": 5, "x": 0}
-
-    def solve(data):
-        total = 0
-        for a, b, c in zip(data[::3], data[1::3], data[2::3]):
-            group_cost = costs[a] + costs[b] + costs[c]
-            group_size = sum(char != "x" for char in [a, b, c])
-            if group_size == 2:
-                group_cost += 2
-            elif group_size == 3:
-                group_cost += 6
-            print(f"{a}{b}{c} = {group_cost}")
-            total += group_cost
-        return total
-
-    assert solve(test_data) == 30, solve(test_data)
-    return solve(actual_data)
+    total = 0
+    for i in range(0, len(data), part):
+        chunk = data[i:i + part]
+        total += sum(costs[char] for char in chunk)
+        group_size = sum(char != "x" for char in chunk)
+        if group_size == 2:
+            total += 2
+        elif group_size == 3:
+            total += 6
+    return total
 
 
-print("Part one:", part1())
-print("Part two:", part2())
-print("Part three:", part3())
+want_raw = next((line.split() for line in pathlib.Path("solutions/2024.01.txt").read_text().splitlines() if line.startswith("01 ")), None)
+if want_raw:
+    want = [int(i) for i in want_raw[1:]]
+
+got = []
+for part in range(1, 4):
+    data_path = pathlib.Path(f"inputs/01.{part}.txt")
+    if not data_path.exists():
+        continue
+    data = data_path.read_text().rstrip()
+    for test_part, test_data, test_want in TESTS:
+        if test_part == part:
+            assert solve(test_part, test_data) == test_want
+    got.append(solve(part, data))
+
+if want_raw:
+    assert want == got, f"{want=}, {got=}"
+print(got)
