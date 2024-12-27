@@ -1,12 +1,13 @@
 #!/bin/python
 
+import datetime
 import importlib
-
 import pathlib
 import resource
 import time
 
 import click
+import inotify_simple  # type: ignore
 
 
 def format_ns(ns: float) -> str:
@@ -27,13 +28,7 @@ def timed(func, *args, **kwargs):
     return format_ns(end - start), got
 
 
-@click.command()
-@click.option("--day", "-d", type=int, required=True)
-@click.option("--check", "-c", is_flag=True)
-@click.option("--solve", "-s", is_flag=True)
-@click.option("--test", "-t", is_flag=True)
-@click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
-def main(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> None:
+def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> None:
     module = importlib.import_module(f"quest_{day:02}")
     if test:
         for part in parts:
@@ -63,6 +58,26 @@ def main(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> N
                 print(f"CHECK Part {part} {time_s} PASS")
             else:
                 print(f"CHECK Part {part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
+
+
+@click.command()
+@click.option("--day", "-d", type=int, required=True)
+@click.option("--check", "-c", is_flag=True)
+@click.option("--solve", "-s", is_flag=True)
+@click.option("--test", "-t", is_flag=True)
+@click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
+@click.option("--live", "-l", is_flag=True)
+def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int]) -> None:
+    run_day(day, check, solve, test, parts)
+    if not live:
+        return
+    inotify = inotify_simple.INotify()
+    inotify.add_watch(pathlib.Path(__file__).parent, inotify_simple.flags.CLOSE_WRITE)
+    while events := inotify.read():
+        if not any(i.name == f"quest_{day:02}.py" for i in events):
+            continue
+        print(datetime.datetime.now().strftime("== %H:%M:%S =="))
+        run_day(day, check, solve, test, parts)
 
 
 if __name__ == "__main__":
