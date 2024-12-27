@@ -34,7 +34,7 @@ def timed(func, *args, **kwargs):
 @click.option("--test", "-t", is_flag=True)
 @click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
 def main(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> None:
-    module = importlib.import_module(f"quest_{day}")
+    module = importlib.import_module(f"quest_{day:02}")
     if test:
         for part in parts:
             for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS):
