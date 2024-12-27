@@ -22,7 +22,7 @@ def get_solutions(day: int) -> list[int] | None:
         session.cookies.set("everybody-codes", cookie)
         data = session.get(f"https://everybody.codes/api/event/2024/quest/{day}").json()
         want = [f"answer{i}" for i in range(1, 4)]
-        if not set(want) & set(data):
+        if not set(want) > set(data):
             return None
         new_line = " ".join([f"{day:02}"] + [data[i] for i in want])
         solutions = [line for line in solutions_path.read_text().splitlines() if line.split()[0] != f"{day:02}"]
@@ -80,7 +80,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
     if check:
         want = get_solutions(day)
         if want is None:
-            print("No solutions found for {day}")
+            print(f"No solutions found for {day}")
         else:
             for part in parts:
                 data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
