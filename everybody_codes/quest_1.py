@@ -22,7 +22,7 @@ def solve(part: int, data: str) -> int:
     return total
 
 
-want_raw = next((line.split() for line in pathlib.Path(f"solutions/2024.{DAY:02}.txt").read_text().splitlines() if line.startswith(f"{DAY:02} ")), None)
+want_raw = next((line.split() for line in pathlib.Path(f"solutions/2024.txt").read_text().splitlines() if line.startswith(f"{DAY:02} ")), None)
 if want_raw:
     want = [int(i) for i in want_raw[1:]]
 
