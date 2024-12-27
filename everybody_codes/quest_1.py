@@ -1,6 +1,7 @@
 import itertools
 import pathlib
 
+DAY = 1
 TESTS = [
     (1, "ABBAC", 5),
     (2, "AxBCDDCAxD", 28),
@@ -21,13 +22,13 @@ def solve(part: int, data: str) -> int:
     return total
 
 
-want_raw = next((line.split() for line in pathlib.Path("solutions/2024.01.txt").read_text().splitlines() if line.startswith("01 ")), None)
+want_raw = next((line.split() for line in pathlib.Path(f"solutions/2024.{DAY:02}.txt").read_text().splitlines() if line.startswith(f"{DAY:02} ")), None)
 if want_raw:
     want = [int(i) for i in want_raw[1:]]
 
 got = []
 for part in range(1, 4):
-    data_path = pathlib.Path(f"inputs/01.{part}.txt")
+    data_path = pathlib.Path(f"inputs/{DAY:02}.{part}.txt")
     if not data_path.exists():
         continue
     data = data_path.read_text().rstrip()
