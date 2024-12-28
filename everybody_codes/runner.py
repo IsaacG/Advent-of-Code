@@ -54,6 +54,7 @@ def timed(func, *args, **kwargs):
 
 def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> None:
     module = importlib.import_module(f"quest_{day:02}")
+    module = importlib.reload(module)
     if test:
         for part in parts:
             for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS):
