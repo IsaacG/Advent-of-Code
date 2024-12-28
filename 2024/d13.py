@@ -1,9 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 13: Claw Contraption."""
 import math
-import numpy as np
-import scipy.linalg
-import z3
 
 from lib import aoc
 
@@ -34,72 +31,37 @@ class Day13(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.parse_re_findall_int(r"\d+")])
 
-    def _part1(self, puzzle_input: list[list[int]]) -> int:
-        tokens = 0
-        wins = 0
-        for chunks in puzzle_input:
-            b_a = complex(*chunks[0])
-            b_b = complex(*chunks[1])
-            dest = complex(*chunks[2])
-            # print(b_a, b_b, dest)
-            cost = None
-            for p_a, p_b in itertools.product(range(101), repeat=2):
-                if (p_a == 80 and p_b == 40):
-                    reach= p_a * b_a + p_b * b_b
-                    # print(reach, dest, reach == dest)
-                if p_a * b_a + p_b * b_b == dest:
-                    if cost is None:
-                        cost = p_a * 3 + p_b
-                    else:
-                        cost = min(cost, p_a * 3 + p_b)
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
+        """Solved by linear algebra and a system of two equations with two unknowns.
 
-            if cost is not None:
-                tokens += cost
-                wins += 1
-        print("Wins:", wins, tokens)
-        return tokens
+        presses_a * a_x + presses_b * b_x = target_x  (1)
+        presses_a * a_y + presses_b * b_y = target_y  (2)
 
-    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int | str:
+        from (1)
+        presses_b = (target_x - presses_a * a_x) / b_x  (3)
+        from (2), substituting (3)
+        presses_a * a_y + presses_b * b_y = target_y
+        presses_a * a_y + ((target_x - presses_a * a_x) / b_x) * b_y = target_y
+        presses_a = (target_y - (b_y * target_x / b_x)) / (a_y - (b_y * a_x / b_x))  (4)
+        """
         tokens = 0
         for chunks in puzzle_input:
             if not part_one:
                 chunks[2] = [i + 10000000000000 for i in chunks[2]]
-            k, l, s = (i[0] for i in chunks)  # x values for a, b, dest
-            m, n, t = (i[1] for i in chunks)  # y values for a, b, dest
-            # Linear Diophantine equations?
-            if chunks[2][0] % math.gcd(chunks[0][0], chunks[1][0]) or chunks[2][1] % math.gcd(chunks[0][1], chunks[1][1]):
+            a_x, a_y = chunks[0]
+            b_x, b_y = chunks[1]
+            target_x, target_y = chunks[2]
+
+            presses_a = (target_y - (b_y * target_x / b_x)) / (a_y - (b_y * a_x / b_x))
+            presses_b = (target_x - presses_a * a_x ) / b_x
+            # Check the numbers are round integers ... or close enough.
+            rounded_a = round(presses_a)
+            rounded_b = round(presses_b)
+            if abs(rounded_a - presses_a) > 0.001 or abs(rounded_b - presses_b) > 0.001:
                 continue
 
-            push_a = z3.Int("push_a")
-            push_b = z3.Int("push_b")
-            cost = z3.Int("cost")
-            solver = z3.Optimize()
-            solver.add(chunks[0][0] * push_a + chunks[1][0] * push_b == chunks[2][0])
-            solver.add(chunks[0][1] * push_a + chunks[1][1] * push_b == chunks[2][1])
-            solver.add(cost == 3 * push_a + push_b)
-            solver.minimize(cost)
-            if solver.check() != z3.sat:
-                continue
-
-            arr_ab = np.array([[chunks[0][0], chunks[1][0]], [chunks[0][1], chunks[1][1]]])
-            arr_dest = np.array(chunks[2])
-            got = scipy.linalg.solve(arr_ab, arr_dest)
-            assert np.allclose(got, np.round(got), atol=0.01)
-            got = np.round(got).astype(int)
-            cost = round(got[0]) * 3 + round(got[1])
-            tokens += cost
-
-            if False:
-                b = (l * t - m * s) / (n * k - m * l)
-                a = (s - b * l) / k
-                got = 3 * a + b
-                if a != round(a) or b != round(b):
-                    print(f"Rounding doesn't work. {a=}, {b=}")
-                if got == cost:
-                    print("Yes")
-                else:
-                    print("No")
-
+            # assert rounded_a * a_x + rounded_b * b_x == target_x and rounded_a * a_y + rounded_b * b_y == target_y
+            tokens += 3 * rounded_a + rounded_b
         return tokens
 
 # vim:expandtab:sw=4:ts=4
