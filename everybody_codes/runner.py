@@ -31,7 +31,7 @@ def get_solutions(day: int) -> list[int] | None:
         want_raw = new_line
     if want_raw is None:
         return None
-    return [int(i) for i in want_raw.split()[1:]]
+    return want_raw.split()[1:]
 
 
 def format_ns(ns: float) -> str:
@@ -87,7 +87,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                 data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
                 data = data_path.read_text().rstrip()
                 time_s, got = timed(module.solve, part=part, data=data)
-                if got == want[part - 1]:
+                if str(got) == want[part - 1]:
                     print(f"CHECK Part {part} {time_s} PASS")
                 else:
                     print(f"CHECK Part {part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
