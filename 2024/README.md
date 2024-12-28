@@ -1,4 +1,6 @@
-Stats for 2024.
+# Advent of Code 2024 (Python)
+
+## Stats for 2024.
 
 ```
       -------Part 1--------   --------Part 2--------   --------Delta---------
@@ -29,3 +31,80 @@ Day       Time  Rank  Score       Time   Rank  Score       Time   Rank  Score
   2   00:07:00   1241      0   00:10:47    952      0   00:03:47   -289      0
   1   00:29:05   7757      0   00:31:56   6927      0   00:02:51   -830      0
 ```
+
+## Auto Parsing
+
+My auto-heuristic parsing handles most the inputs this year (after some work).
+Auto-parsed days: 01, 02, 04, 06, 08, 10, 11
+
+I also introduced a new `aoc.CoordinateParser()` which returns an `aoc.Map`.
+This was very handy this year and deprecated the old `Board` code.
+Days using this new parser: 04, 06, 08, 10
+
+## Reflections
+
+The prose felt a bit longer and more complicated this year.
+
+### Day One
+
+Good warm up.
+Got to learn my tools again.
+I managed to forget about AoC and started 15 minutes late.
+I also forgot about `zip()` for transposing.
+
+### Day Two
+
+The `sign()` function is handy, similar to `cmp()`. It's a pity Python doesn't have these built in.
+
+### Day Three
+
+The input is split across lines, but the lines are not actually separate inputs.
+My auto-parsing does not handle that well so this needed an explicit parsing.
+
+Regex for the win for this day.
+
+I initially solved this without realizing there was a constraint that numbers never exceed 3 digits.
+
+### Day Four
+
+Complex maps FTW.
+THis is where I created a new Coord Parser which returns a set of complex coords for each character in the map.
+
+### Day Five
+
+I managed to solve this without realizing the graph has a loop in it.
+I got lucky with my start point.
+I also over complicated things by thinking a step could be missing.
+`a|b b|c c|d` requires a then b then c; I thought a then c was valid.
+(At least, there is nothing in the example to counter that understanding.)
+
+My auto parsing doesn't touch multi-block inputs yet.
+
+### Day Six
+
+Complex values and my CoordinateParser win the day.
+Reducing the loop check by only checking occasionally (eg when rotating) helped a whole lot!
+
+### Day Seven
+
+Someone on IRC noticed working from the end (right) you can prune much more aggresively, resulting in a significantly faster solution!
+
+### Day Eight
+
+This is when I introduced the CoordinateParser and retrofitted it into prior days/years.
+
+### Day Nine
+
+I felt there much be a better approach here with a `heapq` or `PriorityQueue` but wasn't able to figure it out myself.
+I saw someone else had 9 `heapqs` groups by hole size and I was able to copy that idea, for large speed improvements.
+
+### Day Ten
+
+This day, I accidentally solved part two first.
+
+### Day Eleven
+
+This one was rough until I worked out how to solve it with dynamic programming, then it became very simple!
+DP also brough runtimes down from "ridiculous" to fast.
+
+### Day N
