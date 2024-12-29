@@ -2,6 +2,7 @@
 
 import datetime
 import importlib
+import inspect
 import os
 import pathlib
 import requests
@@ -22,7 +23,7 @@ def get_solutions(day: int) -> list[int] | None:
         session.cookies.set("everybody-codes", cookie)
         data = session.get(f"https://everybody.codes/api/event/2024/quest/{day}").json()
         want = [f"answer{i}" for i in range(1, 4)]
-        if not set(want) > set(data):
+        if not set(want).issubset(set(data)):
             return None
         new_line = " ".join([f"{day:02}"] + [data[i] for i in want])
         solutions = [line for line in solutions_path.read_text().splitlines() if line.split()[0] != f"{day:02}"]
@@ -46,6 +47,8 @@ def format_ns(ns: float) -> str:
 
 
 def timed(func, *args, **kwargs):
+    params = inspect.signature(func).parameters
+    kwargs = {k: v for k, v in kwargs.items() if k in params}
     start = time.perf_counter_ns()
     got = func(*args, **kwargs)
     end = time.perf_counter_ns()
@@ -60,7 +63,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
             for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS):
                 if test_part != part:
                     continue
-                time_s, got = timed(module.solve, part=part, data=test_data)
+                time_s, got = timed(module.solve, part=part, data=test_data, testing=True)
                 if got == test_want:
                     print(f"TEST  Part {part} {time_s} PASS (test {test_no})")
                 else:
@@ -76,7 +79,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                 print(f"SOLVE No input data found for day {day} part {part}")
                 continue
             data = data_path.read_text().rstrip()
-            time_s, got = timed(module.solve, part=part, data=data)
+            time_s, got = timed(module.solve, part=part, data=data, testing=False)
             print(f"SOLVE Part {part} {time_s} ---> {got}")
     if check:
         want = get_solutions(day)
@@ -86,7 +89,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
             for part in parts:
                 data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
                 data = data_path.read_text().rstrip()
-                time_s, got = timed(module.solve, part=part, data=data)
+                time_s, got = timed(module.solve, part=part, data=data, testing=False)
                 if str(got) == want[part - 1]:
                     print(f"CHECK Part {part} {time_s} PASS")
                 else:
@@ -101,6 +104,11 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
 @click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
 @click.option("--live", "-l", is_flag=True)
 def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int]) -> None:
+    os.nice(19)
+    try:
+        resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
+    except ValueError:
+        pass
     run_day(day, check, solve, test, parts)
     if not live:
         return
