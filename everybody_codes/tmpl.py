@@ -1,4 +1,7 @@
+"""Everyone Codes Day N."""
+
 def solve(part: int, data: str) -> int:
+    """Solve the parts."""
     pass
 
 

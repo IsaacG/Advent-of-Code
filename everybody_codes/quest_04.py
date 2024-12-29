@@ -1,4 +1,7 @@
+"""Everyone Codes Day Four."""
+
 def solve(part: int, data: str) -> int:
+    """Solve puzzle."""
     heights = [int(i) for i in data.splitlines()]
     if part in [1, 2]:
         target = min(heights)

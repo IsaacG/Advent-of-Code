@@ -1,8 +1,11 @@
+"""Everyone Codes Day Six."""
+
 import collections
 import functools
 
 
 def solve(part: int, data: str) -> str:
+    """Solve puzzle."""
     parents = {}
     fruits = set()
     # Parse and construct tree.

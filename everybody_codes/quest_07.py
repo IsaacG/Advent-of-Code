@@ -1,3 +1,5 @@
+"""Everyone Codes Day Seven."""
+
 import collections.abc
 import itertools
 
@@ -36,6 +38,7 @@ def track(diagram: str) -> list[str]:
     """Parse a track into a list of actions."""
     # Convert the track to a coord map.
     chars = {}
+    pos = complex()
     for y, line in enumerate(diagram.splitlines()):
         for x, char in enumerate(line):
             if char == " ":
@@ -79,29 +82,30 @@ def combine_actions(actions: collections.abc.Iterable[tuple[str, str]]) -> colle
         yield track_action if track_action in "+-" else device_action
 
 
-def solve(part: int, data: str, testing: bool) -> int:
+def solve(part: int, data: str, testing: bool) -> int | str:
+    """Solve the exercise."""
     if part in [1, 2]:
-        if part == 1:
-            racer = lambda x: race(itertools.islice(itertools.cycle(x.split(",")), 10))
-        else:
-            track_actions = track(TRACK2[testing])
-            racer = lambda x: race(combine_actions(zip(track_actions * 10, itertools.cycle(actions.split(",")))))
         collects = {}
+        track_actions = track(TRACK2[testing])
         for line in data.splitlines():
             name, actions = line.split(":")
-            collects[name] = racer(actions)
+            if part == 1:
+                collects[name] = race(itertools.islice(itertools.cycle(actions.split(",")), 10))
+            else:
+                collects[name] = race(combine_actions(zip(track_actions * 10, itertools.cycle(actions.split(",")))))
         return "".join(sorted(collects, key=lambda x: collects[x], reverse=True))
-    if part == 3:
-        # 2024 == 184 * 11
-        # Running the track 2024 times would give 184x the result of 11 loops.
-        # When testing patterns, 11 loops is sufficient.
-        track_actions = track(TRACK3) * 11
-        racer = lambda x: race(combine_actions(zip(track_actions, itertools.cycle(x))))
-        threshold = racer(data.split(":")[1].split(","))
-        return sum(
-            racer(actions) > threshold
-            for actions in set(itertools.permutations("+" * 5 + "-=" * 3))
-        )
+
+    # Part 3.
+    # 2024 == 184 * 11
+    # Running the track 2024 times would give 184x the result of 11 loops.
+    # When testing patterns, 11 loops is sufficient.
+    track_actions = track(TRACK3) * 11
+    racer = lambda x: race(combine_actions(zip(track_actions, itertools.cycle(x))))  # pylint: disable=C3001
+    threshold = racer(data.split(":")[1].split(","))
+    return sum(
+        racer(actions) > threshold
+        for actions in set(itertools.permutations("+" * 5 + "-=" * 3))
+    )
 
 
 TEST_DATA = [

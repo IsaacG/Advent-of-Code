@@ -1,15 +1,18 @@
+"""Everyone Codes Day Five."""
+
 import collections
 import itertools
 
 
 def solve(part: int, data: str) -> int:
+    """Solve puzzle."""
     # Convert the input into columns.
     rows = [[int(i) for i in line.split()] for line in data.splitlines()]
     cols = [list(i) for i in zip(*rows)]
 
     # Tracking info.
     highest = 0
-    counts = collections.defaultdict(int)
+    counts: dict[int, int] = collections.defaultdict(int)
     seen = set()
     size = len(cols)
 
@@ -38,6 +41,7 @@ def solve(part: int, data: str) -> int:
             if fp in seen:
                 return highest
             seen.add(fp)
+    raise RuntimeError("No loop found.")
 
 
 TEST_DATA = [

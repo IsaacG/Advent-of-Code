@@ -1,4 +1,7 @@
+"""Everyone Codes Day Three."""
+
 def solve(part: int, data: str) -> int:
+    """Solve puzzle."""
     pos = {
         complex(x, y)
         for y, line in enumerate(data.splitlines())

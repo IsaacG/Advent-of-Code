@@ -1,10 +1,7 @@
-TESTS = [
-    (1, "ABBAC", 5),
-    (2, "AxBCDDCAxD", 28),
-    (3, "xBxAAABCDxCC", 30),
-]
+"""Everyone Codes Day One."""
 
 def solve(part: int, data: str) -> int:
+    """Solve puzzle."""
     costs = {"A": 0, "B": 1, "C": 3, "D": 5, "x": 0}
     total = 0
     for i in range(0, len(data), part):
@@ -16,3 +13,9 @@ def solve(part: int, data: str) -> int:
         elif group_size == 3:
             total += 6
     return total
+
+TESTS = [
+    (1, "ABBAC", 5),
+    (2, "AxBCDDCAxD", 28),
+    (3, "xBxAAABCDxCC", 30),
+]
