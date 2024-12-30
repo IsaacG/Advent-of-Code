@@ -29,7 +29,7 @@ class Day13(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=480),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_re_findall_int(r"\d+")])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_ints_per_line])
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Solved by linear algebra and a system of two equations with two unknowns.
