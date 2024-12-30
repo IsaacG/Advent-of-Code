@@ -11,67 +11,45 @@ AVAILABLE_DOTS = [
 ]
 
 
-
-
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
+    sys.setrecursionlimit(5000)
     targets = [int(line) for line in data.splitlines()]
     available_dots = AVAILABLE_DOTS[part - 1]
-    sys.setrecursionlimit(sys.getrecursionlimit()*20)
 
     @functools.cache
     def get_candidates(limit: int) -> set[int]:
+        """Return candidate dots.
+
+        1. Filter out all dots which are too large/above the target.
+        2. Filter out dots for which there is a larger multiple, eg always use 20 over 10.
+        """
         candidates = {i for i in available_dots if i <= limit}
-        candidates = {i for i in candidates if all(j % i or j == i for j in candidates)}
-        # print(f"Candidates for {limit} -> {candidates}")
-        return candidates
+        return {i for i in candidates if all(j % i or j == i for j in candidates)}
 
     @functools.cache
     def min_dots(target: int) -> int:
-        # print(f"min_dots({target})")
+        """Return the minimum number of dots to get the target."""
         if target == 0:
             return 0
-        if target in available_dots:
-            return 1
-        max_candidate = max(i for i in available_dots if i < target)
+        max_candidate = max(i for i in available_dots if i <= target)
         candidates = get_candidates(max_candidate)
-        # print(f"min_dots({target}) -> get_candidates({max_candidate}) = {candidates}")
-        dm_d, dm_m = divmod(target, max_candidate)
-        if dm_m == 0:
-            return dm_d
         lcm = math.lcm(*candidates)
-        # steps = lcm // max(available_dots)
-        if target > lcm:
-            # print(target, lcm, candidates)
-            # return steps * (target // lcm) + min_dots(target % lcm)
-            # return 1 + min_dots(target - max(available_dots))
-            s = 0
-            while target > lcm:
-                target -= max_candidate
-                s += 1
-            # print(s, target)
-            return s + min_dots(target)
-        # print(candidates, target)
-        return 1 + min(min_dots(target - i) for i in candidates if i < target)
+        if target > lcm + max_candidate:
+            steps = (target - lcm) // max_candidate
+            return steps + min_dots(target - steps * max_candidate)
+        return 1 + min(min_dots(target - i) for i in candidates if i <= target)
 
     if part in [1, 2]:
         return sum(min_dots(target) for target in targets)
 
-    for i in available_dots:
-        min_dots(i)
-        for j in available_dots:
-            min_dots(i * j)
-
-    total = 0
-    for target in targets:
-        t_min = target
-        for ball_a in range(target // 2 - 1, target // 2 + 53, 1):
-            ball_b = target - ball_a
-            if abs(ball_a - ball_b) > 100:
-                continue
-            t_min = min(t_min, min_dots(ball_a) + min_dots(ball_b))
-        total += t_min
-    return total
+    return sum(
+        min(
+            min_dots(upper) + min_dots(target - upper)
+            for upper in range(target // 2, target // 2 + 51, 1)
+        )
+        for target in targets
+    )
 
 
 TEST_DATA = [
