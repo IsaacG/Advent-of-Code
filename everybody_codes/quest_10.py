@@ -125,3 +125,8 @@ TESTS = [
     (2, TEST_DATA[0], 1851),
     (3, TEST_DATA[1], 3889),
 ]
+NOTES = """\
+I had a real hard time solving this because I initially thought that, for every 6x6 block,
+you include an additional border made of the *very* first and *very* last row and column vs the adjacent blocks.
+I had a hard time understanding why I couldn't get a solution to work.
+"""
