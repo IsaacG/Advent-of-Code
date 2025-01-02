@@ -114,10 +114,12 @@ def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tupl
         return
     inotify = inotify_simple.INotify()
     inotify.add_watch(pathlib.Path(__file__).parent, inotify_simple.flags.CLOSE_WRITE)
+    count = 0
     while events := inotify.read():
         if not any(i.name == f"quest_{day:02}.py" for i in events):
             continue
-        print(datetime.datetime.now().strftime("== %H:%M:%S =="))
+        count += 1
+        print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))
         run_day(day, check, solve, test, parts)
 
 
