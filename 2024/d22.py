@@ -18,6 +18,7 @@ class Day22(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE[0], want=37327623),
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=23),
     ]
+    TIMEOUT = 300
 
     @staticmethod
     def pseudo_randon(number: int) -> int:
@@ -39,7 +40,7 @@ class Day22(aoc.Challenge):
     def part2(self, puzzle_input: list[int]) -> int:
         """Find the delta-pattern which maximizes returns."""
 
-        def delta_values(puzzle_input):
+        def delta_values():
             """Generate the deltas between the last digit of 2000 prices."""
             patterns_seen = set()
             delta_collections = []
