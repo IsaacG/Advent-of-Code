@@ -60,7 +60,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
     module = importlib.reload(module)
     if test:
         for part in parts:
-            for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS):
+            for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
                 if test_part != part:
                     continue
                 time_s, got = timed(module.solve, part=part, data=test_data, testing=True)
