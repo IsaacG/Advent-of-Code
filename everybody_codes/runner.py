@@ -65,9 +65,9 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                     continue
                 time_s, got = timed(module.solve, part=part, data=test_data, testing=True)
                 if got == test_want:
-                    print(f"TEST  Part {part} {time_s} PASS (test {test_no})")
+                    print(f"TEST  {day:02}.{part} {time_s} PASS (test {test_no})")
                 else:
-                    print(f"TEST  Part {part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
+                    print(f"TEST  {day:02}.{part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
     if solve:
         for part in parts:
             data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
@@ -80,7 +80,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                 continue
             data = data_path.read_text().rstrip()
             time_s, got = timed(module.solve, part=part, data=data, testing=False)
-            print(f"SOLVE Part {part} {time_s} ---> {got}")
+            print(f"SOLVE {day:02}.{part} {time_s} ---> {got}")
     if check:
         want = get_solutions(day)
         if want is None:
@@ -91,9 +91,9 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                 data = data_path.read_text().rstrip()
                 time_s, got = timed(module.solve, part=part, data=data, testing=False)
                 if str(got) == want[part - 1]:
-                    print(f"CHECK Part {part} {time_s} PASS")
+                    print(f"CHECK {day:02}.{part} {time_s} PASS")
                 else:
-                    print(f"CHECK Part {part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
+                    print(f"CHECK {day:02}.{part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
 
 
 @click.command()

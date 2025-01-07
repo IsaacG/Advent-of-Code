@@ -3,11 +3,12 @@
 LAUNCH_RANK = {"A": 1, "B": 2, "C": 3}
 
 
-def solve(part: int, data: str, testing: bool) -> int:
+def solve(part: int, data: str) -> int:
     """Solve the parts."""
     if part == 3:
-        return solve3(data, testing)
+        return solve3(data)
 
+    # Parse the input for parts 1, 2
     launchers = {}
     targets = {}
     ground = set()
@@ -22,65 +23,69 @@ def solve(part: int, data: str, testing: bool) -> int:
             elif char in "H":
                 targets[complex(x, y)] = 2
 
-    ranking = 0
+    total = 0
     while targets:
+        # Find a target we can hit with minimal power.
         candidates = {t for t in targets if t + 1j not in targets}
-        rank, target = get_rank(launchers, candidates)
-        assert target
-        ranking += rank
+        rank, target = get_rank_and_target(launchers, candidates)
+        total += rank
+        # Weaken/remove the target.
         targets[target] -= 1
         if targets[target] == 0:
             del targets[target]
-    return ranking
+    return total
 
 
-def get_rank(launchers, targets):
-    min_power = (min(t.real for t in targets) - max(l.real for l in launchers.values())) // 4
+def get_rank_and_target(launchers: dict[str, int], targets: set[complex]) -> tuple[int, complex]:
+    """Return the minimum power/rank that can be used to hit a target, along with the target."""
+    min_power = (min(t.real for t in targets) - max(l.real for l in launchers.values())) // 3
     max_power = (max(t.real for t in targets) - min(l.real for l in launchers.values())) // 2
     for power in range(int(min_power), int(max_power)):
         for launcher, pos in launchers.items():
+            # Compute the location of the shot right before it starts dropping.
             shot = pos + 2 * power + power * 1j
+            # Check if any target is diagonal from that position and will be hit.
             for target in targets:
                 delta = target - shot
                 if delta.real == -delta.imag:
                     return LAUNCH_RANK[launcher] * power, target
 
 
-def solve3(data: str, testing: bool) -> int:
-    total = 0
-    fall = complex(-1, -1)
+def solve3(data: str) -> int:
+    """Solve part 3."""
 
     def min_power(launcher, meteor):
-        max_wait = int(min(min(meteor.real, meteor.imag), 2 * meteor.imag - meteor.real))
-        for wait in range(max_wait + 1):
-            meteor_after_wait = meteor + wait * fall
-            if meteor_after_wait.real % 2 == 1:
-                continue
-            if meteor_after_wait.real < 0:
-                continue
-            impact_time = meteor_after_wait.real // 2
-            impact = meteor_after_wait + impact_time * fall
-            min_power = max(0, int(min((impact.real // 3) - 3, impact.imag - 3)))
-            max_power = int(impact_time)
+        # After time t, the height h(t) = meteor_y - t
+        # At the maximum (or, any) wait, we need h(t) >= (meteor_x - t) / 2 in order to hit the meteor before it hits the ground.
+        # meteor_y - t >= (meteor_x - t) / 2
+        # 2 * (meteor_y - t) >= meteor_x - t
+        # 2 * meteor_y >= meteor_x + t
+        # t <= 2 * meteor_y - meteor_x
+        max_wait = int(2 * meteor.imag - meteor.real)
+        # The meteor needs a discrete collision. The x must be even to collide. This allows us to step by 2.
+        if meteor.real % 2:
+            meteor += complex(-1, -1)
+        for wait in range(0, max_wait + 1, 2):
+            # impact = (meteor + fall) / 2
+            time_to_impact = (wait + meteor.real) // 2
+            impact = meteor + time_to_impact * complex(-1, -1)
+            distance_to_impact = int(impact.real)
+            min_power = int(distance_to_impact // 3)
 
-            for power in range(min_power, max_power + 1):
-                time_left = impact_time
+            for power in range(min_power, distance_to_impact + 1):
                 shot_pos = launcher + complex(1, 1) * power
-                time_left -= power
+                time_left = distance_to_impact - power
                 horiz = min(time_left, power)
                 shot_pos += complex(1, 0) * horiz
                 time_left -= horiz
-                down = time_left
-                shot_pos += complex(1, -1) * down
+                shot_pos += complex(1, -1) * time_left
                 if shot_pos == impact:
-                    # print(f"{launcher} {power=} will hit {meteor} with {wait=} at {impact}")
-                    if meteor == complex(3981, 2517):
-                        print(impact, power)
                     return impact.imag, power
         return 0, 0
 
     launchers = [(-1, complex(0, 0)), (-2, complex(0, 1)), (-3, complex(0, 2))]
     
+    total = 0
     for line in data.splitlines():
         options = []
         meteor = complex(*[int(i) for i in line.split()])
@@ -89,15 +94,9 @@ def solve3(data: str, testing: bool) -> int:
             if power:
                 options.append((height, mult * power))
 
-        if not options:
-            print(line, options)
         total += max(options)[1]
 
-    got = int(-total)
-    if not testing:
-        assert len(str(got)) == 6
-        assert got // 100000 != 4
-    return got
+    return -total
 
 
 
