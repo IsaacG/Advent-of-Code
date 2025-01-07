@@ -32,29 +32,35 @@ def solve(part: int, data: str, testing) -> int:
     if part == 2:
         return len(all_pos)
 
-    def distance(a, b):
-        return sum(abs(i - j) for i, j in zip(a, b))
+    trunks = {pos[1] for pos in all_pos if pos[0] == pos[2] == 0}
+    num_trunks = len(trunks)
 
-    def trunk_distance(leaf, target) -> int:
+    def trunk_distance(leaf) -> dict:
         todo = queue.PriorityQueue()
-        todo.put((distance(leaf, target), 0, leaf))
+        todo.put((sum(abs(i) for i in leaf), 0, leaf))
         seen = set()
-        while not todo.empty():
+        distances = {}
+        while len(distances) < num_trunks:
             _, steps, pos = todo.get()
-            if pos == target:
-                return steps
+            if pos[0] == pos[2] == 0:
+                distances[pos[1]] = steps
+            steps = steps + 1
             for offset in OFFSET.values():
                 n = tuple(i + j for i, j in zip(pos, offset))
                 if n not in all_pos or n in seen:
                     continue
                 seen.add(n)
-                todo.put((distance(n, target) + steps + 1, steps + 1, n))
-        raise ValueError()
+                todo.put((sum(abs(i) for i in n) + steps, steps, n))
+        return distances
 
     def murkiness(pos: tuple[int, int, int]) -> int:
         return sum(trunk_distance(leaf, pos) for leaf in leaves)
 
-    return min(murkiness((0, y, 0)) for y in range(height + 1) if (0, y, 0) in all_pos)
+    distances = {leaf: trunk_distance(leaf) for leaf in leaves}
+    return min(
+        sum(distances[leaf][trunk_height] for leaf in leaves)
+        for trunk_height in trunks
+    )
 
 
 TEST_DATA = """\
