@@ -1,6 +1,7 @@
 """Everyone Codes Day 15."""
 import collections
 import itertools
+import logging
 import queue
 
 DIRECTIONS = [complex(0, 1), complex(0, -1), complex(1, 0), complex(-1, 0)]
@@ -17,7 +18,7 @@ def solve(part: int, data: str) -> int:
         for x, char in enumerate(line):
             if char in "#~":
                 continue
-            pos = complex(x, y)
+            pos = (x, y)
             if char.isalpha():
                 plants[char].add(pos)
             spaces.add(pos)
@@ -26,10 +27,16 @@ def solve(part: int, data: str) -> int:
     assert len(starts) == 1
     plantmap = {pos: plant for plant, positions in plants.items() for pos in positions}
     start = starts.copy().pop()
-    all_plant_types = set(plants)
+    all_plant_types = frozenset(plants)
+    all_want = frozenset(all_plant_types | {"start"})
     all_plant_pos = set().union(*plants.values())
     points_of_interest = starts | all_plant_pos
-    print(f"Points: {len(points_of_interest)}. Plant types: {len(plants)}")
+    logging.info(f"Points: {len(points_of_interest)}. Plant types: {len(plants)}")
+
+    def neighbors(pos):
+        x, y = pos
+        n = [(x + 1, y + 0), (x - 1, y + 0), (x + 0, y + 1), (x + 0, y - 1)]
+        return [i for i in n if i in spaces]
 
     def get_dist(starting):
         bfs = collections.deque([(0, starting)])
@@ -43,14 +50,14 @@ def solve(part: int, data: str) -> int:
                 distances[pos] = steps
                 found += 1
             steps += 1
-            for d in DIRECTIONS:
-                nd = pos + d
-                if nd in spaces and nd not in seen:
+            for nd in neighbors(pos):
+                if nd not in seen:
                     bfs.append((steps, nd))
                     seen.add(nd)
         return distances
 
     # 3. Part two, second attempt.
+    # logging.info({t: len(u) for t, u in plants.items()})
     dist = {pos: get_dist(pos) for pos in points_of_interest}
 
     if part < 3:
@@ -61,87 +68,64 @@ def solve(part: int, data: str) -> int:
                 for path in itertools.product(starts, *[plants[i] for i in ordering], starts)
             )
             if shortest is None or s < shortest:
-                print(f"{ordering} is shorter than {shortest} at {s}")
+                logging.info(f"{ordering} is shorter than {shortest} at {s}")
                 shortest = s
             else:
-                print(f"{ordering} is longer than {shortest} at {s}")
+                logging.info(f"{ordering} is longer than {shortest} at {s}")
         return shortest
-    print("Part three")
-    print("Distance graph built.")
-    want_count = len(all_plant_types) + 1
-    all_want = all_plant_types | {"start"}
-    max_dist = max(max(j.values()) for j in dist.values())
-    print(f"{max_dist=}, {len(all_plant_types) + 2}, {max_dist * (len(all_plant_types) + 2)}")
 
-    # 4. Part three, second attempt.
-    def get_them_all(starting):
-        print(f"get_them_all({starting})")
+    # logging.info("Part three")
+    logging.info("Distance graph built.")
+
+    nearest = {
+        pos: sorted((*min((dist[pos][p], p) for p in plants[t]), t) for t in all_plant_types)
+        for pos in points_of_interest
+    }
+    logging.info("Nearest graph built.")
+
+    def get_them_all():
+        most_found = 0
         q = queue.PriorityQueue()
-        q.put((dist[start][starting], {plantmap[starting]}, starting.real, starting.imag))
+        q.put((0, set(), start))
+        counts = collections.defaultdict(int)
+        seen = set()
         while not q.empty():
-            steps, found, posx, posy = q.get()
-            # print(q.qsize(), len(found))
-            pos = complex(posx, posy)
+            steps, found, pos = q.get()
+            counts[frozenset(found)] += 1
+            if len(found) > most_found:
+                logging.info(f"Found {len(found)} in {steps=} at qlen {q.qsize()}")
+                most_found = len(found)
+                # logging.info(dict(counts))
             if found == all_want:
                 return steps
             elif found == all_plant_types:
-                q.put((steps + dist[pos][start], all_want, start.real, start.imag))
+                logging.info(f"Found a solution: {steps + dist[pos][start]}")
+                q.put((steps + dist[pos][start], all_want, start))
             else:
-                for next_type in all_plant_types - found:
-                    next_have = found | {next_type}
-                    for next_pos in plants[next_type]:
-                        q.put((steps + dist[pos][next_pos], next_have, next_pos.real, next_pos.imag))
+                next_candidates = [(d, p, t) for d, p, t in nearest[pos] if t not in found][:3]
+                assert next_candidates
+                candidates = []
+                for c_dist, c_pos, c_type in next_candidates:
+                    c_found = found | {c_type}
+                    if c_found == all_plant_types:
+                        next_next_candidates = starts
+                    else:
+                        next_next_candidates = [p for d, p, t in nearest[c_pos] if t not in c_found][:3]
+                    assert next_next_candidates
+                    for next_next_pos in next_next_candidates:
+                        consider = min((dist[pos][next_pos] + dist[next_pos][next_next_pos], next_pos) for next_pos in plants[c_type])[1]
+                        candidates.append((consider, c_type))
 
-    if True:
-        # 4. Part three, second attempt.
-        shortest = None
-        for pos in all_plant_pos:
-            got = get_them_all(pos)
-            print(f"{got} from {pos} vs {shortest}")
-            if not shortest or got < shortest:
-                shortest = got
-        return shortest
-    else:
-        # 2. Part two, first attempt.
-        # Floyd–Warshall algorithm
-        largest = len(lines) * len(lines[0]) * 2
-        dist = {a: {b: largest for b in spaces} for a in spaces}
-        for pos in spaces:
-            dist[pos][pos] = 0
-            for d in DIRECTIONS:
-                nd = pos + d
-                if nd in spaces:
-                    dist[pos][nd] = 1
-        for k, i, j in itertools.product(spaces, repeat=3):
-            if dist[i][j] > dist[i][k] + dist[k][j]:
-                dist[i][j] = dist[i][k] + dist[k][j]
-    print("Done FW")
+                assert candidates
+                for next_pos, next_type in candidates:
+                    next_have = frozenset(found | {next_type})
+                    assert len(next_have) > len(found), f"{found=}, {next_type=}, {next_have=}"
+                    d = (steps + dist[pos][next_pos], next_have, next_pos)
+                    if d not in seen:
+                        q.put(d)
+                        seen.add(d)
 
-    for ordering in itertools.permutations(plants):
-        s = min(
-            sum(dist[a][b] for a, b in zip(path, list(path)[1:]))
-            for path in itertools.product(starts, *[plants[i] for i in ordering], starts)
-        )
-        if shortest is None or s < shortest:
-            print(f"{ordering} is shorter than {shortest} at {s}")
-            shortest = s
-        else:
-            print(f"{ordering} is longer than {shortest} at {s}")
-    return shortest
-
-    # 1. Part one, first attempt
-    bfs = collections.deque([(0, pos) for pos in starts])
-    seen = set()
-    while bfs:
-        steps, pos = bfs.popleft()
-        if pos in plants["H"]:
-            return 2 * steps
-        steps += 1
-        for d in DIRECTIONS:
-            nd = pos + d
-            if nd in spaces and nd not in seen:
-                bfs.append((steps, nd))
-                seen.add(nd)
+    return get_them_all()
 
 
 TEST_DATA = [
