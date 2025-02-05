@@ -5,6 +5,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import importlib
+import logging
 import multiprocessing
 import os
 import pathlib
@@ -26,6 +27,20 @@ from pylib import site
 
 EST = zoneinfo.ZoneInfo("America/New_York")
 NUMBERS = "zero one two three four five six seven eight nine ten".split()
+
+
+class LogFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_call = time.perf_counter_ns()
+
+    def formatTime(self, record, datefmt=None):
+        if datefmt:
+            return super().formatTime(record, datefmt)
+        call_time = time.perf_counter_ns()
+        delta = call_time - self.last_call
+        self.last_call = call_time
+        return datetime.datetime.now().strftime(f"%H:%M:%S.%f ({delta // 1_000_000:5}ms)")
 
 
 @dataclasses.dataclass
@@ -374,6 +389,7 @@ def show_parsers():
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
 @click.option("--input-file", "--input", "--file", type=str, default=None, help="Alternative input file.")
 @click.option("--cookie", type=str, required=False, help="Set cookie")
+@click.option("--verbose", "-v", count=True)
 def main(
     date: Optional[str],
     day: Optional[int],
@@ -392,9 +408,17 @@ def main(
     timeout: int,
     year: Optional[int],
     cookie: Optional[str],
+    verbose: int,
 ) -> None:
     """Run the code in some fashion."""
     os.nice(19)
+
+    log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
+    handler = logging.StreamHandler()
+    handler.setFormatter(LogFormatter(fmt="%(asctime)s [%(funcName)s():L%(lineno)s] %(message)s"))
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(log_level)
+
     try:
         resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
     except ValueError:

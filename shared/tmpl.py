@@ -5,6 +5,7 @@ from __future__ import annotations
 import collections
 import functools
 import itertools
+import logging
 import math
 import re
 
@@ -15,6 +16,9 @@ SAMPLE = ${sample}
 LineType = int
 InputType = list[LineType]
 
+
+def log(*args, **kwargs) -> None:
+    logging.info(*args, **kwargs)
 
 class Day${day}(aoc.Challenge):
     """${title}."""
