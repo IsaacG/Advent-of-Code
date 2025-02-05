@@ -3,6 +3,7 @@
 import datetime
 import importlib
 import inspect
+import logging
 import os
 import pathlib
 import requests
@@ -11,6 +12,20 @@ import time
 
 import click
 import inotify_simple  # type: ignore
+
+
+class LogFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_call = time.perf_counter_ns()
+
+    def formatTime(self, record, datefmt=None):
+        if datefmt:
+            return super().formatTime(record, datefmt)
+        call_time = time.perf_counter_ns()
+        delta = call_time - self.last_call
+        self.last_call = call_time
+        return datetime.datetime.now().strftime(f"%H:%M:%S.%f ({delta // 1_000_000:5}ms)")
 
 
 def get_solutions(day: int) -> list[int] | None:
@@ -103,8 +118,14 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
 @click.option("--test", "-t", is_flag=True)
 @click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
 @click.option("--live", "-l", is_flag=True)
-def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int]) -> None:
+@click.option("--verbose", "-v", count=True)
+def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int) -> None:
     os.nice(19)
+    log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
+    handler = logging.StreamHandler()
+    handler.setFormatter(LogFormatter(fmt="%(asctime)s [%(funcName)s():L%(lineno)s] %(message)s"))
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(log_level)
     try:
         resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
     except ValueError:
