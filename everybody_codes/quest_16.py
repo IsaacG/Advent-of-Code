@@ -26,77 +26,89 @@ def solve(part: int, data: str) -> int:
         return " ".join(wheel[(100 * distance) % len(wheel)] for wheel, distance in zip(wheels, distances))
 
     eye_wheels = [[face[0] + face[2] for face in wheel] for wheel in wheels]
+    wheel_lens = [len(wheel) for wheel in wheels]
 
     @functools.cache
-    def points_for_positions(positions: list[int]) -> int:
+    def points_for_positions(positions: tuple[int]) -> int:
+        g = "".join(eyes[position] for eyes, position in zip(eye_wheels, positions))
+        # print(f"{positions} {g}")
+        # print(positions, g)
         return sum(
             count - 2
-            for count in collections.Counter(
-                "".join(eyes[position]) for eyes, position in zip(eye_wheels, positions)
-            ).values()
+            for count in collections.Counter(g).values()
             if count > 2
         )
 
     if part == 2:
-        wheel_lens = [len(wheel) for wheel in wheels]
         wheel_steps = [wheel_len // math.gcd(wheel_len, distance) for wheel_len, distance in zip(wheel_lens, distances)]
-        # print(f"{wheel_steps=}")
         assert len(eye_wheels) == len(wheel_lens) == len(distances)
-        # print(eye_wheels)
-        # print(list(zip(eye_wheels, wheel_lens, distances)))
         combined_cycle = math.lcm(*wheel_steps)
-        # print(f"{combined_cycle=}")
         ic = [
                 [
-                    eyes[step % wheel_len]
+                    step % wheel_len
                     for step in range(distance, math.lcm(wheel_len, distance) + 1, distance)
                 ]
                 for eyes, wheel_len, distance in zip(eye_wheels, wheel_lens, distances)
         ]
         pulls = 202420242024
-        eye_gen = zip(*[itertools.cycle(i) for i in ic])
-        cycles, remainder = divmod(pulls, combined_cycle)
-        total = 0
-        remainder_points = 0
-        for step in range(combined_cycle):
-            eyes = list(next(eye_gen))
-            counts = collections.Counter(a for b in eyes for a in b)
-            # print(eyes, counts)
-            for count in counts.values():
-                if count > 2:
-                    total += count - 2
-            # print(f"{step} -> {total}")
-            if step == remainder - 1:
-                remainder_points = total
-                # print(f"{step=} remainder {remainder_points}")
-        got = cycles * total + remainder_points
-        assert got in [280014668134, 109992786835]
+        for pulls in (1,2,3,4,5,10,100,1000,1000000, 202420242024):
+            eye_gen = zip(*[itertools.cycle(i) for i in ic])
+            cycles, remainder = divmod(pulls, combined_cycle)
+            total = 0
+            remainder_points = 0
+            for step in range(min(pulls, combined_cycle)):
+                total += points_for_positions(tuple(next(eye_gen)))
+                if step == remainder - 1:
+                    remainder_points = total
+            got = cycles * total + remainder_points
+            # print(pulls, got)
+            if pulls == 202420242024:
+                assert got in [280014668134, 109992786835], got
         return got
 
     @functools.cache
-    def min_max(positions, steps):
+    def max_min(positions, steps):
         if steps == 0:
             return 0, 0
 
+        mins, maxes = [], []
         for offset in [0, -1, 1]:
-            counts = collections.Counter(a for b in eyes for a in b)
-            # print(eyes, counts)
-            for count in counts.values():
-                if count > 2:
-                    total += count - 2
+            next_pos = tuple(
+                (pos + offset + distance) % wlen
+                for pos, distance, wlen in zip(positions, distances, wheel_lens)
+            )
+            got = points_for_positions(next_pos)
+            # print(f"{offset} -> {next_pos} -> {got}")
+            a, b = max_min(next_pos, steps - 1)
+            maxes.append(got + a)
+            mins.append(got + b)
+        return max(maxes), min(mins)
+
+    got = max_min(tuple(0 for _ in wheels), 256)
+    return " ".join(str(i) for i in got)
 
 
 
-TEST_DATA = """\
+TEST_DATA = [
+    """\
 1,2,3
 
 ^_^ -.- ^,-
 >.- ^_^ >.<
 -_- -.- >.<
     -.^ ^_^
-    >.>"""
+    >.>""",
+    """\
+1,2,3
+
+^_^ -.- ^,-
+>.- ^_^ >.<
+-_- -.- ^.^
+    -.^ >.<
+    >.>""",
+]
 TESTS = [
-    (1, TEST_DATA, ">.- -.- ^,-"),
-    (2, TEST_DATA, 280014668134),
-    (3, TEST_DATA, "627 128"),
+    (1, TEST_DATA[0], ">.- -.- ^,-"),
+    (2, TEST_DATA[0], 280014668134),
+    (3, TEST_DATA[1], "627 128"),
 ]
