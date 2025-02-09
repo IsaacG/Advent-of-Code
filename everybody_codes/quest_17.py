@@ -1,22 +1,21 @@
 """Everyone Codes Day N."""
 
 import itertools
-import logging
 import math
 
-log = logging.info
-
-def manhatten(a, b):
+def manhatten(a: tuple[int, int], b: tuple[int, int]) -> int:
+    """Return the Manhatten distance between two points."""
     x1, y1 = a
     x2, y2 = b
     return abs(x1 - x2) + abs(y1 - y2)
 
-def constellation_size(stars):
+
+def constellation_size(stars: set[tuple[int, int]]) -> int:
+    """Return the "size" of a constellation."""
     ungrouped = stars.copy()
     grouped = {ungrouped.pop()}
     result = 1
     while ungrouped:
-        # log(f"{ungrouped=}, {grouped=}")
         distance, star = min(
             (manhatten(a, b), a)
             for a, b in itertools.product(ungrouped, grouped)
@@ -36,10 +35,11 @@ def solve(part: int, data: str) -> int:
         for x, char in enumerate(line)
         if char == "*"
     }
+
     if part in (1, 2):
         return constellation_size(stars)
 
-    log("Start")
+    # Group stars into constellation where each start is within 5 of a neighbor.
     neighbors = {
         a: {
             b
@@ -48,11 +48,10 @@ def solve(part: int, data: str) -> int:
         }
         for a in stars
     }
-    log("Got neighbors")
 
     sizes = []
     while stars:
-        log(f"Unprocessed: {len(stars)}")
+        # Select a star then expand the group to include all nearby neighbors.
         todo = {stars.copy().pop()}
         constellation = set()
         while todo:
@@ -60,11 +59,9 @@ def solve(part: int, data: str) -> int:
             stars.remove(cur)
             constellation.add(cur)
             todo.update(n for n in neighbors[cur] if n not in constellation)
-        size = constellation_size(constellation)
-        log(f"Grouped {len(constellation)} stars into a constellation, {size=}")
-        sizes.append(size)
+        # Get the constellation size.
+        sizes.append(constellation_size(constellation))
     return math.prod(sorted(sizes, reverse=True)[:3])
-        
 
 
 TEST_DATA = [
