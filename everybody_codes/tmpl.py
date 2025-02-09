@@ -1,5 +1,9 @@
 """Everyone Codes Day N."""
 
+import logging
+
+log = logging.info
+
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
     pass
