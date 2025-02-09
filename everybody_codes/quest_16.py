@@ -6,8 +6,8 @@ import functools
 import math
 
 
-def solve(part: int, data: str) -> int:
-    """Solve the parts."""
+def parse(data: str) -> tuple[list[int], list[list[str]]]:
+    """Parse the input."""
     blocks = data.split("\n\n")
     lines = blocks[1].splitlines()
     distances = [int(i) for i in blocks[0].split(",")]
@@ -21,27 +21,30 @@ def solve(part: int, data: str) -> int:
                 break
             faces.append(line[start:start + 3])
         wheels.append(faces)
+    return distances, wheels
 
-    if part == 1:
-        return " ".join(wheel[(100 * distance) % len(wheel)] for wheel, distance in zip(wheels, distances))
 
+def solve(part: int, data: str) -> int | str:
+    """Solve the parts."""
+    distances, wheels = parse(data)
+    # Wheels with only the eyes.
     eye_wheels = [[face[0] + face[2] for face in wheel] for wheel in wheels]
     wheel_lens = [len(wheel) for wheel in wheels]
 
     @functools.cache
     def points_for_positions(positions: tuple[int]) -> int:
-        g = "".join(eyes[position] for eyes, position in zip(eye_wheels, positions))
-        # print(f"{positions} {g}")
-        # print(positions, g)
+        """Return the amount of points won for given wheel positions."""
         return sum(
             count - 2
-            for count in collections.Counter(g).values()
+            for count in collections.Counter(
+                "".join(eyes[position] for eyes, position in zip(eye_wheels, positions))
+            ).values()
             if count > 2
         )
 
-    if part == 2:
+    def part2() -> int:
+        """Find cycle lengths and compute the points for each cycle and for the remainder steps. CRT?"""
         wheel_steps = [wheel_len // math.gcd(wheel_len, distance) for wheel_len, distance in zip(wheel_lens, distances)]
-        assert len(eye_wheels) == len(wheel_lens) == len(distances)
         combined_cycle = math.lcm(*wheel_steps)
         ic = [
                 [
@@ -51,23 +54,19 @@ def solve(part: int, data: str) -> int:
                 for eyes, wheel_len, distance in zip(eye_wheels, wheel_lens, distances)
         ]
         pulls = 202420242024
-        for pulls in (1,2,3,4,5,10,100,1000,1000000, 202420242024):
-            eye_gen = zip(*[itertools.cycle(i) for i in ic])
-            cycles, remainder = divmod(pulls, combined_cycle)
-            total = 0
-            remainder_points = 0
-            for step in range(min(pulls, combined_cycle)):
-                total += points_for_positions(tuple(next(eye_gen)))
-                if step == remainder - 1:
-                    remainder_points = total
-            got = cycles * total + remainder_points
-            # print(pulls, got)
-            if pulls == 202420242024:
-                assert got in [280014668134, 109992786835], got
-        return got
+        eye_gen = zip(*[itertools.cycle(i) for i in ic])
+        cycles, remainder = divmod(pulls, combined_cycle)
+        total = 0
+        remainder_points = 0
+        for step in range(min(pulls, combined_cycle)):
+            total += points_for_positions(tuple(next(eye_gen)))
+            if step == remainder - 1:
+                remainder_points = total
+        return cycles * total + remainder_points
 
     @functools.cache
-    def max_min(positions, steps):
+    def max_min(positions: tuple[int, ...], steps: int) -> tuple[int, int]:
+        """Return the max and min points given a starting position and using the left lever. Dynamic programming."""
         if steps == 0:
             return 0, 0
 
@@ -78,12 +77,18 @@ def solve(part: int, data: str) -> int:
                 for pos, distance, wlen in zip(positions, distances, wheel_lens)
             )
             got = points_for_positions(next_pos)
-            # print(f"{offset} -> {next_pos} -> {got}")
             a, b = max_min(next_pos, steps - 1)
             maxes.append(got + a)
             mins.append(got + b)
         return max(maxes), min(mins)
 
+    if part == 1:
+        return " ".join(wheel[(100 * distance) % len(wheel)] for wheel, distance in zip(wheels, distances))
+
+    if part == 2:
+        return part2()
+
+    # Part 3
     got = max_min(tuple(0 for _ in wheels), 256)
     return " ".join(str(i) for i in got)
 
