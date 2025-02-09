@@ -31,7 +31,7 @@ class LogFormatter(logging.Formatter):
 def get_solutions(day: int) -> list[int] | None:
     solutions_path = pathlib.Path(f"solutions/2024.txt")
     want_raw = next((line for line in solutions_path.read_text().splitlines() if line.startswith(f"{day:02} ")), None)
-    if want_raw is None or len(want_raw.split()) < 4:
+    if want_raw is None or len(want_raw.split("\t")) < 4:
         session = requests.Session()
         cookie_file = pathlib.Path(os.getenv("XDG_DATA_HOME")) / "everyone.codes.cookie"
         cookie = cookie_file.read_text().strip()
@@ -40,14 +40,14 @@ def get_solutions(day: int) -> list[int] | None:
         want = [f"answer{i}" for i in range(1, 4)]
         if not set(want).issubset(set(data)):
             return None
-        new_line = " ".join([f"{day:02}"] + [data[i] for i in want])
-        solutions = [line for line in solutions_path.read_text().splitlines() if line.split()[0] != f"{day:02}"]
+        new_line = "\t".join([f"{day:02}"] + [data[i] for i in want])
+        solutions = [line for line in solutions_path.read_text().splitlines() if line.split("\t")[0] != f"{day:02}"]
         solutions.append(new_line)
         solutions_path.write_text("\n".join(solutions) + "\n")
         want_raw = new_line
     if want_raw is None:
         return None
-    return want_raw.split()[1:]
+    return want_raw.split("\t")[1:]
 
 
 def format_ns(ns: float) -> str:
