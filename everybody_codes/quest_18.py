@@ -11,14 +11,13 @@ def neighbors(i):
 
 
 def flood_fill(canal, trees, start):
-    assert start
     todo = start
     filled = set()
     times = []
     for step in itertools.count(0):
         filled.update(todo)
         times.extend([step] * len(trees & todo))
-        if trees < filled:
+        if trees < filled or not todo:
             return times
         todo = {
             n
@@ -27,12 +26,12 @@ def flood_fill(canal, trees, start):
             if n in canal and n not in filled
         }
 
-def tree_neighbors(canal, empty, trees, start):
+def tree_neighbors(canal, trees, start):
     todo = {start}
     filled = set()
     times = []
     trees = trees.copy()
-    trees.remove(start)
+    trees.discard(start)
     for step in itertools.count(0):
         for t in todo & trees:
             times.append((step, t))
@@ -48,7 +47,7 @@ def tree_neighbors(canal, empty, trees, start):
             if n in canal and n not in filled
         }
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: str, testing) -> int:
     """Solve the parts."""
     lines = data.splitlines()
     trees = {
@@ -73,44 +72,31 @@ def solve(part: int, data: str) -> int:
         times = flood_fill(canal, trees, todo)
         return times[-1]
 
-    log("start tree_graph")
     tree_graph = {
-        t: tree_neighbors(canal, empty, trees, t)
+        t: tree_neighbors(canal, trees, t)
         for t in trees
     }
-    log("end tree_graph. {tree_graph=}")
-    tns = {t: {n[1] for n in ns} for t, ns in tree_graph.items()}
-    assert (209, 69) in tns[203, 81]
-    assert (203, 81) in tns[209, 69]
 
-
-    def tree_flood_fill(start, ignores):
-        todo = {(0, start)}
-        seen = {start}
+    def tree_flood_fill(start, ignore, start_dist):
+        todo = {(start_dist, start)}
+        seen = {start} | ignore
         total = 0
         while todo:
             dist, t = todo.pop()
-            # log(f"Popped {t}. Neighbors: {tree_graph[t]}.")
             total += dist
-            assert tree_graph[t]
             for ndist, neighbor in tree_graph[t]:
                 if neighbor in seen:
                     continue
                 seen.add(neighbor)
-                # log(f"Push {neighbor}")
                 todo.add((dist + ndist, neighbor))
-        assert seen == trees, f"{len(seen)=} != {len(trees)}"
         return total
 
-    log("tree starts")
     empty_set = set()
     tree_starts = sorted(
-        (tree_flood_fill(t, empty_set), t) for t in trees
+        (tree_flood_fill(t, empty_set, 0), t) for t in trees
     )
-    log(f"tree starts: {tree_starts[:5]}")
 
     todo = {t[1] for t in tree_starts[:3]}
-    log(f"{len(todo)=}")
     seen = set()
     while todo:
         todo = {
@@ -120,12 +106,46 @@ def solve(part: int, data: str) -> int:
             if n in empty and n not in seen
         }
         seen.update(todo)
-    log(f"{len(seen)=} vs {len(empty)=}")
 
-    return min(
-        sum(flood_fill(canal, trees, {start}))
-        for start in seen
-    )
+    # got = min(
+    #     (sum(flood_fill(canal, trees, {start})), start)
+    #     for start in seen
+    # )
+    # log(f"{got=}")
+    # return got[0]
+    # got=(12, (3, 2))
+    # got=(271050, (151, 27))
+
+    if not testing:
+        point = (151, 27)
+        ff = sum(flood_fill(canal, trees, {point}))
+        log(f"flood fill from {point} => {ff}")
+
+        starting_location = point
+        neighboring_trees = tree_neighbors(canal, trees, starting_location)
+        log(f"{point} neighboring trees: {neighboring_trees}")
+        totals = sum(d for d, t in neighboring_trees)
+        nt = {t for d, t in neighboring_trees}
+        log(f"{point} {nt=}")
+        totals = 0
+        totals += sum(tree_flood_fill(t, nt - {t}, 0) for t in nt)
+        log(f"Total from {point}: {totals}")
+    # return
+
+
+    results = []
+    candidate_well_locations = seen
+    # log(f"{candidate_well_locations=}")
+    for starting_location in candidate_well_locations:
+        neighboring_trees = tree_neighbors(canal, trees, starting_location)
+        nt = {t for d, t in neighboring_trees}
+        totals = sum(tree_flood_fill(t, nt - {t}, d) for d, t in neighboring_trees)
+        results.append(totals)
+
+
+
+    # log(results)
+    return min(results)
 
     
 
