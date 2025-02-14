@@ -5,49 +5,124 @@ import logging
 
 log = logging.info
 
-def neighbors(i):
-    x, y = i
+Point = tuple[int, int]
+
+
+def neighbors(position: Point) -> list[Point]:
+    """Return the neighbors adjacent to a position."""
+    x, y = position
     return [(x + 1, y + 0), (x - 1, y + 0), (x + 0, y + 1), (x + 0, y - 1)]
 
 
-def flood_fill(canal, trees, start):
-    todo = start
-    filled = set()
-    times = []
-    for step in itertools.count(0):
-        filled.update(todo)
-        times.extend([step] * len(trees & todo))
-        if trees < filled or not todo:
-            return times
+def simple_flood_fill(canal: set[Point], trees: set[Point], todo: set[Point]) -> int:
+    """Simple flood fill from given starting points until all the trees are watered.
+
+    Return the number of steps until all trees are reached.
+    """
+    seen: set[Point] = set()
+    steps = 0
+    while trees - seen:
+        seen.update(todo)
         todo = {
-            n
-            for i in todo
-            for n in neighbors(i)
-            if n in canal and n not in filled
+            neighbor
+            for position in todo
+            for neighbor in neighbors(position)
+            if neighbor in canal and neighbor not in seen
         }
+        steps += 1
+    return steps - 1
 
-def tree_neighbors(canal, trees, start):
+
+def distance_to_next_trees(canal: set[Point], trees: set[Point], start: Point) -> list[tuple[int, Point]]:
+    """Return trees neighboring a point, along with the distance to those trees.
+
+    Flood fill from a start until trees; do not pass through trees.
+    """
     todo = {start}
-    filled = set()
+    seen = set()
     times = []
-    trees = trees.copy()
-    trees.discard(start)
+    trees = trees - {start}
     for step in itertools.count(0):
-        for t in todo & trees:
-            times.append((step, t))
-        filled.update(todo)
+        for tree in todo & trees:
+            times.append((step, tree))
+        seen.update(todo)
 
+        # Do not pass through trees.
         todo -= trees
         if not todo:
             return times
         todo = {
-            n
-            for i in todo
-            for n in neighbors(i)
-            if n in canal and n not in filled
+            neighbor
+            for position in todo
+            for neighbor in neighbors(position)
+            if neighbor in canal and neighbor not in seen
         }
+    raise RuntimeError("Not reachable")
 
-def solve(part: int, data: str, testing) -> int:
+
+def part3(trees: set[Point], empty: set[Point], canal: set[Point]) -> int:
+    """Solve part 3."""
+    # Distance from trees to their neighboring trees.
+    tree_graph = {
+        tree: distance_to_next_trees(canal, trees, tree)
+        for tree in trees
+    }
+
+    def tree_flood_fill(start: Point, ignore: set[Point], start_dist: int) -> int:
+        """Using the tree graph, return the total (part 3) tree-distance sum from one tree to all trees.
+
+        Ignored trees are not traversed.
+        """
+        todo = {(start_dist, start)}
+        seen = {start} | ignore
+        total = 0
+        while todo:
+            dist, tree = todo.pop()
+            total += dist
+            for ndist, neighbor in tree_graph[tree]:
+                if neighbor in seen:
+                    continue
+                seen.add(neighbor)
+                todo.add((dist + ndist, neighbor))
+        return total
+
+    # Compute the total cost using the tree graph starting from every tree.
+    # This is much cheaper than exploring the entire farm as the trees are pretty sparse.
+    # Assume the optimal starting point is in the vicinity of an optimal starting tree.
+    empty_set: set[Point] = set()
+    tree_starts = sorted(
+        (tree_flood_fill(tree, empty_set, 0), tree) for tree in trees
+    )
+
+    # Expand from the best three trees into the neighboring canal spots for an optimal starting point.
+    todo = {tree[1] for tree in tree_starts[:3]}
+    seen: set[Point] = set()
+    while todo:
+        todo = {
+            neighbor
+            for position in todo
+            for neighbor in neighbors(position)
+            if neighbor in empty and neighbor not in seen
+        }
+        seen.update(todo)
+    candidate_well_locations = seen
+
+    # For each candidate well location, compute the cost to the nearest trees
+    # plus the flood fill from those trees to all over trees (ignoring other trees near the well.
+    results = []
+    for starting_location in candidate_well_locations:
+        nearby_trees_and_distance = distance_to_next_trees(canal, trees, starting_location)
+        neighboring_trees = {tree for distance, tree in nearby_trees_and_distance}
+        totals = sum(
+            tree_flood_fill(tree, neighboring_trees - {tree}, distance)
+            for distance, tree in nearby_trees_and_distance
+        )
+        results.append(totals)
+
+    return min(results)
+
+
+def solve(part: int, data: str) -> int:
     """Solve the parts."""
     lines = data.splitlines()
     trees = {
@@ -62,92 +137,15 @@ def solve(part: int, data: str, testing) -> int:
         for x, char in enumerate(line)
         if char == "."
     }
-
     canal = empty | trees
-    max_x = len(lines[0]) - 1
-    max_y = len(lines) - 1
-    todo = {i for i in canal if 0 in i or i[0] == max_x or i[1] == max_y}
 
     if part < 3:
-        times = flood_fill(canal, trees, todo)
-        return times[-1]
+        max_x = len(lines[0]) - 1
+        max_y = len(lines) - 1
+        todo = {position for position in canal if 0 in position or position[0] == max_x or position[1] == max_y}
+        return simple_flood_fill(canal, trees, todo)
 
-    tree_graph = {
-        t: tree_neighbors(canal, trees, t)
-        for t in trees
-    }
-
-    def tree_flood_fill(start, ignore, start_dist):
-        todo = {(start_dist, start)}
-        seen = {start} | ignore
-        total = 0
-        while todo:
-            dist, t = todo.pop()
-            total += dist
-            for ndist, neighbor in tree_graph[t]:
-                if neighbor in seen:
-                    continue
-                seen.add(neighbor)
-                todo.add((dist + ndist, neighbor))
-        return total
-
-    empty_set = set()
-    tree_starts = sorted(
-        (tree_flood_fill(t, empty_set, 0), t) for t in trees
-    )
-
-    todo = {t[1] for t in tree_starts[:3]}
-    seen = set()
-    while todo:
-        todo = {
-            n
-            for i in todo
-            for n in neighbors(i)
-            if n in empty and n not in seen
-        }
-        seen.update(todo)
-
-    # got = min(
-    #     (sum(flood_fill(canal, trees, {start})), start)
-    #     for start in seen
-    # )
-    # log(f"{got=}")
-    # return got[0]
-    # got=(12, (3, 2))
-    # got=(271050, (151, 27))
-
-    if not testing:
-        point = (151, 27)
-        ff = sum(flood_fill(canal, trees, {point}))
-        log(f"flood fill from {point} => {ff}")
-
-        starting_location = point
-        neighboring_trees = tree_neighbors(canal, trees, starting_location)
-        log(f"{point} neighboring trees: {neighboring_trees}")
-        totals = sum(d for d, t in neighboring_trees)
-        nt = {t for d, t in neighboring_trees}
-        log(f"{point} {nt=}")
-        totals = 0
-        totals += sum(tree_flood_fill(t, nt - {t}, 0) for t in nt)
-        log(f"Total from {point}: {totals}")
-    # return
-
-
-    results = []
-    candidate_well_locations = seen
-    # log(f"{candidate_well_locations=}")
-    for starting_location in candidate_well_locations:
-        neighboring_trees = tree_neighbors(canal, trees, starting_location)
-        nt = {t for d, t in neighboring_trees}
-        totals = sum(tree_flood_fill(t, nt - {t}, d) for d, t in neighboring_trees)
-        results.append(totals)
-
-
-
-    # log(results)
-    return min(results)
-
-    
+    return part3(trees, empty, canal)
 
 
 TEST_DATA = [
