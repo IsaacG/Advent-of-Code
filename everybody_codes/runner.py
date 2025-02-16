@@ -15,7 +15,7 @@ import inotify_simple  # type: ignore
 
 
 class LogFormatter(logging.Formatter):
-    def __init__(self, day: int, *args, **kwargs):
+    def __init__(self, day: int = 0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_call = time.perf_counter_ns()
         self.day = day
@@ -25,7 +25,10 @@ class LogFormatter(logging.Formatter):
         self.part = part
 
     def format(self, record) -> str:
-        return super().format(record).replace("DAYPART", f"{self.day}.{self.part}")
+        msg = super().format(record)
+        if "DAYPART" in msg and self.day and self.part:
+            msg = msg.replace("DAYPART", f"{self.day}.{self.part}")
+        return msg
 
     def formatTime(self, record, datefmt=None):
         if datefmt:
