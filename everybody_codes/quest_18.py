@@ -124,6 +124,7 @@ def part3(trees: set[Point], empty: set[Point], canal: set[Point]) -> int:
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
+    log("Start")
     lines = data.splitlines()
     trees = {
         (x, y)
@@ -143,8 +144,10 @@ def solve(part: int, data: str) -> int:
         max_x = len(lines[0]) - 1
         max_y = len(lines) - 1
         todo = {position for position in canal if 0 in position or position[0] == max_x or position[1] == max_y}
+        log("End")
         return simple_flood_fill(canal, trees, todo)
 
+    log("End")
     return part3(trees, empty, canal)
 
 

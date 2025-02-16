@@ -15,9 +15,17 @@ import inotify_simple  # type: ignore
 
 
 class LogFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, day: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_call = time.perf_counter_ns()
+        self.day = day
+        self.part = 0
+
+    def set_part(self, part: int) -> None:
+        self.part = part
+
+    def format(self, record) -> str:
+        return super().format(record).replace("DAYPART", f"{self.day}.{self.part}")
 
     def formatTime(self, record, datefmt=None):
         if datefmt:
@@ -25,7 +33,7 @@ class LogFormatter(logging.Formatter):
         call_time = time.perf_counter_ns()
         delta = call_time - self.last_call
         self.last_call = call_time
-        return datetime.datetime.now().strftime(f"%H:%M:%S.%f ({delta // 1_000_000:5}ms)")
+        return datetime.datetime.now().strftime(f"%H:%M:%S ({delta // 1_000_000:5}ms)")
 
 
 def get_solutions(day: int) -> list[int] | None:
@@ -70,11 +78,12 @@ def timed(func, *args, **kwargs):
     return format_ns(end - start), got
 
 
-def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -> None:
+def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], formatter) -> None:
     module = importlib.import_module(f"quest_{day:02}")
     module = importlib.reload(module)
     if test:
         for part in parts:
+            formatter.set_part(part)
             for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
                 if test_part != part:
                     continue
@@ -85,6 +94,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
                     print(f"TEST  {day:02}.{part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
     if solve:
         for part in parts:
+            formatter.set_part(part)
             data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
             download_path = pathlib.Path(os.getenv("HOME")) / "remote"/ "Downloads" / f"everybody_codes_e2024_q{day:02}_p{part}.txt"
             if not data_path.exists() and download_path.exists():
@@ -102,6 +112,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int]) -
             print(f"No solutions found for {day}")
         else:
             for part in parts:
+                formatter.set_part(part)
                 data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
                 data = data_path.read_text().rstrip()
                 time_s, got = timed(module.solve, part=part, data=data, testing=False)
@@ -123,14 +134,15 @@ def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tupl
     os.nice(19)
     log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
     handler = logging.StreamHandler()
-    handler.setFormatter(LogFormatter(fmt="%(asctime)s [%(funcName)s():L%(lineno)s] %(message)s"))
+    formatter = LogFormatter(day, fmt="%(asctime)s [DAYPART|%(funcName)s():L%(lineno)s] %(message)s")
+    handler.setFormatter(formatter)
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(log_level)
     try:
         resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
     except ValueError:
         pass
-    run_day(day, check, solve, test, parts)
+    run_day(day, check, solve, test, parts, formatter)
     if not live:
         return
     inotify = inotify_simple.INotify()
@@ -141,7 +153,7 @@ def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tupl
             continue
         count += 1
         print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))
-        run_day(day, check, solve, test, parts)
+        run_day(day, check, solve, test, parts, formatter)
 
 
 if __name__ == "__main__":
