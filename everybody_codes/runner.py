@@ -9,34 +9,14 @@ import pathlib
 import requests
 import resource
 import time
+import typing
 
 import click
 import inotify_simple  # type: ignore
+from lib import helpers
 
 
-class LogFormatter(logging.Formatter):
-    def __init__(self, day: int = 0, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.last_call = time.perf_counter_ns()
-        self.day = day
-        self.part = 0
-
-    def set_part(self, part: int) -> None:
-        self.part = part
-
-    def format(self, record) -> str:
-        msg = super().format(record)
-        if "DAYPART" in msg and self.day and self.part:
-            msg = msg.replace("DAYPART", f"{self.day}.{self.part}")
-        return msg
-
-    def formatTime(self, record, datefmt=None):
-        if datefmt:
-            return super().formatTime(record, datefmt)
-        call_time = time.perf_counter_ns()
-        delta = call_time - self.last_call
-        self.last_call = call_time
-        return datetime.datetime.now().strftime(f"%H:%M:%S ({delta // 1_000_000:5}ms)")
+T = typing.TypeVar("T")
 
 
 def get_solutions(day: int) -> list[int] | None:
@@ -61,26 +41,6 @@ def get_solutions(day: int) -> list[int] | None:
     return want_raw.split("\t")[1:]
 
 
-def format_ns(ns: float) -> str:
-    units = [("ns", 1000), ("µs", 1000), ("ms", 1000), ("s", 60), ("mn", 60)]
-    for unit, shift in units:
-        if ns < shift:
-            break
-        ns /= shift
-    else:
-        unit = "hr"
-    return f"{ns:>7.3f} {unit:>2}"
-
-
-def timed(func, *args, **kwargs):
-    params = inspect.signature(func).parameters
-    kwargs = {k: v for k, v in kwargs.items() if k in params}
-    start = time.perf_counter_ns()
-    got = func(*args, **kwargs)
-    end = time.perf_counter_ns()
-    return format_ns(end - start), got
-
-
 def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], formatter) -> None:
     module = importlib.import_module(f"quest_{day:02}")
     module = importlib.reload(module)
@@ -90,7 +50,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], f
             for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
                 if test_part != part:
                     continue
-                time_s, got = timed(module.solve, part=part, data=test_data, testing=True)
+                time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True)
                 if got == test_want:
                     print(f"TEST  {day:02}.{part} {time_s} PASS (test {test_no})")
                 else:
@@ -107,7 +67,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], f
                 print(f"SOLVE No input data found for day {day} part {part}")
                 continue
             data = data_path.read_text().rstrip()
-            time_s, got = timed(module.solve, part=part, data=data, testing=False)
+            time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
             print(f"SOLVE {day:02}.{part} {time_s} ---> {got}")
     if check:
         want = get_solutions(day)
@@ -118,7 +78,7 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], f
                 formatter.set_part(part)
                 data_path = pathlib.Path(f"inputs/{day:02}.{part}.txt")
                 data = data_path.read_text().rstrip()
-                time_s, got = timed(module.solve, part=part, data=data, testing=False)
+                time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
                 if str(got) == want[part - 1]:
                     print(f"CHECK {day:02}.{part} {time_s} PASS")
                 else:
@@ -134,17 +94,8 @@ def run_day(day: int, check: bool, solve: bool, test: bool, parts: tuple[int], f
 @click.option("--live", "-l", is_flag=True)
 @click.option("--verbose", "-v", count=True)
 def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int) -> None:
-    os.nice(19)
-    log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
-    handler = logging.StreamHandler()
-    formatter = LogFormatter(day, fmt="%(asctime)s [DAYPART|%(funcName)s():L%(lineno)s] %(message)s")
-    handler.setFormatter(formatter)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(log_level)
-    try:
-        resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
-    except ValueError:
-        pass
+    formatter = helpers.setup_logging(day, verbose)
+    helpers.setup_resources()
     run_day(day, check, solve, test, parts, formatter)
     if not live:
         return

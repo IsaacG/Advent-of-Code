@@ -3,8 +3,14 @@
 import collections
 import collections.abc
 import dataclasses
+import datetime
+import inspect
+import logging
 import operator
+import os
 import re
+import resource
+import time
 import typing
 
 COLOR_SOLID = '█'
@@ -57,6 +63,76 @@ OPERATORS = {
     "/": operator.floordiv,
 }
 Interval = tuple[int, int]
+
+
+class LogFormatter(logging.Formatter):
+    """Custom log formatter to insert time deltas and part numbers."""
+    def __init__(self, day: int = 0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_call = time.perf_counter_ns()
+        self.day = day
+        self.part = 0
+
+    def set_part(self, part: int) -> None:
+        """Set the part number."""
+        self.part = part
+
+    def format(self, record) -> str:
+        """Format a log record, replacing DAYPART with the day.part."""
+        msg = super().format(record)
+        if "DAYPART" in msg and self.day and self.part:
+            msg = msg.replace("DAYPART", f"{self.day}.{self.part}")
+        return msg
+
+    def formatTime(self, record, datefmt=None) -> str:
+        """Format the time, including milliseconds since the last log call."""
+        if datefmt:
+            return super().formatTime(record, datefmt)
+        call_time = time.perf_counter_ns()
+        delta = call_time - self.last_call
+        self.last_call = call_time
+        return datetime.datetime.now().strftime(f"%H:%M:%S ({format_ns(delta)})")
+
+
+def setup_logging(day: int, verbose: int) -> logging.Formatter:
+    """Configure logging."""
+    log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
+    handler = logging.StreamHandler()
+    formatter = LogFormatter(day, fmt="%(asctime)s [DAYPART|%(funcName)s():L%(lineno)s] %(message)s")
+    handler.setFormatter(formatter)
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(log_level)
+    return formatter
+
+def setup_resources() -> None:
+    """Configure resources to make runner play nicely."""
+    os.nice(19)
+    try:
+        resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
+    except ValueError:
+        pass
+
+
+def format_ns(ns: float) -> str:
+    """Convert nanosecond duration into human time."""
+    units = [("ns", 1000), ("µs", 1000), ("ms", 1000), ("s", 60), ("mn", 60)]
+    for unit, shift in units:
+        if ns < shift:
+            break
+        ns /= shift
+    else:
+        unit = "hr"
+    return f"{ns:>7.3f} {unit:>2}"
+
+
+def timed(func: collections.abc.Callable[..., T], *args, **kwargs) -> tuple[str, T]:
+    """Run a function. Return how long it took along with the result."""
+    params = inspect.signature(func).parameters
+    kwargs = {k: v for k, v in kwargs.items() if k in params}
+    start = time.perf_counter_ns()
+    got = func(*args, **kwargs)
+    end = time.perf_counter_ns()
+    return format_ns(end - start), got
 
 
 def neighbors(point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> collections.abc.Iterable[complex]:
@@ -131,6 +207,7 @@ class Map:
     def neighbors(self, point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> dict[complex, T]:
         """Return neighboring points and values which are in the map."""
         return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
+
 
 def render_char_map(chars: dict[complex, str], height: int, width: int) -> str:
     """Render the map as a string."""

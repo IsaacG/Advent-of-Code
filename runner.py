@@ -23,6 +23,7 @@ import dotenv
 import inotify_simple  # type: ignore
 
 from pylib import aoc
+from pylib import helpers
 from pylib import site
 
 EST = zoneinfo.ZoneInfo("America/New_York")
@@ -374,15 +375,15 @@ def show_parsers():
 @click.option("--year", type=int, required=False, help="AoC year")
 @click.option("--waitlive", is_flag=True, help="Wait for midnight then live solve.")
 @click.option("--december", is_flag=True, help="Live solve all days.")
-@click.option("--live", is_flag=True, help="Live solve one day: setup, watch, test, submit.")
+@click.option("--live", "-l", is_flag=True, help="Live solve one day: setup, watch, test, submit.")
 @click.option("--test", "-t", is_flag=True, help="Test if the sample input/solution works.")
-@click.option("--solve", is_flag=True, help="Generate the solution.")
+@click.option("--solve", "-s", is_flag=True, help="Generate the solution.")
 @click.option(
     "--check", "-c", is_flag=True,
     help="Check if the results in solution.txt match with the generated solution.",
 )
 @click.option("--submit", is_flag=True, help="Submit the next part on AoC website.")
-@click.option("--part", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
+@click.option("--part", "-p", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
 @click.option("--watch", is_flag=True, help="If set, loop and repeat the action when the file is saved.")
 @click.option("--benchmark", is_flag=True, help="Time the solution.")
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
@@ -411,18 +412,8 @@ def main(
     verbose: int,
 ) -> None:
     """Run the code in some fashion."""
-    os.nice(19)
-
-    log_level = [logging.WARN, logging.INFO, logging.DEBUG][min(2, verbose)]
-    handler = logging.StreamHandler()
-    handler.setFormatter(LogFormatter(fmt="%(asctime)s [%(funcName)s():L%(lineno)s] %(message)s"))
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(log_level)
-
-    try:
-        resource.setrlimit(resource.RLIMIT_RSS, (int(10e9), int(100e9)))
-    except ValueError:
-        pass
+    formatter = helpers.setup_logging(day, verbose)
+    helpers.setup_resources()
     dotenv.load_dotenv()
     if cookie:
         site.Website(0, 0, False).set_cookie(cookie)

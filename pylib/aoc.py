@@ -106,17 +106,6 @@ def print_point_set(board: set[complex]) -> None:
     print()
 
 
-def format_ns(ns: float) -> str:
-    units = [("ns", 1000), ("µs", 1000), ("ms", 1000), ("s", 60), ("mn", 60)]
-    for unit, shift in units:
-        if ns < shift:
-            break
-        ns /= shift
-    else:
-        unit = "hr"
-    return f"{ns:>7.3f} {unit:>2}"
-
-
 class CachedIterable(Iterable[T]):
     """Cached Iterable by phy1729."""
 
