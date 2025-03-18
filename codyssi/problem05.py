@@ -1,22 +1,19 @@
 """Codyssi Day N."""
 
-import logging
-
-log = logging.info
-
 def solve(part: int, data: str) -> int:
-    """Solve the parts."""
+    """Solve the puzzle."""
     *nums, syms = data.splitlines()
+    symbols = list(syms)
     if part >= 2:
-        syms = reversed(syms)
-    nums = [int(i) for i in nums]
+        symbols.reverse()
+    numbers = [int(i) for i in nums]
     if part == 3:
-        nums = [
+        numbers = [
             a * 10 + b
-            for a, b in zip(nums[::2], nums[1::2])
+            for a, b in zip(numbers[::2], numbers[1::2])
         ]
-    heading, *rest = nums
-    for n, s in zip(rest, syms):
+    heading, *rest = numbers
+    for n, s in zip(rest, symbols):
         heading += n if s == "+" else -n
     return heading
 

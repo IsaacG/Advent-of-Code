@@ -1,14 +1,14 @@
-import pathlib
+"""Codyssi Day 1."""
 
 def solve(part: int, data: str, testing: bool) -> int:
+    """Solve the puzzle."""
     numbers = (int(i) for i in data.splitlines())
     if part == 1:
         return sum(numbers)
     if part == 2:
         return sum(sorted(numbers)[:-2 if testing else -20])
-    if part == 3:
-        numbers = list(numbers)
-        return sum(numbers[::2]) - sum(numbers[1::2])
+    numlist = list(numbers)
+    return sum(numlist[::2]) - sum(numlist[1::2])
 
 
 TEST_DATA = """\

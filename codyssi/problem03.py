@@ -1,10 +1,7 @@
 """Codyssi Day 3."""
 
-import logging
-
-log = logging.info
-
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: str) -> int | str:
+    """Solve the puzzle."""
     lines = data.splitlines()
     if part == 1:
         return sum(int(line.split()[1]) for line in lines)

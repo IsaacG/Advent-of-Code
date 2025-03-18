@@ -2,12 +2,10 @@
 
 import collections
 import itertools
-import logging
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
-    """Solve the parts."""
+    """Solve the puzzle."""
     lines = data.splitlines()
     paths = collections.defaultdict(set)
     for line in lines:
@@ -21,16 +19,17 @@ def solve(part: int, data: str) -> int:
         for _ in range(3):
             locations.update(j for i in locations.copy() for j in paths[i])
         return len(locations)
-    if part == 3:
-        locations = {"STT"}
-        seen = locations.copy()
-        total = 0
-        for i in itertools.count():
-            total += i * len(locations)
-            locations = {j for i in locations for j in paths[i] if j not in seen}
-            if not locations:
-                return total
-            seen.update(locations)
+
+    locations = {"STT"}
+    seen = locations.copy()
+    total = 0
+    for i in itertools.count():
+        total += i * len(locations)
+        locations = {j for i in locations for j in paths[i] if j not in seen}
+        if not locations:
+            return total
+        seen.update(locations)
+    raise RuntimeError("Not reachable")
 
 
 TEST_DATA = """\
