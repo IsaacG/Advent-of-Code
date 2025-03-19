@@ -1,8 +1,11 @@
 #!/bin/python
 
+import os
 import pathlib
+from lxml import etree
 
 import click
+import requests
 from lib import running
 
 
@@ -19,6 +22,16 @@ class Runner(running.Runner):
     def module_name(self, year: int, day: int) -> str:
         """Return the module name."""
         return f"problem{day:02}"
+
+    def download_input(self, year: int, day: int, part: int) -> str:
+        """Download the input."""
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/odyssi").read_text().strip()
+        session = requests.Session()
+        session.cookies.set("session", cookie)
+        response = session.get(f"https://www.codyssi.com/view_problem_{day}_input")
+        et = etree.HTML(response.text)
+        lines = [i.strip() for i in et.xpath("//body")[0].itertext() if i.strip()]
+        return "\n".join(lines)
 
 
 @click.command()

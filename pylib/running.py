@@ -32,11 +32,14 @@ class Runner:
         """Return the module name."""
         raise NotImplemented
 
+    def download_input(self, year: int, day: int, part: int) -> str:
+        """Download the input."""
+        raise NotImplemented
+
     def get_solutions(self, day: int) -> list[int] | None:
         solutions_path = self.solutions_path()
         want_raw = [line for line in solutions_path.read_text().splitlines() if line.startswith(f"{day:02}.")]
         if not want_raw:
-            return None
             session = requests.Session()
             cookie_file = pathlib.Path(os.getenv("XDG_DATA_HOME")) / "everyone.codes.cookie"
             cookie = cookie_file.read_text().strip()
@@ -54,6 +57,14 @@ class Runner:
             return None
         return [line.split(maxsplit=1)[1] for line in want_raw]
 
+    def input_data(self, year: int, day: int, part: int) -> str:
+        """Return the input data."""
+        data_path = self.input_path(year, day, part)
+        if not data_path.exists():
+            data_path.write_text(self.download_input(year, day, part))
+        if not data_path.exists():
+            return None
+        return data_path.read_text().rstrip()
 
     def run_day(self, day: int, check: bool, solve: bool, test: bool, parts: tuple[int], formatter) -> None:
         module = importlib.import_module(self.module_name(2025, day))
@@ -72,15 +83,10 @@ class Runner:
         if solve:
             for part in parts:
                 formatter.set_part(part)
-                data_path = self.input_path(2025, day, part)
-                # download_path = pathlib.Path(os.getenv("HOME")) / "remote"/ "Downloads" / f"everybody_codes_e2024_q{day:02}_p{part}.txt"
-                # if not data_path.exists() and download_path.exists():
-                    # data_path.write_text(download_path.read_text())
-                    # download_path.unlink()
-                if not data_path.exists():
+                data = self.input_data(2025, day, part)
+                if data is None:
                     print(f"SOLVE No input data found for day {day} part {part}")
                     continue
-                data = data_path.read_text().rstrip()
                 time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
                 print(f"SOLVE {day:02}.{part} {time_s} ---> {got}")
         if check:
@@ -90,8 +96,10 @@ class Runner:
             else:
                 for part in parts:
                     formatter.set_part(part)
-                    data_path = self.input_path(2025, day, part)
-                    data = data_path.read_text().rstrip()
+                    data = self.input_data(2025, day, part)
+                    if data is None:
+                        print(f"CHECK No input data found for day {day} part {part}")
+                        continue
                     time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
                     if str(got) == want[part - 1]:
                         print(f"CHECK {day:02}.{part} {time_s} PASS")
