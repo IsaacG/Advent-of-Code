@@ -6,13 +6,19 @@ log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    pass
+    lines = data.splitlines()
+    if part == 1:
+        return
+    if part == 2:
+        return
+    if part == 3:
+        return
 
 
-TEST_DATA = [
-]
+TEST_DATA = """\
+"""
 TESTS = [
-    # (1, TEST_DATA[0], None),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
+    # (1, TEST_DATA, None),
+    # (2, TEST_DATA, None),
+    # (3, TEST_DATA, None),
 ]
