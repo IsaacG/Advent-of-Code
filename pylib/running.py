@@ -1,5 +1,7 @@
 #!/bin/python
 
+import collections.abc
+import dataclasses
 import datetime
 import importlib
 import inspect
@@ -18,7 +20,13 @@ from lib import helpers
 T = typing.TypeVar("T")
 
 
+@dataclasses.dataclass
 class Runner:
+    year: int
+    day: int
+    data: str | None
+    parts: collections.abc.Iterable[int]
+    verbose: bool
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
@@ -57,60 +65,63 @@ class Runner:
             return None
         return [line.split(maxsplit=1)[1] for line in want_raw]
 
-    def input_data(self, year: int, day: int, part: int) -> str:
+    def input_data(self, part: int) -> str:
         """Return the input data."""
-        data_path = self.input_path(year, day, part)
-        if not data_path.exists():
-            data_path.write_text(self.download_input(year, day, part))
+        if self.data:
+            data_path = pathlib.Path(self.data)
+        else:
+            data_path = self.input_path(self.year, self.day, part)
+            if not data_path.exists():
+                data_path.write_text(self.download_input(self.year, self.day, part))
         if not data_path.exists():
             return None
         return data_path.read_text().rstrip()
 
-    def run_day(self, day: int, check: bool, solve: bool, test: bool, parts: tuple[int], formatter) -> None:
-        module = importlib.import_module(self.module_name(2025, day))
+    def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
+        module = importlib.import_module(self.module_name(self.year, self.day))
         module = importlib.reload(module)
         if test:
-            for part in parts:
+            for part in self.parts:
                 formatter.set_part(part)
                 for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
                     if test_part != part:
                         continue
                     time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True)
                     if got == test_want:
-                        print(f"TEST  {day:02}.{part} {time_s} PASS (test {test_no})")
+                        print(f"TEST  {self.day:02}.{part} {time_s} PASS (test {test_no})")
                     else:
-                        print(f"TEST  {day:02}.{part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
+                        print(f"TEST  {self.day:02}.{part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
         if solve:
-            for part in parts:
+            for part in self.parts:
                 formatter.set_part(part)
-                data = self.input_data(2025, day, part)
+                data = self.input_data(part)
                 if data is None:
-                    print(f"SOLVE No input data found for day {day} part {part}")
+                    print(f"SOLVE No input data found for day {self.day} part {part}")
                     continue
                 time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
-                print(f"SOLVE {day:02}.{part} {time_s} ---> {got}")
+                print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
         if check:
-            want = self.get_solutions(day)
+            want = self.get_solutions(self.day)
             if want is None:
-                print(f"No solutions found for {day}")
+                print(f"No solutions found for {self.day}")
             else:
-                for part in parts:
+                for part in self.parts:
                     formatter.set_part(part)
-                    data = self.input_data(2025, day, part)
+                    data = self.input_data(part)
                     if data is None:
                         print(f"CHECK No input data found for day {day} part {part}")
                         continue
                     time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
                     if str(got) == want[part - 1]:
-                        print(f"CHECK {day:02}.{part} {time_s} PASS")
+                        print(f"CHECK {self.day:02}.{part} {time_s} PASS")
                     else:
-                        print(f"CHECK {day:02}.{part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
+                        print(f"CHECK {self.day:02}.{part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
 
 
-    def run(self, day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int) -> None:
-        formatter = helpers.setup_logging(day, verbose)
+    def run(self, check: bool, solve: bool, test: bool, live: bool) -> None:
+        formatter = helpers.setup_logging(self.day, self.verbose)
         helpers.setup_resources()
-        self.run_day(day, check, solve, test, parts, formatter)
+        self.run_day(check, solve, test, formatter)
         if not live:
             return
         inotify = inotify_simple.INotify()
@@ -121,6 +132,6 @@ class Runner:
                 continue
             count += 1
             print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))
-            run_day(day, check, solve, test, parts, formatter)
+            self.run_day(check, solve, test, formatter)
 
 # vim:ts=4:sw=4:expandtab
