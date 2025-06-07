@@ -25,13 +25,16 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
-        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/odyssi").read_text().strip()
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/codyssi").read_text().strip()
         session = requests.Session()
         session.cookies.set("session", cookie)
         response = session.get(f"https://www.codyssi.com/view_problem_{day}_input")
         et = etree.HTML(response.text)
         lines = [i.strip() for i in et.xpath("//body")[0].itertext() if i.strip()]
-        return "\n".join(lines)
+        content = "\n".join(lines)
+        if "Codyssi - Error Page!" in content:
+            raise LookupError("Unable to fetch input. Do you need a cookie refresh?")
+        return content
 
 
 @click.command()
@@ -42,8 +45,9 @@ class Runner(running.Runner):
 @click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
 @click.option("--live", "-l", is_flag=True)
 @click.option("--verbose", "-v", count=True)
-def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int) -> None:
-    Runner().run(day, check, solve, test, live, parts, verbose)
+@click.option("--data", "--file", "data", type=str, required=False)
+def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int, data: str | None) -> None:
+    Runner(year=2025, day=day, data=data, parts=parts, verbose=verbose).run(check, solve, test, live)
 
 
 if __name__ == "__main__":
