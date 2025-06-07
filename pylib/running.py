@@ -10,6 +10,7 @@ import os
 import pathlib
 import requests
 import resource
+import sys
 import time
 import typing
 
@@ -27,6 +28,13 @@ class Runner:
     data: str | None
     parts: collections.abc.Iterable[int]
     verbose: bool
+
+    def __post_init__(self):
+        """Initialize."""
+        cwd = pathlib.Path(os.getcwd())
+        module_path = cwd / self.module_path()
+        if cwd.name != self.module_path() and module_path.exists() and str(module_path) not in sys.path:
+            sys.path.append(str(module_path))
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
@@ -78,7 +86,7 @@ class Runner:
         return data_path.read_text().rstrip()
 
     def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
-        module = importlib.import_module(self.module_name(self.year, self.day))
+        module = importlib.import_module(self.module_name())
         module = importlib.reload(module)
         if test:
             for part in self.parts:
@@ -128,7 +136,7 @@ class Runner:
         inotify.add_watch(pathlib.Path(__file__).parent, inotify_simple.flags.CLOSE_WRITE)
         count = 0
         while events := inotify.read():
-            if not any(i.name == self.module_name(2025, day) + ".py" for i in events):
+            if not any(i.name == self.module_name() + ".py" for i in events):
                 continue
             count += 1
             print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))

@@ -26,6 +26,69 @@ def solve(part: int, data: str) -> int:
         if k.isalpha():
             maps["."] |= v
 
+    if part == 1:
+        return p1(maps)
+    if part == 2:
+        return p2(maps)
+
+
+def p2(maps):
+    points = ["S"] + sorted(i for i in maps if i.isalpha() and i != "S") + ["S"]
+    deltas = {p: -1 for p in maps["."]} | {p: -2 for p in maps["-"]} | {p: 1 for p in maps["+"]}
+
+    def is_cluster(start):
+        x, y = start
+
+        clumps = [
+            [(x, y), (x + 1, y), (x, y + 1), (x + 1, y + 1)],
+            [(x, y), (x - 1, y), (x, y + 1), (x - 1, y + 1)],
+            [(x, y), (x + 1, y), (x, y - 1), (x + 1, y - 1)],
+            [(x, y), (x - 1, y), (x, y - 1), (x - 1, y - 1)],
+        ]
+        return any(all(i in maps["+"] for i in clump) for clump in clumps)
+
+    logging.debug("Build clusters")
+    clusters = {i for i in maps["+"] if is_cluster(i)}
+    logging.debug("Done building clusters. Found %d positions.", len(clusters))
+
+    legs = {}
+
+    for start, end in zip(points, points[1:]):
+        logging.debug(f"Compute routes {start}-{end}")
+        dest = maps[end].copy().pop()
+        pos = maps[start].copy().pop()
+        best = {pos: (0, False, frozenset())}
+        todo = {(pos, False)}
+        for steps in range(1, 500):
+            next_todo = set()
+            for position, hit_cluster in todo:
+                seen = best[position][2]
+                next_seen = frozenset(seen | {position})
+                for d in DIRECTIONS:
+                    next_pos = (position[0] + d[0], position[1] + d[1])
+                    if next_pos not in deltas or next_pos in seen:
+                        continue
+                    next_altitude = best[position][0] + deltas[next_pos]
+                    next_hit = hit_cluster or next_pos in clusters
+                    if next_pos not in best or (position not in best[next_pos][2] and (next_altitude > best[next_pos][0] or (next_altitude == best[next_pos][0] and next_hit))):
+                        best[next_pos] = (next_altitude, next_hit, next_seen)
+                        next_todo.add((next_pos, next_hit))
+            todo = next_todo
+            if not todo:
+                break
+        legs[end] = (steps,) + best[dest][:2]
+
+    log(f"{legs=}")
+    steps = sum(i[0] for i in legs.values())
+    delta = -min(sum(i[1] for i in legs.values()), 0)
+    log(f"{steps=}, {delta=}")
+    # assert any(i[2] for i in legs.values()) or delta == 0
+    if delta % 2:
+        delta += 1
+    return steps + delta
+    
+
+def p1(maps):
     def is_cluster(start):
         todo = {
             ((start[0] + x, start[1] + y), (x, y))
@@ -45,112 +108,33 @@ def solve(part: int, data: str) -> int:
                 todo.add((next_pos, (x, y)))
         return False
 
-    log("Build clusters")
+    logging.debug("Build clusters")
     clusters = {i for i in maps["+"] if is_cluster(i)}
-    log("Done building clusters. Found %d positions.", len(clusters))
+    logging.debug("Done building clusters. Found %d positions.", len(clusters))
 
-
-    if part == 1:
-        return p1(maps, clusters)
-    if part == 2:
-        return p2(maps, clusters)
-
-
-def manhattan(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-
-def p2(maps, clusters):
-    points = ["S"] + sorted(i for i in maps if i.isalpha() and i != "S") + ["S"]
     deltas = {p: -1 for p in maps["."]} | {p: -2 for p in maps["-"]} | {p: 1 for p in maps["+"]}
-
-    legs = {}
-    improvements = collections.defaultdict(dict)
-
-    for start, end in zip(points, points[1:]):
-        log(f"Compute routes {start}-{end}")
-        dest = maps[end].copy().pop()
-        pos = maps[start].copy().pop()
-        q = queue.PriorityQueue()
-        seen = {(pos, direction) for direction in DIRECTIONS}
-        min_step_count = None
-        max_altitude = None
-        for direction in DIRECTIONS:
-            # score (manhattan + steps), steps, altitude, pos, direction
-            q.put((manhattan(pos, dest), 0, 0, pos, direction))
-        while not q.empty():
-            _, altitude, steps, position, direction = q.get()
-            if position == dest:
-                if min_step_count is None:
-                    min_step_count = steps
-                    max_altitude = altitude
-                else:
-                    if steps == min_step_count:
-                        max_altitude = max(max_altitude, altitude)
-                    else:
-                        improvements[end][steps - min_step_count] = max(improvements.get(steps - min_step_count, 0), altitude - max_altitude)
-                continue
-
-            if q.qsize() > 10_000_000:
-                break
-
-            steps += 1
-            if min_step_count and steps > min_step_count + 10:
-                break
-            for d in DIRECTIONS - {(-direction[0], -direction[1])}:
-                next_pos = (position[0] + d[0], position[1] + d[1])
-                if (next_pos, d) in seen or next_pos not in deltas:
-                    continue
-                next_altitude = altitude + deltas[next_pos]
-                q.put((manhattan(next_pos, dest) + steps, next_altitude, steps, next_pos, d))
-        legs[end] = (min_step_count, max_altitude)
-        improvements[end][0] = 0
-
-    steps = sum(i[0] for i in legs.values())
-    delta = sum(i[1] for i in legs.values())
-    log(f"{steps=}, {delta=}, {improvements=}")
-
-    if delta >= 0:
-        return steps
-    delta = -delta
-    can_do = set()
-    for modifications in itertools.product(*[((k, v) for k, v in a.items() if k == 0 or v != 0) for a in improvements.values()]):
-        extra_steps = sum(i[0] for i in modifications)
-        extra_elevation = sum(i[1] for i in modifications)
-        if extra_elevation >= delta:
-            can_do.add(extra_steps)
-    return min(can_do) + steps
-    
-
-def p1(maps, clusters):
-    deltas = {p: -1 for p in maps["."]} | {p: -2 for p in maps["-"]} | {p: 1 for p in maps["+"]}
-    
     altitude = 1000
-    direction = (0, 1) # arbitrary but ought to work in p1
     position = maps["S"].pop()
 
-    # score = -1 * (steps_remaining + altitude)
-    q = queue.PriorityQueue()
-    q.put((-(altitude + 100), altitude, position, direction, 100))
-    seen = {position}
-
-    while not q.empty():
-        score, altitude, position, direction, steps_left = q.get()
-        if position in clusters:
-            return altitude + steps_left
-        if steps_left == 0:
-            return altitude
-        next_steps_left = steps_left - 1
-        for d in DIRECTIONS - {(-direction[0], -direction[1])}:
-            next_pos = (position[0] + d[0], position[1] + d[1])
-            if next_pos in seen or next_pos not in deltas:
-                continue
-            if clusters:
-                seen.add(next_pos)
-            next_altitude = altitude + deltas[next_pos]
-            if next_altitude < 0:
-                continue
-            q.put((-(next_altitude + next_steps_left), next_altitude, next_pos, d, next_steps_left))
+    best = {position: 0}
+    seen = set()
+    todo = {position}
+    for steps in range(100):
+        next_todo = set()
+        for position in todo:
+            for d in DIRECTIONS:
+                next_pos = (position[0] + d[0], position[1] + d[1])
+                if next_pos in seen or next_pos not in deltas:
+                    continue
+                next_altitude = best[position] + deltas[next_pos]
+                next_todo.add(next_pos)
+                if next_pos not in best or next_altitude > best[next_pos]:
+                    best[next_pos] = next_altitude
+        seen |= next_todo
+        todo = next_todo
+        found = todo & clusters
+        if found:
+            return max(best[i] for i in found) + 100 - steps + 1000
 
 
 TEST_DATA = [
@@ -212,7 +196,7 @@ TEST_DATA = [
 ]
 TESTS = [
     # (1, TEST_DATA[0], 1045),
-    # (2, TEST_DATA[1],  24),
+    (2, TEST_DATA[1],  24),
     (2, TEST_DATA[2],  78),
     (2, TEST_DATA[3], 206),
     # (3, TEST_DATA[2], None),
