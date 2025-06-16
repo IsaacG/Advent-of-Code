@@ -15,13 +15,16 @@ class Runner(running.Runner):
         """Return the solution file."""
         return pathlib.Path(f"solutions.txt")
 
-    def input_path(self, year: int, day: int, part: int) -> pathlib.Path:
+    def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
-        return pathlib.Path(f"inputs/{day:02}.txt")
+        return pathlib.Path(f"inputs/{self.day:02}.txt")
 
-    def module_name(self, year: int, day: int) -> str:
+    def module_path(self) -> str:
+        return "."
+
+    def module_name(self) -> str:
         """Return the module name."""
-        return f"problem{day:02}"
+        return f"problem{self.day:02}"
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""

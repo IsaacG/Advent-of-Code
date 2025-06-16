@@ -40,7 +40,7 @@ class Runner:
         """Return the solution file."""
         raise NotImplemented
 
-    def input_path(self, year: int, day: int, part: int) -> pathlib.Path:
+    def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
         raise NotImplemented
 
@@ -78,7 +78,7 @@ class Runner:
         if self.data:
             data_path = pathlib.Path(self.data)
         else:
-            data_path = self.input_path(self.year, self.day, part)
+            data_path = self.input_path(part)
             if not data_path.exists():
                 data_path.write_text(self.download_input(self.year, self.day, part))
         if not data_path.exists():

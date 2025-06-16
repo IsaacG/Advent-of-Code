@@ -12,9 +12,10 @@ class Runner(running.Runner):
         """Return the solution file."""
         return pathlib.Path(f"solutions/2024.txt")
 
-    def input_path(self, year: int, day: int, part: int) -> pathlib.Path:
+    def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
-        return pathlib.Path(f"inputs/{day:02}.{part}.txt")
+        p = pathlib.Path(f"{self.year}/inputs/{self.day:02}.{part}.txt")
+        return pathlib.Path(f"{self.year}/inputs/{self.day:02}.{part}.txt")
 
     def module_path(self) -> str:
         return self.year
