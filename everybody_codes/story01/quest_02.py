@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 import collections
+import collections.abc
 import dataclasses
-import typing
 
 
 @dataclasses.dataclass
@@ -26,58 +26,50 @@ class Node:
         assert self.is_root != (idx is None), "An index must always and only be used when adding to the root."
         if idx is None:
             idx = 0 if node.rank < self.rank else 1
-        if self.children[idx] is not None:
+        if self.children[idx] is None:
             self.children[idx] = node
         else:
-            typing.cast(Node, self.children[idx]).add(node)
+            self.children[idx].add(node)
 
-    def walk(self, collected: collections.defaultdict[int, list[str]], depth: int) -> None:
+    def walk(
+        self, depth: int = 1, collected: collections.defaultdict[int, list[str]] | None = None
+    ) -> collections.defaultdict[int, list[str]]:
         """Walk the tree, collecting the symbols by level."""
+        collected = collected or collections.defaultdict(list)
         collected[depth].append(self.symbol)
         for child in self.children:
             if child is not None:
-                child.walk(collected, depth + 1)
+                child.walk(depth + 1, collected)
+        return collected
 
-    def find(self, node_id: int) -> Node | None:
-        """Find a node in the tree by node ID."""
-        if self.node_id == node_id:
-            return self
-        for child in self.children:
-            if child is not None:
-                found = child.find(node_id)
-                if found is not None:
-                    return found
-        return None
-
-    def find_parents(self, node_id: int, results: list[tuple[Node, int]]) -> None:
-        """Walk the tree and collect nodes which have a child (parent node and child index) with a given node ID."""
+    def find_parents(self, node_id: int) -> collections.abc.Iterable[tuple[Node, int]]:
+        """Walk the tree and yield nodes which have a child (parent node and child index) with a given node ID."""
         for idx, child in enumerate(self.children):
             if child is None:
                 continue
             if child.node_id == node_id:
-                results.append((self, idx))
-            child.find_parents(node_id, results)
+                yield (self, idx)
+            yield from child.find_parents(node_id)
 
     def swap_values(self, node_id: int) -> None:
         """Swap the values contained within two nodes, identified by ID."""
-        a, b = typing.cast(list[Node], [typing.cast(Node, child).find(node_id) for child in self.children])
+        a, b = [node.children[idx] for node, idx in self.find_parents(node_id)]
         a.rank, b.rank = b.rank, a.rank
         a.symbol, b.symbol = b.symbol, a.symbol
         a.node_id, b.node_id = b.node_id, a.node_id
 
     def swap_branches(self, node_id: int) -> None:
         """Swap two branches which have the same node ID."""
-        results: list[tuple[Node, int]] = []
-        self.find_parents(node_id, results)
-        assert len(results) == 2
-        (p1, i1), (p2, i2) = results  # pylint:disable=W0632
+        (p1, i1), (p2, i2) = list(self.find_parents(node_id))
         p1.children[i1], p2.children[i2] = p2.children[i2], p1.children[i1]
 
-    def to_text(self):
+    def to_text(self) -> str:
         """Return tree text, extracting the longer level from both halves."""
         assert self.is_root
-        vals = [collections.defaultdict(list) for _ in range(2)]
-        return "".join("".join(max(val.values(), key=len)) for val in vals)
+        return "".join(
+            "".join(max(tree.walk().values(), key=len))
+            for tree in self.children
+        )
 
 
 def solve(part: int, data: str) -> str:
