@@ -1,56 +1,63 @@
 """Codyssi Day N."""
 
 import collections
-import logging
+import itertools
 import operator
 
-log = logging.info
 MOD = 1073741824
 OPS = {"ADD": operator.add, "SUB": operator.sub, "MULTIPLY": operator.mul}
 
-def solve(part: int, data: str, testing: bool) -> int:
+def solve(part: int, data: str) -> int:
     """Solve the parts."""
     initial_r, instructions_r, flow_r = data.split("\n\n")
-    flows = flow_r.splitlines()
     heights = {
         (x, y): int(val)
         for y, row in enumerate(initial_r.splitlines())
         for x, val in enumerate(row.split())
     }
     size = len(initial_r.splitlines())
+    instructions = collections.deque(instructions_r.splitlines())
+    flows: collections.abc.Iterable[str] = flow_r.splitlines()
 
     positions_all = list(heights)
     positions = {
         "ROW": {y: [(x, y) for x in range(size)] for y in range(size)},
         "COL": {x: [(x, y) for y in range(size)] for x in range(size)},
     }
-    
 
-    if part == 1 and testing:
-        for y in range(size):
-            log(" ".join(str(heights[x, y]).rjust(5) for x in range(size)))
-        log("")
-
-    instructions = collections.deque(instructions_r.splitlines())
-
+    # Apply flow control for parts 2 and 3.
     if part != 1:
-        taken = None
+        taken = ""
         actions = []
-        while taken is None or (part == 3 and instructions):
-            for flow in flows:
-                if flow == "TAKE":
-                    if not instructions:
-                        break
-                    taken = instructions.popleft()
-                elif flow == "ACT":
-                    actions.append(taken)
-                elif flow == "CYCLE":
-                    instructions.append(taken)
-        instructions = actions
+        if part == 3:
+            # Part 2 runs through the flows once. Part 3 does so repeatedly.
+            flows = itertools.cycle(flows)
+        for flow in flows:
+            if flow == "TAKE":
+                if not instructions:
+                    break
+                taken = instructions.popleft()
+            elif flow == "ACT":
+                actions.append(taken)
+            elif flow == "CYCLE":
+                instructions.append(taken)
+        instructions = collections.deque(actions)
 
+    # Apply instructions
     for line in instructions:
         words = line.split()
-        if words[0] in OPS:
+        if words[0] == "SHIFT":
+            # SHIFT {ROW/COL} {number} BY {shift amount}
+            _, rc, number, _, amount_s = words
+            amount = size - (int(amount_s) % size)
+            # Get the positions we operate on.
+            targets = positions[rc][int(number) - 1]
+            # Copy the values in the new position.
+            vals = [heights[t] for t in targets[amount:] + targets[:amount]]
+            # Update values.
+            for t, v in zip(targets, vals):
+                heights[t] = v
+        else:
             # {ADD/SUB/MULTIPLY} {amount} {ROW/COL} {number}
             # {ADD/SUB/MULTIPLY} {amount} ALL
             op_s, amount_s, *target = line.split()
@@ -63,24 +70,8 @@ def solve(part: int, data: str, testing: bool) -> int:
                 targets = positions[target[0]][int(target[1]) - 1]
             for pos in targets:
                 heights[pos] = op(heights[pos], amount) % MOD
-        else:
-            # SHIFT {ROW/COL} {number} BY {shift amount}
-            _, rc, number, _, amount_s = words
-            amount = size - (int(amount_s) % size)
-            targets = positions[rc][int(number) - 1]
-            vals = [heights[t] for t in targets[amount:] + targets[:amount]]
-            assert len(vals) == size
-            for t, v in zip(targets, vals):
-                heights[t] = v
-        if part == 1 and testing:
-            log(line)
-            for y in range(size):
-                log(" ".join(str(heights[x, y]).rjust(5) for x in range(size)))
-            log("")
 
-    got = max(sum(heights[pos] for pos in targets) for rc in positions.values() for targets in rc.values())
-    assert got != 14477269239
-    return got
+    return max(sum(heights[pos] for pos in targets) for rc in positions.values() for targets in rc.values())
 
 
 TEST_DATA = """\
