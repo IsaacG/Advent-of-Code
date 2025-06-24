@@ -1,5 +1,6 @@
 #!/bin/python
 
+import os
 import pathlib
 
 import click
@@ -10,7 +11,7 @@ class Runner(running.Runner):
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
-        return pathlib.Path(f"solutions/2024.txt")
+        return pathlib.Path(f"{self.year}/solutions.txt")
 
     def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
@@ -23,6 +24,10 @@ class Runner(running.Runner):
     def module_name(self) -> str:
         """Return the module name."""
         return f"quest_{self.day:02}"
+
+    def download_input(self, year: int, day: int, part: int) -> str:
+        """Download the input."""
+        return (pathlib.Path(os.getenv("HOME")) / "remote/Downloads" / f"everybody_codes_e1_q{day:02}_p{part}.txt").read_text()
 
 
 @click.command()
