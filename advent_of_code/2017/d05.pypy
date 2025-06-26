@@ -1,0 +1,30 @@
+#!/bin/python
+
+def solver(parsed_input: list[int], param: bool) -> int:
+    """Count how many steps of jumps it takes to exit the memory."""
+    mem = parsed_input.copy()
+    size = len(mem)
+    ptr = 0
+
+    step = 0
+    while 0 <= ptr < size:
+        offset = mem[ptr]
+        mem[ptr] += -1 if param and offset >= 3 else 1
+        ptr += offset
+        step += 1
+    return step
+
+
+
+import pathlib
+import time
+data = [int(i) for i in pathlib.Path("data/05.txt").read_text().splitlines()]
+for i in [False, True]:
+    start = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+    res = solver(data, i)
+    end = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+    print(f"{i} - {res}")
+    print((end - start) / 1_000_000_000 )
+    
+
+# vim:expandtab:sw=4:ts=4

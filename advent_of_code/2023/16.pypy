@@ -1,0 +1,111 @@
+#!/bin/python
+"""Advent of Code, Day 14: Parabolic Reflector Dish."""
+
+import pathlib
+import time
+
+STEPS_P2 = 1000000000
+UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
+
+def bounding_coords(points) -> tuple[int, int, int, int]:
+    """Return bounding min (x, y), max (x, y) for coordinates."""
+    min_x = int(min(p.real for p in points))
+    max_x = int(max(p.real for p in points))
+    min_y = int(min(p.imag for p in points))
+    max_y = int(max(p.imag for p in points))
+    return min_x, min_y, max_x, max_y
+
+def energized(board: dict[complex, str], start_pos: complex, start_dir: complex) -> int:
+    """Compute the number of energized tiles."""
+    min_x, min_y, max_x, max_y = bounding_coords(board)
+    seen = set()
+    beams = {(start_pos, start_dir)}
+    while beams:
+        new_beams = set()
+        for pos, direction in beams:
+            pos += direction
+            if (char := board.get(pos, None)) is None:
+                # Off the map.
+                pass
+            elif char == ".":
+                # Pass through empty space and pointy side of splitters.
+                new_beams.add((pos, direction))
+            elif char == "|":
+                if direction in (UP, DOWN):
+                    new_beams.add((pos, direction))
+                else:
+                    # Split.
+                    new_beams.add((pos, UP))
+                    new_beams.add((pos, DOWN))
+            elif char == "-":
+                if direction in (RIGHT, LEFT):
+                    new_beams.add((pos, direction))
+                else:
+                    # Split.
+                    new_beams.add((pos, RIGHT))
+                    new_beams.add((pos, LEFT))
+            elif char == "/":
+                # Rotate.
+                if direction in (RIGHT, LEFT):
+                    new_beams.add((pos, direction * -1j))
+                else:
+                    new_beams.add((pos, direction * +1j))
+            elif char == "\\":
+                # Rotate.
+                if direction in (RIGHT, LEFT):
+                    new_beams.add((pos, direction * +1j))
+                else:
+                    new_beams.add((pos, direction * -1j))
+        # Ignore already-handled beams (loop detection).
+        beams = new_beams - seen
+        seen.update(new_beams)
+
+    return len({position for position, direction in seen})
+
+def part1(parsed_input: dict[complex, str]) -> int:
+    """Return the number of energized tiles, assuming a given start."""
+    return energized(parsed_input, complex(-1), RIGHT)
+
+def part2(parsed_input: dict[complex, str]) -> int:
+    """Return the number of energized tiles, across all starts."""
+    min_x, min_y, max_x, max_y = bounding_coords(parsed_input)
+
+    return max(
+        max(
+            energized(parsed_input, complex(min_x - 1, y), RIGHT)
+            for y in range(min_y, max_y + 1)
+        ),
+        max(
+            energized(parsed_input, complex(max_x + 1, y), LEFT)
+            for y in range(min_y, max_y + 1)
+        ),
+        max(
+            energized(parsed_input, complex(x, min_y - 1), DOWN)
+            for x in range(min_x, max_x + 1)
+        ),
+        max(
+            energized(parsed_input, complex(x, max_y + 1), UP)
+            for x in range(min_x, max_x + 1)
+        ),
+    )
+
+
+def parse(puzzle_input: str) -> set[complex]:
+    return {complex(x, y): char
+        for y, line in enumerate(puzzle_input.splitlines())
+        for x, char in enumerate(line)
+    }
+
+def main():
+    data = pathlib.Path("data/16.txt").read_text().rstrip()
+    parsed = parse(data)
+
+    t1 = time.perf_counter()
+    got = part2(parsed)
+    t2 = time.perf_counter()
+    print(t2 - t1, "s")
+    print(got)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,25 @@
+import pathlib
+import time
+
+
+def solver(parsed_input: int) -> int:
+    """Return the value after 0 after 50M step-inserts."""
+    step = parsed_input
+    pos = 0
+    last_insert = 0
+    for i in range(1, 50000000 + 1):
+        pos = ((pos + step) % i) + 1
+        if pos == 1:
+            last_insert = i
+
+    return last_insert
+
+
+data = int(pathlib.Path("data/17.txt").read_text())
+start = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+res = solver(data)
+assert res == 34334221, res
+end = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+print("Runtime: ", (end - start) / 1_000_000_000, "seconds")
+
+# vim:expandtab:sw=4:ts=4

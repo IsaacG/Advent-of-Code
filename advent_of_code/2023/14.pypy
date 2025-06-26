@@ -1,0 +1,104 @@
+#!/bin/python
+"""Advent of Code, Day 14: Parabolic Reflector Dish."""
+
+import pathlib
+import time
+
+STEPS_P2 = 1000000000
+
+def bounding_coords(points) -> tuple[int, int, int, int]:
+    """Return bounding min (x, y), max (x, y) for coordinates."""
+    min_x = int(min(p.real for p in points))
+    max_x = int(max(p.real for p in points))
+    min_y = int(min(p.imag for p in points))
+    max_y = int(max(p.imag for p in points))
+    return min_x, min_y, max_x, max_y
+
+def cycle(moving, stationary):
+    """Tilt the board in four directions."""
+    min_x, min_y, max_x, max_y = bounding_coords(stationary | moving)
+    # This logic can be deduped by rotating the grid by 1j and looping 4x.
+    # However, that seems to run 50% slower.
+    north = complex(0, -1)
+    west = complex(-1, 0)
+    south = complex(0, 1)
+    east = complex(+1, 0)
+
+    # North
+    post_move = set(stationary)
+    for rock in sorted(moving, key=lambda x: x.imag, reverse=False):
+        while (new_pos := rock + north) not in post_move and rock.imag > min_y:
+            rock = new_pos
+        post_move.add(rock)
+    moving = post_move - stationary
+
+    # West
+    post_move = set(stationary)
+    for rock in sorted(moving, key=lambda x: x.real, reverse=False):
+        while (new_pos := rock + west) not in post_move and rock.real > min_x:
+            rock = new_pos
+        post_move.add(rock)
+    moving = post_move - stationary
+
+    # South
+    post_move = set(stationary)
+    for rock in sorted(moving, key=lambda x: x.imag, reverse=True):
+        while (new_pos := rock + south) not in post_move and rock.imag < max_y:
+            rock = new_pos
+        post_move.add(rock)
+    moving = post_move - stationary
+
+    # East
+    post_move = set(stationary)
+    for rock in sorted(moving, key=lambda x: x.real, reverse=True):
+        while (new_pos := rock + east) not in post_move and rock.real < max_x:
+            rock = new_pos
+        post_move.add(rock)
+    moving = post_move - stationary
+
+    return moving
+
+def part2(parsed_input) -> int:
+    """Tilt the board in four directions for many cycles."""
+    stationary, moving = parsed_input
+    min_x, min_y, max_x, max_y = bounding_coords(stationary | moving)
+
+    # Find a cycle in the rotation.
+    cache = {}
+    for step in range(STEPS_P2):
+        moving = cycle(moving, stationary)
+
+        frozen = frozenset(moving)
+        if frozen in cache:
+            cycle_size = (step - cache[frozen])
+            remaining_steps = STEPS_P2 - step - 1
+            remaining_steps %= cycle_size
+            for _ in range(remaining_steps):
+                moving = cycle(moving, stationary)
+            break
+        cache[frozenset(moving)] = step
+
+    return int(sum(max_y + 1 - rock.imag for rock in moving))
+
+def parse(puzzle_input: str, find_char: str) -> set[complex]:
+    """Parse ASCII to find points in a map which are "on"."""
+    return {
+        complex(x, y)
+        for y, line in enumerate(puzzle_input.splitlines())
+        for x, char in enumerate(line)
+        if char == find_char
+    }
+
+def main():
+    data = pathlib.Path("data/14.txt").read_text().rstrip()
+    parsed = (parse(data, "#"), parse(data, "O"))
+
+    t1 = time.perf_counter()
+    got = part2(parsed)
+    t2 = time.perf_counter()
+    print(t2 - t1, "s")
+    print(got)
+
+
+if __name__ == "__main__":
+    main()

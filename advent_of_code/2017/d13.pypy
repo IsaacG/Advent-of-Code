@@ -1,0 +1,33 @@
+import itertools
+import pathlib
+import time
+
+def solver(self, parsed_input: list[list[int]], part_one: bool) -> int:
+        ranges = dict(sorted(parsed_input))
+        intervals = {depth: (range_ - 1) * 2 for depth, range_ in ranges.items()}
+
+        # Part one: sum(range * depth) for each sensor that would catch us (i.e. position == 0).
+        if part_one:
+            return sum(
+                ranges[depth] * depth
+                for depth, interval in intervals.items()
+                if depth % interval == 0
+            )
+
+        # Part two: return the smallest delay for which we can avoid being caught.
+        # Note, convert intervals to a list for faster iteration.
+        intervals_list = list(intervals.items())
+        return next(
+            delay
+            for delay in itertools.count()
+            if all((delay + depth) % interval for depth, interval in intervals_list)
+        )
+
+data = [tuple(int(j) for j in i.split(": ")) for i in pathlib.Path("data/13.txt").read_text().splitlines()]
+start = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+res = solver(None, data, False)
+assert res == 3903378, res
+end = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+print("Runtime: ", (end - start) / 1_000_000_000, "seconds")
+
+# vim:expandtab:sw=4:ts=4
