@@ -5,3 +5,5 @@ inputs/
 */input_data.py
 .env
 codingquest/2022/input/
+stubs/
+*/lib
