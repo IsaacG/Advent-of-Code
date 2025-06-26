@@ -1,24 +1,24 @@
 """Codyssi Day N."""
 
 import collections
-import itertools
+import functools
 import math
 
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
+    shortest = collections.defaultdict(dict)
+    for line in  data.splitlines():
+        src, _, dst, _, weight_s = line.split()
+        weight = 1 if part == 1 else int(weight_s)
+        shortest[src][src] = 0
+        shortest[dst][dst] = 0
+        shortest[src][dst] = weight
+
+    nodes = set(shortest)
+
     if part in [1, 2]:
         # Floyd Warshal
-        shortest = collections.defaultdict(dict)
-        for line in  data.splitlines():
-            src, _, dst, _, weight_s = line.split()
-            weight = 1 if part == 1 else int(weight_s)
-            shortest[src][src] = 0
-            shortest[dst][dst] = 0
-            shortest[src][dst] = weight
-
-        nodes = set(shortest)
-
         for k in nodes:
             for i in nodes:
                 for j in nodes:
@@ -29,29 +29,22 @@ def solve(part: int, data: str) -> int:
         
         return math.prod(sorted(shortest["STT"].values())[-3:])
 
-    # Part 3: based on Floyd Warshal. Add visited tracking to avoid repeated visits to the same nodes.
-    longest = collections.defaultdict(dict)
-    for line in  data.splitlines():
-        src, _, dst, _, weight_s = line.split()
-        weight = int(weight_s)
-        longest[src][src] = (0, [set()])
-        longest[dst][dst] = (0, [set()])
-        longest[src][dst] = (weight, [set()])
+    @functools.cache
+    def longest(start: str, end: str, unvisited: frozenset[str]) -> int | None:
+        """Return the longest path from start to end using only unvisited. Dynamic programming."""
+        # Possible paths to the end.
+        distances = []
+        # If there is a direct path to the end, add it.
+        if end in shortest[start]:
+            distances.append(shortest[start][end])
 
-    nodes = set(longest)
+        # For all possible next-nodes that are unvisited, find the longest node to that candidate then the end.
+        for candidate in shortest[start]:
+            if candidate in unvisited and (l := longest(candidate, end, frozenset(unvisited - {candidate}))):
+                distances.append(shortest[start][candidate] + l)
+        return max(distances, default=None)
 
-    for k in nodes:
-        for i in nodes:
-            for j in nodes:
-                if k not in longest[i] or j not in longest[k]:
-                    continue
-                if j not in longest[i] or longest[i][j][0] < longest[i][k][0] + longest[k][j][0]:
-                    distance = longest[i][k][0] + longest[k][j][0]
-                    paths = [a | b | {k} for a, b in itertools.product(longest[i][k][1], longest[k][j][1]) if a.isdisjoint(b)]
-                    if paths:
-                        longest[i][j] = (distance, paths)
-
-    return max(longest[i][i][0] for i in nodes)
+    return max(longest(i, i, frozenset(nodes - {i})) for i in nodes)
 
 
 TEST_DATA = """\
