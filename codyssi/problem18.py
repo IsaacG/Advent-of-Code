@@ -1,50 +1,71 @@
 """Codyssi Day N."""
 
+import dataclasses
 import functools
-import logging
 
-log = logging.info
+
+@dataclasses.dataclass(slots=True, order=True)
+class Recipe:
+    """Dataclass to hold recipe info."""
+    quality: int
+    cost: int
+    materials: int
+
 
 def solve(part: int, data: str, testing: bool) -> int:
     """Solve the parts."""
+    # Parse the recipes. Store them in a list. We can reference them by index.
     lines = data.splitlines()
-    items = []
-    byname = {}
+    recipes = []
     for line in lines:
         for p in ["| Quality :", ", Cost :", ", Unique Materials :"]:
             line = line.replace(p, "")
-        num, name, quality, cost, materials = line.split()
-        items.append((int(quality), int(cost), name, int(materials)))
-        byname[name] = (int(cost), int(quality), int(materials))
+        _, _, quality, cost, materials = line.split()
+        recipes.append(Recipe(int(quality), int(cost), int(materials)))
 
-    items.sort(reverse=True)
+    # Sort, highest quality first.
+    recipes.sort(reverse=True)
 
     @functools.cache
-    def optimal_production(items, budget):
-        available = sorted((i for i in items if byname[i][0] <= budget), key=lambda i: byname[i][0])
-        if not available:
+    def optimal_production(items: tuple[int, ...], budget: int) -> tuple[int, int]:
+        """Return the optimal production for a given set of items and a given budget.
+
+        Items are simply refered to by their recipe index.
+        """
+        # Base case. No items in the budget. Nothing to produce.
+        if not items:
             return 0, 0
-        one, *rest = available
-        f_rest = frozenset(rest)
-        q_with, m_with = optimal_production(f_rest, budget - byname[one][0])
-        q_with += byname[one][1]
-        m_with += byname[one][2]
-        q_wout, m_wout = optimal_production(f_rest, budget)
+        # Select the first (highest quality) item. Compare the optimal production we can achieve assuming
+        # (1) we do produce this item vs (2) we do not. In either case, we explore the optimal production
+        # of the remaining items, removing this item from the list.
+        one = recipes[items[0]]
+        # Case with this one item being produced. Update budget and remaining options.
+        budget_with = budget - one.cost
+        rest_with = tuple(i for i in items[1:] if recipes[i].cost <= budget_with)
+        q_with, m_with = optimal_production(rest_with, budget_with)
+        # Add the quality and materials of this one item.
+        q_with += one.quality
+        m_with += one.materials
+        # Case without this one item. Budget, quality, materials do not change.
+        # Remaining options only remove one item.
+        q_wout, m_wout = optimal_production(items[1:], budget)
+        # Pick the higher quality result.
         if q_wout > q_with:
             return q_wout, m_wout
         if q_with > q_wout:
             return q_with, m_with
+        # On a tie, take the lower materials.
         return q_with, min(m_with, m_wout)
 
     if part == 1:
-        return sum(i[-1] for i in items[:5])
+        return sum(i.materials for i in recipes[:5])
     if part == 2:
         budget = 30
     elif testing:
         budget = 150
     else:
         budget = 300
-    q, m = optimal_production(frozenset(byname), budget)
+    q, m = optimal_production(tuple(range(len(recipes))), budget)
     return q * m
 
 
