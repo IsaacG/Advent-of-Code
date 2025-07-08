@@ -28,7 +28,8 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
-        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/codyssi").read_text().strip()
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/codyssi").read_text()
+        cookie = cookie.strip().removeprefix("session=")
         session = requests.Session()
         session.cookies.set("session", cookie)
         response = session.get(f"https://www.codyssi.com/view_problem_{day}_input")
