@@ -1,74 +1,73 @@
 """Codyssi Day 19."""
 
+from __future__ import annotations
 import collections
-import logging
+import dataclasses
+import typing
 
-log = logging.info
 
-
+@dataclasses.dataclass(order=True)
 class Node:
+    """A node in a binary tree."""
 
-    def __init__(self, id_, number):
-        self.id = id_
-        self.number = int(number)
-        self.children = [None, None]
+    number: int
+    id: str
 
-    def add(self, other):
-        if other.number > self.number:
-            idx = 1
-        else:
-            idx = 0
-        if self.children[idx] is None:
+    def __post_init__(self) -> None:
+        self.children: list[Node | None] = [None, None]
+
+    def insert(self, other: Node) -> None:
+        """Insert a node into the current (sub)tree."""
+        idx = 1 if other > self else 0
+        if self.children[idx] is not None:
             self.children[idx] = other
         else:
-            self.children[idx].add(other)
+            typing.cast(Node, self.children[idx]).insert(other)
 
-    def find_path(self, number):
-        if number > self.number:
-            idx = 1
-        else:
-            idx = 0
+    def find_path(self, number: int) -> list[str]:
+        """Return the path to a specific number."""
+        idx = 1 if number > self.number else 0
         if self.children[idx] is None:
             return [self.id]
-        else:
-            return [self.id] + self.children[idx].find_path(number)
+        return [self.id] + typing.cast(Node, self.children[idx]).find_path(number)
 
-    def walk_sum(self, data, level):
+    def walk_sum(self, data: collections.defaultdict[int, int], level: int = 1) -> None:
+        """Walk the tree and add the numbers at each level to a collection."""
         data[level] += self.number
         for child in self.children:
             if child is not None:
                 child.walk_sum(data, level + 1)
 
-
-def solve(part: int, data: str) -> int:
-    """Solve the parts."""
-    parts = data.split("\n\n")
-    lines = parts[0].splitlines()
-    items = []
-    for line in lines:
+    @classmethod
+    def from_string(cls, line: str) -> Node:
+        """Return a new Node from a string."""
         id_, number = line.split(" | ")
-        node = Node(id_, int(number))
-        items.append(node)
-    root = items[0]
-    for item in items[1:]:
-        root.add(item)
-    data = collections.defaultdict(int)
-    root.walk_sum(data, 1)
+        return Node(number=int(number), id=id_)
+
+
+def solve(part: int, data: str) -> int | str:
+    """Solve the parts."""
+    artifacts, recheck = data.split("\n\n")
+    root, *rest = [Node.from_string(line) for line in artifacts.splitlines()]
+    for item in rest:
+        root.insert(item)
 
     if part == 1:
-        return max(data.keys()) * max(data.values())
+        summed: collections.defaultdict[int, int] = collections.defaultdict(int)
+        root.walk_sum(summed)
+        # Return the max-level-sum * the number of levels.
+        return max(summed.keys()) * max(summed.values())
     if part == 2:
+        # Return the path to a specific value.
         return "-".join(root.find_path(500000))
     if part == 3:
-        paths = [root.find_path(int(line.split(" | ")[1])) for line in parts[1].splitlines()]
-
-        for node in reversed(paths[0]):
-            if node in paths[1]:
+        # Find the paths to two nodes.
+        one, two = [root.find_path(int(line.split(" | ")[1])) for line in recheck.splitlines()]
+        # Walk one path in reverse until a common node is found in the other path.
+        for node in reversed(one):
+            if node in two:
                 return node
-        return
-        for i in range(len(paths[0])):
-            if paths[0][i + 1] != paths[1][i + 1]:
-                return paths[0][i]
+    raise RuntimeError("No valid solutions.")
 
 
 TEST_DATA = """\
