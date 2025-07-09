@@ -6,7 +6,7 @@ import math
 log = logging.info
 
 class Die:
-    """Model a die.
+    """Model a die with support for rotations.
 
     Die layout:
        6
@@ -31,9 +31,12 @@ class Die:
         self.up  = up  or 2
 
     def shifted(self, other=None):
+        """Return how rotated the side is from the "default" orientation."""
         return self.NEIGHBORS[self.cur].index(other or self.up)
 
-    def _rotate(self, offset):
+    def rotate(self, direction):
+        """Rotate the die in a direction."""
+        offset = "URDL0".index(direction)
         old = self.cur
         # Which face do we want as the new current.
         new_up_offset = self.shifted() + offset
@@ -47,105 +50,77 @@ class Die:
         elif offset == 2:  # down
             self.up = old
 
-    def rotate_up(self):
-        self._rotate(0)
 
-    def rotate_right(self):
-        self._rotate(1)
+def part_one(changes_blk: str, twists: str, size: int) -> int:
+    """Solve part one."""
+    die = Die()
+    absorption = {face: 0 for face in die.FACES}
+    for instruction, twist in zip(changes_blk.splitlines(), twists + "0"):
+        affect, val = instruction.split(" - VALUE ")
+        cell_count = size * (size if affect == "FACE" else 1)
+        absorption[die.cur] += cell_count * int(val)
 
-    def rotate_down(self):
-        self._rotate(2)
+        die.rotate(twist)
 
-    def rotate_left(self):
-        self._rotate(3)
+    return math.prod(sorted(absorption.values())[-2:])
 
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    size = 80
     changes_blk, twists = data.split("\n\n")
-    # size = 3
-    # changes_blk = "ROW 1 - VALUE 5"
-    # twists = ""
-    if twists == "LURD":
-        size = 3
-    # die = Die(1, 4)
-    die = Die(6, 5)
-    absorption = {i: 0 for i in die.FACES}
-    cells = {
-        i: {(x, y): 0 for x in range(size) for y in range(size)}
-        for i in die.FACES
+    size = 3 if twists == "LURD" else 80
+    if part == 1:
+        return part_one(changes_blk, twists, size)
+
+    die = Die()
+    cell_values = {
+        face: {(x, y): 0 for x in range(size) for y in range(size)}
+        for face in die.FACES
     }
 
     def update_values(affect, val):
         if affect == "FACE":
-            affects = [(x, y) for x in range(size) for y in range(size)]
+            effects = [(x, y) for x in range(size) for y in range(size)]
         else:
-            t, s = affect.split()
-            row = t == "ROW"
-            n = int(s) - 1
+            row_or_col, row_col_num_s = affect.split()
+            row = row_or_col == "ROW"
+            row_col_num = int(row_col_num_s) - 1
             shifted = die.shifted()
+            # When rotates an odd number of times, a row is a column in the upright orientation and vice versa.
             if shifted % 2 == 1:
                 row = not row
+            # Depending on the orientation, row/col 1 may be row/col `size - 1`.
             if (row and shifted in (2, 3)) or (not row and shifted in (1, 2)):
-                n = size - 1 - n
+                row_col_num = size - 1 - row_col_num
             if row:
-                affects = [(x, n) for x in range(size)]
+                effects = [(x, row_col_num) for x in range(size)]
             else:
-                affects = [(n, y) for y in range(size)]
-        for xy in affects:
-            cells[die.cur][xy] = (cells[die.cur][xy] + val) % 100
+                effects = [(row_col_num, y) for y in range(size)]
+        # Actually update the cell values.
+        for xy in effects:
+            cell_values[die.cur][xy] = (cell_values[die.cur][xy] + val) % 100
 
     for instruction, twist in zip(changes_blk.splitlines(), twists + "0"):
-        old = die.cur
         affect, val_s = instruction.split(" - VALUE ")
         val = int(val_s)
-        cell_count = size
-        if part == 1:
-            if affect == "FACE":
-                cell_count *= size
-            absorption[die.cur] += cell_count * val
+        if part == 2 or affect == "FACE":
+            update_values(affect, val)
         else:
-            if part == 2 or affect == "FACE":
+            rot = "R" if affect.split()[0] == "ROW" else "U"
+            for _ in range(4):
                 update_values(affect, val)
-            else:
-                rot = die.rotate_right if affect.split()[0] == "ROW" else die.rotate_up
-                for _ in range(4):
-                    update_values(affect, val)
-                    rot()
-                    
-            if part == 3 and size == 3 and False:
-                for faces in "060\n423\n010\n050".splitlines():
-                    for y in range(size):
-                        print(" ".join(str(cells.get(int(face), {}).get((x, y), " ")).ljust(2) for face in faces for x in range(size)))
-                print()
+                die.rotate(rot)
 
+        die.rotate(twist)
 
-        # rotate
-        {"L": die.rotate_left, "R": die.rotate_right, "U": die.rotate_up, "D": die.rotate_down, "0": lambda: None}[twist]()
-        # print(f"{old} * {twist} = {die.cur}")
-
-    if part == 1:
-        out = math.prod(sorted(absorption.values())[-2:])
-        assert out != 164746320665600
-        return out
-    if part in (2, 3):
-        if size == 3 and False:
-            for i, side in cells.items():
-                print(f"== {i} ==")
-                for y in range(size):
-                    print(" ".join(str(side[x, y] + 1) for x in range(size)))
-                print()
-
-        return math.prod(
-            max(
-                max(sum(side[x, y] for x in range(size)) for y in range(size)),
-                max(sum(side[x, y] for y in range(size)) for x in range(size)),
-            ) + size
-            for side in cells.values()
-        )
-    if part == 3:
-        return
+    return math.prod(
+        max(
+            # Find the biggest row and biggest column for each side.
+            max(sum(side[x, y] for x in range(size)) for y in range(size)),
+            max(sum(side[x, y] for y in range(size)) for x in range(size)),
+        ) + size
+        for side in cell_values.values()
+    )
 
 
 TEST_DATA = [
