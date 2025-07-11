@@ -1,11 +1,12 @@
 My solutions to a number of coding puzzles.
 These are mostly in Python with a handful of Golang.
 
-* [Advent of Code](http://adventofcode.com/)
-* [Coding Quest](https://codingquest.io/)
-* [Codyssi](https://codyssi.com/)
-* [Everybody Codes](https://everybody.codes/)
-* [i18n Puzzles](https://i18n-puzzles.com/)
-* [Pi Coding Quest](https://ivanr3d.com/projects/pi/)
+* Advent of Code - [website](http://adventofcode.com/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/advent_of_code) - [README.md](./advent_of_code)
+* Coding Quest - [website](https://codingquest.io/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/codingquest) - [README.md](./codingquest)
+* Codyssi - [website](https://codyssi.com/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/codyssi) - [README.md](./codyssi)
+* Everybody Codes - [website](https://everybody.codes/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/everybody_codes) - [README.md](./everybody_codes)
+* i18n Puzzles - [website](https://i18n-puzzles.com/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/i18n) - [README.md](./i18n)
+* Pi Coding Quest - [website](https://ivanr3d.com/projects/pi/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/ivanr3d.pi) - [README.md](./ivanr3d.pi)
+* Marches & Gnats - [website](https://mng.quest/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/mng) - [README.md](./mng)
 
 The `lib/` contains a number of helpers and base runner code.
