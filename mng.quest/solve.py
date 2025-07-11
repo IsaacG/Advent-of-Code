@@ -88,6 +88,69 @@ def text_mirror():
     return "\n".join(rules)
 
 
+def unary_compare():
+    """Generate state logic for unary compare.
+
+    General solution:
+    Mark `|` as "read" by changing to "x". Read one `|` from both `a` and `b` until one runs out.
+    Once one runs out, update the `,` to the result and replace `x` with `|`.
+    For minimal steps, start at the `,` and work our way outwards.
+
+    Limited solution: use the state as a counter. Increment on left. Decrement on right.
+    """
+    general = """
+INIT       |  INIT        |  R   // Start at the `,`.
+INIT       ,  FIND_LEFT   ,  L   // Look for a left `|`.
+FIND_LEFT  x  FIND_LEFT   x  L   //
+FIND_LEFT  ,  FIND_LEFT   ,  L   //
+FIND_LEFT  _  EQ_OR_LT    _  R   // Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
+FIND_LEFT  |  FIND_RIGHT  x  R   // Look for a matching right `|`.
+FIND_RIGHT x  FIND_RIGHT  x  R   //
+FIND_RIGHT ,  FIND_RIGHT  ,  R   //
+FIND_RIGHT |  FIND_LEFT   x  L   // Matched. Go back to a left.
+FIND_RIGHT _  SET_GT      _  L   // Ran out of `|` on the right. We found one on the left so the left is larger (`>`).
+EQ_OR_LT   x  EQ_OR_LT    x  R   // Go to the right to check if it is `=` or `<`.
+EQ_OR_LT   ,  EQ_OR_LT    ,  R   // Go to the right to check if it is `=` or `<`.
+EQ_OR_LT   |  SET_LT      |  L   // Right has more, ie is bigger. Set `<`.
+EQ_OR_LT   _  SET_EQ      _  L   // Right has same. Set `=`.
+SET_GT     |  SET_GT      |  L   // Clean up the data.
+SET_LT     |  SET_LT      |  L
+SET_EQ     |  SET_EQ      |  L
+SET_GT     x  SET_GT      |  L
+SET_LT     x  SET_LT      |  L
+SET_EQ     x  SET_EQ      |  L
+SET_GT     ,  SET_GT      >  L
+SET_LT     ,  SET_LT      <  L
+SET_EQ     ,  SET_EQ      =  L
+SET_GT     _  HALT        _  R
+SET_LT     _  HALT        _  R
+SET_EQ     _  HALT        _  R
+"""
+    # This can be made shorter by guessing a result on the first pass over the `,`.
+    # If the `,` is replaced with `>` on the first pass and `>` turns out to be correct,
+    # we can halt without needing to return and update.
+    # Try all combinations of guesses for the smallest step count.
+    rules = []
+    # Count the left.
+    rules += ["INIT     |   L1   |   R"]
+    rules += [f"L{i}     |   L{i + 1}   |   R" for i in range(1, 300)]
+    # Switch to the right.
+    rules += [f"L{i}     ,   R{i}   ,   R" for i in range(1, 300)]
+    # Decrement.
+    rules += [f"R{i}     |   R{i - 1}   |   R" for i in range(1, 300)]
+    # End comparison.
+    # Hit zero, still more on right. Right bigger.
+    rules += ["R0       |   SET_<      |   L"]
+    # Hit zero, no more on right. Right equal.
+    rules += ["R0       _   SET_=      _   L"]
+    # Ran out on the right but did not hit zero. Left bigger.
+    rules += [f"R{i}     _   SET_>      _   L" for i in range(1, 300)]
+    # Return to `,` and update.
+    rules += [f"SET_{i}  |   SET_{i}    |   L" for i in "><="]
+    rules += [f"SET_{i}  ,   HALT       {i} L" for i in "><="]
+    return "\n".join(rules)
+
+
 SOLUTIONS = {
     "UnaryAddition": """
 // Move over the data. Replace + with | and drop the last |.
@@ -200,6 +263,7 @@ CLEAN     _ HALT       _ R
 """,
     "LetterMark": letter_mark(),
     "TextMirror": text_mirror(),
+    "UnaryComparison": unary_compare(),
 }
 
 TESTS = {
@@ -238,6 +302,12 @@ TESTS = {
     "TextMirror": [
         ("hello-world", "dlrow-olleh"),
     ],
+    "UnaryComparison": [
+        ("|||,||||", "|||<||||"),  # 3 > 4
+        ("||||,|||", "||||>|||"),  # 4 > 3
+        ( "|||,|||",  "|||=|||"),  # 3 = 3
+        ( "||||||||||,|||",  "||||||||||>|||"),
+    ],
 }
 
 
@@ -256,4 +326,5 @@ def run_tests():
 
 
 if __name__ == "__main__":
+    # print(unary_compare())
     run_tests()
