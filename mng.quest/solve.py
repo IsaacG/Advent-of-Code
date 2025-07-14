@@ -130,24 +130,34 @@ SET_EQ     _  HALT        _  R
     # If the `,` is replaced with `>` on the first pass and `>` turns out to be correct,
     # we can halt without needing to return and update.
     # Try all combinations of guesses for the smallest step count.
+    guess = ">"
     rules = []
     # Count the left.
     rules += ["INIT     |   L1   |   R"]
     rules += [f"L{i}     |   L{i + 1}   |   R" for i in range(1, 300)]
     # Switch to the right.
-    rules += [f"L{i}     ,   R{i}   ,   R" for i in range(1, 300)]
+    rules += [f"L{i}     ,   R{i}   {guess}   R" for i in range(1, 300)]
     # Decrement.
     rules += [f"R{i}     |   R{i - 1}   |   R" for i in range(1, 300)]
     # End comparison.
     # Hit zero, still more on right. Right bigger.
-    rules += ["R0       |   SET_<      |   L"]
+    if guess == "<":
+        rules += ["R0       |   HALT       |   L"]
+    else:
+        rules += ["R0       |   SET_<      |   L"]
     # Hit zero, no more on right. Right equal.
-    rules += ["R0       _   SET_=      _   L"]
+    if guess == "=":
+        rules += ["R0       _   HALT      _   L"]
+    else:
+        rules += ["R0       _   SET_=      _   L"]
     # Ran out on the right but did not hit zero. Left bigger.
-    rules += [f"R{i}     _   SET_>      _   L" for i in range(1, 300)]
+    if guess == ">":
+        rules += [f"R{i}     _   HALT      _   L" for i in range(1, 300)]
+    else:
+        rules += [f"R{i}     _   SET_>      _   L" for i in range(1, 300)]
     # Return to `,` and update.
     rules += [f"SET_{i}  |   SET_{i}    |   L" for i in "><="]
-    rules += [f"SET_{i}  ,   HALT       {i} L" for i in "><="]
+    rules += [f"SET_{i}  {guess}   HALT       {i} L" for i in "><="]
     return "\n".join(rules)
 
 
@@ -318,13 +328,13 @@ def run_tests():
         for idx, (data, want) in enumerate(TESTS[problem]):
             result, steps = mill.run(data, verbose=False)
             if result == want:
-                print(f"{problem}.t{idx}: PASS")
+                print(f"{problem:>20}.t{idx}: PASS")
             else:
                 result, steps = mill.run(data, verbose=True)
-                print(f"{problem}.t{idx}: FAIL")
-                return
+                raise RuntimeException(f"{problem}.t{idx}: FAIL")
+    return True
 
 
 if __name__ == "__main__":
-    # print(unary_compare())
     run_tests()
+    # print(unary_compare())
