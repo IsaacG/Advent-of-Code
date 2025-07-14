@@ -1,6 +1,7 @@
 #!/bin/python
 
 import string
+import sys
 
 import logic_mill
 
@@ -87,6 +88,48 @@ def text_mirror():
 
     return "\n".join(rules)
 
+
+def index():
+    general = """
+INIT       | START      _ R   // Start by dropping the leading `|`. At start of to-remove count.
+START      | GO_LIST    _ R   // Go to the list
+GO_LIST    | GO_LIST    | R   //
+GO_LIST    : GO_FIRST   : R   // In the list. Go to the first number.
+GO_FIRST   x GO_FIRST   x R   //
+GO_FIRST   | RM_FIRST   x R   // Drop the first number.
+RM_FIRST   | RM_FIRST   x R   //
+RM_FIRST   , RETURN_I   x L   // Return to the start.
+RETURN_I   x RETURN_I   x L   //
+RETURN_I   : RETURN_I   : L   //
+RETURN_I   | RETURN_I   | L   //
+RETURN_I   _ START      _ R   // Got back to the index.
+START      : CLEAN_PRE  _ R   // Out of index values. Tidy up before the first element.
+CLEAN_PRE  x CLEAN_PRE  _ R   //
+CLEAN_PRE  | CLEAN_PRE  | R   // Skip the first element.
+CLEAN_PRE  , CLEAN_POST _ R   // Clean remaining elements.
+CLEAN_PRE  _ HALT       _ R   // No following items.
+CLEAN_POST | CLEAN_POST _ R   //
+CLEAN_POST , CLEAN_POST _ R   //
+CLEAN_POST _ HALT       _ L   //
+"""
+    states = 100
+    rules = []
+    rules += [ "INIT        |  DROP_0      _   R"]
+    rules += [f"DROP_{n}      |  DROP_{n+1}      _   R" for n in range(states)]
+    rules += [f"DROP_{n}      :  FIND_RM_{n}   _   R" for n in range(states)]
+    rules += [f"FIND_RM_0     |  SKIP          |   R"]
+    rules += [f"FIND_RM_{n} |  FIND_RM_{n} _   R" for n in range(1, states)]
+    rules += [f"FIND_RM_{n+1}   ,  FIND_RM_{n}   _   R" for n in range(1, states)]
+
+    rules += [ "FIND_RM_1   ,  SKIP  _   R"]
+    rules += [ "SKIP        |  SKIP        |   R"]
+    rules += [ "SKIP        ,  TRIM        _   R"]
+    rules += [ "SKIP        _  HALT        _   R"]
+    rules += [ "TRIM        _  HALT        _   R"]
+    rules += [ "TRIM        ,  TRIM        _   R"]
+    rules += [ "TRIM        |  TRIM        _   R"]
+
+    return "\n".join(rules)
 
 def unary_compare():
     """Generate state logic for unary compare.
@@ -222,28 +265,7 @@ RM_B      _ HALT      _ R   // Done removing `b`. Multiplication completed.
     """,
     # Unary index. Minus one index. For each index `|`, remove an element from the array.
     # When we run out of index `|`, remove everything after the first number.
-    "Index": """
-INIT       | START      _ R   // Start by dropping the leading `|`. At start of to-remove count.
-START      | GO_LIST    _ R   // Go to the list
-GO_LIST    | GO_LIST    | R   //
-GO_LIST    : GO_FIRST   : R   // In the list. Go to the first number.
-GO_FIRST   x GO_FIRST   x R   //
-GO_FIRST   | RM_FIRST   x R   // Drop the first number.
-RM_FIRST   | RM_FIRST   x R   //
-RM_FIRST   , RETURN_I   x L   // Return to the start.
-RETURN_I   x RETURN_I   x L   //
-RETURN_I   : RETURN_I   : L   //
-RETURN_I   | RETURN_I   | L   //
-RETURN_I   _ START      _ R   // Got back to the index.
-START      : CLEAN_PRE  _ R   // Out of index values. Tidy up before the first element.
-CLEAN_PRE  x CLEAN_PRE  _ R   //
-CLEAN_PRE  | CLEAN_PRE  | R   // Skip the first element.
-CLEAN_PRE  , CLEAN_POST _ R   // Clean remaining elements.
-CLEAN_PRE  _ HALT       _ R   // No following items.
-CLEAN_POST | CLEAN_POST _ R   //
-CLEAN_POST , CLEAN_POST _ R   //
-CLEAN_POST _ HALT       _ L   //
-""",
+    "Index": index(),
     # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
     # Once `b` is gone, drop `-` and `x`.
     "UnarySub": """
@@ -312,20 +334,23 @@ TESTS = {
 }
 
 
-def run_tests():
+def run_tests(silent):
     for problem, solution in SOLUTIONS.items():
         transition_rules = logic_mill.parse_transition_rules(solution)
         mill = logic_mill.LogicMill(transition_rules)
         for idx, (data, want) in enumerate(TESTS[problem]):
             result, steps = mill.run(data, verbose=False)
             if result == want:
-                print(f"{problem:>20}.t{idx}: PASS")
+                if not silent:
+                    print(f"{problem:>20}.t{idx}: PASS")
             else:
                 result, steps = mill.run(data, verbose=True)
-                raise RuntimeException(f"{problem}.t{idx}: FAIL")
+                raise RuntimeError(f"{problem}.t{idx}: FAIL")
     return True
 
 
 if __name__ == "__main__":
-    run_tests()
-    # print(unary_compare())
+    silent = len(sys.argv) > 1
+    run_tests(silent)
+    if silent:
+        print(index())
