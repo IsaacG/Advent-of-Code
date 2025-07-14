@@ -163,16 +163,10 @@ SET_EQ     _  HALT        _  R
 
 SOLUTIONS = {
     "UnaryAddition": """
-// Move over the data. Replace + with | and drop the last |.
-
 // Move to the right. Replace + with |.
-INIT | M | R
+INIT | M _ R
 M | M | R
-M + M | R
-// Move to delete mode when we get to the end.
-M _ D _ L
-// Delete the last char.
-D | HALT _ R
+M + HALT | R
 """,
     # even or odd
     "Parity": """
