@@ -179,19 +179,15 @@ O _ HALT O R
 E _ HALT E R
 """,
     "Adder": """
-// Move to the right end without changing anything.
-INIT 1 GO_END 1 R
-INIT 0 GO_END 0 R
-GO_END 1 GO_END 1 R
-GO_END 0 GO_END 0 R
+INIT   1   GO_END   1   R
+INIT   0   HALT     1   R
+GO_END 1   GO_END   1   R
+GO_END 0   GO_END   0   R
 // Work right to left, incrementing and tracking a carry bit. "CARRY" means add one.
-GO_END _ CARRY _ L
-NO_CARRY 0 NO_CARRY 0 L
-NO_CARRY 1 NO_CARRY 1 L
-CARRY 0 NO_CARRY 1 L
-CARRY _ NO_CARRY 1 L
-CARRY 1 CARRY 0 L
-NO_CARRY _ HALT _ R
+GO_END _   CARRY    _   L
+CARRY  0   HALT     1   L
+CARRY  1   CARRY    0   L
+CARRY  _   HALT     1   L
 """,
     # Unary multiplication a*b can be done by copying the "b" value "a" times.
     # We can do something "a" times by removing one `|` from `a` after each operation.
@@ -284,6 +280,7 @@ TESTS = {
         ( "10",  "11"),  # 2+1=3
         ( "11", "100"),  # 3+1=4
         ("100", "101"),  # 4+1=5
+        ("11010101", "11010110"),
     ],
     "UnaryMult": [
         (   "|*||",        "||"),  # 1x2=2
