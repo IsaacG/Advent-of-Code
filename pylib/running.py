@@ -91,14 +91,14 @@ class Runner:
         if test:
             for part in self.parts:
                 formatter.set_part(part)
-                for test_no, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
+                for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
                     if test_part != part:
                         continue
-                    time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True)
+                    time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True, test_number=test_number)
                     if got == test_want:
-                        print(f"TEST  {self.day:02}.{part} {time_s} PASS (test {test_no})")
+                        print(f"TEST  {self.day:02}.{part} {time_s} PASS (test {test_number})")
                     else:
-                        print(f"TEST  {self.day:02}.{part} {time_s} FAIL (test {test_no}). Got {got} but wants {test_want}.")
+                        print(f"TEST  {self.day:02}.{part} {time_s} FAIL (test {test_number}). Got {got} but wants {test_want}.")
         if solve:
             for part in self.parts:
                 formatter.set_part(part)
@@ -106,7 +106,7 @@ class Runner:
                 if data is None:
                     print(f"SOLVE No input data found for day {self.day} part {part}")
                     continue
-                time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
+                time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
                 print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
         if check:
             want = self.get_solutions(self.day)
@@ -119,7 +119,7 @@ class Runner:
                     if data is None:
                         print(f"CHECK No input data found for day {day} part {part}")
                         continue
-                    time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False)
+                    time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
                     if str(got) == want[part - 1]:
                         print(f"CHECK {self.day:02}.{part} {time_s} PASS")
                     else:

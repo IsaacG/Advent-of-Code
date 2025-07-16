@@ -70,13 +70,15 @@ def text_mirror():
     rules = []
     # Add a `=` then find the first letter.
     rules += [f"INIT {letter} ADD_EQ {letter} L" for letter in letters]
-    rules += ["ADD_EQ _ FIND_LETTER = R"]
+    rules += ["ADD_EQ _ F = R"]
     rules += ["FIND_LETTER ! FIND_LETTER ! R"]
     # Copy and tombstone.
-    rules += [f"FIND_LETTER {letter} COPY_{letter} ! L" for letter in letters]
-    rules += [f"COPY_{letter} {other} COPY_{letter} {other} L" for letter in letters for other in letters | extras]
+    rules += [f"FIND_LETTER {letter} COPY_{letter} ! R" for letter in letters]
+    rules += [f"COPY_{i} {j} COPY_{i}{j} ! L" for i in letters for j in letters | {"_"}]
+    rules += [f"COPY_{i}{j} {k} COPY_{i}{j} {k} L" for i in letters for j in letters | {"_"} for k in letters | extras]
     # Found an opening. Record letter then return to the start.
-    rules += [f"COPY_{letter} _ GO_EQ {letter} R" for letter in letters]
+    rules += [f"COPY_{i}{j} _ PAST_{j} {i} L" for i in letters for j in letters | {"_"}]
+    rules += [f"PAST_{i} _ GO_EQ {i} R" for i in letters | {"_"}]
     rules += [f"GO_EQ {letter} GO_EQ {letter} R" for letter in letters]
     rules += ["GO_EQ = FIND_LETTER = R"]
     # Once there is nothing left to copy, clean up tombstones.
@@ -86,7 +88,7 @@ def text_mirror():
         "CLEANUP = HALT _ L",
     ]
 
-    return "\n".join(rules)
+    return "\n".join(rules).replace("FIND_LETTER", "F").replace("COPY_", "C")
 
 
 def index():
@@ -353,4 +355,4 @@ if __name__ == "__main__":
     silent = len(sys.argv) > 1
     run_tests(silent)
     if silent:
-        print(index())
+        print(text_mirror())
