@@ -8,57 +8,51 @@ import re
 log = logging.info
 
 
-@functools.cache
-def ways(distance: int, moves: tuple[int, ...]):
-    if distance == 0:
-        return 0
-    if distance < moves[0]:
-        return 0
-    got = sum(
-        ways(distance - move, moves) for move in moves if move < distance
-    )
-    if distance in moves:
-        got += 1
-    return got
-
-
 def solve(part: int, data: str, test_number: int) -> int:
     """Solve the parts."""
     blocks = data.split("\n\n")
     moves = tuple(sorted(int(i) for i in blocks[1].split(" : ")[1].split(", ")))
+    # If a third block is added, use that for the target part 3 rank.
     bisect_want = 100000000000000000000000000000
+    if len(blocks) == 3:
+        bisect_want = int(blocks[2])
 
+    # Parse the stairs into a graph, mapping (from_floor, from_stair) to all possible (to_floor, to_stair) values.
+    # The weight of every edge is 1.
     graph = collections.defaultdict(list)
     for line in blocks[0].splitlines():
-        ps = line.split(" : ")
-        start, end = [int(i) for i in ps[1].split(" -> ")]
-        if ps[2] == "FROM START TO END":
-            start_conn, end_conn = 0, 0
-        else:
-            start_conn, end_conn = [int(i) for i in re.fullmatch(r"FROM S(\d+) TO S(\d+)", ps[2]).groups()]
-        staircase = int(ps[0].removeprefix("S"))
+        m = re.fullmatch(r"S(\d+) : (\d+) -> (\d+) : FROM (?:S(\d+)|START) TO (?:S(\d+)|END)", line)
+        staircase, start, end, start_conn, end_conn = [int(i) if i else 0 for i in m.groups()]
 
+        # Add an edge from every step in this staircase to the next step.
         for i in range(start, end):
             graph[staircase, i].append((staircase, i + 1))
         if staircase == 1:
-            initial, final = start, end
-            root = (1, initial)
-            graph_end = (1, final)
+            lowest_stair, highest_stair = start, end
+            graph_start = (1, lowest_stair)
+            graph_end = (1, highest_stair)
         else:
+            # Add edges from one startcase to the other.
             graph[start_conn, start].append((staircase, start))
             graph[staircase, end].append((end_conn, end))
+        # Part one ignore all other staircases after the first one.
         if part == 1:
             break
 
     @functools.cache
     def paths_to_end(from_position):
+        """Return how many ways there are from this position until the end."""
+        if from_position == graph_end:
+            return 1
         options = possible_next_nodes(from_position)
-        return sum((paths_to_end(option) for option in options), 0) + (1 if graph_end in options else 0)
+        return sum((paths_to_end(option) for option in options), 0)
 
     @functools.cache
     def possible_next_nodes(from_position):
+        """Return all possible next nodes with the different amounts of legal steps per move."""
         options = set()
         for move in moves:
+            # Expand the steps taken based on how many positions can be moved in one move.
             positions = {from_position}
             for i in range(move):
                 positions = {
@@ -69,29 +63,30 @@ def solve(part: int, data: str, test_number: int) -> int:
             options.update(positions)
         return options
 
-    def bisect(pos, distance):
-        if pos == graph_end:
-            return []
-        ranks = []
-        options = sorted(possible_next_nodes(pos))
-        weighted_options = [(o, paths_to_end(o)) for o in options if paths_to_end(o)]
-        for option, paths in weighted_options:
-            if distance + paths >= bisect_want:
-                select = option
-                break
-            else:
-                distance += paths
-        else:
-            select = options[-1]
-            distance -= paths_to_end(options[-1])
-        return [f"S{select[0]}_{select[1]}"] + bisect(select, distance)
+    def bisect(position, distance):
+        """Return the path to a specific rank by sorting each next-node and tracking how many paths are down that way."""
+        formatted_position = [f"S{position[0]}_{position[1]}"]
+        if position == graph_end:
+            return formatted_position
 
-    if part == 1:
-        return ways(final - initial, moves)
-    if part == 2:
-        return paths_to_end(root)
-    if part == 3:
-        return "-".join([f"S{root[0]}_{root[1]}"] + bisect(root, 0))
+        # Find all possible next nodes.
+        options = possible_next_nodes(position)
+        # Find next nodes with how many paths to the end exist that way. Filter out nodes that won't land us at the end.
+        weighted_options = [(o, paths_to_end(o)) for o in options if paths_to_end(o)]
+        weighted_options.sort()
+        # Count how many paths/ranks we skip until we get to a node that will lead us to our target rank.
+        for option, paths in weighted_options:
+            # Stop when we find a node that will hit our target rank.
+            if distance + paths >= bisect_want:
+                return formatted_position + bisect(option, distance)
+            distance += paths
+        # We cannot hit the target rank. Take the highest rank.
+        option, weight = weighted_options[-1]
+        return formatted_position + bisect(option, distance - weight)
+
+    if part in [1, 2]:
+        return paths_to_end(graph_start)
+    return "-".join(bisect(graph_start, 0))
 
 
 TEST_DATA = ["""\
@@ -128,7 +123,8 @@ TESTS = [
     (2, TEST_DATA[2], 113524314072255566781694),
     (3, TEST_DATA[0], "S1_0-S2_2-S2_3-S1_5-S1_6"),
     (3, TEST_DATA[1], "S1_0-S1_2-S2_3-S3_4-S3_5-S1_6"), # highest rank, 102
-    # (3, TEST_DATA[1], "S1_0-S1_1-S1_2-S2_3-S3_4-S3_5-S1_6"),  # rank 39
-    # (3, TEST_DATA[2], "S1_0-S1_1-S1_2-S1_3-S1_4-S1_5-S1_6-S1_7-S1_8-S1_9-S1_10-S1_11-S1_12-S1_13-S1_14-S1_15-S1_16-S1_17-S1_18-S1_19-S1_20-S1_21-S1_22-S1_23-S1_24-S1_25-S1_26-S1_29-S5_29-S5_30-S5_35-S5_36-S5_37-S5_38-S5_39-S5_40-S5_45-S5_46-S5_47-S5_48-S5_51-S5_52-S5_53-S5_54-S5_55-S5_58-S5_59-S5_62-S5_63-S5_64-S5_65-S5_66-S5_67-S5_70-S5_71-S5_72-S1_76-S1_79-S1_80-S3_84-S3_85-S3_86-S3_87-S3_90-S1_92-S1_93-S1_94-S1_95-S1_98-S1_99"),  # rank 73287437832782344
     (3, TEST_DATA[2], "S1_0-S1_6-S2_11-S2_17-S2_23-S2_29-S9_34-S9_37-S5_42-S5_48-S5_54-S5_60-S5_66-S5_72-S5_73-S5_74-S1_79-S3_84-S8_88-S8_89-S8_90-S3_90-S3_91-S1_96-S1_99"), # highest
+    # Override the target rank.
+    (3, TEST_DATA[1] + "\n\n" + "39", "S1_0-S1_1-S1_2-S2_3-S3_4-S3_5-S1_6"),
+    (3, TEST_DATA[2] + "\n\n" + "73287437832782344", "S1_0-S1_1-S1_2-S1_3-S1_4-S1_5-S1_6-S1_7-S1_8-S1_9-S1_10-S1_11-S1_12-S1_13-S1_14-S1_15-S1_16-S1_17-S1_18-S1_19-S1_20-S1_21-S1_22-S1_23-S1_24-S1_25-S1_26-S1_29-S5_29-S5_30-S5_35-S5_36-S5_37-S5_38-S5_39-S5_40-S5_45-S5_46-S5_47-S5_48-S5_51-S5_52-S5_53-S5_54-S5_55-S5_58-S5_59-S5_62-S5_63-S5_64-S5_65-S5_66-S5_67-S5_70-S5_71-S5_72-S1_76-S1_79-S1_80-S3_84-S3_85-S3_86-S3_87-S3_90-S1_92-S1_93-S1_94-S1_95-S1_98-S1_99"),  # rank 73287437832782344
 ]
