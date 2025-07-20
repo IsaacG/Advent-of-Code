@@ -2,19 +2,13 @@
 """Advent of Code, Day 17: Reservoir Research."""
 from __future__ import annotations
 
-import collections
 import functools
-import itertools
-import logging
-import math
-import re
 import sys
-import time
+import typing
 
 from lib import aoc
 
-SAMPLE = [
-   """\
+SAMPLE = """\
 x=495, y=2..7
 y=7, x=495..501
 x=501, y=3..7
@@ -22,34 +16,21 @@ x=498, y=2..4
 x=506, y=1..2
 x=498, y=10..13
 x=504, y=10..13
-y=13, x=498..504""",  # 3
-]
+y=13, x=498..504"""
 
-LineType = int
-InputType = list[LineType]
-
-
-def log(*args, **kwargs) -> None:
-    logging.info(*args, **kwargs)
 
 class Day17(aoc.Challenge):
     """Day 17: Reservoir Research."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=57),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=29),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+        aoc.TestCase(part=1, inputs=SAMPLE, want=57),
+        aoc.TestCase(part=2, inputs=SAMPLE, want=29),
     ]
-
     INPUT_PARSER = aoc.parse_re_group_mixed(r"([xy])=(\d+), [xy]=(\d+)..(\d+)")
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        clay = set()
-        for fixed, pos, start, end in puzzle_input:
+    def solver(self, puzzle_input: list[list[int | str]], part_one: bool) -> int:
+        clay: set[tuple[int, int]] = set()
+        for fixed, pos, start, end in typing.cast(list[tuple[str, int, int, int]], puzzle_input):
             if fixed == "x":
                 clay.update((pos, i) for i in range(start, end + 1))
             else:
@@ -63,15 +44,22 @@ class Day17(aoc.Challenge):
         source = (500, min_y - 1)
         wet = set()
 
-        def show():
+        def show():  # pylint: disable=W0612
             for y in range(min_y, max_y + 1):
-                print("".join("#" if (x,y) in clay else "~" if (x,y) in filled else "|" if (x,y) in wet else " " for x in range(min_x - 1, max_x + 2)))
+                self.debug(
+                    "".join(
+                        "#" if (x,y) in clay else
+                        "~" if (x,y) in filled else
+                        "|" if (x,y) in wet else
+                        " "
+                        for x in range(min_x - 1, max_x + 2
+                    )
+                )
+            )
             print()
 
         @functools.cache
         def has_leaks(x, y):
-            # time.sleep(0.3)
-            # show()
             # If we got to the bottom, there is nothing more to do.
             if y == max_y:
                 return True
@@ -81,16 +69,13 @@ class Day17(aoc.Challenge):
                 wet.add(new_pos)
                 if has_leaks(*new_pos):
                     return True
-            # Water does not escape downwards.
-            # Flow sideways: left then right.
+            # Water does not escape downwards. Flow sideways: left then right.
             expanded = {(x, y)}
             leaks = False
             for dx in [-1, 1]:
                 new_x = x
                 while True:
                     new_x += dx
-                    # print(f"Check {(new_x, y)}")
-                    # show()
                     # Stop going sideways when we hit a wall.
                     if (new_x, y) in filled:
                         break
@@ -108,10 +93,11 @@ class Day17(aoc.Challenge):
 
         sys.setrecursionlimit(5000)
         has_leaks(*source)
-        # show()
+
+        # Wet soil.
         if part_one:
             return len(wet)
-        else:
-            return len(filled - clay)
+        # Standing water.
+        return len(filled - clay)
 
 # vim:expandtab:sw=4:ts=4

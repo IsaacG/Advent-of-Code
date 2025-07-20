@@ -33,7 +33,7 @@ class Day06(aoc.Challenge):
     def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the largest contained region."""
         min_x, max_x, min_y, max_y = self.minmax(puzzle_input)
-        controls = {(x, y): set() for x, y in puzzle_input}
+        controls: dict[tuple[int, int], set[tuple[int, int]]] = {(x, y): set() for x, y in puzzle_input}
 
         # For every location in the puzzle, compute the distances to all nodes.
         # If there is no tie, associate the location with the closest node.
@@ -48,7 +48,7 @@ class Day06(aoc.Challenge):
             if all(x != min_x and x != max_x and y != min_y and y != max_y for x, y in points)
         )
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[list[int]]) -> int:
         """Return the number of safe locations."""
         distance = 32 if self.testing else 10000
         min_x, max_x, min_y, max_y = self.minmax(puzzle_input)
