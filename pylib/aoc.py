@@ -669,6 +669,9 @@ class Challenge:
         self.testing = True
 
         for i, case in enumerate(self.TESTS):
+            if case.want == None:
+                print(f'{self.year}/{self.day:02d} Test {i + 1}: wanted value not set!')
+                continue
             if case.want == TEST_SKIP:
                 continue
             if case.part not in self.parts_to_run:

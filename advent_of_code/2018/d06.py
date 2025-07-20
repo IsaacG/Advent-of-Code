@@ -2,105 +2,59 @@
 """Advent of Code, Day 6: Chronal Coordinates."""
 from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import logging
-import math
-import re
-import string
-
 from lib import aoc
 
-SAMPLE = [
-    """\
+SAMPLE = """\
 1, 1
 1, 6
 8, 3
 3, 4
 5, 5
-8, 9""",
-]
+8, 9"""
 
-LineType = int
-InputType = list[LineType]
-
-
-def log(*args, **kwargs) -> None:
-    logging.info(*args, **kwargs)
 
 class Day06(aoc.Challenge):
     """Day 6: Chronal Coordinates."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=17),
-        aoc.TestCase(part=2, inputs=SAMPLE[0], want=16),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+        aoc.TestCase(part=1, inputs=SAMPLE, want=17),
+        aoc.TestCase(part=2, inputs=SAMPLE, want=16),
     ]
-
     INPUT_PARSER = aoc.parse_ints
 
-    def part1(self, puzzle_input: InputType) -> int:
-        min_x, min_y = -1, -1
-        max_x = max(x for x, y in puzzle_input) + 1
-        max_y = max(y for x, y in puzzle_input) + 1
-        groups = [{complex(x, y),} for x, y in puzzle_input]
-        claimed = {complex(x, y) for x, y in puzzle_input}
-        equadistance = set()
-        unbounded = set()
-        found_more = True
-
-        def show():
-            return
-            mp = {
-                p : l
-                for l, g in zip(string.ascii_lowercase, groups)
-                for p in g
-            }
-            for x, y in puzzle_input:
-                mp[complex(x, y)] = mp[complex(x, y)].upper()
-            for y in range(min_y, max_y + 1):
-                print("".join(mp.get(complex(x, y), "_" if complex(x, y) in equadistance else ".") for x in range(min_x, max_x + 1)))
-            print()
-
-
-        while found_more:
-            show()
-            found_more = False
-            expanded = [
-                ({p + d for p in group for d in aoc.FOUR_DIRECTIONS}) - equadistance - claimed
-                for group in groups
-            ]
-            counts = collections.Counter(p for group in expanded for p in group)
-            equadistance.update(p for p, c in counts.items() if c > 1)
-            for idx, (group, n) in enumerate(zip(groups, expanded)):
-                new_points = n - equadistance
-                claimed.update(new_points)
-                on_map = {p for p in new_points if min_x <= p.real <= max_y and min_y <= p.imag <= max_y}
-                if len(on_map) != len(new_points):
-                    unbounded.add(idx)
-                if on_map:
-                    group.update(on_map)
-                    found_more = True
-        print(unbounded)
-        return max(len(group) for idx, group in enumerate(groups) if idx not in unbounded)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        distance = 32 if self.testing else 10000
+    def minmax(self, puzzle_input: list[list[int]]) -> tuple[int, int, int, int]:
+        """Return the boundaries of the puzzle."""
         min_x = min(x for x, y in puzzle_input)
         max_x = max(x for x, y in puzzle_input)
         min_y = min(y for x, y in puzzle_input)
         max_y = max(y for x, y in puzzle_input)
+        return min_x, max_x, min_y, max_y
 
-        def sum_distance(x, y):
-            return sum(abs(x - px) + abs(y - py) for px, py in puzzle_input)
+    def part1(self, puzzle_input: list[list[int]]) -> int:
+        """Return the largest contained region."""
+        min_x, max_x, min_y, max_y = self.minmax(puzzle_input)
+        controls = {(x, y): set() for x, y in puzzle_input}
 
-        return = sum(
-            sum_distance(x, y) < distance
+        # For every location in the puzzle, compute the distances to all nodes.
+        # If there is no tie, associate the location with the closest node.
+        for x in range(min_x, max_x + 1):
+            for y in range(min_y, max_y + 1):
+                distances = sorted((abs(x - px) + abs(y - py), (px, py)) for px, py in puzzle_input)[:2]
+                if distances[0][0] != distances[1][0]:
+                    controls[distances[0][1]].add((x, y))
+        # Return the size of the largest group that doesn't touch the edge (ie is infinite).
+        return max(
+            len(points) for points in controls.values()
+            if all(x != min_x and x != max_x and y != min_y and y != max_y for x, y in points)
+        )
+
+    def part2(self, puzzle_input: InputType) -> int:
+        """Return the number of safe locations."""
+        distance = 32 if self.testing else 10000
+        min_x, max_x, min_y, max_y = self.minmax(puzzle_input)
+
+        return sum(
+            sum(abs(x - px) + abs(y - py) for px, py in puzzle_input) < distance
             for x in range(min_x, max_x + 1)
             for y in range(min_y, max_y + 1)
         )
