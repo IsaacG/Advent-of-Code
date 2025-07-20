@@ -33,6 +33,7 @@ class Day${day}(aoc.Challenge):
         # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
 
+    # INPUT_PARSER = aoc.parse_ints
     # INPUT_PARSER = aoc.parse_one_str
     # INPUT_PARSER = aoc.parse_one_str_per_line
     # INPUT_PARSER = aoc.parse_multi_str_per_line
