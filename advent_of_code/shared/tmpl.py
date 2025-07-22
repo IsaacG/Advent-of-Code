@@ -15,10 +15,8 @@ SAMPLE = ${sample}
 
 LineType = int
 InputType = list[LineType]
+log = logging.info
 
-
-def log(*args, **kwargs) -> None:
-    logging.info(*args, **kwargs)
 
 class Day${day}(aoc.Challenge):
     """${title}."""
