@@ -1,22 +1,11 @@
 #!/bin/python
 """Advent of Code, Day 21: Chronal Conversion."""
-from __future__ import annotations
 
-import collections
-import functools
-import itertools
-import logging
-import math
-import re
-
+import typing
 from lib import aoc
 
 
-log = logging.info
-STOP_AT = 11
-
-
-def compute(bound: int, instructions: list[tuple[str, int, int, int]]) -> int | None:
+def compute(bound: int, instructions: list[tuple[str, int, int, int]]) -> int:
     """Run a CPU simulator and report stop steps."""
     registers = [0] * 6
 
@@ -78,7 +67,7 @@ class Day21(aoc.Challenge):
         # Insert an instruction that copies r3 to r0.
         # Then the compare matches and r0 is returned -- the answer we want.
         instructions.insert(28, ["setr", 3, 0, 0])
-        return compute(bound=reg[1], instructions=instructions)
+        return compute(bound=int(reg[1]), instructions=typing.cast(list[tuple[str, int, int, int]], instructions))
 
     def part2(self, puzzle_input: list[list[str | int]]) -> int:
         """Reverse engineer the program. Run until no new values are discovered."""
