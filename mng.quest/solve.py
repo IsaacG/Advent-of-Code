@@ -1,8 +1,10 @@
 #!/bin/python
 
+import pathlib
 import string
 import sys
 
+import click
 import logic_mill
 
 
@@ -206,15 +208,35 @@ SET_EQ     _  HALT        _  R
     return "\n".join(rules)
 
 
-SOLUTIONS = {
-    "UnaryAddition": """
+def line_count():
+    letters = set(string.ascii_lowercase + "-äöõü")
+    rules = [
+        f"INIT {i} INIT ! R" for i in letters
+    ] + [
+        f"INIT  + ADD   +  L",
+        f"ADD   ! ADD   !  L",
+        f"ADD   _ RET   |  R",
+        f"ADD   | INC   |  R",
+        f"INC   ! RET   |  R",
+        f"RET   ! RET   !  R",
+        f"RET   + INIT  !  R",
+        f"INIT  _ CLEAN _  L",
+        f"CLEAN ! CLEAN _  L",
+        f"CLEAN _ HALT  |  R",
+        f"CLEAN | END   |  R",
+        f"END   _ HALT  |  R",
+    ]
+    return "\n".join(rules)
+
+SOLUTIONS = [
+    """
 // Move to the right. Replace + with |.
 INIT | M _ R
 M | M | R
 M + HALT | R
 """,
     # even or odd
-    "Parity": """
+    """
 // Move left to right, tracking even or odd, and clearing bits.
 // When we get to the end, write the state.
 INIT | O _ R
@@ -223,7 +245,7 @@ E | O _ R
 O _ HALT O R
 E _ HALT E R
 """,
-    "Adder": """
+    """
 INIT   1   GO_END   1   R
 INIT   0   HALT     1   R
 GO_END 1   GO_END   1   R
@@ -242,7 +264,7 @@ CARRY  _   HALT     1   L
     # Start state: reduce `a` by one `|`. Move past `*`. Change to copy mode.
     # Copy mode: change first `|` in `b` to `T`. Move to result. Write `|`. Return to first `|` of `b`. Done copying.
     # Done copying: reset `b` and return to initial state.
-    "UnaryMult": """
+    """
 INIT      | START     | L   // Change to start and shift left.
 START     _ START     _ R   // Move to first | of a.
 START     | GO_COPY   _ R   // Reduce `a` by one. Go copy `b`.
@@ -267,10 +289,10 @@ RM_B      _ HALT      _ R   // Done removing `b`. Multiplication completed.
     """,
     # Unary index. Minus one index. For each index `|`, remove an element from the array.
     # When we run out of index `|`, remove everything after the first number.
-    "Index": index(),
+    index(),
     # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
     # Once `b` is gone, drop `-` and `x`.
-    "UnarySub": """
+    """
 INIT      | INIT       | R   // Go to the end.
 INIT      - INIT       - R   //
 INIT      x INIT       x R   //
@@ -285,74 +307,90 @@ CLEAN     x CLEAN      _ L
 CLEAN     | HALT       | R
 CLEAN     _ HALT       _ R
 """,
-    "LetterMark": letter_mark(),
-    "TextMirror": text_mirror(),
-    "UnaryComparison": unary_compare(),
-}
+    letter_mark(),
+    text_mirror(),
+    unary_compare(),
+    line_count(),
+]
 
-TESTS = {
-    "UnaryAddition": [
+TESTS = [
+    [
         (  "|+|",   "||"),  # 1+1=2
         ("||+||", "||||"),  # 2+2=4
     ],
-    "Parity": [
+    [
         ( "||", "E"),
         ("|||", "O"),
     ],
-    "Adder": [
+    [
         (  "1",  "10"),  # 1+1=2
         ( "10",  "11"),  # 2+1=3
         ( "11", "100"),  # 3+1=4
         ("100", "101"),  # 4+1=5
         ("11010101", "11010110"),
     ],
-    "UnaryMult": [
+    [
         (   "|*||",        "||"),  # 1x2=2
         (  "||*||",      "||||"),  # 2x2=4
         ( "||*|||",    "||||||"),  # 2x3=6
         ("|||*|||", "|||||||||"),  # 3x3=9
     ],
-    "Index": [
+    [
         ("|:|||,|||||,||||||||,||||", "|||"),
         ("||:|||,|||||,||||||||,||||", "|||||"),
         ("||||:|||,|||||,||||||||,||||", "||||"),
     ],
-    "UnarySub": [
+    [
         ("|||||-||", "|||"),  # 5-2=3
         (   "||-||",    ""),  # 2-2=0
     ],
-    "LetterMark": [
+    [
         ("wõta-wastu-mu-soow-ja-chillitse-toomemäel", "[w]õta-[w]astu-mu-soo[w]-ja-[ch]illitse-toomemäel"),
     ],
-    "TextMirror": [
+    [
         ("hello-world", "dlrow-olleh"),
     ],
-    "UnaryComparison": [
+    [
         ("|||,||||", "|||<||||"),  # 3 > 4
         ("||||,|||", "||||>|||"),  # 4 > 3
         ( "|||,|||",  "|||=|||"),  # 3 = 3
         ( "||||||||||,|||",  "||||||||||>|||"),
     ],
-}
+    [
+        ("hello+world+how-are-you", "|||"),
+        ("hello", "|"),
+    ],
+]
 
 
-def run_tests(silent):
-    for problem, solution in SOLUTIONS.items():
-        transition_rules = logic_mill.parse_transition_rules(solution)
-        mill = logic_mill.LogicMill(transition_rules)
-        for idx, (data, want) in enumerate(TESTS[problem]):
-            result, steps = mill.run(data, verbose=False)
-            if result == want:
-                if not silent:
-                    print(f"{problem:>20}.t{idx}: PASS")
-            else:
-                result, steps = mill.run(data, verbose=True)
-                raise RuntimeError(f"{problem}.t{idx}: FAIL")
-    return True
+def run_tests(puzzle: int) -> None:
+    program = SOLUTIONS[puzzle - 1]
+    tests = TESTS[puzzle - 1]
+    transition_rules = logic_mill.parse_transition_rules(program)
+    mill = logic_mill.LogicMill(transition_rules)
+    for idx, (data, want) in enumerate(tests):
+        result, steps = mill.run(data, verbose=False)
+        if result == want:
+            print(f"{puzzle:>2}.t{idx}: PASS")
+        else:
+            result, steps = mill.run(data, verbose=True)
+            raise RuntimeError(f"{puzzle}.t{idx}: FAIL")
+
+
+@click.command()
+@click.option("-d", "puzzle", type=int, help="Puzzle number")
+@click.option("--out", type=click.Path(path_type=pathlib.Path), required=False)
+def main(puzzle: int, out: pathlib.Path | None) -> None:
+    if puzzle == 0:
+        for i in range(1, len(SOLUTIONS) + 1):
+            run_tests(i)
+    elif puzzle is None:
+        run_tests(len(SOLUTIONS))
+    else:
+        run_tests(puzzle)
+    if out:
+        out.write_text(SOLUTIONS[puzzle])
 
 
 if __name__ == "__main__":
-    silent = len(sys.argv) > 1
-    run_tests(silent)
-    if silent:
-        print(text_mirror())
+    main()
