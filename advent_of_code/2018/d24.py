@@ -21,6 +21,7 @@ Infection:
 @dataclasses.dataclass(kw_only=True)
 class Group:
     """Group holds a group of cells."""
+    team: str
     num: int
     units: int
     hp: int
@@ -52,6 +53,9 @@ class Group:
 
     def __hash__(self) -> int:
         return self.num
+
+    def __str__(self) -> str:
+        return f"{self.team} {self.num}: {self.units}x {self.hp}hp {self.dmg}dmg"
 
 
 class Battle:
@@ -146,7 +150,8 @@ class Day24(aoc.Challenge):
         # Split into two armies.
         for block in puzzle_input.split("\n\n"):
             group = []
-            for line in block.splitlines()[1:]:
+            team, *lines = block.splitlines()
+            for line in lines:
                 m = re.match(
                         r"(\d+) units each with (\d+) hit points ((?:\(.*\))?) ?with an attack "
                         r"that does (\d+) (.*) damage at initiative (\d+)", 
@@ -163,7 +168,7 @@ class Day24(aoc.Challenge):
                         if s.startswith("weak to "):
                             weak.update(s.removeprefix("weak to ").split(", "))
                 group.append(Group(
-                    num=num,
+                    team=team, num=num,
                     units=int(units), hp=int(hp), dmg=int(dmg), init=int(init),
                     damage_type=damage_type, weak=weak, immune=immune,
                 ))
