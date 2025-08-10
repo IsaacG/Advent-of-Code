@@ -16,8 +16,10 @@ L    = "L"
 
 class RuleSet:
 
-    def __init__(self):
+    def __init__(self, puzzle: int):
         self.rules = []
+        self.tests = []
+        self.puzzle = puzzle
 
     def add(
         self,
@@ -46,36 +48,59 @@ class RuleSet:
         """Add a rule where the state and tape do not change."""
         self.add(start, inp, start, inp, L, **fmt)
 
-    def __str__(self) -> str:
+    def test(self, inp: str, out: str) -> None:
+        self.tests.append((inp, out))
+
+    def check(self) -> None:
+        transition_rules = logic_mill.parse_transition_rules(self.program())
+        mill = logic_mill.LogicMill(transition_rules)
+        for idx, (data, want) in enumerate(self.tests):
+            result, steps = mill.run(data, verbose=False)
+            if result == want:
+                print(f"{self.puzzle:>2}.t{idx:<2} PASS")
+            else:
+                result, steps = mill.run(data, verbose=True)
+                raise RuntimeError(f"{self.puzzle}.t{idx}: FAIL")
+
+    def program(self) -> str:
         return "\n".join(self.rules)
 
 
 def unary_addition() -> RuleSet:
     # 1. Unary Addition
-    r = RuleSet()
+    r = RuleSet(1)
     # Erase the first | so we can replace the + with |
     r.add(INIT, "|", "M", "_", R)
     # Go to the + then replace it.
     r.right("M", "|")
     r.add("M", "+", HALT, "|", R)
+
+    r.test(  "|+|",   "||")  # 1+1=2
+    r.test("||+||", "||||")  # 2+2=4
+
     return r
 
 
 def unary_even_odd() -> RuleSet:
     # 2. Unary Even Odd
-    r = RuleSet()
+    r = RuleSet(2)
+
     # Move left to right, tracking even or odd, and clearing bits.
     # When we get to the end, write the state.
     r.add(INIT,  "|",  "O",  "_", R)
     r.add( "E",  "|",  "O",  "_", R)
     r.add( "O",  "|",  "E",  "_", R)
     r.add("$i",  "_", HALT, "$i", R, i="EO")
+
+    r.test( "||", "E")
+    r.test("|||", "O")
+
     return r
 
 
 def binary_increment() -> RuleSet:
     # 3. Binary Increment
-    r = RuleSet()
+    r = RuleSet(3)
     r.add(    INIT,   0,     HALT,   1, R)
     r.add(    INIT,   1, "GO_END",   1, R)
     r.right("GO_END",   "$i", i="01")
@@ -84,6 +109,13 @@ def binary_increment() -> RuleSet:
     r.add( "CARRY",   0,     HALT,   1, L)
     r.add( "CARRY",   1,  "CARRY",   0, L)
     r.add( "CARRY", "_",     HALT,   1, L)
+
+    r.test(  "1",  "10")  # 1+1=2
+    r.test( "10",  "11")  # 2+1=3
+    r.test( "11", "100")  # 3+1=4
+    r.test("100", "101")  # 4+1=5
+    r.test("11010101", "11010110")
+
     return r
 
 
@@ -97,7 +129,8 @@ def unary_multiplication() -> RuleSet:
     # Start state: reduce `a` by one `|`. Move past `*`. Change to copy mode.
     # Copy mode: change first `|` in `b` to `T`. Move to result. Write `|`. Return to first `|` of `b`. Done copying.
     # Done copying: reset `b` and return to initial state.
-    r = RuleSet()
+    r = RuleSet(4)
+
     # Change to start and shift left.
     r.add(INIT, "|", "START", "|", L)
     # Move to first | of a.
@@ -138,6 +171,12 @@ def unary_multiplication() -> RuleSet:
     r.add("RM_B", "|", "RM_B", "_", R)
     # Done removing `b`. Multiplication completed.
     r.add("RM_B", "_", HALT, "_", R)
+
+    r.test(   "|*||",        "||")  # 1x2=2
+    r.test(  "||*||",      "||||")  # 2x2=4
+    r.test( "||*|||",    "||||||")  # 2x3=6
+    r.test("|||*|||", "|||||||||")  # 3x3=9
+
     return r
 
 
@@ -146,7 +185,8 @@ def find_element_in_unary_array():
     # Unary index. Minus one index. For each index `|`, remove an element from the array.
     # When we run out of index `|`, remove everything after the first number.
     # == General Solution ==
-    r = RuleSet()
+    r = RuleSet(5)
+
     # Start by dropping the leading `|`. At start of to-remove count.
     r.add("INIT", "|", "START", "_", "R")
     # Go to the list
@@ -180,7 +220,7 @@ def find_element_in_unary_array():
     # return r
 
     # == Non-general solution ==
-    r = RuleSet()
+    r = RuleSet(5)
     states = 100
     rules = []
     r.add(INIT, "|", "DROP_0", "_", R)
@@ -199,6 +239,11 @@ def find_element_in_unary_array():
     r.add("TRIM", "_", "HALT", "_", R)
     r.add("TRIM", ",", "TRIM", "_", R)
     r.add("TRIM", "|", "TRIM", "_", R)
+
+    r.test("|:|||,|||||,||||||||,||||", "|||"),
+    r.test("||:|||,|||||,||||||||,||||", "|||||"),
+    r.test("||||:|||,|||||,||||||||,||||", "||||"),
+
     return r
 
 
@@ -206,7 +251,8 @@ def unary_subtraction() -> RuleSet:
     # 6. Unary Subtraction
     # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
     # Once `b` is gone, drop `-` and `x`.
-    r = RuleSet()
+    r = RuleSet(6)
+
     # Go to the end.
     r.right(INIT, "$i", i="|-x")
     # At end of `b`.
@@ -223,15 +269,18 @@ def unary_subtraction() -> RuleSet:
     r.add("BEGIN", "-", "CLEAN", "_", L)
     r.add("CLEAN", "x", "CLEAN", "_", L)
     r.add("CLEAN", "$i", HALT, "$i", R, i="|_")
+
+    r.test("|||||-||", "|||"),  # 5-2=3
+    r.test(   "||-||",    ""),  # 2-2=0
+
     return r
 
 
-def letter_mark():
+def letter_mark() -> RuleSet:
     # 7. Letter Mark
     """Generate state logic to wrap `w` and `ch` in `[]`.
 
     There are 31 chars to track that all need their own states.
-    Auto-generate those state rules.
 
     Strategy:
     * Begin at start of word.
@@ -242,39 +291,42 @@ def letter_mark():
     """
     letters = set(string.ascii_lowercase + "-äöõü")
     extras = set("[]=")
-    rules = []
+    r = RuleSet(7)
+
     # Move to the end.
-    rules += [f"INIT {letter} INIT {letter} R" for letter in letters]
+    r.right(INIT, "$i", i=letters)
     # Add a `=` then return to start.
-    rules += ["INIT _ GO_START = L"]
-    rules += [f"GO_START {letter} GO_START {letter} L" for letter in letters | extras]
-    rules += ["GO_START _ START _ R"]
+    r.add(INIT, "_", "GO_START", "=", L)
+    r.left("GO_START", "$i", i=letters | extras)
+    r.add("GO_START", "_", "START", "_", R)
     # Once at the start, copy letter to state.
-    rules += [f"START {letter} COPY_{letter} _ R" for letter in letters - {"c"}]
+    r.add("START", "$i", "COPY_$i", "_", R, i=letters - {"c"})
     # `c` gets special handling to detect `ch`.
-    rules += ["START c MAYBE_c _ R"]
-    rules += ["MAYBE_c h COPY_ch _ R"]
-    rules += [f"MAYBE_c {letter} COPY_c {letter} R" for letter in (letters | extras) - {"h"}]
+    r.add("START", "c", "MAYBE_c", "_", R)
+    r.add("MAYBE_c", "h", "COPY_ch", "_", R)
+    r.add(f"MAYBE_c", "$i", "COPY_c", "$i", R, i=(letters | extras) - {"h"})
     # Go to the end so we can output the copy.
-    rules += [f"COPY_{letter} {other} COPY_{letter} {other} R" for letter in letters | {"ch"} for other in letters | extras]
+    r.right("COPY_${i}", "$j", i=letters | {"ch"}, j=letters | extras)
     # Output the letter then return. `w` and `ch` get special handling.
-    rules += [f"COPY_{letter} _ GO_START {letter} L" for letter in letters - {"w"}]
-    rules += [
-        # `w` => `[w]`
-        "COPY_w _ COPY_w1 [ R",
-        "COPY_w1 _ COPY_] w R",
-        # `ch` => `[ch]`
-        "COPY_ch _ COPY_ch1 [ R",
-        "COPY_ch1 _ COPY_ch2 c R",
-        "COPY_ch2 _ COPY_] h R",
-        "COPY_] _ GO_START ] L",
-    ]
+    r.add("COPY_${i}", "_", "GO_START", "$i", L, i=letters - {"w"})
+    # `w` => `[w]`
+    r.add("COPY_w", "_", "COPY_w1", "[", R)
+    r.add("COPY_w1", "_", "COPY_]", "w", R)
+    # `ch` => `[ch]`
+    r.add("COPY_ch", "_", "COPY_ch1", "[", R)
+    r.add("COPY_ch1", "_", "COPY_ch2", "c", R)
+    r.add("COPY_ch2", "_", "COPY_]", "h", R)
+    r.add("COPY_]", "_", "GO_START", "]", L)
     # End of input
-    rules += ["START = HALT _ R"]
-    return "\n".join(rules)
+    r.add("START", "=", "HALT", "_", R)
+
+    r.test("wõta-wastu-mu-soow-ja-chillitse-toomemäel", "[w]õta-[w]astu-mu-soo[w]-ja-[ch]illitse-toomemäel"),
+
+    return r
 
 
 def text_mirror():
+    # 8. Text Mirror
     """Generate state logic to reverse text.
 
     There are 31 chars to track that all need their own states.
@@ -289,30 +341,33 @@ def text_mirror():
     letters = set(string.ascii_lowercase + "-äöõü")
     extras = set("!=")
     rules = []
+    r = RuleSet(8)
+
     # Add a `=` then find the first letter.
-    rules += [f"INIT {letter} ADD_EQ {letter} L" for letter in letters]
-    rules += ["ADD_EQ _ F = R"]
-    rules += ["FIND_LETTER ! FIND_LETTER ! R"]
+    r.add(INIT, "$i", "ADD_EQ", "$i", L, i=letters)
+    r.add("ADD_EQ", "_", "F", "=", R)
+    r.right("F", "!")
     # Copy and tombstone.
-    rules += [f"FIND_LETTER {letter} COPY_{letter} ! R" for letter in letters]
-    rules += [f"COPY_{i} {j} COPY_{i}{j} ! L" for i in letters for j in letters | {"_"}]
-    rules += [f"COPY_{i}{j} {k} COPY_{i}{j} {k} L" for i in letters for j in letters | {"_"} for k in letters | extras]
+    r.add("F", "$i", "COPY_$i", "!", R, i=letters)
+    r.add("COPY_${i}", "$j", "COPY_${i}${j}", "!", L, i=letters, j=letters | {"_"})
+    r.left("COPY_${i}${j}", "${k}", i=letters, j=letters | {"_"}, k=letters | extras)
     # Found an opening. Record letter then return to the start.
-    rules += [f"COPY_{i}{j} _ PAST_{j} {i} L" for i in letters for j in letters | {"_"}]
-    rules += [f"PAST_{i} _ GO_EQ {i} R" for i in letters | {"_"}]
-    rules += [f"GO_EQ {letter} GO_EQ {letter} R" for letter in letters]
-    rules += ["GO_EQ = FIND_LETTER = R"]
+    r.add("COPY_${i}${j}", "_", "PAST_$j", "$i", L, i=letters, j=letters | {"_"})
+    r.add("PAST_${i}", "_", "GO_EQ", "$i", R, i=letters | {"_"})
+    r.right("GO_EQ", "$i", i=letters)
+    r.add("GO_EQ", "=", "F", "=", R)
     # Once there is nothing left to copy, clean up tombstones.
-    rules += [
-        "FIND_LETTER _ CLEANUP _ L",
-        "CLEANUP ! CLEANUP _ L",
-        "CLEANUP = HALT _ L",
-    ]
+    r.add("F", "_", "CLEANUP", "_", L)
+    r.add("CLEANUP", "!", "CLEANUP", "_", L)
+    r.add("CLEANUP", "=", "HALT", "_", L)
 
-    return "\n".join(rules).replace("FIND_LETTER", "F").replace("COPY_", "C")
+    r.test("hello-world", "dlrow-olleh"),
+
+    return r
 
 
-def unary_compare():
+def unary_comparison() -> RuleSet:
+    # 9. Unary Comparison
     """Generate state logic for unary compare.
 
     General solution:
@@ -322,34 +377,44 @@ def unary_compare():
 
     Limited solution: use the state as a counter. Increment on left. Decrement on right.
     """
-    general = """
-INIT       |  INIT        |  R   // Start at the `,`.
-INIT       ,  FIND_LEFT   ,  L   // Look for a left `|`.
-FIND_LEFT  x  FIND_LEFT   x  L   //
-FIND_LEFT  ,  FIND_LEFT   ,  L   //
-FIND_LEFT  _  EQ_OR_LT    _  R   // Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
-FIND_LEFT  |  FIND_RIGHT  x  R   // Look for a matching right `|`.
-FIND_RIGHT x  FIND_RIGHT  x  R   //
-FIND_RIGHT ,  FIND_RIGHT  ,  R   //
-FIND_RIGHT |  FIND_LEFT   x  L   // Matched. Go back to a left.
-FIND_RIGHT _  SET_GT      _  L   // Ran out of `|` on the right. We found one on the left so the left is larger (`>`).
-EQ_OR_LT   x  EQ_OR_LT    x  R   // Go to the right to check if it is `=` or `<`.
-EQ_OR_LT   ,  EQ_OR_LT    ,  R   // Go to the right to check if it is `=` or `<`.
-EQ_OR_LT   |  SET_LT      |  L   // Right has more, ie is bigger. Set `<`.
-EQ_OR_LT   _  SET_EQ      _  L   // Right has same. Set `=`.
-SET_GT     |  SET_GT      |  L   // Clean up the data.
-SET_LT     |  SET_LT      |  L
-SET_EQ     |  SET_EQ      |  L
-SET_GT     x  SET_GT      |  L
-SET_LT     x  SET_LT      |  L
-SET_EQ     x  SET_EQ      |  L
-SET_GT     ,  SET_GT      >  L
-SET_LT     ,  SET_LT      <  L
-SET_EQ     ,  SET_EQ      =  L
-SET_GT     _  HALT        _  R
-SET_LT     _  HALT        _  R
-SET_EQ     _  HALT        _  R
-"""
+    r = RuleSet(9)
+
+    # Start at the `,`.
+    r.right(INIT, "|")
+    # Look for a left `|`.
+    r.add("INIT", ",", "FIND_LEFT", ",", L)
+    r.left("FIND_LEFT", "$i", i="x,")
+    # Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
+    r.add("FIND_LEFT", "_", "EQ_OR_LT", "_", R)
+    # Look for a matching right `|`.
+    r.add("FIND_LEFT", "|", "FIND_RIGHT", "x", R)
+    #
+    r.right("FIND_RIGHT", "$i", i="x,")
+    # Matched. Go back to a left.
+    r.add("FIND_RIGHT", "|", "FIND_LEFT", "x", L)
+    # Ran out of `|` on the right. We found one on the left so the left is larger (`>`).
+    r.add("FIND_RIGHT", "_", "SET_GT", "_", L)
+    # Go to the right to check if it is `=` or `<`.
+    r.right("EQ_OR_LT", "$i", i="x,")
+    # Right has more, ie is bigger. Set `<`.
+    r.add("EQ_OR_LT", "|", "SET_LT", "|", L)
+    # Right has same. Set `=`.
+    r.add("EQ_OR_LT", "_", "SET_EQ", "_", L)
+    # Clean up the data.
+    r.left("SET_$i", "|", i=["GT", "LT", "EQ"])
+    r.add("SET_$i", "x", "SET_$i", "|", L, i=["GT", "LT", "EQ"])
+    r.add("SET_GT", ",", "SET_GT", ">", L)
+    r.add("SET_LT", ",", "SET_LT", "<", L)
+    r.add("SET_EQ", ",", "SET_EQ", "=", L)
+    r.add("SET_$i", "_", "HALT", "_", R, i=["GT", "LT", "EQ"])
+
+    r.test("|||,||||", "|||<||||"),  # 3 > 4
+    r.test("||||,|||", "||||>|||"),  # 4 > 3
+    r.test( "|||,|||",  "|||=|||"),  # 3 = 3
+    r.test( "||||||||||,|||",  "||||||||||>|||"),
+
+    return r
+
     # This can be made shorter by guessing a result on the first pass over the `,`.
     # If the `,` is replaced with `>` on the first pass and `>` turns out to be correct,
     # we can halt without needing to return and update.
@@ -385,109 +450,100 @@ SET_EQ     _  HALT        _  R
     return "\n".join(rules)
 
 
-def line_count():
+def lines_count() -> RuleSet:
+    # 10. Lines Count
     letters = set(string.ascii_lowercase + "-äöõü")
-    rules = [
-        f"INIT {i} INIT ! R" for i in letters
-    ] + [
-        f"INIT  + ADD   +  L",
-        f"ADD   ! ADD   !  L",
-        f"ADD   _ RET   |  R",
-        f"ADD   | INC   |  R",
-        f"INC   ! RET   |  R",
-        f"RET   ! RET   !  R",
-        f"RET   + INIT  !  R",
-        f"INIT  _ CLEAN _  L",
-        f"CLEAN ! CLEAN _  L",
-        f"CLEAN _ HALT  |  R",
-        f"CLEAN | END   |  R",
-        f"END   _ HALT  |  R",
-    ]
-    return "\n".join(rules)
+    r = RuleSet(10)
+
+    r.add(INIT, "$i", INIT, "!", R, i=letters)
+    r.add(INIT, "+", "ADD", "+", L)
+    r.left("ADD", "!")
+    r.add("ADD", "_", "RET", "|", R)
+    r.add("ADD", "|", "INC", "|", R)
+    r.add("INC", "!", "RET", "|", R)
+    r.right("RET", "!")
+    r.add("RET", "+", "INIT", "!", R)
+    r.add(INIT, "_", "CLEAN", "_", L)
+    r.add("CLEAN", "!", "CLEAN", "_", L)
+    r.add("CLEAN", "|", "END", "|", R)
+    r.add("CLEAN", "_", HALT, "|", R)
+    r.add("END", "_", HALT, "|", R)
+
+    r.test("hello+world+how-are-you", "|||"),
+    r.test("hello", "|"),
+
+    return r
 
 
-def decimal_increment():
-    rules = [
-        f"INIT     {i}       INIT     {i}  R" for i in range(10)
-    ] + [
-        f"INIT       _        INC       _  L",
-    ] + [
-        # Increment 0-8 and end, no carry.
-        f"INC      {i}       HALT {i + 1}  R" for i in range(9)
-    ] + [
-        f"INC        9        INC       0  L",
-        f"INC        _       HALT       1  R",
-    ]
-    return "\n".join(rules)
+def decimal_increment() -> RuleSet:
+    # 11. Decimal Increment
+    r = RuleSet(11)
+    r.right(INIT, "$i", i=range(10))
+    r.add(INIT, "_", "INC", "_", L)
+    # Increment 0-8 and end, no carry.
+    for i in range(9):
+        r.add("INC", i, HALT, i + 1, R)
+    # Carry over on a 9.
+    r.add("INC", 9, "INC", 0, L)
+    r.add("INC", "_", HALT, 1, R)
+
+    for i in range(0, 111, 7):
+        r.test(str(i), str(i + 1))
+
+    return r
 
 
 def decimal_addition():
-    rules = [
-        f"INIT     {i}       INIT     {i}  L" for i in string.digits
-    ] + [
-        f"INIT       _       GET_A      =  R"
-    ] + [
-        f"GET_A    {i}       GET_A    {i}  R" for i in string.digits + "="
-    ] + [
-        f"GET_A_C    {i}       GET_A_C    {i}  R" for i in string.digits + "="
-    ] + [
-        f"GET_A      +       PICK_A     +  L",
-        f"GET_A      |       PICK_A     |  L",
-        f"PICK_A     |       PICK_A     |  L",
-        f"GET_A_C    +       PICK_A_C   +  L",
-        f"GET_A_C    |       PICK_A_C   |  L",
-        f"PICK_A_C   |       PICK_A_C   |  L",
-    ] + [
-        f"PICK_A   {i}       GO_B{i}    |  R" for i in range(10)
-    ] + [
-        f"PICK_A_C   {i}       GO_B{i+1}    |  R" for i in range(10)
-    ] + [
-        f"PICK_A       =       COPY      =  R",
-        f"PICK_A_C     =       GO_B1     =  R"
-    ] + [
-        f"GO_B{i}    |       GO_B{i}    |  R" for i in range(11)
-    ] + [
-        f"GO_B{i}    +       GET_B{i}  +  R" for i in range(11)
-    ] + [
-        f"GET_B{i} {j}      GET_B{i} {j} R" for i in range(11) for j in range(10)
-    ] + [
-        f"GET_B{i}  _       PICK_B{i}  _ L" for i in range(11)
-    ] + [
-        f"PICK_B{i}  {j}      ADD{int(i)+int(j)}    _ L" for i in range(11) for j in string.digits
-    ] + [
-        f"PICK_B{i}    +      COPY_{i}              _ L" for i in range(11)
-    ] + [
-        f"ADD{i}  {j}      ADD{i}    {j} L" for i in range(20) for j in string.digits + "|+="
-    ] + [
-        f"ADD{i}    _      GET_A     {i % 10} R" for i in range(10)
-    ] + [
-        f"ADD{i}    _      GET_A_C     {i % 10} R" for i in range(10, 20)
-    ] + [
-        f"COPY    {i}      COPY     {i}    R" for i in string.digits + "|+="
-    ] + [
-        f"COPY_C  {i}      COPY_C   {i}    R" for i in string.digits + "|+="
-    ] + [
-        f"COPY      _      COPY_G     _    L",
-        f"COPY_C    _      COPY_C_G   _    L",
-        f"COPY_G    =      HALT       _    L",
-        f"COPY_C_G  =      COPY_1     =    L",
-    ] + [
-        f"COPY_G  {i}      COPY_G     _    L" for i in "_|+"
-    ] + [
-        f"COPY_C_G {i}     COPY_C_G   _    L" for i in "_|+"
-    ] + [
-        f"COPY_G  {i}      COPY_{i}   _    L" for i in range(10)
-    ] + [
-        f"COPY_C_G {i}     COPY_{i+1}   _    L" for i in range(10)
-    ] + [
-        f"COPY_{i} {j}     COPY_{i}  {j}   L" for i in range(11) for j in string.digits + "|+="
-    ] + [
-        f"COPY_{i}  _      COPY      {i}   R" for i in range(10)
-    ] + [
-        f"COPY_{10} _      COPY_C      0   R"
-    ] + [
-    ]
-    return "\n".join(rules)
+    # 12. Decimal Addition
+    r = RuleSet(12)
+
+    r.left(INIT, "$i", i=range(10))
+    r.add(INIT, "_", "GET_A", "=", R)
+    r.add("GET_A", "${i}", "GET_A", "${i}", R, i=string.digits + "=")
+    r.add("GET_A_C", "${i}", "GET_A_C", "${i}", R, i=string.digits + "=")
+    r.add("GET_A", "+", "PICK_A", "+", L,)
+    r.add("GET_A", "|", "PICK_A", "|", L,)
+    r.add("PICK_A", "|", "PICK_A", "|", L,)
+    r.add("GET_A_C", "+", "PICK_A_C", "+", L,)
+    r.add("GET_A_C", "|", "PICK_A_C", "|", L,)
+    r.add("PICK_A_C", "|", "PICK_A_C", "|", L,)
+    r.add("PICK_A", "${i}", "GO_B${i}", "|", R, i=range(10))
+    for i in range(10):
+        r.add("PICK_A_C", i, f"GO_B{i + 1}", "|", R)
+    r.add("PICK_A", "=", "COPY", "=", R,)
+    r.add("PICK_A_C", "=", "GO_B1", "=", R)
+    r.add("GO_B${i}", "|", "GO_B${i}", "|", R, i=range(11))
+    r.add("GO_B${i}", "+", "GET_B${i}", "+", R, i=range(11))
+    r.add("GET_B${i}", "${j}", "GET_B${i}", "${j}", R, i=range(11), j=range(10))
+    r.add("GET_B${i}", "_", "PICK_B${i}", "_", L, i=range(11))
+    for i in range(11):
+        for j in range(10):
+            r.add(f"PICK_B{i}", j, f"ADD{i + j}", "_", L)
+    r.add("PICK_B${i}", "+", "COPY_${i}", "_", L, i=range(11))
+    r.add("ADD${i}", "${j}", "ADD${i}", "${j}", L, i=range(20), j=string.digits + "|+=")
+    for i in range(10):
+        r.add(f"ADD{i}", "_", "GET_A", i % 10, R)
+    for i in range(10, 20):
+        r.add(f"ADD{i}", "_", "GET_A_C", i % 10, R)
+    r.add("COPY", "${i}", "COPY", "${i}", R, i=string.digits + "|+=")
+    r.add("COPY_C", "${i}", "COPY_C", "${i}", R, i=string.digits + "|+=")
+    r.add("COPY", "_", "COPY_G", "_", L,)
+    r.add("COPY_C", "_", "COPY_C_G", "_", L,)
+    r.add("COPY_G", "=", "HALT", "_", L,)
+    r.add("COPY_C_G", "=", "COPY_1", "=", L,)
+    r.add("COPY_G", "${i}", "COPY_G", "_", L, i="_|+")
+    r.add("COPY_C_G", "${i}", "COPY_C_G", "_", L, i="_|+")
+    r.add("COPY_G", "${i}", "COPY_${i}", "_", L, i=range(10))
+    for i in range(10):
+        r.add("COPY_C_G", i, f"COPY_{i+1}", "_", L)
+    r.add("COPY_${i}", "${j}", "COPY_${i}", "${j}", L, i=range(11), j=string.digits + "|+=")
+    r.add("COPY_${i}", "_", "COPY", "${i}", R, i=range(10))
+    r.add("COPY_10", "_", "COPY_C", "0", R)
+
+    for i, j in [(1, 2), (19, 82), (888, 9999999), (999999, 4444)]:
+        r.test(f"{i}+{j}", f"{i+j}")
+
+    return r
 
 
 SOLUTIONS = [
@@ -499,95 +555,27 @@ SOLUTIONS = [
     unary_subtraction(),
     letter_mark(),
     text_mirror(),
-    unary_compare(),
-    line_count(),
+    unary_comparison(),
+    lines_count(),
     decimal_increment(),
     decimal_addition(),
 ]
-
-TESTS = [
-    [
-        (  "|+|",   "||"),  # 1+1=2
-        ("||+||", "||||"),  # 2+2=4
-    ],
-    [
-        ( "||", "E"),
-        ("|||", "O"),
-    ],
-    [
-        (  "1",  "10"),  # 1+1=2
-        ( "10",  "11"),  # 2+1=3
-        ( "11", "100"),  # 3+1=4
-        ("100", "101"),  # 4+1=5
-        ("11010101", "11010110"),
-    ],
-    [
-        (   "|*||",        "||"),  # 1x2=2
-        (  "||*||",      "||||"),  # 2x2=4
-        ( "||*|||",    "||||||"),  # 2x3=6
-        ("|||*|||", "|||||||||"),  # 3x3=9
-    ],
-    [
-        ("|:|||,|||||,||||||||,||||", "|||"),
-        ("||:|||,|||||,||||||||,||||", "|||||"),
-        ("||||:|||,|||||,||||||||,||||", "||||"),
-    ],
-    [
-        ("|||||-||", "|||"),  # 5-2=3
-        (   "||-||",    ""),  # 2-2=0
-    ],
-    [
-        ("wõta-wastu-mu-soow-ja-chillitse-toomemäel", "[w]õta-[w]astu-mu-soo[w]-ja-[ch]illitse-toomemäel"),
-    ],
-    [
-        ("hello-world", "dlrow-olleh"),
-    ],
-    [
-        ("|||,||||", "|||<||||"),  # 3 > 4
-        ("||||,|||", "||||>|||"),  # 4 > 3
-        ( "|||,|||",  "|||=|||"),  # 3 = 3
-        ( "||||||||||,|||",  "||||||||||>|||"),
-    ],
-    [
-        ("hello+world+how-are-you", "|||"),
-        ("hello", "|"),
-    ],
-    [(str(i), str(i + 1)) for i in range(0, 111, 7)],
-    [
-        (f"{i}+{j}", f"{i+j}") for i, j in [
-            (1, 2), (19, 82), (888, 9999999), (999999, 4444)
-        ]
-    ]
-]
-
-
-def run_tests(puzzle: int) -> None:
-    program = str(SOLUTIONS[puzzle - 1])
-    tests = TESTS[puzzle - 1]
-    transition_rules = logic_mill.parse_transition_rules(program)
-    mill = logic_mill.LogicMill(transition_rules)
-    for idx, (data, want) in enumerate(tests):
-        result, steps = mill.run(data, verbose=False)
-        if result == want:
-            print(f"{puzzle:>2}.t{idx:<2} PASS")
-        else:
-            result, steps = mill.run(data, verbose=True)
-            raise RuntimeError(f"{puzzle}.t{idx}: FAIL")
 
 
 @click.command()
 @click.option("-d", "puzzle", type=int, help="Puzzle number")
 @click.option("--out", type=click.Path(path_type=pathlib.Path), required=False)
 def main(puzzle: int, out: pathlib.Path | None) -> None:
+    if puzzle == 0:
+        for r in SOLUTIONS:
+            r.check()
+        return
     if puzzle is None:
         puzzle = len(SOLUTIONS)
-    if puzzle == 0:
-        for i in range(1, len(SOLUTIONS) + 1):
-            run_tests(i)
-        return
-    run_tests(puzzle)
+    ruleset = SOLUTIONS[puzzle]
+    ruleset.check()
     if out:
-        out.write_text(str(SOLUTIONS[puzzle - 1]))
+        out.write_text(ruleset.program())
 
 
 if __name__ == "__main__":
