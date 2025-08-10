@@ -228,6 +228,90 @@ def line_count():
     ]
     return "\n".join(rules)
 
+
+def decimal_increment():
+    rules = [
+        f"INIT     {i}       INIT     {i}  R" for i in range(10)
+    ] + [
+        f"INIT       _        INC       _  L",
+    ] + [
+        # Increment 0-8 and end, no carry.
+        f"INC      {i}       HALT {i + 1}  R" for i in range(9)
+    ] + [
+        f"INC        9        INC       0  L",
+        f"INC        _       HALT       1  R",
+    ]
+    return "\n".join(rules)
+
+
+def decimal_addition():
+    rules = [
+        f"INIT     {i}       INIT     {i}  L" for i in string.digits
+    ] + [
+        f"INIT       _       GET_A      =  R"
+    ] + [
+        f"GET_A    {i}       GET_A    {i}  R" for i in string.digits + "="
+    ] + [
+        f"GET_A_C    {i}       GET_A_C    {i}  R" for i in string.digits + "="
+    ] + [
+        f"GET_A      +       PICK_A     +  L",
+        f"GET_A      |       PICK_A     |  L",
+        f"PICK_A     |       PICK_A     |  L",
+        f"GET_A_C    +       PICK_A_C   +  L",
+        f"GET_A_C    |       PICK_A_C   |  L",
+        f"PICK_A_C   |       PICK_A_C   |  L",
+    ] + [
+        f"PICK_A   {i}       GO_B{i}    |  R" for i in range(10)
+    ] + [
+        f"PICK_A_C   {i}       GO_B{i+1}    |  R" for i in range(10)
+    ] + [
+        f"PICK_A       =       COPY      =  R",
+        f"PICK_A_C     =       GO_B1     =  R"
+    ] + [
+        f"GO_B{i}    |       GO_B{i}    |  R" for i in range(11)
+    ] + [
+        f"GO_B{i}    +       GET_B{i}  +  R" for i in range(11)
+    ] + [
+        f"GET_B{i} {j}      GET_B{i} {j} R" for i in range(11) for j in range(10)
+    ] + [
+        f"GET_B{i}  _       PICK_B{i}  _ L" for i in range(11)
+    ] + [
+        f"PICK_B{i}  {j}      ADD{int(i)+int(j)}    _ L" for i in range(11) for j in string.digits
+    ] + [
+        f"PICK_B{i}    +      COPY_{i}              _ L" for i in range(11)
+    ] + [
+        f"ADD{i}  {j}      ADD{i}    {j} L" for i in range(20) for j in string.digits + "|+="
+    ] + [
+        f"ADD{i}    _      GET_A     {i % 10} R" for i in range(10)
+    ] + [
+        f"ADD{i}    _      GET_A_C     {i % 10} R" for i in range(10, 20)
+    ] + [
+        f"COPY    {i}      COPY     {i}    R" for i in string.digits + "|+="
+    ] + [
+        f"COPY_C  {i}      COPY_C   {i}    R" for i in string.digits + "|+="
+    ] + [
+        f"COPY      _      COPY_G     _    L",
+        f"COPY_C    _      COPY_C_G   _    L",
+        f"COPY_G    =      HALT       _    L",
+        f"COPY_C_G  =      COPY_1     =    L",
+    ] + [
+        f"COPY_G  {i}      COPY_G     _    L" for i in "_|+"
+    ] + [
+        f"COPY_C_G {i}     COPY_C_G   _    L" for i in "_|+"
+    ] + [
+        f"COPY_G  {i}      COPY_{i}   _    L" for i in range(10)
+    ] + [
+        f"COPY_C_G {i}     COPY_{i+1}   _    L" for i in range(10)
+    ] + [
+        f"COPY_{i} {j}     COPY_{i}  {j}   L" for i in range(11) for j in string.digits + "|+="
+    ] + [
+        f"COPY_{i}  _      COPY      {i}   R" for i in range(10)
+    ] + [
+        f"COPY_{10} _      COPY_C      0   R"
+    ] + [
+    ]
+    return "\n".join(rules)
+
 SOLUTIONS = [
     """
 // Move to the right. Replace + with |.
@@ -311,6 +395,8 @@ CLEAN     _ HALT       _ R
     text_mirror(),
     unary_compare(),
     line_count(),
+    decimal_increment(),
+    decimal_addition(),
 ]
 
 TESTS = [
@@ -360,6 +446,12 @@ TESTS = [
         ("hello+world+how-are-you", "|||"),
         ("hello", "|"),
     ],
+    [(str(i), str(i + 1)) for i in range(0, 111, 7)],
+    [
+        (f"{i}+{j}", f"{i+j}") for i, j in [
+            (1, 2), (19, 82), (888, 9999999), (999999, 4444)
+        ]
+    ]
 ]
 
 
@@ -381,15 +473,15 @@ def run_tests(puzzle: int) -> None:
 @click.option("-d", "puzzle", type=int, help="Puzzle number")
 @click.option("--out", type=click.Path(path_type=pathlib.Path), required=False)
 def main(puzzle: int, out: pathlib.Path | None) -> None:
+    if puzzle is None:
+        puzzle = len(SOLUTIONS)
     if puzzle == 0:
         for i in range(1, len(SOLUTIONS) + 1):
             run_tests(i)
-    elif puzzle is None:
-        run_tests(len(SOLUTIONS))
-    else:
-        run_tests(puzzle)
+        return
+    run_tests(puzzle)
     if out:
-        out.write_text(SOLUTIONS[puzzle])
+        out.write_text(SOLUTIONS[puzzle - 1])
 
 
 if __name__ == "__main__":
