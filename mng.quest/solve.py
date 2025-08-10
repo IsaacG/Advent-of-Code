@@ -3,12 +3,231 @@
 import pathlib
 import string
 import sys
+import typing
 
 import click
 import logic_mill
 
+INIT = "INIT"
+HALT = "HALT"
+R    = "R"
+L    = "L"
+
+
+class RuleSet:
+
+    def __init__(self):
+        self.rules = []
+
+    def add(
+        self,
+        start: str,
+        inp: str | int,
+        end: str,
+        out: str | int,
+        direction: str,
+        **fmt: dict[str, typing.Iterable[str | int]],
+    ) -> None:
+        """Add a new rule, with format support."""
+        rule = f"{start} {inp} {end} {out} {direction}"
+        if not fmt:
+            self.rules.append(rule)
+            return
+        rules = [string.Template(rule)]
+        for key, vals in fmt.items():
+            rules = [string.Template(r.safe_substitute(**{key: val})) for val in vals for r in rules]
+        self.rules.extend(r.substitute() for r in rules)
+
+    def right(self, start: str, inp: str | int, **fmt: typing.Iterable[str | int]) -> None:
+        """Add a rule where the state and tape do not change."""
+        self.add(start, inp, start, inp, R, **fmt)
+
+    def left(self, start: str, inp: str | int, **fmt: typing.Iterable[str | int]) -> None:
+        """Add a rule where the state and tape do not change."""
+        self.add(start, inp, start, inp, L, **fmt)
+
+    def __str__(self) -> str:
+        return "\n".join(self.rules)
+
+
+def unary_addition() -> RuleSet:
+    # 1. Unary Addition
+    r = RuleSet()
+    # Erase the first | so we can replace the + with |
+    r.add(INIT, "|", "M", "_", R)
+    # Go to the + then replace it.
+    r.right("M", "|")
+    r.add("M", "+", HALT, "|", R)
+    return r
+
+
+def unary_even_odd() -> RuleSet:
+    # 2. Unary Even Odd
+    r = RuleSet()
+    # Move left to right, tracking even or odd, and clearing bits.
+    # When we get to the end, write the state.
+    r.add(INIT,  "|",  "O",  "_", R)
+    r.add( "E",  "|",  "O",  "_", R)
+    r.add( "O",  "|",  "E",  "_", R)
+    r.add("$i",  "_", HALT, "$i", R, i="EO")
+    return r
+
+
+def binary_increment() -> RuleSet:
+    # 3. Binary Increment
+    r = RuleSet()
+    r.add(    INIT,   0,     HALT,   1, R)
+    r.add(    INIT,   1, "GO_END",   1, R)
+    r.right("GO_END",   "$i", i="01")
+    # Work right to left, incrementing and tracking a carry bit. "CARRY" means add one.
+    r.add("GO_END", "_",  "CARRY", "_", L)
+    r.add( "CARRY",   0,     HALT,   1, L)
+    r.add( "CARRY",   1,  "CARRY",   0, L)
+    r.add( "CARRY", "_",     HALT,   1, L)
+    return r
+
+
+def unary_multiplication() -> RuleSet:
+    # 4. Unary Multiplication
+    # Unary multiplication a*b can be done by copying the "b" value "a" times.
+    # We can do something "a" times by removing one `|` from `a` after each operation.
+    # We can copy `b` by looking for a `|`, going to the end and adding a `|` then returning to replace the `|` with another char.
+    # Repeat until all `|` are changed, then reset.
+    #
+    # Start state: reduce `a` by one `|`. Move past `*`. Change to copy mode.
+    # Copy mode: change first `|` in `b` to `T`. Move to result. Write `|`. Return to first `|` of `b`. Done copying.
+    # Done copying: reset `b` and return to initial state.
+    r = RuleSet()
+    # Change to start and shift left.
+    r.add(INIT, "|", "START", "|", L)
+    # Move to first | of a.
+    r.right("START", "_")
+    # Reduce `a` by one. Go copy `b`.
+    r.add("START", "|", "GO_COPY", "_", R)
+    # Look for start of `b`.
+    r.right("GO_COPY", "|")
+    # Start copying `b`.
+    r.add("GO_COPY", "*", "COPY", "*", R)
+    # Mark a `|` from `b` as copied. Now go add it to the result.
+    r.add("COPY", "|", "GO_END_B", "T", R)
+    # Find the end of `b`.
+    r.right("GO_END_B", "|")
+    # Find the end of `c`.
+    r.add("GO_END_B", "_", "GO_END_C", "_", R)
+    # Find the end of `b`.
+    r.right("GO_END_C", "|")
+    # Add one to `c`.
+    r.add("GO_END_C", "_", "RET_TO_B", "|", L)
+    # Return to the first `|` of `b`.
+    r.left("RET_TO_B", "$i", i="|_")
+    # Return to the first `|` of `b`.
+    r.add("RET_TO_B", "T", "COPY", "T", R)
+    # Trying to copy from `b` got got a `_`: all done copying `b`. Reset `b`.
+    r.add("COPY", "_", "RESET_B", "_", L)
+    # Reset `b`.
+    r.add("RESET_B", "T", "RESET_B", "|", L)
+    # Done resetting `b`. Return to start of `a`.
+    r.add("RESET_B", "*", "RET_TO_A", "*", L)
+    # Done resetting `b`. Return to start of `a`.
+    r.left("RET_TO_A", "|")
+    # Back at the start of `a`.
+    r.add("RET_TO_A", "_", "START", "_", R)
+    # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
+    r.add("START", "*", "RM_B", "_", R)
+    # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
+    r.add("RM_B", "|", "RM_B", "_", R)
+    # Done removing `b`. Multiplication completed.
+    r.add("RM_B", "_", HALT, "_", R)
+    return r
+
+
+def find_element_in_unary_array():
+    # 5. Find Element in Unary Array
+    # Unary index. Minus one index. For each index `|`, remove an element from the array.
+    # When we run out of index `|`, remove everything after the first number.
+    # == General Solution ==
+    r = RuleSet()
+    # Start by dropping the leading `|`. At start of to-remove count.
+    r.add("INIT", "|", "START", "_", "R")
+    # Go to the list
+    r.add("START", "|", "GO_LIST", "_", "R")
+    r.add("GO_LIST", "|", "GO_LIST", "|", "R")
+    # In the list. Go to the first number.
+    r.add("GO_LIST", ":", "GO_FIRST", ":", "R")
+    r.add("GO_FIRST", "x", "GO_FIRST", "x", "R")
+    # Drop the first number.
+    r.add("GO_FIRST", "|", "RM_FIRST", "x", "R")
+    r.add("RM_FIRST", "|", "RM_FIRST", "x", "R")
+    # Return to the start.
+    r.add("RM_FIRST", ",", "RETURN_I", "x", "L")
+    r.add("RETURN_I", "x", "RETURN_I", "x", "L")
+    r.add("RETURN_I", ":", "RETURN_I", ":", "L")
+    r.add("RETURN_I", "|", "RETURN_I", "|", "L")
+    # Got back to the index.
+    r.add("RETURN_I", "_", "START", "_", "R")
+    # Out of index values. Tidy up before the first element.
+    r.add("START", ":", "CLEAN_PRE", "_", "R")
+    r.add("CLEAN_PRE", "x", "CLEAN_PRE", "_", "R")
+    # Skip the first element.
+    r.add("CLEAN_PRE", "|", "CLEAN_PRE", "|", "R")
+    # Clean remaining elements.
+    r.add("CLEAN_PRE", ",", "CLEAN_POST", "_", "R")
+    # No following items.
+    r.add("CLEAN_PRE", "_", "HALT", "_", "R")
+    r.add("CLEAN_POST", "|", "CLEAN_POST", "_", "R")
+    r.add("CLEAN_POST", ",", "CLEAN_POST", "_", "R")
+    r.add("CLEAN_POST", "_", "HALT", "_", "L")
+    # return r
+
+    # == Non-general solution ==
+    r = RuleSet()
+    states = 100
+    rules = []
+    r.add(INIT, "|", "DROP_0", "_", R)
+    for n in range(states):
+        r.add(f"DROP_{n}", "|",  f"DROP_{n+1}", "_", R)
+        r.add(f"DROP_{n}", ":", f"FIND_RM_{n}", "_", R)
+    r.add("FIND_RM_0", "|", "SKIP", "|", R)
+    for n in range(1, states):
+        r.add(f"FIND_RM_{n}",   "|", f"FIND_RM_{n}", "_", R)
+        r.add(f"FIND_RM_{n+1}", ",", f"FIND_RM_{n}", "_", R)
+
+    r.add("FIND_RM_1", ",", "SKIP", "_", R)
+    r.right("SKIP", "|")
+    r.add("SKIP", ",", "TRIM", "_", R)
+    r.add("SKIP", "_", "HALT", "_", R)
+    r.add("TRIM", "_", "HALT", "_", R)
+    r.add("TRIM", ",", "TRIM", "_", R)
+    r.add("TRIM", "|", "TRIM", "_", R)
+    return r
+
+
+def unary_subtraction() -> RuleSet:
+    # 6. Unary Subtraction
+    # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
+    # Once `b` is gone, drop `-` and `x`.
+    r = RuleSet()
+    # Go to the end.
+    r.right(INIT, "$i", i="|-x")
+    # At end of `b`.
+    r.add(INIT, "_", "BEGIN", "_", L)
+    # Drop one from `b`. Find `-`.
+    r.add("BEGIN", "|", "GO_SIGN", "_", L)
+    r.left("GO_SIGN", "|")
+    # Find a value to drop from `a`.
+    r.add("GO_SIGN", "-", "GO_ONE", "-", L)
+    r.add("GO_ONE", "x", "GO_ONE", "x", L)
+    # Drop one from `a`. Return to end.
+    r.add("GO_ONE", "|", "INIT", "x", R)
+    # No more `b`. Tidy up.
+    r.add("BEGIN", "-", "CLEAN", "_", L)
+    r.add("CLEAN", "x", "CLEAN", "_", L)
+    r.add("CLEAN", "$i", HALT, "$i", R, i="|_")
+    return r
+
 
 def letter_mark():
+    # 7. Letter Mark
     """Generate state logic to wrap `w` and `ch` in `[]`.
 
     There are 31 chars to track that all need their own states.
@@ -92,48 +311,6 @@ def text_mirror():
 
     return "\n".join(rules).replace("FIND_LETTER", "F").replace("COPY_", "C")
 
-
-def index():
-    general = """
-INIT       | START      _ R   // Start by dropping the leading `|`. At start of to-remove count.
-START      | GO_LIST    _ R   // Go to the list
-GO_LIST    | GO_LIST    | R   //
-GO_LIST    : GO_FIRST   : R   // In the list. Go to the first number.
-GO_FIRST   x GO_FIRST   x R   //
-GO_FIRST   | RM_FIRST   x R   // Drop the first number.
-RM_FIRST   | RM_FIRST   x R   //
-RM_FIRST   , RETURN_I   x L   // Return to the start.
-RETURN_I   x RETURN_I   x L   //
-RETURN_I   : RETURN_I   : L   //
-RETURN_I   | RETURN_I   | L   //
-RETURN_I   _ START      _ R   // Got back to the index.
-START      : CLEAN_PRE  _ R   // Out of index values. Tidy up before the first element.
-CLEAN_PRE  x CLEAN_PRE  _ R   //
-CLEAN_PRE  | CLEAN_PRE  | R   // Skip the first element.
-CLEAN_PRE  , CLEAN_POST _ R   // Clean remaining elements.
-CLEAN_PRE  _ HALT       _ R   // No following items.
-CLEAN_POST | CLEAN_POST _ R   //
-CLEAN_POST , CLEAN_POST _ R   //
-CLEAN_POST _ HALT       _ L   //
-"""
-    states = 100
-    rules = []
-    rules += [ "INIT        |  DROP_0      _   R"]
-    rules += [f"DROP_{n}      |  DROP_{n+1}      _   R" for n in range(states)]
-    rules += [f"DROP_{n}      :  FIND_RM_{n}   _   R" for n in range(states)]
-    rules += [f"FIND_RM_0     |  SKIP          |   R"]
-    rules += [f"FIND_RM_{n} |  FIND_RM_{n} _   R" for n in range(1, states)]
-    rules += [f"FIND_RM_{n+1}   ,  FIND_RM_{n}   _   R" for n in range(1, states)]
-
-    rules += [ "FIND_RM_1   ,  SKIP  _   R"]
-    rules += [ "SKIP        |  SKIP        |   R"]
-    rules += [ "SKIP        ,  TRIM        _   R"]
-    rules += [ "SKIP        _  HALT        _   R"]
-    rules += [ "TRIM        _  HALT        _   R"]
-    rules += [ "TRIM        ,  TRIM        _   R"]
-    rules += [ "TRIM        |  TRIM        _   R"]
-
-    return "\n".join(rules)
 
 def unary_compare():
     """Generate state logic for unary compare.
@@ -312,85 +489,14 @@ def decimal_addition():
     ]
     return "\n".join(rules)
 
+
 SOLUTIONS = [
-    """
-// Move to the right. Replace + with |.
-INIT | M _ R
-M | M | R
-M + HALT | R
-""",
-    # even or odd
-    """
-// Move left to right, tracking even or odd, and clearing bits.
-// When we get to the end, write the state.
-INIT | O _ R
-O | E _ R
-E | O _ R
-O _ HALT O R
-E _ HALT E R
-""",
-    """
-INIT   1   GO_END   1   R
-INIT   0   HALT     1   R
-GO_END 1   GO_END   1   R
-GO_END 0   GO_END   0   R
-// Work right to left, incrementing and tracking a carry bit. "CARRY" means add one.
-GO_END _   CARRY    _   L
-CARRY  0   HALT     1   L
-CARRY  1   CARRY    0   L
-CARRY  _   HALT     1   L
-""",
-    # Unary multiplication a*b can be done by copying the "b" value "a" times.
-    # We can do something "a" times by removing one `|` from `a` after each operation.
-    # We can copy `b` by looking for a `|`, going to the end and adding a `|` then returning to replace the `|` with another char.
-    # Repeat until all `|` are changed, then reset.
-    #
-    # Start state: reduce `a` by one `|`. Move past `*`. Change to copy mode.
-    # Copy mode: change first `|` in `b` to `T`. Move to result. Write `|`. Return to first `|` of `b`. Done copying.
-    # Done copying: reset `b` and return to initial state.
-    """
-INIT      | START     | L   // Change to start and shift left.
-START     _ START     _ R   // Move to first | of a.
-START     | GO_COPY   _ R   // Reduce `a` by one. Go copy `b`.
-GO_COPY   | GO_COPY   | R   // Look for start of `b`.
-GO_COPY   * COPY      * R   // Start copying `b`.
-COPY      | GO_END_B  T R   // Mark a `|` from `b` as copied. Now go add it to the result.
-GO_END_B  | GO_END_B  | R   // Find the end of `b`.
-GO_END_B  _ GO_END_C  _ R   // Find the end of `c`.
-GO_END_C  | GO_END_C  | R   // Find the end of `b`.
-GO_END_C  _ RET_TO_B  | L   // Add one to `c`.
-RET_TO_B  | RET_TO_B  | L   // Return to the first `|` of `b`.
-RET_TO_B  _ RET_TO_B  _ L   // Return to the first `|` of `b`.
-RET_TO_B  T COPY      T R   // Return to the first `|` of `b`.
-COPY      _ RESET_B   _ L   // Trying to copy from `b` got got a `_`: all done copying `b`. Reset `b`.
-RESET_B   T RESET_B   | L   // Reset `b`.
-RESET_B   * RET_TO_A  * L   // Done resetting `b`. Return to start of `a`.
-RET_TO_A  | RET_TO_A  | L   // Done resetting `b`. Return to start of `a`.
-RET_TO_A  _ START     _ R   // Back at the start of `a`.
-START     * RM_B      _ R   // Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
-RM_B      | RM_B      _ R   // Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
-RM_B      _ HALT      _ R   // Done removing `b`. Multiplication completed.
-    """,
-    # Unary index. Minus one index. For each index `|`, remove an element from the array.
-    # When we run out of index `|`, remove everything after the first number.
-    index(),
-    # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
-    # Once `b` is gone, drop `-` and `x`.
-    """
-INIT      | INIT       | R   // Go to the end.
-INIT      - INIT       - R   //
-INIT      x INIT       x R   //
-INIT      _ BEGIN      _ L   // At end of `b`.
-BEGIN     | GO_SIGN    _ L   // Drop one from `b`. Find `-`.
-GO_SIGN   | GO_SIGN    | L   //
-GO_SIGN   - GO_ONE     - L   // Find a value to drop from `a`.
-GO_ONE    x GO_ONE     x L   //
-GO_ONE    | INIT       x R   // Drop one from `a`. Return to end.
-BEGIN     - CLEAN      _ L   // No more `b`. Tidy up.
-CLEAN     x CLEAN      _ L
-CLEAN     | HALT       | R
-CLEAN     _ HALT       _ R
-""",
+    unary_addition(),
+    unary_even_odd(),
+    binary_increment(),
+    unary_multiplication(),
+    find_element_in_unary_array(),
+    unary_subtraction(),
     letter_mark(),
     text_mirror(),
     unary_compare(),
@@ -456,14 +562,14 @@ TESTS = [
 
 
 def run_tests(puzzle: int) -> None:
-    program = SOLUTIONS[puzzle - 1]
+    program = str(SOLUTIONS[puzzle - 1])
     tests = TESTS[puzzle - 1]
     transition_rules = logic_mill.parse_transition_rules(program)
     mill = logic_mill.LogicMill(transition_rules)
     for idx, (data, want) in enumerate(tests):
         result, steps = mill.run(data, verbose=False)
         if result == want:
-            print(f"{puzzle:>2}.t{idx}: PASS")
+            print(f"{puzzle:>2}.t{idx:<2} PASS")
         else:
             result, steps = mill.run(data, verbose=True)
             raise RuntimeError(f"{puzzle}.t{idx}: FAIL")
@@ -481,7 +587,7 @@ def main(puzzle: int, out: pathlib.Path | None) -> None:
         return
     run_tests(puzzle)
     if out:
-        out.write_text(SOLUTIONS[puzzle - 1])
+        out.write_text(str(SOLUTIONS[puzzle - 1]))
 
 
 if __name__ == "__main__":
