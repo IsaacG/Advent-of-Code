@@ -494,49 +494,57 @@ def decimal_increment() -> RuleSet:
 
 
 def decimal_addition():
+    """Add two decimal values.
+
+    1. Add a = on the left, setting up c=a+b
+    2. Find the right-most `a` value. Copy `a` into state. If carrying, add 1. Replace with |.
+    3. Find the right-most `b` value. Copy `a+b` into state. Replace with _.
+    4. Go left then write out `a+b`.
+
+    When a or b is not found, switch into copy mode, copying over remaining letters one by one.
+    However, if we're carrying, we need to instead treat it as a carry/add 1.
+    """
     # 12. Decimal Addition
     r = RuleSet(12)
 
+    carries = ["", "_C"]  # some states have a carrying and not-carrying state
+    # Add a = on the left.
     r.left(INIT, "$i", i=range(10))
     r.add(INIT, "_", "GET_A", "=", R)
-    r.add("GET_A", "${i}", "GET_A", "${i}", R, i=string.digits + "=")
-    r.add("GET_A_C", "${i}", "GET_A_C", "${i}", R, i=string.digits + "=")
-    r.add("GET_A", "+", "PICK_A", "+", L,)
-    r.add("GET_A", "|", "PICK_A", "|", L,)
-    r.add("PICK_A", "|", "PICK_A", "|", L,)
-    r.add("GET_A_C", "+", "PICK_A_C", "+", L,)
-    r.add("GET_A_C", "|", "PICK_A_C", "|", L,)
-    r.add("PICK_A_C", "|", "PICK_A_C", "|", L,)
+    # Copy the right-most digit of `a` into the state.
+    r.right("GET_A$j", "$i", i=string.digits + "=", j=carries)
+    r.add("GET_A$j", "$i", "PICK_A$j", "$i", L, i="+|", j=carries)
+    r.add("PICK_A$j", "|", "PICK_A$j", "|", L, j=carries)
     r.add("PICK_A", "${i}", "GO_B${i}", "|", R, i=range(10))
     for i in range(10):
         r.add("PICK_A_C", i, f"GO_B{i + 1}", "|", R)
     r.add("PICK_A", "=", "COPY", "=", R,)
     r.add("PICK_A_C", "=", "GO_B1", "=", R)
+    # Copy `a+b` into state using the right-most digit of `b`.
     r.add("GO_B${i}", "|", "GO_B${i}", "|", R, i=range(11))
     r.add("GO_B${i}", "+", "GET_B${i}", "+", R, i=range(11))
-    r.add("GET_B${i}", "${j}", "GET_B${i}", "${j}", R, i=range(11), j=range(10))
+    r.right("GET_B${i}", "${j}", i=range(11), j=range(10))
     r.add("GET_B${i}", "_", "PICK_B${i}", "_", L, i=range(11))
     for i in range(11):
         for j in range(10):
             r.add(f"PICK_B{i}", j, f"ADD{i + j}", "_", L)
     r.add("PICK_B${i}", "+", "COPY_${i}", "_", L, i=range(11))
-    r.add("ADD${i}", "${j}", "ADD${i}", "${j}", L, i=range(20), j=string.digits + "|+=")
+    # Write out the value of `a+b` into `c`.
+    r.left("ADD${i}", "${j}", i=range(20), j=string.digits + "|+=")
     for i in range(10):
         r.add(f"ADD{i}", "_", "GET_A", i % 10, R)
     for i in range(10, 20):
         r.add(f"ADD{i}", "_", "GET_A_C", i % 10, R)
-    r.add("COPY", "${i}", "COPY", "${i}", R, i=string.digits + "|+=")
-    r.add("COPY_C", "${i}", "COPY_C", "${i}", R, i=string.digits + "|+=")
-    r.add("COPY", "_", "COPY_G", "_", L,)
-    r.add("COPY_C", "_", "COPY_C_G", "_", L,)
+    # When a or b is empty, copy over the remaining prefix.
+    r.right("COPY$j", "${i}", i=string.digits + "|+=", j=carries)
+    r.add("COPY$j", "_", "COPY_G$j", "_", L, j=carries)
     r.add("COPY_G", "=", "HALT", "_", L,)
-    r.add("COPY_C_G", "=", "COPY_1", "=", L,)
-    r.add("COPY_G", "${i}", "COPY_G", "_", L, i="_|+")
-    r.add("COPY_C_G", "${i}", "COPY_C_G", "_", L, i="_|+")
+    r.add("COPY_G_C", "=", "COPY_1", "=", L,)
+    r.add("COPY_G$j", "${i}", "COPY_G$j", "_", L, i="_|+", j=carries)
     r.add("COPY_G", "${i}", "COPY_${i}", "_", L, i=range(10))
     for i in range(10):
-        r.add("COPY_C_G", i, f"COPY_{i+1}", "_", L)
-    r.add("COPY_${i}", "${j}", "COPY_${i}", "${j}", L, i=range(11), j=string.digits + "|+=")
+        r.add("COPY_G_C", i, f"COPY_{i+1}", "_", L)
+    r.left("COPY_${i}", "${j}", i=range(11), j=string.digits + "|+=")
     r.add("COPY_${i}", "_", "COPY", "${i}", R, i=range(10))
     r.add("COPY_10", "_", "COPY_C", "0", R)
 
@@ -572,7 +580,7 @@ def main(puzzle: int, out: pathlib.Path | None) -> None:
         return
     if puzzle is None:
         puzzle = len(SOLUTIONS)
-    ruleset = SOLUTIONS[puzzle]
+    ruleset = SOLUTIONS[puzzle - 1]
     ruleset.check()
     if out:
         out.write_text(ruleset.program())
