@@ -1,5 +1,7 @@
 #!/bin/python
+from __future__ import annotations
 
+import collections
 import pathlib
 import string
 import sys
@@ -37,8 +39,14 @@ class RuleSet:
             return
         rules = [string.Template(rule)]
         for key, vals in fmt.items():
-            rules = [string.Template(r.safe_substitute(**{key: val})) for val in vals for r in rules]
-        self.rules.extend(r.substitute() for r in rules)
+            expanded = []
+            for rule in rules:
+                if key in rule.get_identifiers():
+                    expanded.extend(string.Template(rule.safe_substitute(**{key: val})) for val in vals)
+                else:
+                    expanded.append(rule)
+            rules = expanded
+        self.rules.extend(r.safe_substitute() for r in rules)
 
     def right(self, start: str, inp: str | int, **fmt: typing.Iterable[str | int]) -> None:
         """Add a rule where the state and tape do not change."""
@@ -65,15 +73,33 @@ class RuleSet:
     def program(self) -> str:
         return "\n".join(self.rules)
 
+    def parse(self, program: str, **expansions: dict[str, collections.abc.Sequence[int | str]]) -> RuleSet:
+        for line in program.strip().splitlines():
+            words = line.split("#")[0].strip().split()
+            try:
+                if not words or words[0] == "#":
+                    pass
+                elif words[0] == ">":
+                    self.right(*words[1:], **expansions)
+                elif words[0] == "<":
+                    self.left(*words[1:], **expansions)
+                else:
+                    self.add(*words, **expansions)
+            except:
+                print(line)
+                raise
+        return self
+
 
 def unary_addition() -> RuleSet:
     # 1. Unary Addition
-    r = RuleSet(1)
-    # Erase the first | so we can replace the + with |
-    r.add(INIT, "|", "M", "_", R)
-    # Go to the + then replace it.
-    r.right("M", "|")
-    r.add("M", "+", HALT, "|", R)
+    r = RuleSet(1).parse("""
+        # Erase the first | so we can replace the + with |
+        INIT   |  M    _   R
+        # Go to the + then replace it.
+        > M    |
+        M      +  HALT |   R
+    """)
 
     r.test(  "|+|",   "||")  # 1+1=2
     r.test("||+||", "||||")  # 2+2=4
@@ -83,14 +109,14 @@ def unary_addition() -> RuleSet:
 
 def unary_even_odd() -> RuleSet:
     # 2. Unary Even Odd
-    r = RuleSet(2)
-
-    # Move left to right, tracking even or odd, and clearing bits.
-    # When we get to the end, write the state.
-    r.add(INIT,  "|",  "O",  "_", R)
-    r.add( "E",  "|",  "O",  "_", R)
-    r.add( "O",  "|",  "E",  "_", R)
-    r.add("$i",  "_", HALT, "$i", R, i="EO")
+    r = RuleSet(2).parse("""
+        # Move left to right, tracking even or odd, and clearing bits.
+        # When we get to the end, write the state.
+        INIT    |    O      _   R
+        E       |    O      _   R
+        O       |    E      _   R
+        $i      _    HALT  $i   R
+    """, i="EO")
 
     r.test( "||", "E")
     r.test("|||", "O")
@@ -100,15 +126,16 @@ def unary_even_odd() -> RuleSet:
 
 def binary_increment() -> RuleSet:
     # 3. Binary Increment
-    r = RuleSet(3)
-    r.add(    INIT,   0,     HALT,   1, R)
-    r.add(    INIT,   1, "GO_END",   1, R)
-    r.right("GO_END",   "$i", i="01")
-    # Work right to left, incrementing and tracking a carry bit. "CARRY" means add one.
-    r.add("GO_END", "_",  "CARRY", "_", L)
-    r.add( "CARRY",   0,     HALT,   1, L)
-    r.add( "CARRY",   1,  "CARRY",   0, L)
-    r.add( "CARRY", "_",     HALT,   1, L)
+    r = RuleSet(3).parse("""
+        INIT       0   HALT    1   R
+        INIT       1   GO_END  1   R
+        > GO_END  $i
+        # Work right to left, incrementing and tracking a carry bit. "CARRY" means add one.
+        GO_END     _  CARRY    _   L
+        CARRY      0  HALT     1   L
+        CARRY      1  CARRY    0   L
+        CARRY      _  HALT     1   L
+    """, i="01")
 
     r.test(  "1",  "10")  # 1+1=2
     r.test( "10",  "11")  # 2+1=3
@@ -129,48 +156,28 @@ def unary_multiplication() -> RuleSet:
     # Start state: reduce `a` by one `|`. Move past `*`. Change to copy mode.
     # Copy mode: change first `|` in `b` to `T`. Move to result. Write `|`. Return to first `|` of `b`. Done copying.
     # Done copying: reset `b` and return to initial state.
-    r = RuleSet(4)
-
-    # Change to start and shift left.
-    r.add(INIT, "|", "START", "|", L)
-    # Move to first | of a.
-    r.right("START", "_")
-    # Reduce `a` by one. Go copy `b`.
-    r.add("START", "|", "GO_COPY", "_", R)
-    # Look for start of `b`.
-    r.right("GO_COPY", "|")
-    # Start copying `b`.
-    r.add("GO_COPY", "*", "COPY", "*", R)
-    # Mark a `|` from `b` as copied. Now go add it to the result.
-    r.add("COPY", "|", "GO_END_B", "T", R)
-    # Find the end of `b`.
-    r.right("GO_END_B", "|")
-    # Find the end of `c`.
-    r.add("GO_END_B", "_", "GO_END_C", "_", R)
-    # Find the end of `b`.
-    r.right("GO_END_C", "|")
-    # Add one to `c`.
-    r.add("GO_END_C", "_", "RET_TO_B", "|", L)
-    # Return to the first `|` of `b`.
-    r.left("RET_TO_B", "$i", i="|_")
-    # Return to the first `|` of `b`.
-    r.add("RET_TO_B", "T", "COPY", "T", R)
-    # Trying to copy from `b` got got a `_`: all done copying `b`. Reset `b`.
-    r.add("COPY", "_", "RESET_B", "_", L)
-    # Reset `b`.
-    r.add("RESET_B", "T", "RESET_B", "|", L)
-    # Done resetting `b`. Return to start of `a`.
-    r.add("RESET_B", "*", "RET_TO_A", "*", L)
-    # Done resetting `b`. Return to start of `a`.
-    r.left("RET_TO_A", "|")
-    # Back at the start of `a`.
-    r.add("RET_TO_A", "_", "START", "_", R)
-    # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
-    r.add("START", "*", "RM_B", "_", R)
-    # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
-    r.add("RM_B", "|", "RM_B", "_", R)
-    # Done removing `b`. Multiplication completed.
-    r.add("RM_B", "_", HALT, "_", R)
+    r = RuleSet(4).parse("""
+        INIT        |    START     |   L      # Change to start and shift left.
+        > START     _                         # Move to first | of a.
+        START       |   GO_COPY    _   R      # Reduce `a` by one. Go copy `b`.
+        > GO_COPY   |                         # Look for start of `b`.
+        GO_COPY     *   COPY       *   R      # Start copying `b`.
+        COPY        |   GO_END_B   T   R      # Mark a `|` from `b` as copied. Now go add it to the result.
+        > GO_END_B  |                         # Find the end of `b`.
+        GO_END_B    _   GO_END_C   _   R      # Find the end of `c`.
+        > GO_END_C  |                         # Find the end of `b`.
+        GO_END_C    _   RET_TO_B   |   L      # Add one to `c`.
+        < RET_TO_B  $i                        # Return to the first `|` of `b`.
+        RET_TO_B    T   COPY       T   R      # Return to the first `|` of `b`.
+        COPY        _   RESET_B    _   L      # Trying to copy from `b` got got a `_`: all done copying `b`. Reset `b`.
+        RESET_B     T   RESET_B    |   L      # Reset `b`.
+        RESET_B     *   RET_TO_A   *   L      # Done resetting `b`. Return to start of `a`.
+        < RET_TO_A  |                         # Done resetting `b`. Return to start of `a`.
+        RET_TO_A    _   START      _   R      # Back at the start of `a`.
+        START       *   RM_B       _   R      # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
+        RM_B        |   RM_B       _   R      # Trying to reduce `a` but out of `|`: all done copying. Drop `b` from output.
+        RM_B        _   HALT       _   R      # Done removing `b`. Multiplication completed.
+    """, i="|_")
 
     r.test(   "|*||",        "||")  # 1x2=2
     r.test(  "||*||",      "||||")  # 2x2=4
@@ -185,39 +192,34 @@ def find_element_in_unary_array():
     # Unary index. Minus one index. For each index `|`, remove an element from the array.
     # When we run out of index `|`, remove everything after the first number.
     # == General Solution ==
-    r = RuleSet(5)
+    r = RuleSet(5).parse("""
+        INIT         |   START        _   R       # Start by dropping the leading `|`. At start of to-remove count.
+        START        |   GO_LIST      _   R       # Go to the list
+        GO_LIST      |   GO_LIST      |   R
+        GO_LIST      :   GO_FIRST     :   R       # In the list. Go to the first number.
+        GO_FIRST     x   GO_FIRST     x   R
+        GO_FIRST     |   RM_FIRST     x   R       # Drop the first number.
+        RM_FIRST     |   RM_FIRST     x   R
+        RM_FIRST     ,   RETURN_I     x   L       # Return to the start.
+        RETURN_I     x   RETURN_I     x   L
+        RETURN_I     :   RETURN_I     :   L
+        RETURN_I     |   RETURN_I     |   L
+        RETURN_I     _   START        _   R       # Got back to the index.
+        START        :   CLEAN_PRE    _   R       # Out of index values. Tidy up before the first element.
+        CLEAN_PRE    x   CLEAN_PRE    _   R
+        CLEAN_PRE    |   CLEAN_PRE    |   R       # Skip the first element.
+        CLEAN_PRE    ,   CLEAN_POST   _   R       # Clean remaining elements.
+        CLEAN_PRE    _   HALT         _   R       # No following items.
+        CLEAN_POST   |   CLEAN_POST   _   R
+        CLEAN_POST   ,   CLEAN_POST   _   R
+        CLEAN_POST   _   HALT         _   L
+    """)
 
-    # Start by dropping the leading `|`. At start of to-remove count.
-    r.add("INIT", "|", "START", "_", "R")
-    # Go to the list
-    r.add("START", "|", "GO_LIST", "_", "R")
-    r.add("GO_LIST", "|", "GO_LIST", "|", "R")
-    # In the list. Go to the first number.
-    r.add("GO_LIST", ":", "GO_FIRST", ":", "R")
-    r.add("GO_FIRST", "x", "GO_FIRST", "x", "R")
-    # Drop the first number.
-    r.add("GO_FIRST", "|", "RM_FIRST", "x", "R")
-    r.add("RM_FIRST", "|", "RM_FIRST", "x", "R")
-    # Return to the start.
-    r.add("RM_FIRST", ",", "RETURN_I", "x", "L")
-    r.add("RETURN_I", "x", "RETURN_I", "x", "L")
-    r.add("RETURN_I", ":", "RETURN_I", ":", "L")
-    r.add("RETURN_I", "|", "RETURN_I", "|", "L")
-    # Got back to the index.
-    r.add("RETURN_I", "_", "START", "_", "R")
-    # Out of index values. Tidy up before the first element.
-    r.add("START", ":", "CLEAN_PRE", "_", "R")
-    r.add("CLEAN_PRE", "x", "CLEAN_PRE", "_", "R")
-    # Skip the first element.
-    r.add("CLEAN_PRE", "|", "CLEAN_PRE", "|", "R")
-    # Clean remaining elements.
-    r.add("CLEAN_PRE", ",", "CLEAN_POST", "_", "R")
-    # No following items.
-    r.add("CLEAN_PRE", "_", "HALT", "_", "R")
-    r.add("CLEAN_POST", "|", "CLEAN_POST", "_", "R")
-    r.add("CLEAN_POST", ",", "CLEAN_POST", "_", "R")
-    r.add("CLEAN_POST", "_", "HALT", "_", "L")
-    # return r
+    r.test("|:|||,|||||,||||||||,||||", "|||"),
+    r.test("||:|||,|||||,||||||||,||||", "|||||"),
+    r.test("||||:|||,|||||,||||||||,||||", "||||"),
+
+    return r
 
     # == Non-general solution ==
     r = RuleSet(5)
@@ -235,14 +237,10 @@ def find_element_in_unary_array():
     r.add("FIND_RM_1", ",", "SKIP", "_", R)
     r.right("SKIP", "|")
     r.add("SKIP", ",", "TRIM", "_", R)
-    r.add("SKIP", "_", "HALT", "_", R)
-    r.add("TRIM", "_", "HALT", "_", R)
+    r.add("SKIP", "_", HALT, "_", R)
+    r.add("TRIM", "_", HALT, "_", R)
     r.add("TRIM", ",", "TRIM", "_", R)
     r.add("TRIM", "|", "TRIM", "_", R)
-
-    r.test("|:|||,|||||,||||||||,||||", "|||"),
-    r.test("||:|||,|||||,||||||||,||||", "|||||"),
-    r.test("||||:|||,|||||,||||||||,||||", "||||"),
 
     return r
 
@@ -251,24 +249,18 @@ def unary_subtraction() -> RuleSet:
     # 6. Unary Subtraction
     # Subtract. `a-b`. Go to end of b. Remove one from `b`. Move to `a`. Replace one with `x`. Return to end of b.
     # Once `b` is gone, drop `-` and `x`.
-    r = RuleSet(6)
-
-    # Go to the end.
-    r.right(INIT, "$i", i="|-x")
-    # At end of `b`.
-    r.add(INIT, "_", "BEGIN", "_", L)
-    # Drop one from `b`. Find `-`.
-    r.add("BEGIN", "|", "GO_SIGN", "_", L)
-    r.left("GO_SIGN", "|")
-    # Find a value to drop from `a`.
-    r.add("GO_SIGN", "-", "GO_ONE", "-", L)
-    r.add("GO_ONE", "x", "GO_ONE", "x", L)
-    # Drop one from `a`. Return to end.
-    r.add("GO_ONE", "|", "INIT", "x", R)
-    # No more `b`. Tidy up.
-    r.add("BEGIN", "-", "CLEAN", "_", L)
-    r.add("CLEAN", "x", "CLEAN", "_", L)
-    r.add("CLEAN", "$i", HALT, "$i", R, i="|_")
+    r = RuleSet(6).parse("""
+        > INIT     $i                    # Go to the end.
+        INIT       _   BEGIN    _   L    # At end of `b`.
+        BEGIN      |   GO_SIGN  _   L    # Drop one from `b`. Find `-`.
+        < GO_SIGN  |
+        GO_SIGN    -   GO_ONE   -   L    # Find a value to drop from `a`.
+        GO_ONE     x   GO_ONE   x   L
+        GO_ONE     |   INIT     x   R    # Drop one from `a`. Return to end.
+        BEGIN      -   CLEAN    _   L    # No more `b`. Tidy up.
+        CLEAN      x   CLEAN    _   L
+        CLEAN      $j  HALT     $j  R
+    """, i="|-x", j="|_")
 
     r.test("|||||-||", "|||"),  # 5-2=3
     r.test(   "||-||",    ""),  # 2-2=0
@@ -291,34 +283,34 @@ def letter_mark() -> RuleSet:
     """
     letters = set(string.ascii_lowercase + "-äöõü")
     extras = set("[]=")
-    r = RuleSet(7)
-
-    # Move to the end.
-    r.right(INIT, "$i", i=letters)
-    # Add a `=` then return to start.
-    r.add(INIT, "_", "GO_START", "=", L)
-    r.left("GO_START", "$i", i=letters | extras)
-    r.add("GO_START", "_", "START", "_", R)
-    # Once at the start, copy letter to state.
-    r.add("START", "$i", "COPY_$i", "_", R, i=letters - {"c"})
-    # `c` gets special handling to detect `ch`.
-    r.add("START", "c", "MAYBE_c", "_", R)
-    r.add("MAYBE_c", "h", "COPY_ch", "_", R)
-    r.add(f"MAYBE_c", "$i", "COPY_c", "$i", R, i=(letters | extras) - {"h"})
-    # Go to the end so we can output the copy.
-    r.right("COPY_${i}", "$j", i=letters | {"ch"}, j=letters | extras)
-    # Output the letter then return. `w` and `ch` get special handling.
-    r.add("COPY_${i}", "_", "GO_START", "$i", L, i=letters - {"w"})
-    # `w` => `[w]`
-    r.add("COPY_w", "_", "COPY_w1", "[", R)
-    r.add("COPY_w1", "_", "COPY_]", "w", R)
-    # `ch` => `[ch]`
-    r.add("COPY_ch", "_", "COPY_ch1", "[", R)
-    r.add("COPY_ch1", "_", "COPY_ch2", "c", R)
-    r.add("COPY_ch2", "_", "COPY_]", "h", R)
-    r.add("COPY_]", "_", "GO_START", "]", L)
-    # End of input
-    r.add("START", "=", "HALT", "_", R)
+    r = RuleSet(7).parse(
+        """
+        > INIT       $a                       # Move to the end.
+        INIT         _   GO_START   =   L     # Add a `=` then return to start.
+        < GO_START   $b                      
+        GO_START     _   START      _   R
+        START        $c  COPY_$c    _   R     # Once at the start copy letter to state.
+        START        c   MAYBE_c    _   R     # `c` gets special handling to detect `ch`.
+        MAYBE_c      h   COPY_ch    _   R
+        MAYBE_c      $d  COPY_c     $d  R
+        > COPY_${e}  $f                       # Go to the end so we can output the copy.
+        COPY_${g}    _   GO_START   $g  L     # Output the letter then return. `w` and `ch` get special handling.
+        COPY_w       _   COPY_w1    [   R     # `w` => `[w]`
+        COPY_w1      _   COPY_]     w   R
+        COPY_ch      _   COPY_ch1   [   R     # `ch` => `[ch]`
+        COPY_ch1     _   COPY_ch2   c   R
+        COPY_ch2     _   COPY_]     h   R
+        COPY_]       _   GO_START   ]   L
+        START        =   HALT       _   R     # End of input
+        """,
+        a=letters,
+        b=letters | extras,
+        c=letters - {"c"},
+        d=(letters | extras) - {"h"},
+        e=letters | {"ch"},
+        f=letters | extras,
+        g=letters - {"w"},
+    )
 
     r.test("wõta-wastu-mu-soow-ja-chillitse-toomemäel", "[w]õta-[w]astu-mu-soo[w]-ja-[ch]illitse-toomemäel"),
 
@@ -341,25 +333,26 @@ def text_mirror():
     letters = set(string.ascii_lowercase + "-äöõü")
     extras = set("!=")
     rules = []
-    r = RuleSet(8)
-
-    # Add a `=` then find the first letter.
-    r.add(INIT, "$i", "ADD_EQ", "$i", L, i=letters)
-    r.add("ADD_EQ", "_", "F", "=", R)
-    r.right("F", "!")
-    # Copy and tombstone.
-    r.add("F", "$i", "COPY_$i", "!", R, i=letters)
-    r.add("COPY_${i}", "$j", "COPY_${i}${j}", "!", L, i=letters, j=letters | {"_"})
-    r.left("COPY_${i}${j}", "${k}", i=letters, j=letters | {"_"}, k=letters | extras)
-    # Found an opening. Record letter then return to the start.
-    r.add("COPY_${i}${j}", "_", "PAST_$j", "$i", L, i=letters, j=letters | {"_"})
-    r.add("PAST_${i}", "_", "GO_EQ", "$i", R, i=letters | {"_"})
-    r.right("GO_EQ", "$i", i=letters)
-    r.add("GO_EQ", "=", "F", "=", R)
-    # Once there is nothing left to copy, clean up tombstones.
-    r.add("F", "_", "CLEANUP", "_", L)
-    r.add("CLEANUP", "!", "CLEANUP", "_", L)
-    r.add("CLEANUP", "=", "HALT", "_", L)
+    r = RuleSet(8).parse(
+        """
+        INIT             $a  ADD_EQ         $a  L    # Add a `=` then find the first letter.
+        ADD_EQ           _   F              =   R
+        > F              !
+        F                $a  COPY_$a        !   R    # Copy and tombstone.
+        COPY_${a}        $b  COPY_${a}${b}  !   L 
+        < COPY_${a}${b}  $c
+        COPY_${a}${b}    _   PAST_$b        $a  L    # Found an opening. Record letter then return to the start.
+        PAST_${b}        _   GO_EQ          $b  R
+        > GO_EQ          $a 
+        GO_EQ            =   F              =   R
+        F                _   CLEANUP        _   L    # Once there is nothing left to copy clean up tombstones.
+        CLEANUP          !   CLEANUP        _   L
+        CLEANUP          =   HALT           _   L
+        """,
+        a=letters,
+        b=letters | {"_"},
+        c=letters | extras,
+    )
 
     r.test("hello-world", "dlrow-olleh"),
 
@@ -377,36 +370,30 @@ def unary_comparison() -> RuleSet:
 
     Limited solution: use the state as a counter. Increment on left. Decrement on right.
     """
-    r = RuleSet(9)
-
-    # Start at the `,`.
-    r.right(INIT, "|")
-    # Look for a left `|`.
-    r.add("INIT", ",", "FIND_LEFT", ",", L)
-    r.left("FIND_LEFT", "$i", i="x,")
-    # Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
-    r.add("FIND_LEFT", "_", "EQ_OR_LT", "_", R)
-    # Look for a matching right `|`.
-    r.add("FIND_LEFT", "|", "FIND_RIGHT", "x", R)
-    #
-    r.right("FIND_RIGHT", "$i", i="x,")
-    # Matched. Go back to a left.
-    r.add("FIND_RIGHT", "|", "FIND_LEFT", "x", L)
-    # Ran out of `|` on the right. We found one on the left so the left is larger (`>`).
-    r.add("FIND_RIGHT", "_", "SET_GT", "_", L)
-    # Go to the right to check if it is `=` or `<`.
-    r.right("EQ_OR_LT", "$i", i="x,")
-    # Right has more, ie is bigger. Set `<`.
-    r.add("EQ_OR_LT", "|", "SET_LT", "|", L)
-    # Right has same. Set `=`.
-    r.add("EQ_OR_LT", "_", "SET_EQ", "_", L)
-    # Clean up the data.
-    r.left("SET_$i", "|", i=["GT", "LT", "EQ"])
-    r.add("SET_$i", "x", "SET_$i", "|", L, i=["GT", "LT", "EQ"])
-    r.add("SET_GT", ",", "SET_GT", ">", L)
-    r.add("SET_LT", ",", "SET_LT", "<", L)
-    r.add("SET_EQ", ",", "SET_EQ", "=", L)
-    r.add("SET_$i", "_", "HALT", "_", R, i=["GT", "LT", "EQ"])
+    r = RuleSet(9).parse(
+        """
+        > INIT        |                       # Start at the `,`.
+        INIT          ,   FIND_LEFT   ,  L    # Look for a left `|`.
+        < FIND_LEFT   $i  
+        FIND_LEFT     _   EQ_OR_LT    _  R    # Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
+        FIND_LEFT     |   FIND_RIGHT  x  R    # Look for a matching right `|`.
+        #
+        > FIND_RIGHT  $i 
+        FIND_RIGHT    |   FIND_LEFT   x  L    # Matched. Go back to a left.
+        FIND_RIGHT    _   SET_GT      _  L    # Ran out of `|` on the right. We found one on the left so the left is larger (`>`.
+        > EQ_OR_LT    $i                      # Go to the right to check if it is `=` or `<`.
+        EQ_OR_LT      |   SET_LT      |  L    # Right has more ie is bigger. Set `<`.
+        EQ_OR_LT      _   SET_EQ      _  L    # Right has same. Set `=`.
+        < SET_$op     |
+        SET_$op       x   SET_$op     |  L
+        SET_GT        ,   SET_GT      >  L
+        SET_LT        ,   SET_LT      <  L
+        SET_EQ        ,   SET_EQ      =  L
+        SET_$op       _   HALT        _  R
+        """,
+        i="x,",
+        op=["GT", "LT", "EQ"],
+    )
 
     r.test("|||,||||", "|||<||||"),  # 3 > 4
     r.test("||||,|||", "||||>|||"),  # 4 > 3
@@ -453,21 +440,22 @@ def unary_comparison() -> RuleSet:
 def lines_count() -> RuleSet:
     # 10. Lines Count
     letters = set(string.ascii_lowercase + "-äöõü")
-    r = RuleSet(10)
-
-    r.add(INIT, "$i", INIT, "!", R, i=letters)
-    r.add(INIT, "+", "ADD", "+", L)
-    r.left("ADD", "!")
-    r.add("ADD", "_", "RET", "|", R)
-    r.add("ADD", "|", "INC", "|", R)
-    r.add("INC", "!", "RET", "|", R)
-    r.right("RET", "!")
-    r.add("RET", "+", "INIT", "!", R)
-    r.add(INIT, "_", "CLEAN", "_", L)
-    r.add("CLEAN", "!", "CLEAN", "_", L)
-    r.add("CLEAN", "|", "END", "|", R)
-    r.add("CLEAN", "_", HALT, "|", R)
-    r.add("END", "_", HALT, "|", R)
+    r = RuleSet(10).parse(
+        """
+        INIT   $i  INIT   !  R
+        INIT   +   ADD    +  L
+        < ADD  !
+        ADD    _   RET    |  R
+        ADD    |   INC    |  R
+        INC    !   RET    |  R
+        > RET  !
+        RET    +   INIT   !  R
+        INIT   _   CLEAN  _  L
+        CLEAN  !   CLEAN  _  L
+        CLEAN  |   END    |  R
+        CLEAN  _   HALT   |  R
+        END    _   HALT   |  R
+        """, i=letters)
 
     r.test("hello+world+how-are-you", "|||"),
     r.test("hello", "|"),
@@ -538,7 +526,7 @@ def decimal_addition():
     # When a or b is empty, copy over the remaining prefix.
     r.right("COPY$j", "${i}", i=string.digits + "|+=", j=carries)
     r.add("COPY$j", "_", "COPY_G$j", "_", L, j=carries)
-    r.add("COPY_G", "=", "HALT", "_", L,)
+    r.add("COPY_G", "=", HALT, "_", L,)
     r.add("COPY_G_C", "=", "COPY_1", "=", L,)
     r.add("COPY_G$j", "${i}", "COPY_G$j", "_", L, i="_|+", j=carries)
     r.add("COPY_G", "${i}", "COPY_${i}", "_", L, i=range(10))
