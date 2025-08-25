@@ -16,6 +16,25 @@ R    = "R"
 L    = "L"
 
 
+class LogicMill(logic_mill.LogicMill):
+
+    def run(self, *args, **kwargs):
+        self.seen = set()
+        return super().run(*args, **kwargs)
+
+    def _step(self) -> bool:
+        result = super()._step()
+        min_pos = min(self.tape)
+        state = (frozenset((i - min_pos, j) for i, j in self.tape.items()), self.head_position - min_pos, self.current_state)
+        if state in self.seen:
+            self._print_tape()
+            print(state)
+            raise RuntimeError(f"Loop detected; state {self.current_state}, item {self.tape.get(self.head_position, self.blank_symbol)}")
+        self.seen.add(state)
+
+        return result
+
+
 class RuleSet:
 
     def __init__(self, puzzle: int, tests: list[tuple[str, str]] | None = None):
@@ -81,9 +100,13 @@ class RuleSet:
 
     def check(self) -> None:
         transition_rules = logic_mill.parse_transition_rules(self.program())
-        mill = logic_mill.LogicMill(transition_rules)
+        mill = LogicMill(transition_rules)
         for idx, (data, want) in enumerate(self.tests):
-            result, steps = mill.run(data, verbose=False)
+            try:
+                result, steps = mill.run(data, verbose=False)
+            except Exception:
+                mill.run(data, verbose=True)
+                raise
             if result == want:
                 print(f"{self.puzzle:>2}.t{idx:<2} PASS")
             else:
@@ -563,50 +586,61 @@ def decimal_addition():
 
 
 def unary_array_sort():
-    """Sort a unary array."""
+    """Sort a unary array.
+
+    Walk the array looking for elements out of order.
+    When two elements are not ordered, swap them then start over.
+
+    Compare elements by subtracting one by one from each then examine the leftover digits.
+    """
     # 13. Unary Array Sort
     r = RuleSet(
         13, [
-            ("||,|,|||||,||||||||", "|,||,|||||,||||||||"),
             ("|,|", "|,|"),
-            ("|||,|||||||,|||||", "|||,|||||,|||||||"),
             ("|,|,|,|,|,|,|,|,|,|", "|,|,|,|,|,|,|,|,|,|"),
-            ("||||,||,|,|||", "|,||,|||,||||"),
+            ("||,|,|||||,||||||||", "|,||,|||||,||||||||"),
             ("||,|||||,|,|||||||||,||,|||||||||,|||||,||,|,||||", "|,|,||,||,||,||||,|||||,|||||,|||||||||,|||||||||"),
+            ("|||,|||||||,|||||", "|||,|||||,|||||||"),
+            ("||||,||,|,|||", "|,||,|||,||||"),
         ]
     )
     r.halt(INIT, "_")
     r.add(INIT, "|", "RESET", "|", L)
     r.add("RESET", "_", "CHECK", "_", R)
-    # Check if this is the last element in the array. If it is, halt.
+    # Check if this is the last element in the array. If it is, we are done.
     r.right("CHECK", "|")
-    r.halt("CHECK", "_")
+    r.add("CHECK", "_", "DONE", "_", L)
     r.add("CHECK", ",", "CHECKED", ",", L)
     r.left("CHECKED", "|")
-    r.add("CHECKED", "$c", "COUNT_0", "$c", R, c=",_")
-    # There are two or more elements. Count the first. Subtract the second.
-    # If the first is larger, we need to shift left the `,` by the difference.
-    for i in range(380):
-        r.add(f"COUNT_{i}", "|", f"COUNT_{i + 1}", "|", R)
-        r.halt(f"COUNT_{i}", "_")
-        r.add(f"COUNT_{i}", ",", f"SUB_{i}", ",", R)
-        if i:
-            r.add(f"SUB_{i}", "|", f"SUB_{i - 1}", "|", R)
-            r.add(f"SUB_{i}", ",", f"G_{i}", ",", L)
-            r.add(f"SUB_{i}", "_", f"G_{i}", "_", L)
-    for i in range(1, 270):
-        r.left(f"G_{i}", "|", )
-        r.add(f"G_{i}", ",", f"M_{i - 1}", "|", L)
-        r.add(f"M_{i}", "|", f"M_{i - 1}", "|", L)
-    r.add("M_0", "|", "RESET", ",", L)
-    r.add("SUB_0", "|", "NEXT_L", "|", L)
-    r.add("SUB_0", ",", "NEXT_L", ",", L)
-    r.halt("SUB_0", "_")
-    r.left("NEXT_L", "|")
-    r.add("NEXT_L", ",", "CHECK", ",", R)
-    r.left("RESET", "$c", c="|,")
-
-
+    r.add("CHECKED", "$c", "COMPARE", "$c", R, c=",_")
+    # There are two or more elements. Substract from both elements until one runs out.
+    r.add("COMPARE", "|", "GO_REM", "X", R)
+    r.right("GO_REM", "|")
+    r.add("GO_REM", ",", "REM", ",", R)
+    r.right("REM", "X")
+    r.add("REM", "|", "RET_RET_CMP", "X", L)
+    r.left("RET_RET_CMP", "X")
+    r.add("RET_RET_CMP", ",", "RET_CMP", ",", L)
+    r.left("RET_CMP", "|")
+    r.add("RET_CMP", "X", "COMPARE", "X", R)
+    # If the first is larger (cannot remove from second), shift the , to the left to swap.
+    r.add("REM", "$c", "SWAP", "$c", L, c=",_")
+    r.add("SWAP", "X", "SWAP", "|", L)
+    r.add("SWAP", ",", "REPLACE", "|", L)
+    r.left("REPLACE", "|")
+    r.add("REPLACE", "X", "RESET", ",", L)
+    r.add("RESET", "$c", "RESET", "|", L, c="|X")
+    r.left("RESET", ",")
+    # If the second is larger or equal, reset second then go back to the top.
+    r.add("COMPARE", ",", "RESET_SECOND", ",", R)
+    r.add("RESET_SECOND", "X", "RESET_SECOND", "|", R)
+    r.add("RESET_SECOND", "$c", "GO_TO_START", "$c", L, c="_,|")
+    r.left("GO_TO_START", "|")
+    r.add("GO_TO_START", ",", "CHECK", ",", R)
+    # When done, reset X to |.
+    r.left("DONE", "$c", c="|,")
+    r.add("DONE", "X", "DONE", "|", L)
+    r.halt("DONE", "_")
 
     assert len({i.split()[0] for i in r.rules}) <= 1024, len({i.split()[0] for i in r.rules})
 
