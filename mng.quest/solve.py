@@ -18,11 +18,13 @@ L    = "L"
 
 class RuleSet:
 
-    def __init__(self, puzzle: int):
+    def __init__(self, puzzle: int, tests: list[tuple[str, str]] | None = None):
         self.rules = []
         self.tests = []
         self.puzzle = puzzle
         self.states = set()
+        for test in tests or []:
+            self.test(*test)
 
     def add(
         self,
@@ -35,9 +37,6 @@ class RuleSet:
     ) -> None:
         """Add a new rule, with format support."""
         rule = f"{start} {inp} {end} {out} {direction}"
-        if not fmt:
-            self.rules.append(rule)
-            return
         rules = [string.Template(rule)]
         for key, vals in fmt.items():
             expanded = []
@@ -48,8 +47,12 @@ class RuleSet:
                     expanded.append(rule)
             rules = expanded
         final = [r.safe_substitute() for r in rules]
+
         if any("{" in r and "}" in r for r in final):
             raise ValueError(f"Invalid rules: {final}. {fmt=}")
+        states = {j for i in final for j in i.split()[1::2]}
+        if any(len(s) != 1 for s in states):
+            raise ValueError(f"Found invalid state, not one char. {final}")
         states_list = [tuple(i.split()[:2]) for i in final]
         states = set(states_list)
         if len(states) != len(states_list):
@@ -560,64 +563,70 @@ def decimal_addition():
 
 
 def unary_array_sort():
-    """Sort a unary array.
-    """
+    """Sort a unary array."""
     # 13. Unary Array Sort
-    r = RuleSet(13)
-    r.add(INIT, "|", "COUNTN1", "|", R, c="YN")
-    r.add("COUNT${c}0", "|", "COUNT${c}1", "|", R, c="YN")
+    r = RuleSet(
+        13, [
+            ("||,|,|||||,||||||||", "|,||,|||||,||||||||"),
+            ("|,|", "|,|"),
+            ("|||,|||||||,|||||", "|||,|||||,|||||||"),
+            ("|,|,|,|,|,|,|,|,|,|", "|,|,|,|,|,|,|,|,|,|"),
+            ("||||,||,|,|||", "|,||,|||,||||"),
+            ("||,|||||,|,|||||||||,||,|||||||||,|||||,||,|,||||", "|,|,||,||,||,||||,|||||,|||||,|||||||||,|||||||||"),
+        ]
+    )
     r.halt(INIT, "_")
-    for i in range(1, 305):
-        r.add(f"COUNT${{c}}{i}", "|", f"COUNT${{c}}{i + 1}", "|", R, c="YN")
-        r.add(f"COUNTY{i}", "_", "LOOP", "_", L)
-        r.halt(f"COUNTN{i}", "_")
-        r.add(f"COUNT${{c}}{i}", ",", f"SUB${{c}}{i}", ",", R, c="YN")
-        r.add(f"SUB${{c}}{i}", "|", f"SUB${{c}}{i - 1}", "|", R, c="YN")
-    for i in range(1, 25):
-        r.add(f"SUB${{c}}{i}", ",", f"G{i}", ",", L, c="YN")
-        r.add(f"SUB${{c}}{i}", "_", f"G{i}", "_", L, c="YN")
-        r.left(f"G{i}", "|")
-        r.add(f"G{i}", ",", f"M{i - 1}", "|", L)
-        r.add(f"M{i}", "|", f"M{i - 1}", "|", L)
-    r.add("M0", "|", "COUNTY0", ",", R)
-    r.add("SUB${c}0", "|", "RESET${c}", "|", L, c="YN")
-    r.add("SUB${c}0", ",", "RESET${c}", ",", L, c="YN")
-    r.add(f"SUBY0", "_", "LOOP", "_", L)
-    r.halt(f"SUBN0", "_")
-    r.right("NEXT${c}", "|", c="YN")
-    r.add("NEXT${c}", ",", "COUNT${c}0", ",", R, c="YN")
-    r.add("NEXTY", "_", "LOOP", "_", L)
-    r.halt("NEXTN", "_")
-    r.left("RESET${c}", "|", c="YN")
-    r.add("RESET${c}", ",", "COUNT${c}0", ",", R, c="YN")
-    r.left("LOOP", "$i", i="|,")
-    r.add("LOOP", "_", "COUNTN0", "_", R)
+    r.add(INIT, "|", "RESET", "|", L)
+    r.add("RESET", "_", "CHECK", "_", R)
+    # Check if this is the last element in the array. If it is, halt.
+    r.right("CHECK", "|")
+    r.halt("CHECK", "_")
+    r.add("CHECK", ",", "CHECKED", ",", L)
+    r.left("CHECKED", "|")
+    r.add("CHECKED", "$c", "COUNT_0", "$c", R, c=",_")
+    # There are two or more elements. Count the first. Subtract the second.
+    # If the first is larger, we need to shift left the `,` by the difference.
+    for i in range(380):
+        r.add(f"COUNT_{i}", "|", f"COUNT_{i + 1}", "|", R)
+        r.halt(f"COUNT_{i}", "_")
+        r.add(f"COUNT_{i}", ",", f"SUB_{i}", ",", R)
+        if i:
+            r.add(f"SUB_{i}", "|", f"SUB_{i - 1}", "|", R)
+            r.add(f"SUB_{i}", ",", f"G_{i}", ",", L)
+            r.add(f"SUB_{i}", "_", f"G_{i}", "_", L)
+    for i in range(1, 270):
+        r.left(f"G_{i}", "|", )
+        r.add(f"G_{i}", ",", f"M_{i - 1}", "|", L)
+        r.add(f"M_{i}", "|", f"M_{i - 1}", "|", L)
+    r.add("M_0", "|", "RESET", ",", L)
+    r.add("SUB_0", "|", "NEXT_L", "|", L)
+    r.add("SUB_0", ",", "NEXT_L", ",", L)
+    r.halt("SUB_0", "_")
+    r.left("NEXT_L", "|")
+    r.add("NEXT_L", ",", "CHECK", ",", R)
+    r.left("RESET", "$c", c="|,")
+
+
 
     assert len({i.split()[0] for i in r.rules}) <= 1024, len({i.split()[0] for i in r.rules})
 
-    r.test("||,|,|||||,||||||||", "|,||,|||||,||||||||")
-    r.test("|,|", "|,|")
-    r.test("|||,|||||||,|||||", "|||,|||||,|||||||")
-    r.test("|,|,|,|,|,|,|,|,|,|", "|,|,|,|,|,|,|,|,|,|")
-    r.test("||||,||,|,|||", "|,||,|||,||||")
-    r.test("||,|||||,|,|||||||||,||,|||||||||,|||||,||,|,||||", "|,|,||,||,||,||||,|||||,|||||,|||||||||,|||||||||")
     return r
 
 
 SOLUTIONS = [
-    unary_addition(),
-    unary_even_odd(),
-    binary_increment(),
-    unary_multiplication(),
-    find_element_in_unary_array(),
-    unary_subtraction(),
-    letter_mark(),
-    text_mirror(),
-    unary_comparison(),
-    lines_count(),
-    decimal_increment(),
-    decimal_addition(),
-    unary_array_sort(),
+    unary_addition,
+    unary_even_odd,
+    binary_increment,
+    unary_multiplication,
+    find_element_in_unary_array,
+    unary_subtraction,
+    letter_mark,
+    text_mirror,
+    unary_comparison,
+    lines_count,
+    decimal_increment,
+    decimal_addition,
+    unary_array_sort,
 ]
 
 
@@ -627,11 +636,11 @@ SOLUTIONS = [
 def main(puzzle: int, out: pathlib.Path | None) -> None:
     if puzzle == 0:
         for r in SOLUTIONS:
-            r.check()
+            r().check()
         return
     if puzzle is None:
         puzzle = len(SOLUTIONS)
-    ruleset = SOLUTIONS[puzzle - 1]
+    ruleset = SOLUTIONS[puzzle - 1]()
     ruleset.check()
     if out:
         out.write_text(ruleset.program())
