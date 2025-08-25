@@ -24,7 +24,7 @@ class LogicMill(logic_mill.LogicMill):
 
     def _step(self) -> bool:
         result = super()._step()
-        min_pos = min(self.tape)
+        min_pos = min(self.tape, default=0)
         state = (frozenset((i - min_pos, j) for i, j in self.tape.items()), self.head_position - min_pos, self.current_state)
         if state in self.seen:
             self._print_tape()
@@ -117,15 +117,26 @@ class RuleSet:
         return "\n".join(self.rules)
 
     def parse(self, program: str, **expansions: dict[str, collections.abc.Sequence[int | str]]) -> RuleSet:
-        for line in program.strip().splitlines():
+        funcs = {
+            ">": self.right,
+            "<": self.left,
+            "A": self.add,
+            "H": self.halt,
+        }
+        lines = program.strip().splitlines()
+        lines.reverse()
+        while lines:
+            line = lines.pop()
             words = line.split("#")[0].strip().split()
             try:
                 if not words or words[0] == "#":
                     pass
-                elif words[0] == ">":
-                    self.right(*words[1:], **expansions)
-                elif words[0] == "<":
-                    self.left(*words[1:], **expansions)
+                elif words[0] == "=":
+                    for word in words[1:]:
+                        k, v = word.split(":", 1)
+                        expansions[k.strip()] = eval(v.strip())
+                elif words[0] in funcs:
+                    funcs[words[0]](*words[1:], **expansions)
                 else:
                     self.add(*words, **expansions)
             except:
@@ -328,23 +339,23 @@ def letter_mark() -> RuleSet:
     extras = set("[]=")
     r = RuleSet(7).parse(
         """
-        > INIT       $a                       # Move to the end.
-        INIT         _   GO_START   =   L     # Add a `=` then return to start.
-        < GO_START   $b                      
-        GO_START     _   START      _   R
-        START        $c  COPY_$c    _   R     # Once at the start copy letter to state.
-        START        c   MAYBE_c    _   R     # `c` gets special handling to detect `ch`.
-        MAYBE_c      h   COPY_ch    _   R
-        MAYBE_c      $d  COPY_c     $d  R
-        > COPY_${e}  $f                       # Go to the end so we can output the copy.
-        COPY_${g}    _   GO_START   $g  L     # Output the letter then return. `w` and `ch` get special handling.
-        COPY_w       _   COPY_w1    [   R     # `w` => `[w]`
-        COPY_w1      _   COPY_]     w   R
-        COPY_ch      _   COPY_ch1   [   R     # `ch` => `[ch]`
-        COPY_ch1     _   COPY_ch2   c   R
-        COPY_ch2     _   COPY_]     h   R
-        COPY_]       _   GO_START   ]   L
-        START        =   HALT       _   R     # End of input
+        > INIT         $a                       # Move to the end.
+        A INIT         _   GO_START   =   L     # Add a `=` then return to start.
+        < GO_START     $b
+        A GO_START     _   START      _   R
+        A START        $c  COPY_$c    _   R     # Once at the start copy letter to state.
+        A START        c   MAYBE_c    _   R     # `c` gets special handling to detect `ch`.
+        A MAYBE_c      h   COPY_ch    _   R
+        A MAYBE_c      $d  COPY_c     $d  R
+        > COPY_${e}    $f                       # Go to the end so we can output the copy.
+        A COPY_${g}    _   GO_START   $g  L     # Output the letter then return. `w` and `ch` get special handling.
+        A COPY_w       _   COPY_w1    [   R     # `w` => `[w]`
+        A COPY_w1      _   COPY_]     w   R
+        A COPY_ch      _   COPY_ch1   [   R     # `ch` => `[ch]`
+        A COPY_ch1     _   COPY_ch2   c   R
+        A COPY_ch2     _   COPY_]     h   R
+        A COPY_]       _   GO_START   ]   L
+        A START        =   HALT       _   R     # End of input
         """,
         a=letters,
         b=letters | extras,
@@ -378,19 +389,19 @@ def text_mirror():
     rules = []
     r = RuleSet(8).parse(
         """
-        INIT             $a  ADD_EQ         $a  L    # Add a `=` then find the first letter.
-        ADD_EQ           _   F              =   R
-        > F              !
-        F                $a  COPY_$a        !   R    # Copy and tombstone.
-        COPY_${a}        $b  COPY_${a}${b}  !   L 
-        < COPY_${a}${b}  $c
-        COPY_${a}${b}    _   PAST_$b        $a  L    # Found an opening. Record letter then return to the start.
-        PAST_${b}        _   GO_EQ          $b  R
-        > GO_EQ          $a 
-        GO_EQ            =   F              =   R
-        F                _   CLEANUP        _   L    # Once there is nothing left to copy clean up tombstones.
-        CLEANUP          !   CLEANUP        _   L
-        CLEANUP          =   HALT           _   L
+        A INIT             $a  ADD_EQ         $a  L    # Add a `=` then find the first letter.
+        A ADD_EQ           _   F              =   R
+        > F                !
+        A F                $a  COPY_$a        !   R    # Copy and tombstone.
+        A COPY_${a}        $b  COPY_${a}${b}  !   L
+        < COPY_${a}${b}    $c
+        A COPY_${a}${b}    _   PAST_$b        $a  L    # Found an opening. Record letter then return to the start.
+        A PAST_${b}        _   GO_EQ          $b  R
+        > GO_EQ            $a
+        A GO_EQ            =   F              =   R
+        A F                _   CLEANUP        _   L    # Once there is nothing left to copy clean up tombstones.
+        A CLEANUP          !   CLEANUP        _   L
+        A CLEANUP          =   HALT           _   L
         """,
         a=letters,
         b=letters | {"_"},
@@ -417,11 +428,11 @@ def unary_comparison() -> RuleSet:
         """
         > INIT        |                       # Start at the `,`.
         INIT          ,   FIND_LEFT   ,  L    # Look for a left `|`.
-        < FIND_LEFT   $i  
+        < FIND_LEFT   $i
         FIND_LEFT     _   EQ_OR_LT    _  R    # Ran out of `|` on the left. Check if there is any right left. Either `=` or `<`.
         FIND_LEFT     |   FIND_RIGHT  x  R    # Look for a matching right `|`.
         #
-        > FIND_RIGHT  $i 
+        > FIND_RIGHT  $i
         FIND_RIGHT    |   FIND_LEFT   x  L    # Matched. Go back to a left.
         FIND_RIGHT    _   SET_GT      _  L    # Ran out of `|` on the right. We found one on the left so the left is larger (`>`.
         > EQ_OR_LT    $i                      # Go to the right to check if it is `=` or `<`.
@@ -603,44 +614,47 @@ def unary_array_sort():
             ("|||,|||||||,|||||", "|||,|||||,|||||||"),
             ("||||,||,|,|||", "|,||,|||,||||"),
         ]
+    ).parse(
+        """
+        A INIT           _   HALT          _   L  # Do nothing on an empty tape.
+        A INIT           |   RESET         |   L
+        A RESET          _   CHECK         _   R  # Check if this is the last element in the array.
+        > CHECK          |                        #
+        A CHECK          _   DONE          _   L  # If it is, we are done.
+        A CHECK          ,   CHECKED       ,   L
+        < CHECKED        |
+          = i:",_"
+        A CHECKED        $i  COMPARE       $i  R
+        A COMPARE        |   GO_REM        X   R  # There are two or more elements. Substract from both elements until one runs out.
+        > GO_REM         |
+        A GO_REM         ,   REM           ,   R
+        > REM            X
+        A REM            |   RET_RET_CMP   X   L
+        < RET_RET_CMP    X
+        A RET_RET_CMP    ,   RET_CMP       ,   L
+        < RET_CMP        |
+        A RET_CMP        X   COMPARE       X   R
+          = i:",_"
+        A REM            $i  SWAP          $i  L  # If the first is larger (cannot remove from second), shift the , to the left to swap.
+        A SWAP           X   SWAP          |   L
+        A SWAP           ,   REPLACE       |   L
+        < REPLACE        |
+        A REPLACE        X   RESET         ,   L
+          = i:"|X"
+        A RESET          $i  RESET         |   L
+        < RESET          ,
+        A COMPARE        ,   RESET_SECOND  ,   R  # If the second is larger or equal, reset second then go back to the top.
+        A RESET_SECOND   X   RESET_SECOND  |   R
+          = i:"_,|"
+        A RESET_SECOND   $i  GO_TO_START   $i  L
+        < GO_TO_START    |
+        A GO_TO_START    ,   CHECK         ,   R
+          = i:",|"
+        < DONE           $i                       # When done, reset X to |.
+        A DONE           X   DONE          |   L
+        H DONE           _
+        """
     )
-    r.halt(INIT, "_")
-    r.add(INIT, "|", "RESET", "|", L)
-    r.add("RESET", "_", "CHECK", "_", R)
-    # Check if this is the last element in the array. If it is, we are done.
-    r.right("CHECK", "|")
-    r.add("CHECK", "_", "DONE", "_", L)
-    r.add("CHECK", ",", "CHECKED", ",", L)
-    r.left("CHECKED", "|")
-    r.add("CHECKED", "$c", "COMPARE", "$c", R, c=",_")
-    # There are two or more elements. Substract from both elements until one runs out.
-    r.add("COMPARE", "|", "GO_REM", "X", R)
-    r.right("GO_REM", "|")
-    r.add("GO_REM", ",", "REM", ",", R)
-    r.right("REM", "X")
-    r.add("REM", "|", "RET_RET_CMP", "X", L)
-    r.left("RET_RET_CMP", "X")
-    r.add("RET_RET_CMP", ",", "RET_CMP", ",", L)
-    r.left("RET_CMP", "|")
-    r.add("RET_CMP", "X", "COMPARE", "X", R)
-    # If the first is larger (cannot remove from second), shift the , to the left to swap.
-    r.add("REM", "$c", "SWAP", "$c", L, c=",_")
-    r.add("SWAP", "X", "SWAP", "|", L)
-    r.add("SWAP", ",", "REPLACE", "|", L)
-    r.left("REPLACE", "|")
-    r.add("REPLACE", "X", "RESET", ",", L)
-    r.add("RESET", "$c", "RESET", "|", L, c="|X")
-    r.left("RESET", ",")
-    # If the second is larger or equal, reset second then go back to the top.
-    r.add("COMPARE", ",", "RESET_SECOND", ",", R)
-    r.add("RESET_SECOND", "X", "RESET_SECOND", "|", R)
-    r.add("RESET_SECOND", "$c", "GO_TO_START", "$c", L, c="_,|")
-    r.left("GO_TO_START", "|")
-    r.add("GO_TO_START", ",", "CHECK", ",", R)
-    # When done, reset X to |.
-    r.left("DONE", "$c", c="|,")
-    r.add("DONE", "X", "DONE", "|", L)
-    r.halt("DONE", "_")
 
     assert len({i.split()[0] for i in r.rules}) <= 1024, len({i.split()[0] for i in r.rules})
 
