@@ -22,6 +22,7 @@ class RuleSet:
         self.rules = []
         self.tests = []
         self.puzzle = puzzle
+        self.states = set()
 
     def add(
         self,
@@ -46,7 +47,17 @@ class RuleSet:
                 else:
                     expanded.append(rule)
             rules = expanded
-        self.rules.extend(r.safe_substitute() for r in rules)
+        final = [r.safe_substitute() for r in rules]
+        if any("{" in r and "}" in r for r in final):
+            raise ValueError(f"Invalid rules: {final}. {fmt=}")
+        states_list = [tuple(i.split()[:2]) for i in final]
+        states = set(states_list)
+        if len(states) != len(states_list):
+            raise ValueError(f"Duplicate state in expanded rules, {states_list}")
+        if dupes := self.states & states:
+            raise ValueError(f"Duplicate states: {dupes}")
+        self.states.update(states)
+        self.rules.extend(final)
 
     def right(self, start: str, inp: str | int, **fmt: typing.Iterable[str | int]) -> None:
         """Add a rule where the state and tape do not change."""
@@ -55,6 +66,12 @@ class RuleSet:
     def left(self, start: str, inp: str | int, **fmt: typing.Iterable[str | int]) -> None:
         """Add a rule where the state and tape do not change."""
         self.add(start, inp, start, inp, L, **fmt)
+
+    def halt(self, start: str, inp: str | int, out: str | int | None = None, **fmt: typing.Iterable[str | int]) -> None:
+        """Add a rule where the state and tape do not change."""
+        if out is None:
+            out = inp
+        self.add(start, inp, HALT, out, L, **fmt)
 
     def test(self, inp: str, out: str) -> None:
         self.tests.append((inp, out))
@@ -237,8 +254,8 @@ def find_element_in_unary_array():
     r.add("FIND_RM_1", ",", "SKIP", "_", R)
     r.right("SKIP", "|")
     r.add("SKIP", ",", "TRIM", "_", R)
-    r.add("SKIP", "_", HALT, "_", R)
-    r.add("TRIM", "_", HALT, "_", R)
+    r.halt("SKIP", "_")
+    r.halt("TRIM", "_")
     r.add("TRIM", ",", "TRIM", "_", R)
     r.add("TRIM", "|", "TRIM", "_", R)
 
@@ -470,10 +487,10 @@ def decimal_increment() -> RuleSet:
     r.add(INIT, "_", "INC", "_", L)
     # Increment 0-8 and end, no carry.
     for i in range(9):
-        r.add("INC", i, HALT, i + 1, R)
+        r.halt("INC", i, i + 1)
     # Carry over on a 9.
     r.add("INC", 9, "INC", 0, L)
-    r.add("INC", "_", HALT, 1, R)
+    r.halt("INC", "_", 1)
 
     for i in range(0, 111, 7):
         r.test(str(i), str(i + 1))
@@ -526,7 +543,7 @@ def decimal_addition():
     # When a or b is empty, copy over the remaining prefix.
     r.right("COPY$j", "${i}", i=string.digits + "|+=", j=carries)
     r.add("COPY$j", "_", "COPY_G$j", "_", L, j=carries)
-    r.add("COPY_G", "=", HALT, "_", L,)
+    r.halt("COPY_G", "=", "_")
     r.add("COPY_G_C", "=", "COPY_1", "=", L,)
     r.add("COPY_G$j", "${i}", "COPY_G$j", "_", L, i="_|+", j=carries)
     r.add("COPY_G", "${i}", "COPY_${i}", "_", L, i=range(10))
@@ -539,6 +556,51 @@ def decimal_addition():
     for i, j in [(1, 2), (19, 82), (888, 9999999), (999999, 4444)]:
         r.test(f"{i}+{j}", f"{i+j}")
 
+    return r
+
+
+def unary_array_sort():
+    """Sort a unary array.
+    """
+    # 13. Unary Array Sort
+    r = RuleSet(13)
+    r.add(INIT, "|", "COUNTN1", "|", R, c="YN")
+    r.add("COUNT${c}0", "|", "COUNT${c}1", "|", R, c="YN")
+    r.halt(INIT, "_")
+    for i in range(1, 305):
+        r.add(f"COUNT${{c}}{i}", "|", f"COUNT${{c}}{i + 1}", "|", R, c="YN")
+        r.add(f"COUNTY{i}", "_", "LOOP", "_", L)
+        r.halt(f"COUNTN{i}", "_")
+        r.add(f"COUNT${{c}}{i}", ",", f"SUB${{c}}{i}", ",", R, c="YN")
+        r.add(f"SUB${{c}}{i}", "|", f"SUB${{c}}{i - 1}", "|", R, c="YN")
+    for i in range(1, 25):
+        r.add(f"SUB${{c}}{i}", ",", f"G{i}", ",", L, c="YN")
+        r.add(f"SUB${{c}}{i}", "_", f"G{i}", "_", L, c="YN")
+        r.left(f"G{i}", "|")
+        r.add(f"G{i}", ",", f"M{i - 1}", "|", L)
+        r.add(f"M{i}", "|", f"M{i - 1}", "|", L)
+    r.add("M0", "|", "COUNTY0", ",", R)
+    r.add("SUB${c}0", "|", "RESET${c}", "|", L, c="YN")
+    r.add("SUB${c}0", ",", "RESET${c}", ",", L, c="YN")
+    r.add(f"SUBY0", "_", "LOOP", "_", L)
+    r.halt(f"SUBN0", "_")
+    r.right("NEXT${c}", "|", c="YN")
+    r.add("NEXT${c}", ",", "COUNT${c}0", ",", R, c="YN")
+    r.add("NEXTY", "_", "LOOP", "_", L)
+    r.halt("NEXTN", "_")
+    r.left("RESET${c}", "|", c="YN")
+    r.add("RESET${c}", ",", "COUNT${c}0", ",", R, c="YN")
+    r.left("LOOP", "$i", i="|,")
+    r.add("LOOP", "_", "COUNTN0", "_", R)
+
+    assert len({i.split()[0] for i in r.rules}) <= 1024, len({i.split()[0] for i in r.rules})
+
+    r.test("||,|,|||||,||||||||", "|,||,|||||,||||||||")
+    r.test("|,|", "|,|")
+    r.test("|||,|||||||,|||||", "|||,|||||,|||||||")
+    r.test("|,|,|,|,|,|,|,|,|,|", "|,|,|,|,|,|,|,|,|,|")
+    r.test("||||,||,|,|||", "|,||,|||,||||")
+    r.test("||,|||||,|,|||||||||,||,|||||||||,|||||,||,|,||||", "|,|,||,||,||,||||,|||||,|||||,|||||||||,|||||||||")
     return r
 
 
@@ -555,6 +617,7 @@ SOLUTIONS = [
     lines_count(),
     decimal_increment(),
     decimal_addition(),
+    unary_array_sort(),
 ]
 
 
