@@ -96,6 +96,8 @@ class RuleSet:
         self.add(start, inp, HALT, out, L, **fmt)
 
     def test(self, inp: str, out: str) -> None:
+        if self.puzzle > 8 and len({i.split()[0] for i in self.rules}) > 1024:
+            raise ValueError("Too many states.")
         self.tests.append((inp, out))
 
     def check(self) -> None:
@@ -496,19 +498,19 @@ def lines_count() -> RuleSet:
     letters = set(string.ascii_lowercase + "-äöõü")
     r = RuleSet(10).parse(
         """
-        INIT   $i  INIT   !  R
-        INIT   +   ADD    +  L
-        < ADD  !
-        ADD    _   RET    |  R
-        ADD    |   INC    |  R
-        INC    !   RET    |  R
-        > RET  !
-        RET    +   INIT   !  R
-        INIT   _   CLEAN  _  L
-        CLEAN  !   CLEAN  _  L
-        CLEAN  |   END    |  R
-        CLEAN  _   HALT   |  R
-        END    _   HALT   |  R
+        A INIT   $i  INIT   !  R
+        A INIT   +   ADD    +  L
+        < ADD    !
+        A ADD    _   RET    |  R
+        A ADD    |   INC    |  R
+        A INC    !   RET    |  R
+        > RET    !
+        A RET    +   INIT   !  R
+        A INIT   _   CLEAN  _  L
+        A CLEAN  !   CLEAN  _  L
+        A CLEAN  |   END    |  R
+        A CLEAN  _   HALT   |  R
+        A END    _   HALT   |  R
         """, i=letters)
 
     r.test("hello+world+how-are-you", "|||"),
@@ -605,7 +607,7 @@ def unary_array_sort():
     Compare elements by subtracting one by one from each then examine the leftover digits.
     """
     # 13. Unary Array Sort
-    r = RuleSet(
+    return RuleSet(
         13, [
             ("|,|", "|,|"),
             ("|,|,|,|,|,|,|,|,|,|", "|,|,|,|,|,|,|,|,|,|"),
@@ -656,10 +658,25 @@ def unary_array_sort():
         """
     )
 
-    assert len({i.split()[0] for i in r.rules}) <= 1024, len({i.split()[0] for i in r.rules})
-
+def binary_to_decimal():
+    """Binary to decimal.
+    """
+    # 14. Binary to Decimal
+    r = RuleSet(
+        14, [
+            ("1010", "10"),
+        ]
+    )
+    r.left(INIT, 1)
+    r.add(INIT, "_", "NEXT", "=", R)
+    r.right("NEXT", 0)
+    r.right("NEXT", 1)
+    r.add("NEXT", "_", "POW_0", "_", L)
+    for i in range(20):
+        r.add(f"POW_{i}", 0, "POW_{i + 1}", 0, L)
+        r.add(f"POW_{i}", 1, f"ADD_{2 ** i}", 0, L)
+        r.left("ADD_{2 ** i}", 0, L)
     return r
-
 
 SOLUTIONS = [
     unary_addition,
@@ -675,6 +692,7 @@ SOLUTIONS = [
     decimal_increment,
     decimal_addition,
     unary_array_sort,
+    binary_to_decimal,
 ]
 
 
