@@ -7,7 +7,8 @@ log = logging.info
 
 
 @functools.cache
-def get_points(rows, token, start):
+def get_points(rows: tuple[str, ...], token: str, start: int) -> int:
+    """Return how many points are won for a given configuration."""
     pos = start * 2
     bounces = iter(token)
     for row in rows:
@@ -29,45 +30,48 @@ def get_points(rows, token, start):
     return points
 
 
-def min_max_points(rows, tokens, slots):
+def min_max_points(rows: tuple[str, ...], tokens: tuple[str, ...], slots: frozenset[int]) -> tuple[int, int]:
+    """Return the min and max possible points."""
 
     @functools.cache
-    def cached(tokens, slots):
+    def cached(tokens: tuple[str, ...], slots: frozenset[int]) -> tuple[int, int]:
         assert len(tokens) < len(slots)
         if len(tokens) == 1:
             points = sorted(get_points(rows, tokens[0], i) for i in slots)
             return points[0], points[-1]
 
-        token, *tokens = tokens
+        token, *rest = tokens
+        tokens = tuple(rest)
         return min(
-            get_points(rows, token, slot) + cached(tuple(tokens), frozenset(slots - {slot}))[0]
+            get_points(rows, token, slot) + cached(tokens, frozenset(slots - {slot}))[0]
             for slot in slots
         ), max(
-            get_points(rows, token, slot) + cached(tuple(tokens), frozenset(slots - {slot}))[1]
+            get_points(rows, token, slot) + cached(tokens, frozenset(slots - {slot}))[1]
             for slot in slots
         )
 
     return cached(tokens, slots)
 
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: str) -> int | str:
     """Solve the parts."""
     nails, tokens = data.split("\n\n")
-    rows = nails.splitlines()
+    rows = tuple(nails.splitlines())
     assert len(rows[0]) % 2 == 1
     positions = (len(rows[0]) + 1) // 2
 
-    if part in [1, 2]:
-        score = 0
-        for start, token in enumerate(tokens.splitlines()):
-            if part == 1:
-                score += get_points(rows, token, start)
-            if part == 2:
-                score += max(get_points(rows, token, i) for i in range(positions))
-        return score
+    if part == 3:
+        slots = frozenset(range(positions))
+        a, b = min_max_points(tuple(rows), tuple(tokens.splitlines()), slots)
+        return f"{a} {b}"
 
-    slots = frozenset(range(positions))
-    return min_max_points(tuple(rows), tuple(tokens.splitlines()), slots)
+    score = 0
+    for start, token in enumerate(tokens.splitlines()):
+        if part == 1:
+            score += get_points(rows, token, start)
+        if part == 2:
+            score += max(get_points(rows, token, i) for i in range(positions))
+    return score
 
 
 TEST_DATA = [
