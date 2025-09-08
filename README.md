@@ -8,5 +8,6 @@ These are mostly in Python with a handful of Golang.
 * i18n Puzzles - [website](https://i18n-puzzles.com/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/i18n) - [README.md](./i18n)
 * Pi Coding Quest - [website](https://ivanr3d.com/projects/pi/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/ivanr3d.pi) - [README.md](./ivanr3d.pi)
 * Marches & Gnats - [website](https://mng.quest/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/mng) - [README.md](./mng)
+* aquaq - [website](https://challenges.aquaq.co.uk/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/aquaq) - [README.md](./aquaq)
 
 The `lib/` contains a number of helpers and base runner code.
