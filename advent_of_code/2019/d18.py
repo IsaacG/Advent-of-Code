@@ -2,6 +2,7 @@
 """Advent of Code, Day 18: Many-Worlds Interpretation."""
 import collections
 import string
+import typing
 
 from lib import aoc
 
@@ -92,16 +93,16 @@ class Day18(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_one_str
 
-    def build_edges(self, data: aoc.Map, nodes: set[str]) -> dict[str, dict[str, tuple[int, int]]]:
+    def build_edges(self, data: aoc.Map, nodes: dict[str, complex]) -> dict[str, dict[str, tuple[int, int]]]:
         """Return a map of all {start|key}-key pairs with the min distance and blocking doors."""
-        edges = {node: {} for node in nodes}
+        edges: dict[str, dict[str, tuple[int, int]]] = {node: {} for node in nodes}
         # For each starting point, explore depth first to discover paths to keys.
         for start, pos in nodes.items():
             todo = collections.deque([(0, pos, 0)])
             seen = {pos}
             while todo:
                 steps, pos, doors = todo.popleft()
-                char = data.chars[pos]
+                char = typing.cast(str, data.chars[pos])
                 if char.islower() and char != start:
                     edges[start][char] = (steps, doors)
                 steps += 1
@@ -109,7 +110,7 @@ class Day18(aoc.Challenge):
                     if n in seen:
                         continue
                     seen.add(n)
-                    char = data.chars[n]
+                    char = typing.cast(str, data.chars[n])
                     new_doors = doors
                     if char.isupper():
                         new_doors |= 1 << string.ascii_uppercase.index(char)
@@ -118,19 +119,19 @@ class Day18(aoc.Challenge):
 
     def solve_for(self, starts: list[str], edges: dict[str, dict[str, tuple[int, int]]]) -> int:
         """Return the minimum steps needed to collect all the keys."""
+        # pylint: disable=too-many-locals
         num_keys = len(set(edges) - set(starts))
-        todo = collections.deque()
+        todo: collections.deque[tuple] = collections.deque()
         todo.append((0, *starts, 0))
-        smallest = 1e9
-        seen = {}
+        smallest = int(1e9)
+        seen: dict[tuple, int] = {}
 
         while todo:
             steps, *positions, got = todo.pop()
             if steps > smallest:
                 continue
             if got.bit_count() == num_keys:
-                if steps < smallest:
-                    smallest = steps
+                smallest = min(steps, smallest)
                 continue
             for bot, pos in enumerate(positions):
                 for key, (distance, doors) in edges[pos].items():
@@ -159,13 +160,17 @@ class Day18(aoc.Challenge):
             for n in data.neighbors(center):
                 data.update(n, "#")
 
-            puzzle_input = aoc.render_char_map(data.chars, data.max_y + 1, data.max_x + 1)
+            puzzle_input = aoc.render_char_map(
+                typing.cast(dict[complex, str], data.chars), data.max_y + 1, data.max_x + 1
+            )
 
         data = aoc.CoordinatesParser(ignore="#", origin_top_left=True).parse(puzzle_input)
         starts = list("@" if part_one else "0123")
-        nodes = {char: pos for pos, char in data.chars.items() if char.islower() or char in "@0123"}
+        nodes: dict[str, complex] = {
+            char: pos
+            for pos, char in typing.cast(dict[complex, str], data.chars).items()
+            if char.islower() or char in "@0123"
+        }
         return self.solve_for(starts, self.build_edges(data, nodes))
-
-
 
 # vim:expandtab:sw=4:ts=4
