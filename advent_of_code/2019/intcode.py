@@ -62,13 +62,10 @@ class Computer:
         if output_q is None:
             output_q = collections.deque()
 
-        self.memory: dict[int, int] = collections.defaultdict(int)
-        self.memory.update(dict(enumerate(int(num) for num in program.split(","))))
-        self.ptr = 0
-        self.relative_base = 0
         self.input = input_q
         self.output = output_q
-        self.state = State.READY
+        self.program = dict(enumerate(int(num) for num in program.split(",")))
+        self.reset()
         self.debug = debug
 
         self._debug(f"Program: {program}")
@@ -85,6 +82,15 @@ class Computer:
             OP_CODE_RELBASE: (1, 0, lambda x: x,        self.update_relative_base),
             OP_CODE_STOP:    (0, 0, lambda: State.STOP, self.set_state),
         }
+
+    def reset(self) -> None:
+        self.memory: dict[int, int] = collections.defaultdict(int)
+        self.memory.update(self.program)
+        self.ptr = 0
+        self.relative_base = 0
+        self.input.clear()
+        self.output.clear()
+        self.state = State.READY
 
     def __str__(self):
         """Pretty print the memory."""
