@@ -276,11 +276,12 @@ class CoordinatesParser(BaseParser):
         all_coords = set()
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
+                if char not in want_chars:
+                    continue
                 pos = complex(x, y)
                 all_coords.add(pos)
-                if char in want_chars:
-                    coords_by_char[transform(char)].add(pos)
-                    char_by_coord[pos] = transform(char)
+                coords_by_char[transform(char)].add(pos)
+                char_by_coord[pos] = transform(char)
 
         blank_char = max(coords_by_char, key=lambda x: len(coords_by_char[x]))
         non_blank_chars = set(coords_by_char) - {blank_char}

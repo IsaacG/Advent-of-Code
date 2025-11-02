@@ -80,6 +80,12 @@ def solve(part: int, data: str) -> int | str:
                 for delta in deltas
                 if position + delta in locations[roll]
             }
+    if False:
+        height = len(board.splitlines())
+        width = len(board.splitlines()[0])
+        for y in range(height):
+            print("".join("#" if complex(x, y) in seen else " " for x in range(width)))
+
     return len(seen)
 
 

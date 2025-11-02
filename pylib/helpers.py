@@ -192,6 +192,12 @@ class Map:
             raise ValueError(f"The input is {self.width, self.height} and not square!")
         return self.width
 
+    def update(self, coord: complex, val: int | str) -> None:
+        prior = self.chars[coord]
+        self.chars[coord] = val
+        self.coords[prior].remove(coord)
+        self.coords.setdefault(val, set()).add(coord)
+
     def get_coords(self, chars: collections.abc.Iterable[str]) -> list[set[complex]]:
         return [self.coords[char] for char in chars]
 
