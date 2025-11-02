@@ -122,30 +122,43 @@ class Day18(aoc.Challenge):
         # pylint: disable=too-many-locals
         num_keys = len(set(edges) - set(starts))
         todo: collections.deque[tuple] = collections.deque()
-        todo.append((0, *starts, 0))
+        num_bots = len(starts)
+        for active in range(num_bots):
+            todo.append((0, "".join(starts), 0, active))
         smallest = int(1e9)
         seen: dict[tuple, int] = {}
 
         while todo:
-            steps, *positions, got = todo.pop()
+            steps, positions, got, active = todo.pop()
             if steps > smallest:
                 continue
             if got.bit_count() == num_keys:
                 smallest = min(steps, smallest)
                 continue
-            for bot, pos in enumerate(positions):
+            found = False
+            # Try moving the active bot. Other move other bots if the active bot is stuck.
+            for bot in range(active, active + num_bots):
+                bot %= num_bots
+                pos = positions[bot]
                 for key, (distance, doors) in edges[pos].items():
+                    # Skip if we already have this key or if there is a locked door we cannot cross.
                     n_key = 1 << string.ascii_lowercase.index(key)
-                    new_steps = steps + distance
-                    if n_key & got or doors & ~got or new_steps > smallest:
+                    if n_key & got or doors & ~got:
                         continue
+                    # Build the new state.
                     new_got = got | n_key
-                    new_positions = positions.copy()
-                    new_positions[bot] = key
-                    if (*new_positions, new_got) in seen and seen[*new_positions, new_got] <= new_steps:
+                    t = list(positions)
+                    t[bot] = key
+                    new_positions = "".join(t)
+                    new_steps = steps + distance
+                    if (new_positions, new_got) in seen and seen[new_positions, new_got] <= new_steps:
                         continue
-                    seen[*new_positions, new_got] = new_steps
-                    todo.append((new_steps, *new_positions, new_got))
+                    seen[new_positions, new_got] = new_steps
+                    todo.append((new_steps, new_positions, new_got, bot))
+                    found = True
+                # If the active bot is able to move, do not try other bots.
+                if found and bot == active:
+                    break
 
         return smallest
 
