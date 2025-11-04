@@ -5,11 +5,10 @@ import re
 def solve(part: int, data: str) -> int:
     """Solve day two."""
     chunks = data.split("\n\n")
+    words = chunks[0].split(":", 1)[1].split(",")
     lines = chunks[1].splitlines()
     if part == 1:
-        words = chunks[0].split(":", 1)[1].split(",")
         return sum(len(re.findall(word, chunks[1])) for word in words)
-    words = chunks[0].split(":", 1)[1].split(",")
     chars = {complex(x, y): char for y, line in enumerate(lines) for x, char in enumerate(line)}
     width = len(lines[0])
     if part == 2:
