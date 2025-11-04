@@ -88,10 +88,13 @@ class Runner:
     def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
         module = importlib.import_module(self.module_name())
         module = importlib.reload(module)
+        parser = module.PARSER if hasattr(module, "PARSER") else None
         if test:
             for part in self.parts:
                 formatter.set_part(part)
                 for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
+                    if parser:
+                        test_data = parser(test_data)
                     if test_part != part:
                         continue
                     time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True, test_number=test_number)
@@ -106,6 +109,8 @@ class Runner:
                 if data is None:
                     print(f"SOLVE No input data found for day {self.day} part {part}")
                     continue
+                if parser:
+                    data = parser(data)
                 time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
                 print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
         if check:
@@ -119,6 +124,8 @@ class Runner:
                     if data is None:
                         print(f"CHECK No input data found for day {day} part {part}")
                         continue
+                    if parser:
+                        data = parser(data)
                     time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
                     if str(got) == want[part - 1]:
                         print(f"CHECK {self.day:02}.{part} {time_s} PASS")
