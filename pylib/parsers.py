@@ -59,6 +59,9 @@ class BaseParser:
         """Parse a puzzle input."""
         raise NotImplementedError
 
+    def __call__(self, puzzle_input: str) -> Any:
+        return self.parse(puzzle_input)
+
 
 @dataclasses.dataclass
 class ParseIntergers(BaseParser):
