@@ -2,12 +2,13 @@
 
 import collections
 import itertools
+from lib import parsers
 
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[list[int]]) -> int:
     """Solve puzzle."""
     # Convert the input into columns.
-    rows = [[int(i) for i in line.split()] for line in data.splitlines()]
+    rows = data
     cols = [list(i) for i in zip(*rows)]
 
     # Tracking info.
@@ -44,6 +45,7 @@ def solve(part: int, data: str) -> int:
     raise RuntimeError("No loop found.")
 
 
+PARSER = parsers.parse_ints
 TEST_DATA = [
     """\
 2 3 4 5

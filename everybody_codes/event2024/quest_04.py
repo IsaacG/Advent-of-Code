@@ -1,8 +1,10 @@
 """Everyone Codes Day Four."""
+from lib import parsers
 
-def solve(part: int, data: str) -> int:
+
+def solve(part: int, data: list[int]) -> int:
     """Solve puzzle."""
-    heights = [int(i) for i in data.splitlines()]
+    heights = data
     if part in [1, 2]:
         target = min(heights)
         return sum(i - target for i in heights)
@@ -12,6 +14,7 @@ def solve(part: int, data: str) -> int:
     )
 
 
+PARSER = parsers.parse_one_int_per_line
 TEST_DATA = [
     """\
 3

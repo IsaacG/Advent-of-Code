@@ -1,13 +1,11 @@
 """Everyone Codes Day Three."""
 
-def solve(part: int, data: str) -> int:
+from lib import helpers, parsers
+
+
+def solve(part: int, helpers.Map: str) -> int:
     """Solve puzzle."""
-    pos = {
-        complex(x, y)
-        for y, line in enumerate(data.splitlines())
-        for x, char in enumerate(line)
-        if char == "#"
-    }
+    pos = data.coords["#"]
     remove = 0
     offsets = [1j ** i for i in range(4)]
     if part == 3:
@@ -18,6 +16,7 @@ def solve(part: int, data: str) -> int:
     return remove
 
 
+PARSER = parsers.CoordinatesParser(chars="#")
 TEST_DATA = """\
 ..........
 ..###.##..
