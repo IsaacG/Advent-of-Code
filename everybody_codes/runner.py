@@ -27,7 +27,8 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
-        return (pathlib.Path(os.getenv("HOME")) / "remote/Downloads" / f"everybody_codes_e2_q{day:02}_p{part}.txt").read_text()
+        event = self.year.replace("event", "e")
+        return (pathlib.Path(os.getenv("HOME")) / "remote/Downloads" / f"everybody_codes_{event}_q{day:02}_p{part}.txt").read_text()
 
 
 @click.command()
