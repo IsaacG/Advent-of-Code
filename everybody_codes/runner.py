@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import click
+import ecd
 from lib import running
 
 
@@ -27,8 +28,8 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
-        event = self.year.replace("event", "e")
-        return (pathlib.Path(os.getenv("HOME")) / "remote/Downloads" / f"everybody_codes_{event}_q{day:02}_p{part}.txt").read_text()
+        event = int(year.replace("event", ""))
+        return ecd.get_inputs(quest=day, event=event)[str(part)]
 
 
 @click.command()
