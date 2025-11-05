@@ -29,7 +29,7 @@ class Runner(running.Runner):
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
         event = int(year.replace("event", ""))
-        return ecd.get_inputs(quest=day, event=event)[str(part)]
+        return ecd.get_inputs(quest=day, event=event).get(str(part))
 
 
 @click.command()
