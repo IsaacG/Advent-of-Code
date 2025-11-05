@@ -26,10 +26,13 @@ class Runner(running.Runner):
         """Return the module name."""
         return f"quest_{self.day:02}"
 
-    def download_input(self, year: int, day: int, part: int) -> str:
+    def download_input(self, year: int, day: int, part: int) -> str | None:
         """Download the input."""
         event = int(year.replace("event", ""))
-        return ecd.get_inputs(quest=day, event=event).get(str(part))
+        data = ecd.get_inputs(quest=day, event=event)
+        if str(part) not in data:
+            return None
+        return data[str(part)]
 
 
 @click.command()

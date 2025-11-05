@@ -73,14 +73,17 @@ class Runner:
             return None
         return [line.split(maxsplit=1)[1] for line in want_raw]
 
-    def input_data(self, part: int) -> str:
+    def input_data(self, part: int) -> str | None:
         """Return the input data."""
         if self.data:
             data_path = pathlib.Path(self.data)
         else:
             data_path = self.input_path(part)
             if not data_path.exists():
-                data_path.write_text(self.download_input(self.year, self.day, part))
+                data = self.download_input(self.year, self.day, part)
+                if data is None:
+                    return None
+                data_path.write_text(data)
         if not data_path.exists():
             return None
         return data_path.read_text().rstrip()
