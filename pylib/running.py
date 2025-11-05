@@ -10,6 +10,7 @@ import os
 import pathlib
 import requests
 import resource
+import shutil
 import sys
 import time
 import typing
@@ -89,6 +90,9 @@ class Runner:
         return data_path.read_text().rstrip()
 
     def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
+        solution_file = pathlib.Path(f"{self.year}/{self.module_name()}.py")
+        if not solution_file.exists():
+            shutil.copyfile("tmpl.py", solution_file)
         module = importlib.import_module(self.module_name())
         module = importlib.reload(module)
         parser = module.PARSER if hasattr(module, "PARSER") else None
