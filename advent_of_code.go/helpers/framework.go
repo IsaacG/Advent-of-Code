@@ -18,14 +18,19 @@ type Puzzle struct {
 	Year, Day int
 }
 
+// LoadFile returns the contents of a file.
+func LoadFile(filename string) string {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic("Failed to read solutions file")
+	}
+	return string(data)
+}
+
 // ReadData returns the puzzle input data.
 func (p Puzzle) ReadData() string {
 	filename := fmt.Sprintf("../inputs/%d.%02d.txt", p.Year, p.Day)
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic("Failed to read file")
-	}
-	return strings.TrimRight(string(data), "\n")
+	return strings.TrimRight(LoadFile(filename), "\n")
 }
 
 // Check checks if a Solver can solve a puzzle.
