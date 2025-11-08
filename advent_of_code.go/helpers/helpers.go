@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -80,7 +81,7 @@ func (r *Robot) Peak(direction Direction) Location {
 func Atoi(a string) int{
 	i, err := strconv.Atoi(a)
 	if err != nil {
-		panic("strconv.Atoi failed")
+		panic(fmt.Sprintf("strconv.Atoi failed to parse %s", a))
 	}
 	return i
 }

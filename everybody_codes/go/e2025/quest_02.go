@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type Quest02 struct{}
+
 func engrave(x, y int) bool {
 	nx, ny := 0, 0
 	for i := 0; i < 100; i++ {
@@ -18,7 +20,7 @@ func engrave(x, y int) bool {
 	return true
 }
 
-func Quest02(data string, part int) string {
+func (q Quest02) Solve(data string, part int) string {
 	input := strings.TrimRight(data[3:], "]")
 	parts := strings.Split(input, ",")
 	var nums [2]int

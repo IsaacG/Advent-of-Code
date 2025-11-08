@@ -10,23 +10,31 @@ import (
 	"isaacgood.com/everybodycodes/helpers"
 )
 
+// Day represents one challenge.
 type Day struct {
 	event string
-	day int
+	day   int
 }
 
-var puzzles = map[Day]func (string, int) string {
-	Day{"e2025", 2}: e2025.Quest02,
-	Day{"e2025", 5}: e2025.Quest05,
+// Solver is able to solve the puzzle for a day.
+type Solver interface {
+	Solve(string, int) string
 }
 
+var puzzles = map[Day]Solver{
+	Day{"e2025", 2}: e2025.Quest02{},
+	Day{"e2025", 5}: e2025.Quest05{},
+}
+
+// Puzzle has all the data for one day.
 type Puzzle struct {
 	Day
-	input map[int]string
-	want map[int]string
-	solver func (string, int) string
+	input  map[int]string
+	want   map[int]string
+	solver Solver
 }
 
+// NewPuzzle constructs and configures a puzzle.
 func NewPuzzle(event string, day int) *Puzzle {
 	solver, ok := puzzles[Day{event, day}]
 	if !ok {
@@ -35,10 +43,10 @@ func NewPuzzle(event string, day int) *Puzzle {
 	}
 
 	solutions := map[int]string{}
-	raw_solutions := helpers.LoadFile(fmt.Sprintf("%s/solutions.txt", event))
-	for part := 1; part <= 3; part ++ {
+	rawSolutions := helpers.LoadFile(fmt.Sprintf("%s/solutions.txt", event))
+	for part := 1; part <= 3; part++ {
 		prefix := fmt.Sprintf("%02d.%d ", day, part)
-		for line := range strings.Lines(raw_solutions) {
+		for line := range strings.Lines(rawSolutions) {
 			if strings.HasPrefix(line, prefix) {
 				solutions[part] = strings.TrimSuffix(strings.TrimPrefix(line, prefix), "\n")
 			}
@@ -46,7 +54,7 @@ func NewPuzzle(event string, day int) *Puzzle {
 		}
 	}
 	input := map[int]string{}
-	for part := 1; part <= 3; part ++ {
+	for part := 1; part <= 3; part++ {
 		input[part] = helpers.LoadFile(fmt.Sprintf("%s/inputs/%02d.%d.txt", event, day, part))
 	}
 
@@ -54,10 +62,10 @@ func NewPuzzle(event string, day int) *Puzzle {
 }
 
 func (p *Puzzle) check() {
-	for part := 1; part <= 3; part ++ {
+	for part := 1; part <= 3; part++ {
 		start := time.Now()
 		data := p.input[part]
-		got := p.solver(data, part)
+		got := p.solver.Solve(data, part)
 		elapsed := time.Since(start)
 		if got == p.want[part] {
 			fmt.Printf("%s/%02d.%d PASSED!  %15s\n", p.event, p.day, part, elapsed)
@@ -68,7 +76,6 @@ func (p *Puzzle) check() {
 	}
 }
 
-
 func main() {
 	event, day := os.Args[1], helpers.Atoi(os.Args[2])
 	p := NewPuzzle(event, day)
@@ -76,24 +83,24 @@ func main() {
 		p.check()
 	}
 	/*
-	if len(os.Args) == 1 {
-		for puzzle, solver := range puzzles {
-			puzzle.Check(solver)
-		}
-	} else if len(os.Args) == 2 {
-		year := helpers.Atoi(os.Args[1])
-		for puzzle, solver := range puzzles {
-			if puzzle.Year == year {
+		if len(os.Args) == 1 {
+			for puzzle, solver := range puzzles {
 				puzzle.Check(solver)
 			}
+		} else if len(os.Args) == 2 {
+			year := helpers.Atoi(os.Args[1])
+			for puzzle, solver := range puzzles {
+				if puzzle.Year == year {
+					puzzle.Check(solver)
+				}
+			}
+		} else if len(os.Args) == 3 {
+			p := helpers.Puzzle{helpers.Atoi(os.Args[1]), helpers.Atoi(os.Args[2])}
+			s, ok := puzzles[p]
+			if !ok {
+				panic("That solver does not exist")
+			}
+			p.Check(s)
 		}
-	} else if len(os.Args) == 3 {
-		p := helpers.Puzzle{helpers.Atoi(os.Args[1]), helpers.Atoi(os.Args[2])}
-		s, ok := puzzles[p]
-		if !ok {
-			panic("That solver does not exist")
-		}
-		p.Check(s)
-	}
 	*/
 }
