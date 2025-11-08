@@ -1,52 +1,54 @@
 """Everyone Codes Day N."""
 
-import logging
+import collections
+from typing import cast
 from lib import parsers
 
-log = logging.info
+Fishbone = collections.namedtuple("Fishbone", ["index", "segments"])
 
-def fishbone(numbers):
-    segments = []
-    for number in numbers:
+
+def parse(numbers: list[int]) -> Fishbone:
+    """Parse a Fishbone from a line of input."""
+    segments: list[list[int | None]] = []
+    index, *values = numbers
+    for number in values:
         for segment in segments:
-            if number < segment[1] and segment[0] is None:
+            if number < cast(int, segment[1]) and segment[0] is None:
                 segment[0] = number
-            elif number > segment[1] and segment[2] is None:
+                break
+            if number > cast(int, segment[1]) and segment[2] is None:
                 segment[2] = number
-            else:
-                continue
-            break
+                break
         else:
             segments.append([None, number, None])
 
-    return segments
+    return Fishbone(index, segments)
 
-def solve(part: int, data: str) -> int:
-    """Solve the parts."""
-    if part == 1:
-        numbers = data[0][1:]
-        return "".join(str(s[1]) for s in fishbone(numbers))
-    if part == 2:
-        vals = [
-            int("".join(str(s[1]) for s in fishbone(numbers[1:])))
-            for numbers in data
-        ]
-        return max(vals) - min(vals)
 
-    swords = []
-    for numbers in data:
-        swords.append((fishbone(numbers[1:]), numbers[0]))
+def spine(fishbone: Fishbone) -> int:
+    """Extract the spine of a fishbone."""
+    return int("".join(str(s[1]) for s in fishbone.segments))
 
-    def s(p):
-        segments, idx = p
-        return (-int("".join(str(s[1]) for s in segments)), [-int("".join(str(i) for i in segment if i is not None)) for segment in segments], -idx)
 
-    swords.sort(key=s)
-    return sum(
-        idx * pos for idx, (segments, pos) in enumerate(swords, start=1)
+def sword_sort(sword: Fishbone) -> tuple[int, list[int], int]:
+    """Return sort value for a fishbone."""
+    return (
+        spine(sword),
+        [int("".join(str(i) for i in segment if i is not None)) for segment in sword.segments],
+        sword.index,
     )
-            
-    pass
+
+
+def solve(part: int, data: list[list[int]]) -> int:
+    """Solve the parts."""
+    swords = [parse(numbers) for numbers in data]
+    swords.sort(key=sword_sort, reverse=True)
+    spines = [spine(i) for i in swords]
+    return [
+        spines[0],
+        max(spines) - min(spines),
+        sum(idx * pos for idx, (pos, segments) in enumerate(swords, start=1)),
+    ][part - 1]
 
 
 PARSER = parsers.parse_ints
@@ -77,7 +79,7 @@ TEST_DATA = [
 2:7,1,9,1,6,9,8,3,7,2""",
 ]
 TESTS = [
-    (1, "58:5,3,7,8,9,10,4,5,7,8,8", "581078"),
+    (1, "58:5,3,7,8,9,10,4,5,7,8,8", 581078),
     (2, TEST_DATA[0], 77053),
     (3, TEST_DATA[1], 260),
     (3, TEST_DATA[2], 4),
