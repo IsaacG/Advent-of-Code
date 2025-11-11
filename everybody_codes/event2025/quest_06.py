@@ -21,6 +21,33 @@ def solve(part: int, data: str) -> int:
                     total += counts[i]
         return total
 
+    l = len(data)
+    window = collections.deque()
+    mentors = collections.defaultdict(int)
+    for i in range(1000):
+        j = data[i % l]
+        window.append(j)
+        if j.isupper():
+            mentors[j.lower()] += 1
+
+    limit = 1000 * (l - 1)
+    for idx, n in enumerate(j for i in range(1000) for j in data):
+        if idx > 1000:
+            j = window.popleft()
+            if j.isupper():
+                mentors[j.lower()] -= 1
+        j = data[(idx + 1000) % l] if idx < limit else " "
+        window.append(j)
+        if j.isupper():
+            mentors[j.lower()] += 1
+        if n.islower():
+            total += mentors[n]
+
+    return total
+
+
+
+
     once  = math.ceil(1000 / len(data))
     twice = once * 2
     three = once * 3
@@ -29,7 +56,6 @@ def solve(part: int, data: str) -> int:
     for idx, m in enumerate(j for i in range(twice) for j in data):
         if m.isupper():
             mentors[m.lower()].add(idx)
-    print("Done counting mentors")
     
     edges = 0
     for idx, m in enumerate(j for i in range(twice) for j in data):
@@ -37,13 +63,11 @@ def solve(part: int, data: str) -> int:
             for i in mentors[m.lower()]:
                 if abs(idx - i) <= 1000:
                     edges += 1
-    print("edges", edges)
 
     mentors = collections.defaultdict(set)
     for idx, m in enumerate(j for i in range(three) for j in data):
         if m.isupper():
             mentors[m.lower()].add(idx)
-    print("Done counting mentors")
     
     middle = 0
     count = 1000 - twice
@@ -52,7 +76,6 @@ def solve(part: int, data: str) -> int:
             for i in mentors[m.lower()]:
                 if abs(idx + once * len(data) - i) <= 1000:
                     middle += 1
-    print(f"{len(data)=}, {edges=}, {middle=}, {once=}, {twice=}, {three=}, {count=}, {count + twice=}")
 
     return edges + middle * count
 
