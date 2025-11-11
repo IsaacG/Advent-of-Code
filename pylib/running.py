@@ -89,6 +89,22 @@ class Runner:
             return None
         return data_path.read_text().rstrip()
 
+    def compare(self, want, data: str, parser: typing.Callable, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs):
+        if parser:
+            data = parser(data)
+        time_s, got = helpers.timed(func, data=data, **kwargs)
+        if str(got) == str(want):
+            print(msg_success % time_s)
+        else:
+            msg = msg_fail % (time_s, got)
+            if str(want).isdigit() and str(got).isdigit():
+                delta = int(want) - int(got)
+                if delta > 0:
+                    msg += f" Too low by {delta}."
+                else:
+                    msg += f" Too high by {-delta}."
+            print(msg)
+
     def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
         solution_file = pathlib.Path(f"{self.year}/{self.module_name()}.py")
         if not solution_file.exists():
@@ -100,15 +116,15 @@ class Runner:
             for part in self.parts:
                 formatter.set_part(part)
                 for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
-                    if parser:
-                        test_data = parser(test_data)
                     if test_part != part:
                         continue
-                    time_s, got = helpers.timed(module.solve, part=part, data=test_data, testing=True, test_number=test_number)
-                    if got == test_want:
-                        print(f"TEST  {self.day:02}.{part} {time_s} PASS (test {test_number})")
-                    else:
-                        print(f"TEST  {self.day:02}.{part} {time_s} FAIL (test {test_number}). Got {got} but wants {test_want}.")
+                    self.compare(
+                        test_want, test_data, parser,
+                        f"TEST  {self.day:02}.{part} %s PASS (test {test_number})",
+                        f"TEST  {self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
+                        module.solve,
+                        part=part, testing=True, test_number=test_number,
+                    )
         if solve:
             for part in self.parts:
                 formatter.set_part(part)
@@ -131,14 +147,13 @@ class Runner:
                     if data is None:
                         print(f"CHECK No input data found for day {day} part {part}")
                         continue
-                    if parser:
-                        data = parser(data)
-                    time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
-                    if str(got) == want[part - 1]:
-                        print(f"CHECK {self.day:02}.{part} {time_s} PASS")
-                    else:
-                        print(f"CHECK {self.day:02}.{part} {time_s} FAIL. Wanted {want[part -1]} but got {got}.")
-
+                    self.compare(
+                        want[part - 1], data, parser,
+                        f"CHECK {self.day:02}.{part} %s PASS",
+                        f"CHECK {self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
+                        module.solve,
+                        part=part, testing=False, test_number=None,
+                    )
 
     def run(self, check: bool, solve: bool, test: bool, live: bool) -> None:
         formatter = helpers.setup_logging(self.day, self.verbose)
