@@ -2,36 +2,41 @@
 
 import collections
 import functools
+import typing
 from lib import parsers
 
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[list[str | list[str]]]) -> int | str:
     """Solve the parts."""
-    rev_pairs = collections.defaultdict(set)
-    pairs = collections.defaultdict(set)
-    for line in data.split("\n\n")[1].splitlines():
-        a, b = line.split(" > ")
+    names, rules = typing.cast(tuple[list[str], list[list[str]]], data)
+
+    # Parse the rules into maps.
+    rule_prior = collections.defaultdict(set)
+    rule_next = collections.defaultdict(set)
+    for a, b in rules:
         for c in b.split(","):
-            pairs[a].add(c)
-            rev_pairs[c].add(a)
+            rule_next[a].add(c)
+            rule_prior[c].add(a)
 
     @functools.cache
     def possibilities(size: int, letter: str) -> int:
+        """Count the number of possible names that can be formed."""
         if size == 11:
             return 1
         count = 0 if size < 7 else 1
         size += 1
-        return count + sum(possibilities(size, i) for i in pairs[letter])
+        return count + sum(possibilities(size, i) for i in rule_next[letter])
+
+    # Dedupe names which have a prefix also included.
+    if part == 3:
+        filtered = set(names)
+        filtered = {n for n in names if not any(n != m and n.startswith(m) for m in names)}
+        names = list(filtered)
 
     total = 0
-    names = data.split("\n\n")[0].split(",")
-    if part == 3:
-        names = set(names)
-        names = {n for n in names if not any(n != m and n.startswith(m) for m in names)}
-
     for idx, name in enumerate(names, start=1):
         for a, b in zip(name, name[1:]):
-            if a not in rev_pairs[b]:
+            if a not in rule_prior[b]:
                 break
         else:
             if part == 1:
@@ -43,6 +48,10 @@ def solve(part: int, data: str) -> int:
     return total
 
 
+PARSER = parsers.ParseBlocks([
+    parsers.ParseMultiWords(str, separator=","),
+    parsers.BaseParseMultiPerLine(word_separator=" > "),
+])
 TEST_DATA = [
     """\
 Oronris,Urakris,Oroneth,Uraketh
