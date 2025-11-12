@@ -53,9 +53,9 @@ if __name__ == "__main__":
     for _part, _data, expected in TESTS:
         assert solve(_part, (_data)) == expected
     print("Tests pass.")
-    day = __file__.split("_", maxsplit=-1)[-1].split(".")[0]
+    day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
     for _part in range(1, 4):
-        with open(f"inputs/{day}.{_part}.txt", encoding="utf-8") as f:
+        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
             start = time.perf_counter_ns()
             got = solve(_part, (f.read()))
             end = time.perf_counter_ns()
