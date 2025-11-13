@@ -2,6 +2,7 @@
 
 import logging
 import time
+from lib import helpers
 from lib import parsers
 
 log = logging.info
@@ -27,8 +28,8 @@ if __name__ == "__main__":
     day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
     for _part in range(1, 4):
         with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            data = PARSER.parse(f.read())
+            _input = PARSER.parse(f.read())  # type: list[list[int]]
             start = time.perf_counter_ns()
-            got = solve(_part, data)
+            got = solve(_part, _input)
             end = time.perf_counter_ns()
-            print(f"{_part} {(end - start) / 1000:8}μs  {got}")
+            print(f"{_part} {helpers.format_ns(end - start):8}  {got}")
