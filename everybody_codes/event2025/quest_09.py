@@ -1,31 +1,12 @@
 """Everyone Codes Day N."""
 
-import collections.abc
-import itertools
 import logging
+import math
 import time
 from lib import helpers
 from lib import parsers
 
 log = logging.info
-
-
-def degree_of_similarity(triplets: collections.abc.Iterable[str]) -> int:
-    """Compute the degree of similarity for three DNA strands."""
-    for child, parent_one, parent_two in itertools.permutations(triplets):
-        if parent_one > parent_two:
-            continue
-        matches_p1, matches_p2 = 0, 0
-        for base_child, base_p1, base_p2 in zip(child, parent_one, parent_two):
-            if base_child == base_p1:
-                matches_p1 += 1
-            if base_child == base_p2:
-                matches_p2 += 1
-            if base_child not in [base_p1, base_p2]:
-                break
-        else:
-            return matches_p1 * matches_p2
-    return 0
 
 
 def solve(part: int, data: str) -> int:
@@ -36,33 +17,65 @@ def solve(part: int, data: str) -> int:
         scale, dna = line.split(":")
         dnas[int(scale)] = dna
 
-    if part in [1, 2]:
-        return sum(
-            degree_of_similarity(triplets)
-            for triplets in itertools.combinations(dnas.values(), 3)
-        )
+    # Transform DNA into bitfields.
+    # Bucket DNAs by one nucleotide for quickly identifying one parent.
+    nucleotides = {n: 1 << idx for idx, n in enumerate("ACGT")}
+    scales = {}
+    bucket = {i: set() for i in nucleotides.values()}
+    for scale, dna in dnas.items():
+        val = 0
+        for char in dna:
+            val = (val << 4) + nucleotides[char]
+        scales[val] = scale
+        bucket[val & 0b1111].add(val)
 
     # Create all parent-parent-child groups.
-    groups = []
-    for triplets in itertools.combinations(dnas.items(), 3):
-        if degree_of_similarity(dna for _, dna in triplets):
-            groups.append({scale for scale, _ in triplets})
+    # Optimized for speed.
+    parents = []
+    for child in scales:
+        parents_found = False
+        bucket_key = child & 0b1111
+        for p1 in scales:
+            if child == p1:
+                continue
+            # Pick the second parent based on knowing one nucleotide matches.
+            for p2 in bucket[bucket_key]:
+                if child == p2 or p1 == p2:
+                    continue
+                if child & (p1 | p2) == child:
+                    parents.append([scales[i] for i in [child, p1, p2]])
+                    parents_found = True
+                    break
+            if parents_found:
+                break
+
+    if part in [1, 2]:
+        # Return the sum-of-products of the matches.
+        return sum(
+            math.prod(
+                # Count pair-wise matches between the child and a parent.
+                sum(base_child == base_parent for base_child, base_parent in zip(dnas[child], parent))
+                for parent in [dnas[p] for p in parents]
+            )
+            for child, *parents in parents
+        )
 
     # Combine family groups that have any overlap. Repeat until there is no change.
+    families = [set(i) for i in parents]
     prior_size = 0
-    while len(groups) != prior_size:
-        prior_size = len(groups)
+    while len(families) != prior_size:
+        prior_size = len(families)
         new_groups = []
-        while groups:
-            group = groups.pop()
-            # Combine groups that have any overlap.
-            for other in groups.copy():
+        while families:
+            group = families.pop()
+            # Combine families that have any overlap.
+            for other in families.copy():
                 if group & other:
                     group |= other
-                    groups.remove(other)
+                    families.remove(other)
             new_groups.append(group)
-        groups = new_groups
-    return sum(sorted(groups, key=len)[-1])
+        families = new_groups
+    return sum(sorted(families, key=len)[-1])
 
 
 PARSER = parsers.parse_one_str
