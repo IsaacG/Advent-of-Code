@@ -32,4 +32,4 @@ if __name__ == "__main__":
             start = time.perf_counter_ns()
             got = solve(_part, _input)
             end = time.perf_counter_ns()
-            print(f"{_part} {helpers.format_ns(end - start):8}  {got}")
+            print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - start):8}")
