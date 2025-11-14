@@ -1,5 +1,6 @@
 """Everyone Codes Day N."""
 
+import collections.abc
 import itertools
 import logging
 import time
@@ -8,82 +9,60 @@ from lib import parsers
 
 log = logging.info
 
-def dist(a, b, c):
-    x, y = 0, 0
-    for i, j, k in zip(a, b, c):
-        if i == j:
-            x += 1
-        if i == k:
-            y += 1
-        if i != j and i != k:
-            return 0
-    return x * y
 
-def related(triplets):
-    return any(
-        dist(*((triplets * 2)[n: n + 3]))
-        for n in range(3)
-    )
+def degree_of_similarity(triplets: collections.abc.Iterable[str]) -> int:
+    """Compute the degree of similarity for three DNA strands."""
+    for child, parent_one, parent_two in itertools.permutations(triplets):
+        if parent_one > parent_two:
+            continue
+        matches_p1, matches_p2 = 0, 0
+        for base_child, base_p1, base_p2 in zip(child, parent_one, parent_two):
+            if base_child == base_p1:
+                matches_p1 += 1
+            if base_child == base_p2:
+                matches_p2 += 1
+            if base_child not in [base_p1, base_p2]:
+                break
+        else:
+            return matches_p1 * matches_p2
+    return 0
+
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    dnas = [line.split(":")[-1] for line in data.splitlines()]
-    if part == 1:
-        for n in range(3):
-            a, b, c = (dnas * 2)[n: n + 3]
-            d = dist(a, b, c)
-            if d: return d
-    if part == 2:
-        total = 0
-        for triplets in itertools.combinations(dnas, 3):
-            for n in range(3):
-                a, b, c = (triplets * 2)[n: n + 3]
-                d = dist(a, b, c)
-                if d:
-                    total += d
-                    break
-        return total
-
-    scales = {}
+    # Parse the input. scale => dna.
+    dnas = {}
     for line in data.splitlines():
-        scales[line.split(":")[-1]] = int(line.split(":")[0])
+        scale, dna = line.split(":")
+        dnas[int(scale)] = dna
 
-    children = set()
-    for triplets in itertools.combinations(dnas, 3):
-        if related(triplets):
-            children.add(frozenset(triplets))
+    if part in [1, 2]:
+        return sum(
+            degree_of_similarity(triplets)
+            for triplets in itertools.combinations(dnas.values(), 3)
+        )
+
+    # Create all parent-parent-child groups.
     groups = []
-    while children:
-        this_group = {children.pop()}
-        to_test = this_group.copy()
-        while to_test:
-            testing = to_test.pop()
-            for other in list(children):
-                if any(
-                    related(triplets)
-                    for triplets in itertools.product(testing, other, dnas)
-                    if len(set(triplets)) == 3
-                ):
-                    children.remove(other)
-                    to_test.add(other)
-                    this_group.add(other)
-        print(f"Found family group of size {len(this_group)}.")
-        groups.append(this_group)
-    most = max(len(g) for g in groups)
-    for g in groups:
-        if len(g) == most:
-            ids = {scales[d] for f in g for d in f}
-            return sum(ids)
+    for triplets in itertools.combinations(dnas.items(), 3):
+        if degree_of_similarity(dna for _, dna in triplets):
+            groups.append({scale for scale, _ in triplets})
 
-
-
-
-
-
-
-
-
-
+    # Combine family groups that have any overlap. Repeat until there is no change.
+    prior_size = 0
+    while len(groups) != prior_size:
+        prior_size = len(groups)
+        new_groups = []
+        while groups:
+            group = groups.pop()
+            # Combine groups that have any overlap.
+            for other in groups.copy():
+                if group & other:
+                    group |= other
+                    groups.remove(other)
+            new_groups.append(group)
+        groups = new_groups
+    return sum(sorted(groups, key=len)[-1])
 
 
 PARSER = parsers.parse_one_str
@@ -132,8 +111,8 @@ if __name__ == "__main__":
     day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
     for _part in range(1, 4):
         with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            _input = PARSER.parse(f.read())  # type: list[list[int]]
+            _input = PARSER.parse(f.read())  # type: str
             start = time.perf_counter_ns()
             got = solve(_part, _input)
             end = time.perf_counter_ns()
-            print(f"{_part} {helpers.format_ns(end - start):8}  {got}")
+            print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - start):8}")
