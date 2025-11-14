@@ -9,19 +9,13 @@ from lib import parsers
 log = logging.info
 
 
-def solve(part: int, data: str) -> int:
-    """Solve the parts."""
-    # Parse the input. scale => dna.
-    dnas = {}
-    for line in data.splitlines():
-        scale, dna = line.split(":")
-        dnas[int(scale)] = dna
-
+def compute_parents(dnas: dict[int, str]) -> list[tuple[int, ...]]:
+    """Return a list of child-parent-parent values."""
     # Transform DNA into bitfields.
     # Bucket DNAs by one nucleotide for quickly identifying one parent.
     nucleotides = {n: 1 << idx for idx, n in enumerate("ACGT")}
     scales = {}
-    bucket = {i: set() for i in nucleotides.values()}
+    bucket: dict[int, set[int]] = {i: set() for i in nucleotides.values()}
     for scale, dna in dnas.items():
         val = 0
         for char in dna:
@@ -31,7 +25,7 @@ def solve(part: int, data: str) -> int:
 
     # Create all parent-parent-child groups.
     # Optimized for speed.
-    parents = []
+    parents: list[tuple[int, ...]] = []
     for child in scales:
         parents_found = False
         bucket_key = child & 0b1111
@@ -40,14 +34,26 @@ def solve(part: int, data: str) -> int:
                 continue
             # Pick the second parent based on knowing one nucleotide matches.
             for p2 in bucket[bucket_key]:
-                if child == p2 or p1 == p2:
+                if p2 == child or p2 == p1:  # pylint: disable=R1714
                     continue
                 if child & (p1 | p2) == child:
-                    parents.append([scales[i] for i in [child, p1, p2]])
+                    parents.append(tuple(scales[i] for i in [child, p1, p2]))
                     parents_found = True
                     break
             if parents_found:
                 break
+    return parents
+
+
+def solve(part: int, data: str) -> int:
+    """Solve the parts."""
+    # Parse the input. scale => dna.
+    dnas = {}
+    for line in data.splitlines():
+        _scale, dna = line.split(":")
+        dnas[int(_scale)] = dna
+
+    parents = compute_parents(dnas)
 
     if part in [1, 2]:
         # Return the sum-of-products of the matches.
@@ -61,7 +67,7 @@ def solve(part: int, data: str) -> int:
         )
 
     # Combine family groups that have any overlap. Repeat until there is no change.
-    families = [set(i) for i in parents]
+    families: list[set[int]] = [set(i) for i in parents]
     prior_size = 0
     while len(families) != prior_size:
         prior_size = len(families)
