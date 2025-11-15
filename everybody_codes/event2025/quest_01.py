@@ -4,7 +4,6 @@ import logging
 
 from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: tuple[list[str], list[str]], testing: bool) -> str:
     """Solve the parts."""

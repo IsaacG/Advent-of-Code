@@ -22,6 +22,7 @@ type Solver interface {
 }
 
 var puzzles = map[Day]Solver{
+	Day{"e2025", 1}: e2025.Quest01{},
 	Day{"e2025", 2}: e2025.Quest02{},
 	Day{"e2025", 5}: e2025.Quest05{},
 }
