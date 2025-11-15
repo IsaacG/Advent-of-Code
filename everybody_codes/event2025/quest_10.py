@@ -1,136 +1,105 @@
-"""Everyone Codes Day N."""
+"""Everyone Codes Day N. Note, `ship` == one sheep."""
 
-import collections
-import logging
 import functools
 import time
 from lib import helpers
 from lib import parsers
 
-log = logging.info
+OFFSETS = [complex(*i) for i in [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]]
 
-def solve(part: int, data: str, testing) -> int:
-    """Solve the parts."""
-    dragon = {
-        (x, y)
-        for y, line in enumerate(data.splitlines())
-        for x, char in enumerate(line)
-        if char == "D"
-    }
-    sheep = {
-        (x, y)
-        for y, line in enumerate(data.splitlines())
-        for x, char in enumerate(line)
-        if char == "S"
-    }
-    hide = {
-        (x, y)
-        for y, line in enumerate(data.splitlines())
-        for x, char in enumerate(line)
-        if char == "#"
-    }
-    board = {
-        (x, y)
-        for y, line in enumerate(data.splitlines())
-        for x, char in enumerate(line)
-    }
-    start = dragon.copy().pop()
+
+def p12(part: int, data: helpers.Map, testing: bool) -> int:
+    """Solve the first half."""
+    dragons, sheep, hideouts = (data.coords.get(i, set()) for i in "DS#")
+    board = data.all_coords
+    start = dragons.pop()
+
+    def moves(dragon: complex) -> list[complex]:
+        return [
+            dragon + offset
+            for offset in OFFSETS
+            if dragon + offset in board
+        ]
+
+    max_moves = 3 if testing else 4 if part == 1 else 20
     seen = set()
-    q = collections.deque([(start, 0)])
+    count = 0
+    q = [(start, 0)]
+    while q:
+        dragon, steps = q.pop()
+        sheep_offset = [complex()] if part == 1 else [complex(0, steps - 1), complex(0, steps)]
+        if dragon not in hideouts and steps:
+            for offset in sheep_offset:
+                sheep_pos = dragon - offset
+                if sheep_pos in sheep:
+                    count += 1
+                    sheep.remove(sheep_pos)
+        steps += 1
+        if steps > max_moves:
+            continue
+        for pos in moves(dragon):
+            if (pos, steps) in seen:
+                continue
+            seen.add((pos, steps))
+            q.append((pos, steps))
+    return count
 
-    OFFSETS = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
+
+def solve(part: int, data: helpers.Map, testing) -> int:
+    """Solve the parts."""
+    if part in [1, 2]:
+        return p12(part, data, testing)
+
+    dragons, initial_sheep, hideouts = (data.coords.get(i, set()) for i in "DS#")
+    board = data.all_coords
+    start = dragons.pop()
+    bottom = data.max_y
+
     def moves(dragon):
-        x, y = dragon
-        for dx, dy in OFFSETS:
-            pos = (x + dx, y + dy)
+        for offset in OFFSETS:
+            pos = dragon + offset
             if pos in board:
                 yield pos
 
-    if part == 1:
-        max_moves = 3 if testing else 4
-    if part == 2:
-        max_moves = 3 if testing else 20
-
-    if part == 1:
-        count = 0
-        while q:
-            dragon, steps = q.popleft()
-            if dragon in sheep:
-                count += 1
-            steps += 1
-            if steps > max_moves:
-                continue
-            for pos in moves(dragon):
-                if pos in seen:
-                    continue
-                seen.add(pos)
-                q.append((pos, steps))
-        return count
-
-    if part == 2:
-        count = 0
-        while q:
-            dragon, steps = q.popleft()
-            if dragon not in hide and steps:
-                x, y = dragon
-                y -= (steps - 1)
-                if (x, y) in sheep:
-                    count += 1
-                    sheep.remove((x, y))
-                y -= 1
-                if (x, y) in sheep:
-                    count += 1
-                    sheep.remove((x, y))
-            steps += 1
-            if steps > max_moves:
-                continue
-            for pos in moves(dragon):
-                if (pos, steps) in seen:
-                    continue
-                seen.add((pos, steps))
-                q.append((pos, steps))
-        return count
-
-
-    bottom = len(data.splitlines()) - 1
-
     @functools.cache
-    def possibilities(dragon, sheep):
-        if all(y == bottom for _, y in sheep):
-            return 0
-        sheep_down = []
+    def possibilities(dragon: complex, sheep: frozenset[complex]) -> int:
+        next_sheeps = []
         for ship in sheep:
-            x, y = ship
-            if y == bottom:
+            # Do not count sheep moving off the board; this is not a possible win.
+            if ship.imag == bottom:
                 continue
-            n = x, y + 1
-            if (n != dragon) or (n in hide):
-                sheep_down.append((sheep - {ship}) | {n})
-        if not sheep_down and any(y == bottom for _, y in sheep):
-            return 0
+            # See if this sheep can move down. If yes, this is a possible next move for the sheep.
+            n = ship + 1j
+            if (n != dragon) or (n in hideouts):
+                next_sheeps.append((sheep - {ship}) | {n})
+        # If no sheep moved, either
+        # (1) they are all at the bottom and the dragon loses or
+        # (2) they stay still this turn.
+        if not next_sheeps:
+            if any(ship.imag == bottom for ship in sheep):
+                return 0
+            next_sheeps = [sheep]
 
+        # Count possible ways to move for each sheep move, for each dragon move.
         options = 0
-        for next_sheep in set(sheep_down or [sheep]):
-            assert len(next_sheep) == len(sheep)
-            if dragon not in hide:
-                assert dragon not in next_sheep
+        for next_sheep in next_sheeps:
             for pos in moves(dragon):
-                ns = next_sheep.copy()
-                if pos in next_sheep and pos not in hide:
-                    ns -= {pos}
-                if not ns:
+                sheep = next_sheep.copy()
+                # Dragon eats sheep; take it off the board.
+                if pos in next_sheep and pos not in hideouts:
+                    sheep -= {pos}
+                # Either the dragon finished all the sheep; we are done.
+                # Otherwise, count child possibilities.
+                if not sheep:
                     options += 1
                 else:
-                    options += possibilities(pos, frozenset(ns))
+                    options += possibilities(pos, frozenset(sheep))
         return options
 
-    return possibilities(start, frozenset(sheep))
-
-    
+    return possibilities(start, frozenset(initial_sheep))
 
 
-
-PARSER = parsers.parse_one_str
+PARSER = parsers.CoordinatesParser()
 TEST_DATA = [
     """\
 ...SSS.......
@@ -201,8 +170,8 @@ if __name__ == "__main__":
     day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
     for _part in range(1, 4):
         with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            _input = PARSER.parse(f.read())  # type: list[list[int]]
-            start = time.perf_counter_ns()
+            _input = PARSER.parse(f.read())
+            _start = time.perf_counter_ns()
             got = solve(_part, _input, False)
             end = time.perf_counter_ns()
-            print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - start):8}")
+            print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - _start):8}")
