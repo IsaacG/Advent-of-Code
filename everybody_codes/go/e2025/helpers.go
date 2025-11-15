@@ -10,3 +10,12 @@ func Clamp(a, b, c int) int {
 	}
 	return b
 }
+
+// Sum up an int slice.
+func Sum(i []int) int {
+	total := 0
+	for _, j := range i {
+		total += j
+	}
+	return total
+}

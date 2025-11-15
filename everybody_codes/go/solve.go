@@ -24,6 +24,7 @@ type Solver interface {
 var puzzles = map[Day]Solver{
 	Day{"e2025", 1}: e2025.Quest01{},
 	Day{"e2025", 2}: e2025.Quest02{},
+	Day{"e2025", 3}: e2025.Quest03{},
 	Day{"e2025", 5}: e2025.Quest05{},
 }
 
@@ -56,7 +57,7 @@ func NewPuzzle(event string, day int) *Puzzle {
 	}
 	input := map[int]string{}
 	for part := 1; part <= 3; part++ {
-		input[part] = helpers.LoadFile(fmt.Sprintf("%s/inputs/%02d.%d.txt", event, day, part))
+		input[part] = strings.TrimRight(helpers.LoadFile(fmt.Sprintf("%s/inputs/%02d.%d.txt", event, day, part)), "\n")
 	}
 
 	return &Puzzle{Day{event, day}, input, solutions, solver}
