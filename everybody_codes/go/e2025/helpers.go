@@ -19,3 +19,19 @@ func Sum(i []int) int {
 	}
 	return total
 }
+
+// Max is max.
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Min is min.
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
