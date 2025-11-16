@@ -28,6 +28,7 @@ var puzzles = map[Day]Solver{
 	Day{"e2025", 4}: e2025.Quest04{},
 	Day{"e2025", 5}: e2025.Quest05{},
 	Day{"e2025", 6}: e2025.Quest06{},
+	Day{"e2025", 7}: e2025.Quest07{},
 }
 
 // Puzzle has all the data for one day.
