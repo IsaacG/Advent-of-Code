@@ -54,6 +54,17 @@ def solve(part: int, data: helpers.Map, testing) -> int:
     board = data.all_coords
     start = dragons.pop()
     bottom = data.max_y
+    # If the sheep reaches this location, the game ends.
+    game_over = {complex(x, data.max_y + 1) for x in range(data.max_x + 1)}
+    for _ in range(data.max_y):
+        for i in hideouts:
+            if i + 1j in game_over:
+                game_over.add(i)
+    # This is the lowest position the sheep can enter and the dragon still wins.
+    last_spot = {
+        complex(x, min(i.imag for i in game_over if i.real == x) - 1)
+        for x in range(data.max_x + 1)
+    }
 
     def moves(dragon):
         for offset in OFFSETS:
@@ -66,7 +77,7 @@ def solve(part: int, data: helpers.Map, testing) -> int:
         next_sheeps = []
         for ship in sheep:
             # Do not count sheep moving off the board; this is not a possible win.
-            if ship.imag == bottom:
+            if ship in last_spot:
                 continue
             # See if this sheep can move down. If yes, this is a possible next move for the sheep.
             n = ship + 1j
@@ -76,7 +87,7 @@ def solve(part: int, data: helpers.Map, testing) -> int:
         # (1) they are all at the bottom and the dragon loses or
         # (2) they stay still this turn.
         if not next_sheeps:
-            if any(ship.imag == bottom for ship in sheep):
+            if any(ship in last_spot for ship in sheep):
                 return 0
             next_sheeps = [sheep]
 

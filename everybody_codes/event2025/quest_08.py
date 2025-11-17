@@ -1,5 +1,6 @@
 """Everyone Codes Day N."""
 
+import collections
 import logging
 import time
 from lib import helpers
@@ -28,18 +29,24 @@ def solve(part: int, data: list[list[int]], testing: bool) -> int:
             for idx, (a, b) in enumerate(lines)
             for i, j in lines[:idx]
         )
+    lines.sort()
+
+    frequency = collections.defaultdict(lambda: collections.defaultdict(int))
+    for a, b in lines:
+        frequency[a][b] += 1
+        frequency[b][a] += 1
+
+    cumulative = collections.defaultdict(lambda: collections.defaultdict(int))
+    for a in range(1, size):
+        for b in range(a + 1, a + size):
+            cumulative[a][((b - 1) % size) + 1] = cumulative[a][((b - 2) % size) + 1] + frequency[a][((b - 1) % size) + 1]
 
     most = 0
     for a in range(1, size):
-        for b in range(a + 1, size + 1):
-            knots = 0
-            for i, j in lines:
-                if (
-                    a == i and b == j
-                    or
-                    (i < a < j) != (i < b < j) and a != i and b != j
-                ):
-                    knots += 1
+        for b in range(a + 2, size + 1):
+            knots = frequency[a][b]
+            for i in range(a + 1, b):
+                knots += cumulative[i][((a - 2) % size) + 1] - cumulative[i][b]
             most = max(most, knots)
     return most
 
