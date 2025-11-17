@@ -1,8 +1,11 @@
 package e2025
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
+	"isaacgood.com/everybodycodes/helpers"
 )
 
 type Quest02 struct{}
@@ -22,14 +25,19 @@ func engrave(x, y int) bool {
 
 func (q Quest02) Solve(data string, part int) string {
 	input := strings.TrimRight(data[3:], "]")
-	parts := strings.Split(input, ",")
-	var nums [2]int
-	for i, p := range parts {
-		n, err := strconv.Atoi(p)
-		if err != nil {
-			return ""
+	var nums []int
+	for p := range strings.SplitSeq(input, ",") {
+		nums = append(nums, helpers.Atoi(p))
+	}
+	if part == 1 {
+		x, y := nums[0], nums[1]
+		nx, ny := 0, 0
+		for i := 0; i < 3; i++ {
+			nx, ny = nx*nx-ny*ny, nx*ny*2
+			nx, ny = nx / 10, ny / 10
+			nx, ny = nx+x, ny+y
 		}
-		nums[i] = n
+		return fmt.Sprintf("[%d,%d]", nx, ny)
 	}
 
 	step := 1

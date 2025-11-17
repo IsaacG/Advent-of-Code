@@ -89,11 +89,15 @@ func main() {
 		if p != nil {
 			p.check()
 		}
+	} else if len(os.Args) == 2 {
+		for day := range 25 {
+			if _, ok := puzzles[Day{os.Args[1], day}]; ok {
+				NewPuzzle(os.Args[1], day).check()
+			}
+		}
 	} else {
 		for solution, _ := range puzzles {
-			if len(os.Args) == 1 || solution.event == os.Args[1] {
-				NewPuzzle(solution.event, solution.day).check()
-			}
+			NewPuzzle(solution.event, solution.day).check()
 		}
 	}
 }
