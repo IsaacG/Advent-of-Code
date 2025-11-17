@@ -83,30 +83,17 @@ func (p *Puzzle) check() {
 }
 
 func main() {
-	event, day := os.Args[1], helpers.Atoi(os.Args[2])
-	p := NewPuzzle(event, day)
-	if p != nil {
-		p.check()
-	}
-	/*
-		if len(os.Args) == 1 {
-			for puzzle, solver := range puzzles {
-				puzzle.Check(solver)
-			}
-		} else if len(os.Args) == 2 {
-			year := helpers.Atoi(os.Args[1])
-			for puzzle, solver := range puzzles {
-				if puzzle.Year == year {
-					puzzle.Check(solver)
-				}
-			}
-		} else if len(os.Args) == 3 {
-			p := helpers.Puzzle{helpers.Atoi(os.Args[1]), helpers.Atoi(os.Args[2])}
-			s, ok := puzzles[p]
-			if !ok {
-				panic("That solver does not exist")
-			}
-			p.Check(s)
+	if len(os.Args) == 3 {
+		event, day := os.Args[1], helpers.Atoi(os.Args[2])
+		p := NewPuzzle(event, day)
+		if p != nil {
+			p.check()
 		}
-	*/
+	} else {
+		for solution, _ := range puzzles {
+			if len(os.Args) == 1 || solution.event == os.Args[1] {
+				NewPuzzle(solution.event, solution.day).check()
+			}
+		}
+	}
 }
