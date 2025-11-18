@@ -20,50 +20,77 @@ def solve(part: int, data: str) -> int:
         ptr = 0
         changes = []
         min_delta = ducks
+
         while ptr < num:
-            if columns[ptr] <= columns[ptr + 1]:
+            if columns[ptr] < columns[ptr + 1]:
                 ptr += 1
                 continue
-            start = ptr
-            while ptr < num and columns[ptr] > columns[ptr + 1]:
-                ptr += 1
-            mid = ptr
+            src_start = ptr
             while ptr < num and columns[ptr] == columns[ptr + 1]:
                 ptr += 1
-
-            end = ptr
-            spread = 1 + end - mid
-            move = columns[start] - columns[mid]
-
-            move = min(move, columns[start] - columns[start + 1])
-            move = min(move, spread * (columns[mid - 1] - columns[mid]))
-            if end < num:
-                move = min(move, spread * (columns[end + 1] - columns[end]))
-            if mid == start + 1:
-                move = min(move, int(math.ceil(spread * (columns[start] - columns[start + 1]) / 2)))
-            if spread > move:
+            src_end = ptr
+            if ptr == num or columns[ptr] < columns[ptr + 1]:
+                ptr += 1
+                continue
+            while ptr < num and columns[ptr] > columns[ptr + 1]:
+                ptr += 1
+            dst_start = ptr
+            while ptr < num and columns[ptr] == columns[ptr + 1]:
+                ptr += 1
+            dst_end = ptr
+            src_num = src_end - src_start + 1
+            dst_num = dst_end - dst_start + 1
+            move = (columns[src_start] - columns[dst_start]) * src_num
+            if move < dst_num:
                 move = 1
-                mid = end
-                print("=================")
-            else:
-                move -= move % spread
+                src_start = src_end
+                dst_end = dst_start
+                src_num = dst_num = 1
 
-            changes.append((start, mid, end, move))
+            DEBUG = [703, 703, 179, 153, 154, 154, 232, 636, 598, 598, 598]
+            print(columns)
+            if columns == DEBUG: print(1, move)
+            move = min(move, src_num * (columns[src_end] - columns[src_end + 1]))
+            if columns == DEBUG: print(2, move)
+            move = min(move, dst_num * (columns[dst_start - 1] - columns[dst_start]))
+            if columns == DEBUG: print(3, move)
+            if dst_end < num:
+                move = min(move, dst_num * (columns[dst_end + 1] - columns[dst_end]))
+            if columns == DEBUG: print(4, move)
+            if src_end == dst_start - 1:
+                move = min(move, int(math.ceil((columns[src_start] - columns[dst_start]) / src_num * dst_num / 2)))
+            if columns == DEBUG: print(5, move)
+
+            if move < math.lcm(dst_num, src_num):
+                move = 1
+                src_start = src_end
+                dst_end = dst_start
+                src_num = dst_num = 1
+                print("clamp", f"{columns=}, {src_start, src_end, dst_start, dst_end, move}")
+
+            if columns == DEBUG: print(6, move)
+            move -= move % math.lcm(dst_num, src_num)
+            if columns == DEBUG: print(7, move)
+            assert move > 0, f"{columns=}, {src_start, src_end, dst_start, dst_end, move}"
+
+            changes.append((src_start, src_end, dst_start, dst_end, move))
 
 
-        move = min(move for start, mid, end, move in changes)
+        min_move = min(move for src_start, src_end, dst_start, dst_end, move in changes)
         print(f"{columns=}, {move=}, {changes=}")
 
-        for start, mid, end, _ in changes:
-            columns[start] -= move
-            amnt = move // (end + 1 - mid)
-            for b in range(mid, end + 1):
-                columns[b] += amnt
-        steps += move
+        for src_start, src_end, dst_start, dst_end, move in changes:
+            for i in range(src_start, src_end + 1):
+                columns[i] -= min_move // (src_end - src_start + 1)
+            for i in range(dst_start, dst_end + 1):
+                columns[i] += min_move // (dst_end - dst_start + 1)
+        steps += min_move
+        assert ducks == sum(columns)
     print(" ".join(str(i) for i in columns))
 
     if part == 1: return 10 # debug
 
+    print(columns)
     while any(a > b for b, a in zip(columns, columns[1:])):
         # print("Before", ' '.join(str(i) for i in columns))
         ptr = 0
@@ -88,7 +115,7 @@ def solve(part: int, data: str) -> int:
             columns[a] -= min_delta
             columns[b] += min_delta
         steps += min_delta
-
+    print(columns)
     return steps
 
 
