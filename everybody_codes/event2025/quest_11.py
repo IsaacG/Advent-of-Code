@@ -15,13 +15,8 @@ def solve(part: int, data: str) -> int:
     steps = 0
     ducks = sum(columns)
 
-    counter = 0
-
     while any(a > b for a, b in zip(columns, columns[1:])):
-        counter += 1
-        if counter > 4:
-            return
-        print("Before", ' '.join(str(i) for i in columns))
+        log(" ".join(str(i) for i in columns))
         ptr = 0
         changes = []
         min_delta = ducks
@@ -30,32 +25,71 @@ def solve(part: int, data: str) -> int:
                 ptr += 1
                 continue
             start = ptr
-            delta = int(math.ceil((columns[ptr] - columns[ptr + 1]) / 2))
-            print(f"{ptr=} {delta=}")
-            while ptr < num and columns[ptr] >= columns[ptr + 1]:
-                delta = min(delta, int(math.floor((columns[ptr] + delta - columns[ptr + 1]) / 2)))
+            while ptr < num and columns[ptr] > columns[ptr + 1]:
+                ptr += 1
+            mid = ptr
+            while ptr < num and columns[ptr] == columns[ptr + 1]:
+                ptr += 1
+
+            end = ptr
+            spread = 1 + end - mid
+            move = columns[start] - columns[mid]
+
+            move = min(move, columns[start] - columns[start + 1])
+            move = min(move, spread * (columns[mid - 1] - columns[mid]))
+            if end < num:
+                move = min(move, spread * (columns[end + 1] - columns[end]))
+            if mid == start + 1:
+                move = min(move, int(math.ceil(spread * (columns[start] - columns[start + 1]) / 2)))
+            if spread > move:
+                move = 1
+                mid = end
+                print("=================")
+            else:
+                move -= move % spread
+
+            changes.append((start, mid, end, move))
+
+
+        move = min(move for start, mid, end, move in changes)
+        print(f"{columns=}, {move=}, {changes=}")
+
+        for start, mid, end, _ in changes:
+            columns[start] -= move
+            amnt = move // (end + 1 - mid)
+            for b in range(mid, end + 1):
+                columns[b] += amnt
+        steps += move
+    print(" ".join(str(i) for i in columns))
+
+    if part == 1: return 10 # debug
+
+    while any(a > b for b, a in zip(columns, columns[1:])):
+        # print("Before", ' '.join(str(i) for i in columns))
+        ptr = 0
+        changes = []
+        min_delta = ducks
+        while ptr < num:
+            if columns[ptr + 1] <= columns[ptr]:
+                ptr += 1
+                continue
+            start = ptr
+            while ptr < num and columns[ptr + 1] >= columns[ptr]:
                 ptr += 1
             changes.append((start, ptr))
-            print(f"Move {start} to {ptr}: {delta}")
-            min_delta = min(min_delta, delta)
-        for a, b in changes:
+
+        min_delta = min(
+            min(columns[i + 1] - columns[i] + (i != a) for i in range(a, b))
+            for a, b in changes
+        )
+        limit = min((columns[i] - columns[i + 1] for _, i in changes if i < num), default=ducks)
+        min_delta = min(min_delta, limit)
+        for b, a in changes:
             columns[a] -= min_delta
             columns[b] += min_delta
         steps += min_delta
-        print(f"After {steps} {min_delta=} | {' '.join(str(i) for i in columns)}")
-        print()
 
-
-    while any(a < b for a, b in zip(columns, columns[1:])):
-        steps += 1
-        for i in range(num):
-            if columns[i] < columns[i + 1]:
-                columns[i] += 1
-                columns[i + 1] -= 1
-        if part == 1 and steps == 10:
-            return sum(idx * count for idx, count in enumerate(columns, start=1))
-    if part == 2:
-        return steps
+    return steps
 
 
 PARSER = parsers.parse_ints
