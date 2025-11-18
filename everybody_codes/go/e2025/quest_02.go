@@ -34,7 +34,7 @@ func (q Quest02) Solve(data string, part int) string {
 		nx, ny := 0, 0
 		for i := 0; i < 3; i++ {
 			nx, ny = nx*nx-ny*ny, nx*ny*2
-			nx, ny = nx / 10, ny / 10
+			nx, ny = nx/10, ny/10
 			nx, ny = nx+x, ny+y
 		}
 		return fmt.Sprintf("[%d,%d]", nx, ny)

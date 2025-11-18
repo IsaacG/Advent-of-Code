@@ -84,11 +84,12 @@ func (q Quest07) Solve(data string, part int) string {
 			}
 		}
 		if valid {
-			if part == 1 {
+			switch part {
+			case 1:
 				return name
-			} else if part == 2 {
+			case 2:
 				total += idxName + 1
-			} else {
+			case 3:
 				total += q.possibilities(len(name), name[len(name)-1:])
 			}
 		}

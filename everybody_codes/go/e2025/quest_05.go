@@ -79,9 +79,10 @@ func (q Quest05) Solve(data string, part int) string {
 		swords = append(swords, sword)
 		spines = append(spines, sword.spine)
 	}
-	if part == 1 {
+	switch part {
+	case 1:
 		return helpers.Itoa(swords[0].spine)
-	} else if part == 2 {
+	case 2:
 		return helpers.Itoa(slices.Max(spines) - slices.Min(spines))
 	}
 	slices.SortFunc(swords, func(a, b Fishbone) int {

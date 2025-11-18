@@ -22,9 +22,10 @@ func (q Quest01) Solve(data string, part int) string {
 		} else {
 			pointer -= distance
 		}
-		if part == 1 {
+		switch part {
+		case 1:
 			pointer = Clamp(0, pointer, size-1)
-		} else if part == 3 {
+		case 3:
 			distance = distance % size
 			if direction == 'L' {
 				distance = size - distance
@@ -32,9 +33,10 @@ func (q Quest01) Solve(data string, part int) string {
 			names[0], names[distance] = names[distance], names[0]
 		}
 	}
-	if part == 2 {
+	switch part {
+	case 2:
 		pointer = pointer % size
-	} else if part == 3 {
+	case 3:
 		pointer = 0
 	}
 	return names[pointer]

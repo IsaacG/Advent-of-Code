@@ -10,16 +10,51 @@ import (
 )
 
 // Quest09 for Event 2025.
-type Quest09 struct{
+type Quest09 struct {
 	dnas map[int]string
 }
 
-func (q Quest09) findParents() [][3]int {
-	dnas := q.dnas
+// BitDNA reduces runtime from ~450ms to ~350ms.
+type BitDNA []int64
 
-	bucketed := make(map[byte][]int)
+func (d BitDNA) matches(a, b BitDNA) bool {
+	for idx := range len(d) {
+		if d[idx]&(a[idx]|b[idx]) != d[idx] {
+			return false
+		}
+	}
+	return true
+}
+
+func (q Quest09) toBits(dna string) BitDNA {
+	nucleotides := map[rune]int64{
+		'A': 1,
+		'C': 2,
+		'G': 4,
+		'T': 8,
+	}
+	var bits []int64
+	var num int64
+	for idx, char := range dna {
+		num = (num << 4) | nucleotides[char]
+		if idx%16 == 15 {
+			bits = append(bits, num)
+			num = 0
+		}
+	}
+	return bits
+}
+
+func (q Quest09) findParents() [][3]int {
+	dnas := make(map[int]BitDNA)
+	for scale, dna := range q.dnas {
+		dnas[scale] = q.toBits(dna)
+	}
+
+	// Reduces runtime from ~1.5s to ~0.5s.
+	bucketed := make(map[int64][]int)
 	for scale, dna := range dnas {
-		bucketed[dna[4]] = append(bucketed[dna[4]], scale)
+		bucketed[dna[0]&0xF] = append(bucketed[dna[0]&0xF], scale)
 	}
 
 	var parents [][3]int
@@ -29,19 +64,12 @@ func (q Quest09) findParents() [][3]int {
 			if childScale == p1Scale {
 				continue
 			}
-			for _, p2Scale := range bucketed[childDNA[4]] {
+			for _, p2Scale := range bucketed[childDNA[0]&0xF] {
 				if childScale == p2Scale || p1Scale == p2Scale {
 					continue
 				}
 				p2DNA := dnas[p2Scale]
-				isMatch := true
-				for i := range(len(childDNA)) {
-					if childDNA[i] != p1DNA[i] && childDNA[i] != p2DNA[i] {
-						isMatch = false
-						break
-					}
-				}
-				if isMatch {
+				if childDNA.matches(p1DNA, p2DNA) {
 					matched = true
 					parents = append(parents, [3]int{childScale, p1Scale, p2Scale})
 					break
@@ -58,7 +86,7 @@ func (q Quest09) findParents() [][3]int {
 func (q Quest09) matches(i, j int) int {
 	a, b := q.dnas[i], q.dnas[j]
 	count := 0
-	for i := range(len(a)) {
+	for i := range len(a) {
 		if a[i] == b[i] {
 			count++
 		}

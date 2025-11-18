@@ -19,9 +19,9 @@ func (q Quest04) Solve(data string, part int) string {
 			numbers = append(numbers, helpers.Atoi(strings.TrimRight(i, "\n")))
 		}
 		if part == 1 {
-			return helpers.Itoa(2025 * numbers[0] / numbers[len(numbers) - 1])
+			return helpers.Itoa(2025 * numbers[0] / numbers[len(numbers)-1])
 		} else {
-			return helpers.Itoa(int(math.Ceil(10000000000000. / (float64(numbers[0]) / float64(numbers[len(numbers) - 1])))))
+			return helpers.Itoa(int(math.Ceil(10000000000000. / (float64(numbers[0]) / float64(numbers[len(numbers)-1])))))
 		}
 	}
 	var numbers [][2]float64
@@ -36,5 +36,5 @@ func (q Quest04) Solve(data string, part int) string {
 	for idx := range len(numbers) - 1 {
 		ratio *= numbers[idx][1] / numbers[idx+1][0]
 	}
-	return helpers.Itoa(int(ratio*100))
+	return helpers.Itoa(int(ratio * 100))
 }
