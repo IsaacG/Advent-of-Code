@@ -1,65 +1,73 @@
 """Everyone Codes Day N."""
 
+import functools
 import logging
 import time
 from lib import helpers
 from lib import parsers
 
 log = logging.info
+OFFSETS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    if part != 3:
-        initial = [complex()]
-        if part == 2:
-            initial.append(complex(data.max_x, data.max_y))
-        boom = set(initial)
-        todo = set(initial)
+    board = {
+        (x, y): int(char)
+        for y, line in enumerate(data.splitlines())
+        for x, char in enumerate(line)
+    }
+    top_left, bottom_right = min(board), max(board)
+
+    @functools.cache
+    def explode(starting_points: tuple[tuple[int, int], ...]) -> set[tuple[int, int]]:
+        """Return all the barrels that explode from a given set of starting explosions."""
+        boom = set(starting_points)
+        todo = set(starting_points)
         while todo:
             cur = todo.pop()
-            for n in data.neighbors(cur):
-                if n not in boom and int(data.chars[n]) <= int(data.chars[cur]):
+            for dx, dy in OFFSETS:
+                n = (cur[0] + dx, cur[1] + dy)
+                if n in boom or n not in board or board[n] > board[cur]:
+                    continue
+                if board[n] == board[cur]:
+                    # Expand the search when the barrel size is the same.
                     boom.add(n)
                     todo.add(n)
-        return len(boom)
-
-    available = data.all_coords.copy()
-
-    def explode(pos):
-        boom = set(pos)
-        todo = set(pos)
-        while todo:
-            cur = todo.pop()
-            for n in data.neighbors(cur):
-                if n in available and n not in boom and data.chars[n] <= data.chars[cur]:
-                    boom.add(n)
-                    todo.add(n)
+                else:
+                    # Use dynamic programming to reuse sub-explosions with smaller barrels.
+                    boom |= explode((n, ))
         return boom
 
-    picked = []
+    if part == 1:
+        return len(explode((top_left,)))
+    if part == 2:
+        return len(explode((top_left, bottom_right)))
+
+    starting_barrels = []
+    available = set(board.keys())
     log("Start")
-    for i in range(3):
-        p, c = complex(), 0
-        for i in available:
-            if i == 0 and data.chars[i] != 9: continue
-            if i == 1 and data.chars[i] < 7: continue
-            damage = explode([i])
-            if len(damage) > c:
-                c = len(damage)
-                p = i
-        picked.append(p)
-        log(f"Picked {p} for {c} damage")
-        available -= explode([p])
 
-    available = data.all_coords.copy()
-    assert len(picked) == 3
-    return len(explode(picked))
+    for choice in range(3):
+        best_choice, max_damage = (0, 0), 0
+        for barrel in available:
+            # Cheat to speed up code.
+            if choice == 0 and board[barrel] < 4:
+                continue
+            damage = explode((barrel, )) & available
+            if len(damage) > max_damage:
+                max_damage = len(damage)
+                best_choice = barrel
+        starting_barrels.append(best_choice)
+        log(f"Picked {best_choice} for {max_damage} damage")
+        # Reduce what barrels are considered unbroken.
+        available -= explode((best_choice, ))
+
+    available = set(board.keys())
+    return len(explode(tuple(starting_barrels)))
 
 
-
-
-
-PARSER = parsers.CoordinatesParser()
+PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 989611
@@ -109,7 +117,7 @@ if __name__ == "__main__":
     day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
     for _part in range(1, 4):
         with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            _input = PARSER.parse(f.read())  # type: list[list[int]]
+            _input = PARSER.parse(f.read())  # type: str
             start = time.perf_counter_ns()
             got = solve(_part, _input)
             end = time.perf_counter_ns()
