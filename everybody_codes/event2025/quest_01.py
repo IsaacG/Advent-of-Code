@@ -2,6 +2,7 @@
 
 import logging
 
+from lib import helpers
 from lib import parsers
 
 
@@ -37,3 +38,6 @@ TESTS = [
     (2, TEST_DATA[0], "Elarzris"),
     (3, TEST_DATA[1], "Drakzyph"),
 ]
+
+if __name__ == "__main__":
+    helpers.run_solution(globals())

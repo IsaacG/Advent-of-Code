@@ -238,3 +238,27 @@ def binary_search(low: int, high: int, predicate: collections.abc.Callable[[int]
         else:
             low = cur + 1
     return high
+
+
+def run_solution(data) -> None:
+    day = int(data["__file__"].split("_", maxsplit=-1)[-1].split(".")[0])
+    solver = data["solve"]
+    test_data = data["TESTS"]
+    parser = data["PARSER"].parse
+    params = inspect.signature(solver).parameters
+
+    kwargs = {}
+    if "testing" in params:
+        kwargs = {"testing": True}
+    for _part, _data, expected in test_data:
+        assert solver(_part, parser(_data), **kwargs) == expected
+    print("Tests pass.")
+    if "testing" in params:
+        kwargs = {"testing": False}
+    for _part in range(1, 4):
+        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
+            _input = parser(f.read())  # type: str
+            start = time.perf_counter_ns()
+            got = solver(_part, _input, **kwargs)
+            end = time.perf_counter_ns()
+            print(f"{day:02}.{_part} {got:15} {format_ns(end - start):8}")

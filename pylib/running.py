@@ -4,7 +4,6 @@ import collections.abc
 import dataclasses
 import datetime
 import importlib
-import inspect
 import logging
 import os
 import pathlib

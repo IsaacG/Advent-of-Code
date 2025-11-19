@@ -4,6 +4,7 @@ import collections
 import functools
 import time
 import typing
+from lib import helpers
 from lib import parsers
 
 
@@ -132,14 +133,4 @@ TESTS = [
 ]
 
 if __name__ == "__main__":
-    for _part, _data, expected in TESTS:
-        assert solve(_part, PARSER.parse(_data)) == expected
-    print("Tests pass.")
-    day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
-    for _part in range(1, 4):
-        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            data = PARSER.parse(f.read())
-            start = time.perf_counter_ns()
-            got = solve(_part, data)
-            end = time.perf_counter_ns()
-            print(f"{_part} {(end - start) / 1000:8}μs  {got}")
+    helpers.run_solution(globals())

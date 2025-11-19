@@ -92,33 +92,23 @@ TEST_DATA = [
 3112""",
     """\
 41951111131882511179
-32112222211508122215
-31223333322105122219
+32112222211518122215
+31223333322115122219
 31234444432147511128
-91223333322176021892
-60112222211166431583
-04661111166111111746
-01111119042122222177
-41222108881233333219
+91223333322176121892
+61112222211166431583
+14661111166111111746
+11111119142122222177
+41222118881233333219
 71222127839122222196
-56111026279711111507""",
+56111126279711111517""",
 ]
 TESTS = [
     (1, TEST_DATA[0], 16),
     (2, TEST_DATA[1], 58),
     (3, TEST_DATA[2], 14),
-    (3, TEST_DATA[3], 133),
+    (3, TEST_DATA[3], 136),
 ]
 
 if __name__ == "__main__":
-    for _part, _data, expected in TESTS:
-        assert solve(_part, PARSER.parse(_data)) == expected
-    print("Tests pass.")
-    day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
-    for _part in range(1, 4):
-        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            _input = PARSER.parse(f.read())  # type: str
-            start = time.perf_counter_ns()
-            got = solve(_part, _input)
-            end = time.perf_counter_ns()
-            print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - start):8}")
+    helpers.run_solution(globals())

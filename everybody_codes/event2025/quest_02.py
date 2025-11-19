@@ -1,5 +1,6 @@
 """Everyone Codes Day N."""
 
+from lib import helpers
 from lib import parsers
 
 
@@ -43,10 +44,4 @@ TESTS = [
 
 
 if __name__ == "__main__":
-    for _part, _data, expected in TESTS:
-        assert solve(_part, PARSER.parse(_data)) == expected
-    print("Tests pass.")
-    day = __file__.split("_", maxsplit=1)[-1].split(".")[0]
-    for _part in range(1, 4):
-        with open(f"inputs/{day}.{_part}.txt", encoding="utf-8") as f:
-            print(_part, solve(_part, PARSER.parse(f.read())))
+    helpers.run_solution(globals())

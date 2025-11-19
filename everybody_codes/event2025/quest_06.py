@@ -3,6 +3,7 @@
 import collections
 import math
 import time
+from lib import helpers
 
 
 def solve(part: int, data: str) -> int:
@@ -50,13 +51,4 @@ TESTS = [
 ]
 
 if __name__ == "__main__":
-    for _part, _data, expected in TESTS:
-        assert solve(_part, (_data)) == expected
-    print("Tests pass.")
-    day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
-    for _part in range(1, 4):
-        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-            start = time.perf_counter_ns()
-            got = solve(_part, (f.read()))
-            end = time.perf_counter_ns()
-            print(_part, got, (end - start) / 1_000_000_000)
+    helpers.run_solution(globals())
