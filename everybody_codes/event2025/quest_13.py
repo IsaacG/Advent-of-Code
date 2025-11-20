@@ -14,12 +14,15 @@ def solve(part: int, data: list[list[int]]) -> int:
         + [range(pair[0], pair[-1] + 1, +1) for pair in data[0::2][::+1]]
         + [range(pair[-1], pair[0] - 1, -1) for pair in data[1::2][::-1]]
     )
-    distance = 0
+    if part == 1:
+        print(ranges)
     for r in ranges:
-        nd = distance + len(r)
-        if nd > offset:
-            return r[offset - distance]
-        distance = nd
+        size = len(r)
+        if part == 1:
+            print(offset)
+        if offset < size:
+            return r[offset]
+        offset -= size
     raise RuntimeError("Not solved.")
 
 
