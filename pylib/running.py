@@ -141,6 +141,8 @@ class Runner:
                 print(f"No solutions found for {self.day}")
             else:
                 for part in self.parts:
+                    if part > len(want):
+                        continue
                     formatter.set_part(part)
                     data = self.input_data(part)
                     if data is None:
