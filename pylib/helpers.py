@@ -150,7 +150,7 @@ def t_neighbors4(point: collections.abc.Sequence[int]) -> collections.abc.Iterab
 
 
 @dataclasses.dataclass
-class Map:
+class MapC:
     max_x: int
     max_y: int
     chars: dict[complex, str | int]
@@ -211,6 +211,68 @@ class Map:
         )
 
     def neighbors(self, point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> dict[complex, T]:
+        """Return neighboring points and values which are in the map."""
+        return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
+
+
+@dataclasses.dataclass
+class Map:
+    max_x: int
+    max_y: int
+    chars: dict[tuple[int, int], str | int]
+    coords: dict[str | int, set[tuple[int, int]]]
+    all_coords: set[tuple[int, int]]
+    blank_char: str
+    non_blank_chars: set[str]
+
+    def __post_init__(self) -> None:
+        self.width = self.max_x + 1
+        self.height = self.max_y + 1
+
+    def __sub__(self, key: str) -> set[tuple[int, int]]:
+        return self.all_coords - self[key]
+
+    def __contains__(self, item) -> bool:
+        if not isinstance(item, tuple[int, int]):
+            raise TypeError(f"contains not defined for {type(item)}")
+        return item in self.all_coords
+
+    def __getitem__(self, key: str | tuple[int, int]) -> str | int | set[tuple[int, int]] | list[set[tuple[int, int]]]:
+        if isinstance(key, tuple[int, int]):
+            return self.chars[key]
+        if isinstance(key, int):
+            return self.coords[key]
+        if isinstance(key, str) and len(key) == 1:
+            return self.coords[key]
+        if isinstance(key, collections.abc.Sequence):
+            return [self.coords[k] for k in key]
+        raise ValueError(f"Could not index on {key}")
+
+    @property
+    def size(self) -> int:
+        if self.max_x != self.max_y:
+            raise ValueError(f"The input is {self.width, self.height} and not square!")
+        return self.width
+
+    def update(self, coord: tuple[int, int], val: int | str) -> None:
+        prior = self.chars[coord]
+        self.chars[coord] = val
+        self.coords[prior].remove(coord)
+        self.coords.setdefault(val, set()).add(coord)
+
+    def get_coords(self, chars: collections.abc.Iterable[str]) -> list[set[tuple[int, int]]]:
+        return [self.coords[char] for char in chars]
+
+    @property
+    def corners(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]:
+        return (
+            0,
+            (0, self.max_y),
+            (self.max_x, 0),
+            (self.max_x, self.max_y)
+        )
+
+    def neighbors(self, point: tuple[int, int], directions: collections.abc.Sequence[tuple[int, int]] = STRAIGHT_NEIGHBORS) -> dict[tuple[int, int], T]:
         """Return neighboring points and values which are in the map."""
         return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
 

@@ -21,7 +21,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=36),
         aoc.TestCase(part=2, inputs=SAMPLE, want=81),
     ]
-    INPUT_PARSER = aoc.CoordinatesParser()
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         """Score and rate trails by computing how to walk the trail to a 9."""

@@ -28,7 +28,7 @@ class Day19(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want="ABCDEF"),
         aoc.TestCase(part=2, inputs=SAMPLE, want=38),
     ]
-    INPUT_PARSER = aoc.CoordinatesParser(ignore=" ")
+    INPUT_PARSER = aoc.CoordinatesParserC(ignore=" ")
 
     def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int | str:
         """Walk the maze and track steps/letters."""

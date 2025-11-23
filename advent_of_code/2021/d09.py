@@ -20,7 +20,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=15),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=1134),
     )
-    INPUT_PARSER = aoc.CoordinatesParser()
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     @classmethod
     def lows(cls, depths: aoc.Map) -> list[complex]:

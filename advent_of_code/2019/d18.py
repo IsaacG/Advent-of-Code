@@ -164,7 +164,7 @@ class Day18(aoc.Challenge):
 
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         if not part_one:
-            data = aoc.CoordinatesParser(ignore=None, origin_top_left=True).parse(puzzle_input)
+            data = aoc.CoordinatesParserC(ignore=None, origin_top_left=True).parse(puzzle_input)
 
             center = data.coords["@"].copy().pop()
             data.update(center, "#")
@@ -177,7 +177,7 @@ class Day18(aoc.Challenge):
                 typing.cast(dict[complex, str], data.chars), data.max_y + 1, data.max_x + 1
             )
 
-        data = aoc.CoordinatesParser(ignore="#", origin_top_left=True).parse(puzzle_input)
+        data = aoc.CoordinatesParserC(ignore="#", origin_top_left=True).parse(puzzle_input)
         starts = list("@" if part_one else "0123")
         nodes: dict[str, complex] = {
             char: pos

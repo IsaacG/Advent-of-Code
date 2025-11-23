@@ -27,7 +27,7 @@ class Day08(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=14),
         aoc.TestCase(part=2, inputs=SAMPLE, want=34),
     ]
-    INPUT_PARSER = aoc.CoordinatesParser()
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         all_locations = puzzle_input.all_coords

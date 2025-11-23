@@ -61,7 +61,7 @@ class Day12(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        parser = aoc.CoordinatesParser()
+        parser = aoc.CoordinatesParserC()
         data = parser.parse(puzzle_input)
         start = data["S"].pop()
         end = data["E"].pop()

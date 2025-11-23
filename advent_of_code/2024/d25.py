@@ -53,7 +53,7 @@ class Day25(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=3),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParser()])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC()])
 
     def part1(self, puzzle_input: list[aoc.Map]) -> int:
         """Count how many keys (loosely) fit inside a locks."""

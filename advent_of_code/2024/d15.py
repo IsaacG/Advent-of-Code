@@ -62,7 +62,7 @@ class Day15(aoc.Challenge):
 
     def part1(self, puzzle_input: str) -> int:
         board, instructions = aoc.ParseBlocks(
-            [aoc.CoordinatesParser(), aoc.parse_one_str]).parse(puzzle_input)
+            [aoc.CoordinatesParserC(), aoc.parse_one_str]).parse(puzzle_input)
         robot = board["@"].pop()
         walls, boxes = board["#O"]
         directions = (aoc.ARROW_DIRECTIONS[i] for i in instructions.replace("\n", ""))
@@ -85,7 +85,7 @@ class Day15(aoc.Challenge):
         for find, replace in [("#", "##"), ("O", "[]"), (".", ".."), ("@", "@.")]:
             puzzle_input = puzzle_input.replace(find, replace)
         board, instructions = aoc.ParseBlocks(
-            [aoc.CoordinatesParser(), aoc.parse_one_str]).parse(puzzle_input)
+            [aoc.CoordinatesParserC(), aoc.parse_one_str]).parse(puzzle_input)
         robot = board["@"].pop()
         walls, boxes = board["#["]
 

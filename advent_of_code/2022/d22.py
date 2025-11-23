@@ -248,7 +248,7 @@ class Day22(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=6032),
         aoc.TestCase(inputs=SAMPLE, part=2, want=5031),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParser(), aoc.parse_re_findall_str(r"(L|R|\d+)")])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC(), aoc.parse_re_findall_str(r"(L|R|\d+)")])
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the final location after wandering the map."""

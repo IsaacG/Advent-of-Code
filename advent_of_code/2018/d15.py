@@ -170,7 +170,7 @@ class Day15(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        data = aoc.CoordinatesParser().parse(puzzle_input)
+        data = aoc.CoordinatesParserC().parse(puzzle_input)
         spaces = data - "#"
         units = {
             unit_type: {

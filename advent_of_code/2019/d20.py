@@ -114,7 +114,7 @@ class Day20(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE[1], want=58),
         aoc.TestCase(part=2, inputs=SAMPLE[2], want=396),
     ]
-    INPUT_PARSER = aoc.CoordinatesParser()
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def get_portals(self, puzzle_input: aoc.Map, part_one: bool) -> dict[str, list[tuple[complex, int]]]:
         """Return a map of all the portals (their positions and in/out direction)."""

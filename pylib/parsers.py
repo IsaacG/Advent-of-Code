@@ -248,7 +248,7 @@ class Transform(BaseParser):
 
 
 @dataclasses.dataclass
-class CoordinatesParser(BaseParser):
+class CoordinatesParserC(BaseParser):
     """Generate coordinate sets for multiple characters."""
 
     chars: collections.abc.Iterable[str] | None = None
@@ -282,6 +282,59 @@ class CoordinatesParser(BaseParser):
                 if char not in want_chars:
                     continue
                 pos = complex(x, y)
+                all_coords.add(pos)
+                coords_by_char[transform(char)].add(pos)
+                char_by_coord[pos] = transform(char)
+
+        blank_char = max(coords_by_char, key=lambda x: len(coords_by_char[x]))
+        non_blank_chars = set(coords_by_char) - {blank_char}
+
+        return MapC(
+            max_x=x,
+            max_y=y,
+            chars=char_by_coord,
+            coords=dict(coords_by_char),
+            all_coords=all_coords,
+            blank_char=blank_char,
+            non_blank_chars=non_blank_chars,
+        )
+
+
+@dataclasses.dataclass
+class CoordinatesParser(BaseParser):
+    """Generate coordinate sets for multiple characters."""
+
+    chars: collections.abc.Iterable[str] | None = None
+    origin_top_left: bool = True
+    ignore: str | None = None
+
+    def parse(self, puzzle_input: str) -> Map:
+        """Parse a map and return the coordinates of different chars."""
+        lines = puzzle_input.splitlines()
+
+        if not self.origin_top_left:
+            lines.reverse()
+
+        x, y = (len(lines[0]), len(lines))
+
+        all_chars = set(i for line in lines for i in line)
+        want_chars = set(self.chars) if self.chars else all_chars
+        if self.ignore:
+            want_chars -= set(self.ignore)
+        transform: Callable[[str], str | int]
+        if all(i.isdigit() for i in all_chars):
+            transform = int
+        else:
+            transform = str
+
+        coords_by_char = collections.defaultdict(set)
+        char_by_coord = {}
+        all_coords = set()
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                if char not in want_chars:
+                    continue
+                pos = (x, y)
                 all_coords.add(pos)
                 coords_by_char[transform(char)].add(pos)
                 char_by_coord[pos] = transform(char)

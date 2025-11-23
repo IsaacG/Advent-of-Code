@@ -30,7 +30,7 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=405),
         aoc.TestCase(inputs=SAMPLE, part=2, want=400),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParser()])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC()])
 
     def find_mirror(self, points: set[complex], point: complex | None) -> int | None:
         """Find the row/column around which the data is mirrored.

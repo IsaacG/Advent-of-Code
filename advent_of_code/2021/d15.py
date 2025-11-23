@@ -55,7 +55,7 @@ class Day15(aoc.Challenge):
             )
             for y in range(graph.height * 5)
         ]
-        graph = aoc.CoordinatesParser().parse("\n".join(rows))
+        graph = aoc.CoordinatesParserC().parse("\n".join(rows))
         return self.solve(graph)
 
     @staticmethod

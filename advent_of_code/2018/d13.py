@@ -96,7 +96,7 @@ class Day13(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> InputType:
         """Parse the input data."""
-        parsed = aoc.CoordinatesParser().parse(puzzle_input)
+        parsed = aoc.CoordinatesParserC().parse(puzzle_input)
         junctions = parsed.coords.get("+", set())
         turns = {coord: CORNERS[char] for char in "/\\" for coord in parsed.coords.get(char, [])}
         wagons_directions = {coord: direction for char, direction in DIRECTIONS.items() for coord in parsed.coords.get(char, [])}
