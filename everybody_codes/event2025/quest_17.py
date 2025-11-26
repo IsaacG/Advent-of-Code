@@ -1,106 +1,90 @@
 """Everyone Codes Day N."""
 
-import collections
-import logging
 import queue
-import functools
 from lib import helpers
 from lib import parsers
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: helpers.Map) -> int:
     """Solve the parts."""
-    Xv, Yv = data.coords["@"].copy().pop()
+    cells = {k: int(v) for k, v in data.chars.items() if str(v).isdigit()}
+    volcano_x, volcano_y = data.coords["@"].copy().pop()
 
-    @functools.cache
-    def burns(rad):
-        target = rad * rad
+    if part == 3:
+        start_x, start_y = data.coords["S"].copy().pop()
+        cells[start_x, start_y] = 0
+
+    def burns(radius: int) -> set[tuple[int, int]]:
+        """Return the locations burned by lava for a given radius."""
+        target = radius * radius
         return {
-            (Xc, Yc)
-            for (Xc, Yc), num in data.chars.items()
-            if num.isalnum() and (Xv - Xc) * (Xv - Xc) + (Yv - Yc) * (Yv - Yc) <= target
+            (x, y)
+            for (x, y), num in cells.items()
+            if (volcano_x - x) * (volcano_x - x) + (volcano_y - y) * (volcano_y - y) <= target
         }
 
-    @functools.cache
-    def damage(target):
-        return sum(
-            int(num)
-            for (Xc, Yc), num in data.chars.items()
-            if num.isalnum() and (Xv - Xc) * (Xv - Xc) + (Yv - Yc) * (Yv - Yc) <= target
-        )
+    def damage(radius: int) -> int:
+        """Return the damage done in a given radius."""
+        return sum(cells[p] for p in burns(radius))
 
     if part == 1:
-        return damage(10*10)
+        return damage(10)
 
     if part == 2:
-        delta, i = max(
-            (damage((i+1)**2) - damage(i*i), i)
-            for i in range(data.max_x)
+        delta, radius = max(
+            (damage(radius) - damage(radius - 1), radius)
+            for radius in range(1, data.max_x // 2)
         )
-        return delta * (i + 1)
+        return delta * radius
 
-    start_x, start_y = data.coords["S"].copy().pop()
-    vals = {k: int(v) for k, v in data.chars.items() if v.isdigit()}
-    vals[start_x, start_y] = 0
-
-    for rad in range(1, 45):
-        counter = 0
-        max_steps = 30 * (rad + 1)
-        viable = set(vals) - set(burns(rad))
-        assert (start_x, start_y) in vals
-        assert (start_x, start_y) in viable
+    for radius in range(1, data.max_x // 2):
+        max_steps = 30 * (radius + 1) - 1
+        unburnt = set(cells) - set(burns(radius))
 
         best = {(start_x, start_y): 0}
+        # Plot a course from start to left to bottom to right to start.
         target_groups = [
             {
                 (x, y)
-                for x, y in viable
-                if l(x, y)
+                for x, y in unburnt
+                if test(x, y)
             }
-            for l in [
-                (lambda x, y: y == Yv and x < Xv),  # left
-                (lambda x, y: x == Xv and y > Yv),  # bottom
-                (lambda x, y: y == Yv and x > Xv),  # right
+            for test in [
+                (lambda x, y: y == volcano_y and x < volcano_x),  # left
+                (lambda x, y: x == volcano_x and y > volcano_y),  # bottom
+                (lambda x, y: y == volcano_y and x > volcano_x),  # right
                 (lambda x, y: x == start_x and y == start_y),  # start
             ]
         ]
-        # print(target_groups)
 
         for idx, targets in enumerate(target_groups):
-            pending = set(targets) & viable
-            # print(f"{rad}.{idx} {pending}, {best}")
-
+            pending = set(targets) & unburnt
             seen = set()
-            todo = queue.PriorityQueue()
+            q: queue.PriorityQueue[tuple[int, int, int]] = queue.PriorityQueue()
             for (x, y), steps in best.items():
-                todo.put((steps, x, y))
+                q.put((steps, x, y))
             best = {}
 
             while pending:
-                assert not todo.empty()
-                steps, x, y = todo.get()
+                steps, x, y = q.get()
 
                 if (x, y) in pending:
                     pending.remove((x, y))
                     best[x, y] = steps
-                    if idx == 3 and x == start_x and y == start_y:
-                        if steps < max_steps:
-                            return rad * steps
-                        break
+                    if idx == 3:
+                        if steps > max_steps:
+                            break
+                        return radius * steps
 
                 for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
                     nx, ny = x + dx, y + dy
-                    if (nx, ny) not in viable or (nx, ny) in seen:
+                    if (nx, ny) not in unburnt or (nx, ny) in seen:
                         continue
                     seen.add((nx, ny))
-                    nsteps = steps + vals[nx, ny]
-                    todo.put((nsteps, nx, ny))
+                    nsteps = steps + cells[nx, ny]
+                    q.put((nsteps, nx, ny))
 
-            # print(rad, idx, best)
-
-
-
+    raise RuntimeError("Not solved.")
 
 
 PARSER = parsers.CoordinatesParser()
@@ -217,7 +201,7 @@ TESTS = [
     (2, TEST_DATA[1], 1090),
     (3, TEST_DATA[2], 592),
     (3, TEST_DATA[3], 330),
-    # (3, TEST_DATA[4], 3180),
+    (3, TEST_DATA[4], 3180),
 ]
 
 if __name__ == "__main__":
