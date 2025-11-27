@@ -65,7 +65,7 @@ def solve(part: int, data: helpers.Map) -> int:
                 q.put((steps, x, y))
             best = {}
 
-            while pending:
+            while not q.empty():
                 steps, x, y = q.get()
 
                 if (x, y) in pending:
@@ -82,7 +82,8 @@ def solve(part: int, data: helpers.Map) -> int:
                         continue
                     seen.add((nx, ny))
                     nsteps = steps + cells[nx, ny]
-                    q.put((nsteps, nx, ny))
+                    if nsteps <= max_steps:
+                        q.put((nsteps, nx, ny))
 
     raise RuntimeError("Not solved.")
 
