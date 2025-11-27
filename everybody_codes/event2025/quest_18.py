@@ -12,105 +12,71 @@ from lib import helpers
 from lib import parsers
 
 
+class Garden:
+    """Garden holds plant data."""
+
+    def __init__(self, plant_data: str):
+        """Parse the input plant data."""
+        # input_plants: plants with one free branch, with input energy of 0 or 1.
+        self.input_plants = set()
+        # plant_in: branches leading into this plant; input energy.
+        # Stores a tuple, the source plant ID and branch thickness.
+        self.plant_in = collections.defaultdict(list)
+        # plant_out: branches out of this plant; downstream energy. Stored branch thickness.
+        self.plant_out = collections.defaultdict(list)
+        # thickness: thickness of a plant.
+        self.thickness = {}
+
+        for chunk in plant_data.split("\n\n"):
+            plant_str, *branches = chunk.splitlines()
+            m = re.match(r"Plant (\d+) with thickness (-?\d+):", plant_str)
+            assert m
+            plant, thick = [int(i) for i in m.groups()]
+            self.thickness[plant] = thick
+            for branch in branches:
+                if branch == "- free branch with thickness 1":
+                    self.input_plants.add(plant)
+                else:
+                    m = re.match(r"- branch to Plant (\d+) with thickness (-?\d+)", branch)
+                    assert m
+                    branch_in, thick = [int(i) for i in m.groups()]
+                    self.plant_in[plant].append((branch_in, thick))
+                    self.plant_out[branch_in].append(thick)
+        self.num_inputs = len(self.input_plants)
+        self.target = (set(self.thickness) - set(self.plant_out)).pop()
+
+    def solve_for(self, solved: dict[int, int]) -> int:
+        """Return the energy at target, given a set of starting energies."""
+        todo = set(self.plant_in)
+        while True:
+            # Find a plant with all the inputs already known.
+            plant = next(plant for plant in todo if all(branch in solved for branch, _ in self.plant_in[plant]))
+            todo.remove(plant)
+            incoming = sum(thick * solved[branch_in] for branch_in, thick in self.plant_in[plant])
+            solved[plant] = 0 if incoming < self.thickness[plant] else incoming
+            if plant == self.target:
+                return solved[plant]
+
+
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    input_plants = set()
-    plant_in = collections.defaultdict(set)
-    plant_out = collections.defaultdict(list)
-    thickness = {}
-    free_branch_plants = set()
-    if part == 1:
-        plants = data
-        scema = []
-    else:
-        plants, schemas_chunk = data.split("\n\n\n")
-        schemas = []
-        for line in schemas_chunk.splitlines():
-            schemas.append([int(i) for i in line.split()])
-
-    for chunk in plants.split("\n\n"):
-        a, *b = chunk.splitlines()
-        m = re.match(r"Plant (\d+) with thickness (-?\d+):", a)
-        i, t = [int(i) for i in m.groups()]
-        thickness[i] = t
-        for line in b:
-            if line == "- free branch with thickness 1":
-                input_plants.add(i)
-            else:
-                m = re.match(r"- branch to Plant (\d+) with thickness (-?\d+)", line)
-                s, t = [int(i) for i in m.groups()]
-                plant_in[i].add((s, t))
-                plant_out[s].append(t)
-                
-                free_branch_plants.add(s)
+    chunks = data.split("\n\n\n")
+    garden = Garden(chunks[0])
 
     if part == 1:
-        schemas = [[1] * len(input_plants)]
+        chunks.append(" ".join(["1"] * garden.num_inputs))
 
-    final = set(thickness) - free_branch_plants
-    target = final.pop()
+    schemas = [[int(i) for i in line.split()] for line in chunks[1].splitlines()]
 
-    def solve_for(schema):
-        return solve_for_a(target, {i: j for i, j in enumerate(schema, 1)})
-
-    def solve_for_a(target, solved):
-        todo = set(thickness) - set(solved)
-        total = len(thickness)
-        while todo:
-            i = next(i for i in todo if all(j in solved for j, _ in plant_in[i]))
-            todo.remove(i)
-            incoming = sum(t * solved[s] for s, t in plant_in[i])
-            if incoming < thickness[i]:
-                solved[i] = 0
-            else:
-                solved[i] = incoming
-            if i == target:
-                return solved[i]
-
-    res = []
-    for schema in schemas:
-        res.append(solve_for(schema))
+    # Compute the target energy for each schema.
+    results = [garden.solve_for(dict(enumerate(schema, 1))) for schema in schemas]
     if part < 3:
-        return sum(res)
+        return sum(results)
 
-    def max_for(c):
-        a, b = [s for s, _ in plant_in[c]]
-        da = dict(plant_in[a])
-        db = dict(plant_in[b])
-        common = set(da) & set(db)
-        solved = {}
-        for i, j in da.items():
-            solved[i] = 1 if j > 0 else 0
-        for i, j in db.items():
-            solved[i] = 1 if j > 0 else 0
-        shared = common.pop()
-        return max(
-            solve_for_a(c, solved | {shared: k})
-            for k in [0, 1]
-        )
+    # Solve for maximal energy by setting input values based on their output branch sign.
+    most = garden.solve_for({plant: 1 if garden.plant_out[plant][0] > 0 else 0 for plant in garden.input_plants})
 
-    most = sum(
-        max_for(i) * j
-        for i, j in plant_in[target]
-    )
-
-    for i in input_plants:
-        assert len(plant_out[i]) == 2
-        assert (plant_out[i][0] > 0) == (plant_out[i][1] > 0)
-    mosta = solve_for_a(target, {i: 1 if plant_out[i][0] > 0 else 0 for i in input_plants})
-    assert most == mosta
-
-    total = 0
-    for r in res:
-        if r:
-            total += most - r
-    return total
-
-
-
-
-
-
+    return sum(most - result for result in results if result)
 
 
 PARSER = parsers.parse_one_str
