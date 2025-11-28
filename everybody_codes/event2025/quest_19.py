@@ -2,36 +2,28 @@
 
 import collections
 import math
-import logging
 from lib import helpers
 from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: list[list[int]]) -> int:
     """Solve the parts."""
-    cur_x, cur_y = 0, 0
-    total = 0
+    _ = part
     walls = collections.defaultdict(list)
     for wall_x, wall_y, wall_size in data:
         walls[wall_x].append((wall_y, wall_size))
 
+    total, cur_x, cur_y = 0, 0, 0
     for wall_x, openings in sorted(walls.items()):
         wall_y = min(wall_y for wall_y, _ in openings)
         delta_y = wall_y - cur_y
         delta_x = wall_x - cur_x
-        # drop = distance - 2 * flaps
-        # climb = 2 * flaps - distance
-        # flaps = (climb + distance) / 2
         flaps_needed = math.ceil((delta_y + delta_x) / 2)
         flaps_needed = max(0, flaps_needed)
         total += flaps_needed
         cur_x = wall_x
         cur_y += 2 * flaps_needed - delta_x
-        # print(f"{cur_x, cur_y}, {flaps_needed=}")
     return total
-
-    
 
 
 PARSER = parsers.parse_ints
