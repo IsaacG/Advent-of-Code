@@ -2,7 +2,6 @@
 
 import functools
 import logging
-import time
 from lib import helpers
 from lib import parsers
 

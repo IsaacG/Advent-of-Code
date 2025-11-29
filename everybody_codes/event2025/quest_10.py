@@ -2,7 +2,6 @@
 
 import collections.abc
 import functools
-import time
 from lib import helpers
 from lib import parsers
 
@@ -53,7 +52,6 @@ def solve(part: int, data: helpers.Map, testing) -> int:
     dragons, initial_sheep, hideouts = (data.coords.get(i, set()) for i in "DS#")
     board = data.all_coords
     start = dragons.pop()
-    bottom = data.max_y
     # If the sheep reaches this location, the game ends.
     game_over = {(x, data.max_y + 1) for x in range(data.width)}
     for _ in range(data.max_y):

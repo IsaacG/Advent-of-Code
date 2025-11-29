@@ -1,7 +1,6 @@
 """Everyone Codes Day N."""
 
 import math
-import time
 from lib import helpers
 from lib import parsers
 
@@ -22,18 +21,25 @@ def experiment2(ducks):
     In this example, two ducks from col 1 can flow into the basin on cols 3-4.
 
     1. Find a peak: any column taller than the next column.
-    2. Find the basin: the first column shorter than the next one. Flow into here. Extend this basin if there are repeated low columns.
+    2. Find the basin: the first column shorter than the next one. Flow into here.
+       Extend this basin if there are repeated low columns.
     3. Determine how high the basin can be filled.
-    3a. If the peak is adjacent to the basin: `(source - dest) / (width + 1) * width` (rounded up/down/maybe).
-    3b. If the peak is not adjacent to the basin: `min( [source - source_neighbor], [basin_right - basin], [basin_left, basin] )`.
-    4. Flood fill the basin, tracking movements. Source through basin edge have movement of flow amount. Basin tiles get moves equal to `sum(fill for that column and all basin columns to its right)`.
-    5. Basin fill is a tad messy unless `flow_amount % basin_width == 0`. I used `basin_fills, extra = divmod(flow_amount, basin_width)` where the right `extra` spots of the basin get `basin_fills + 1` and the left part of the basin gets `basin_fills`.
+    3a. If the peak is adjacent to the basin:
+        `(source - dest) / (width + 1) * width` (rounded up/down/maybe).
+    3b. If the peak is not adjacent to the basin:
+        `min( [source - source_neighbor], [basin_right - basin], [basin_left, basin] )`.
+    4. Flood fill the basin, tracking movements.
+       Source through basin edge have movement of flow amount.
+       Basin tiles get moves equal to `sum(fill for that column and all basin columns to its right)`.
+    5. Basin fill is a tad messy unless `flow_amount % basin_width == 0`.
+       I used `basin_fills, extra = divmod(flow_amount, basin_width)`
+       where the right `extra` spots of the basin get `basin_fills + 1`
+       and the left part of the basin gets `basin_fills`.
     """
     big = sum(ducks)
     num = len(ducks) - 1
     moves = [0] * len(ducks)
 
-    steps = 0
     while any(a > b for a, b in zip(ducks, ducks[1:])):
         peak_idx, peak_height, peak_adjacent = next(
             (idx, a, b)
@@ -58,11 +64,24 @@ def experiment2(ducks):
 
         # Maximum number of ducks that can move:
         # Don't overflow the basin and don't make the peak lower than its neighbor.
-        fill_amount = min(peak_height - peak_adjacent, min(right_edge_height - basin_height, left_edge_height - basin_height) * basin_width)
+        fill_amount = min(
+            peak_height - peak_adjacent,
+            min(
+                right_edge_height - basin_height,
+                left_edge_height - basin_height,
+            ) * basin_width,
+        )
 
         # If the peak is also the basin edge, don't make the peak lower than the basin height.
         if peak_idx + 1 == basin_start_idx:
-            fill_amount = min(fill_amount, int(math.ceil((peak_height - peak_adjacent) * basin_width / (basin_width + 1))))
+            fill_amount = min(
+                fill_amount,
+                int(
+                    math.ceil(
+                        (peak_height - peak_adjacent) * basin_width / (basin_width + 1)
+                    )
+                )
+            )
 
         all_fill, extra = divmod(fill_amount, basin_width)
         ducks[peak_idx] -= fill_amount
@@ -89,26 +108,15 @@ def solve(part: int, data: list[int]) -> int:
     ducks = data.copy()
     num = len(ducks) - 1
 
-    if True:
-        start = time.perf_counter_ns()
-        steps = 0
-        while any(a > b for a, b in zip(ducks, ducks[1:])):
-            steps += 1
-            for i in range(num):
-                if ducks[i] > ducks[i + 1]:
-                    ducks[i] -= 1
-                    ducks[i + 1] += 1
-        end = time.perf_counter_ns()
-        brute = end - start
-        start = time.perf_counter_ns()
-        got_steps, got_ducks = experiment2(data)
-        end = time.perf_counter_ns()
-        flow = end - start
-    else:
-        steps, ducks = experiment2(data)
+    steps = 0
+    while any(a > b for a, b in zip(ducks, ducks[1:])):
+        steps += 1
+        for i in range(num):
+            if ducks[i] > ducks[i + 1]:
+                ducks[i] -= 1
+                ducks[i + 1] += 1
 
     if part > 1:
-        assert ducks == sorted(ducks)
         average = sum(ducks) // len(ducks)
         return steps + sum(abs(i - average) for i in ducks) // 2
 
@@ -122,32 +130,9 @@ def solve(part: int, data: list[int]) -> int:
 
 PARSER = parsers.parse_one_int_per_line
 TEST_DATA = [
-    """\
-9
-1
-1
-4
-9
-6""",
-    """\
-9
-1
-1
-4
-9
-6""",
-    """\
-805
-706
-179
-48
-158
-150
-232
-885
-598
-524
-423""",
+    "9 1 1 4 9 6".replace(" ", "\n"),
+    "9 1 1 4 9 6".replace(" ", "\n"),
+    "805 706 179 48 158 150 232 885 598 524 423".replace(" ", "\n"),
 ]
 TESTS = [
     (1, TEST_DATA[0], 109),

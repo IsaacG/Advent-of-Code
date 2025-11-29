@@ -1,7 +1,6 @@
 """Everyone Codes Day N."""
 
 import collections
-import time
 from lib import helpers
 from lib import parsers
 

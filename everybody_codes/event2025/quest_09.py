@@ -2,7 +2,6 @@
 
 import logging
 import math
-import time
 from lib import helpers
 from lib import parsers
 

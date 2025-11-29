@@ -2,7 +2,6 @@
 
 import collections
 import logging
-import time
 from lib import helpers
 from lib import parsers
 
@@ -32,7 +31,7 @@ def solve(part: int, data: list[list[int]], testing: bool) -> int:
         )
 
     # Count the occurance of lines between nails, in both directions.
-    frequency = collections.defaultdict(lambda: collections.defaultdict(int))
+    frequency: dict[int, dict[int, int]] = collections.defaultdict(lambda: collections.defaultdict(int))
     for a, b in lines:
         frequency[a][b] += 1
         frequency[b][a] += 1
@@ -41,7 +40,7 @@ def solve(part: int, data: list[list[int]], testing: bool) -> int:
     # We can count the lines that i-j cuts anchored by nail a
     # by looking at the difference between difference between lines from a-(j-1) and a-(i).
     # This gives the total lines from a to `[(i+1)..(j-1)]`.
-    cumulative = collections.defaultdict(lambda: collections.defaultdict(int))
+    cumulative: dict[int, dict[int, int]] = collections.defaultdict(lambda: collections.defaultdict(int))
     for a in range(1, size):
         for b in range(a + 1, a + size):
             cumulative[a][b % size] = cumulative[a][(b - 1) % size] + frequency[a][b % size]

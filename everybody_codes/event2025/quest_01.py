@@ -1,7 +1,5 @@
 """Everyone Codes Day N."""
 
-import logging
-
 from lib import helpers
 from lib import parsers
 
