@@ -27,7 +27,7 @@ class Day18(aoc.Challenge):
         # The number of neighbors which will turn a light on.
         want = {True: (2, 3), False: (3,)}
         # Track just the lights which are on.
-        on = bitmap["#"]
+        on = bitmap.coords["#"]
         corner_points = bitmap.corners
 
         for _ in range(cycles):
@@ -35,15 +35,16 @@ class Day18(aoc.Challenge):
                 on.update(corner_points)
             # Consider cells which are on or adjacent to an on.
             candidates = {
-                point + direction
-                for point in on
-                for direction in aoc.EIGHT_DIRECTIONS
-                if point + direction in bitmap
+                (x + dx, y + dy)
+                for x, y in on
+                for dx, dy in aoc.ALL_NEIGHBORS_T
+                if (x + dx, y + dy) in bitmap.all_coords
             } | on
 
             new = set()
             for point in candidates:
-                count = sum(point + direction in on for direction in aoc.EIGHT_DIRECTIONS)
+                x, y = point
+                count = sum((x + dx, y + dy) in on for dx, dy in aoc.ALL_NEIGHBORS_T)
                 if count in want[point in on]:
                     new.add(point)
             on = new
