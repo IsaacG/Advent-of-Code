@@ -1,11 +1,12 @@
 """Everyone Codes Day N. Note, `ship` == one sheep."""
 
+import collections.abc
 import functools
 import time
 from lib import helpers
 from lib import parsers
 
-OFFSETS = [complex(*i) for i in [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]]
+OFFSETS = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
 
 
 def p12(part: int, data: helpers.Map, testing: bool) -> int:
@@ -14,12 +15,11 @@ def p12(part: int, data: helpers.Map, testing: bool) -> int:
     board = data.all_coords
     start = dragons.pop()
 
-    def moves(dragon: complex) -> list[complex]:
-        return [
-            dragon + offset
-            for offset in OFFSETS
-            if dragon + offset in board
-        ]
+    def moves(x: int, y: int) -> collections.abc.Iterable[tuple[int, int]]:
+        for dx, dy in OFFSETS:
+            pos = x + dx, y + dy
+            if pos in board:
+                yield pos
 
     max_moves = 3 if testing else 4 if part == 1 else 20
     seen = set()
@@ -27,17 +27,17 @@ def p12(part: int, data: helpers.Map, testing: bool) -> int:
     q = [(start, 0)]
     while q:
         dragon, steps = q.pop()
-        sheep_offset = [complex()] if part == 1 else [complex(0, steps - 1), complex(0, steps)]
+        sheep_offset = [0] if part == 1 else [steps - 1, steps]
         if dragon not in hideouts and steps:
             for offset in sheep_offset:
-                sheep_pos = dragon - offset
+                sheep_pos = dragon[0], dragon[1] - offset
                 if sheep_pos in sheep:
                     count += 1
                     sheep.remove(sheep_pos)
         steps += 1
         if steps > max_moves:
             continue
-        for pos in moves(dragon):
+        for pos in moves(*dragon):
             if (pos, steps) in seen:
                 continue
             seen.add((pos, steps))
@@ -55,32 +55,32 @@ def solve(part: int, data: helpers.Map, testing) -> int:
     start = dragons.pop()
     bottom = data.max_y
     # If the sheep reaches this location, the game ends.
-    game_over = {complex(x, data.max_y + 1) for x in range(data.max_x + 1)}
+    game_over = {(x, data.max_y + 1) for x in range(data.width)}
     for _ in range(data.max_y):
-        for i in hideouts:
-            if i + 1j in game_over:
-                game_over.add(i)
+        for x, y in hideouts:
+            if (x, y + 1) in game_over:
+                game_over.add((x, y + 1))
     # This is the lowest position the sheep can enter and the dragon still wins.
     last_spot = {
-        complex(x, min(i.imag for i in game_over if i.real == x) - 1)
+        (x, min(end_y for end_x, end_y in game_over if end_x == x) - 1)
         for x in range(data.max_x + 1)
     }
 
-    def moves(dragon):
-        for offset in OFFSETS:
-            pos = dragon + offset
+    def moves(x: int, y: int) -> collections.abc.Iterable[tuple[int, int]]:
+        for dx, dy in OFFSETS:
+            pos = x + dx, y + dy
             if pos in board:
                 yield pos
 
     @functools.cache
-    def possibilities(dragon: complex, sheep: frozenset[complex]) -> int:
+    def possibilities(dragon: tuple[int, int], sheep: frozenset[tuple[int, int]]) -> int:
         next_sheeps = []
         for ship in sheep:
             # Do not count sheep moving off the board; this is not a possible win.
             if ship in last_spot:
                 continue
             # See if this sheep can move down. If yes, this is a possible next move for the sheep.
-            n = ship + 1j
+            n = (ship[0], ship[1] + 1)
             if (n != dragon) or (n in hideouts):
                 next_sheeps.append((sheep - {ship}) | {n})
         # If no sheep moved, either
@@ -94,7 +94,7 @@ def solve(part: int, data: helpers.Map, testing) -> int:
         # Count possible ways to move for each sheep move, for each dragon move.
         options = 0
         for next_sheep in next_sheeps:
-            for pos in moves(dragon):
+            for pos in moves(*dragon):
                 sheep = next_sheep.copy()
                 # Dragon eats sheep; take it off the board.
                 if pos in next_sheep and pos not in hideouts:
