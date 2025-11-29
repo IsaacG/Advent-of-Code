@@ -44,6 +44,24 @@ class LogFormatter(logging.Formatter):
         return datetime.datetime.now().strftime(f"%H:%M:%S.%f ({delta // 1_000_000:5}ms)")
 
 
+def load_module(year: int, day: int) -> None:
+    """Load a module. Create a new exercise file from template if needed."""
+    base = pathlib.Path(__file__).parent
+    filename = base / f"{year}/d{day:02}.py"
+    if not filename.exists():
+        template_file = base / "shared/tmpl.py"
+        template = string.Template(template_file.read_text())
+        website = site.Website(year, day)
+        out = template.substitute(
+            day=f"{day:02}",
+            sample=website.codeblocks(),
+            title=website.title().strip("- "),
+        )
+        filename.write_text(out)
+        filename.chmod(0o700)
+    return importlib.import_module(f"d{day:02}")
+
+
 @dataclasses.dataclass
 class ChallengeRunner:
     """Manage the challenge for a single, specific day."""
@@ -53,7 +71,7 @@ class ChallengeRunner:
 
     def __post_init__(self) -> None:
         """Initialize."""
-        self._module = importlib.import_module(f"d{self.day:02}")
+        self._module = load_module(self.year, self.day)
 
     def module(self):
         """Reload and return the module."""
@@ -131,23 +149,6 @@ class Runner:
     def solution_path(self) -> pathlib.Path:
         return self.base / f"solutions/{self.year}.txt"
 
-    def from_template(self, day: int) -> None:
-        """Create a new exercise file from template."""
-        filename = self.code_path
-        if filename.exists():
-            print(f"{filename.name} already exists")
-            return
-        template_file = self.base / "shared/tmpl.py"
-        template = string.Template(template_file.read_text())
-        website = site.Website(self.year, day)
-        out = template.substitute(
-            day=f"{day:02}",
-            sample=website.codeblocks(),
-            title=website.title().strip("- "),
-        )
-        filename.write_text(out)
-        filename.chmod(0o700)
-
     def december(self, timeout: int) -> None:
         """Run live wait-solve for all of December."""
         year = self.now().year
@@ -200,10 +201,8 @@ class Runner:
         Build from template, watch for test to pass, submit, repeat, exit.
         """
         day = self.day or self.now().day
-        # Set up the file from template.
-        self.from_template(day)
         # Import once to set up.
-        module = importlib.import_module(f"d{day:02}")
+        module = load_module(self.year, self.day)
         obj = getattr(module, f"Day{day:02}")()
         raw_data = obj.raw_data(None)
         submitted = {1: False, 2: False}
@@ -325,7 +324,7 @@ class Runner:
             day_solutions.update(solutions)
         else:
             # Reload code and get the Challenge.
-            module = importlib.import_module(f"d{day:02}")
+            module = load_module(self.year, day)
             obj = getattr(module, f"Day{day:02}")()
             parts = [1] if day == 25 else [1, 2]
             for part in parts:
