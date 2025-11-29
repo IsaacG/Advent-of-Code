@@ -1,21 +1,24 @@
 """Everyone Codes Day N."""
 
 import collections
-import logging
 from lib import helpers
 from lib import parsers
 
-log = logging.info
+Coord = tuple[int, int, bool]
 
-def solve(part: int, data: str) -> int:
-    """Solve the parts."""
-    start, end = (0, 0), (0, 0)
-    lines = [line.strip(".") for line in data.splitlines()]
+
+def parse(lines: list[str]) -> tuple[Coord, Coord, dict[Coord, set[Coord]], set[Coord]]:
+    """Parse the input."""
+    start = end = (0, 0, False)
+    # trampolines contains the coordinates of all trampolines.
     trampolines = set()
+    # positions contains all coordinates in the triangle board.
     positions = set()
 
+    # Find coordinates for: start, end, trampolines and all positions.
     for y, line in enumerate(lines):
         for x, c in enumerate(line):
+            # Combine pairs of cells into a right and left.
             x, m = divmod(x, 2)
             r = bool(m)
             if c == "S":
@@ -25,28 +28,53 @@ def solve(part: int, data: str) -> int:
             if c in "SET":
                 trampolines.add((x, y, r))
             positions.add((x, y, r))
-    # print(sorted(trampolines))
-    # print(len(lines))
 
-    neigbors = collections.defaultdict(set)
+    # Compute the neighbors (potential next hops) for all positions -- even if they aren't trampolines!
+    neighbors = collections.defaultdict(set)
     for position in positions:
         x, y, r = position
         nr = not r
+        # adjacents: left, right, up-or-down, self.
         if r:
             adjacents = {(x, y, nr), (x + 1, y, nr), (x, y + 1, nr), (x, y, r)}
         else:
             adjacents = {(x - 1, y, nr), (x, y, nr), (x, y - 1, nr), (x, y, r)}
-        for adjacent in adjacents:
-            if adjacent in trampolines:
-                neigbors[position].add(adjacent)
+        neighbors[position] = {adjacent for adjacent in adjacents if adjacent in trampolines}
+
+    return start, end, neighbors, trampolines
+
+
+def solve(part: int, data: str) -> int:
+    """Solve the parts.
+
+    https://www.redblobgames.com/grids/parts/#triangle-grids
+    The board is handled like a square grid with each cell split into two.
+    Each (x, y) can contain two triangles: a left and right half.
+    Triangle coordinates are (x, y, r) where r means "right".
+    Each `r` triangle is adjacent to three `not r` triangles and vice verse.
+    """
+    lines = [line.strip(".") for line in data.splitlines()]
+    start, end, neighbors, trampolines = parse(lines)
 
     if part == 1:
-        return sum(len(j) for i, j in neigbors.items() if i in trampolines) // 2
+        total = sum(
+            len(adjacent)
+            for position, adjacent in neighbors.items()
+            if position in trampolines
+        )
+        # Remove self-hops.
+        total -= len(trampolines)
+        # Correct for counting a-to-b and b-to-a.
+        total //= 2
+        return total
 
+    # The center is used for rotation.
+    # Anything above this y can be rotated top-to-left.
+    # Anything left of this x can be rotated left-to-right.
     center = (len(lines) - 1) // 2
     max_y = len(lines) - 1
 
-    def transform(x, y, r):
+    def rotate(x: int, y: int, r: bool) -> Coord:
         if y < center:
             # top
             nx = y
@@ -58,10 +86,11 @@ def solve(part: int, data: str) -> int:
         else:
             nx = y
             ny = max_y - y - x
+        # The r does not change.
         return nx, ny, r
 
-
-    q = collections.deque()
+    # Dijkstra
+    q: collections.deque[tuple[int, Coord]] = collections.deque()
     seen = set()
     q.append((0, start))
     seen.add(start)
@@ -71,18 +100,12 @@ def solve(part: int, data: str) -> int:
             return steps
         steps += 1
         if part == 3:
-            i = transform(*pos)
-            # print(f"{pos} ==> {i}: neighbors: {neigbors[i]}")
-            pos = i
-        for neighbor in neigbors[pos]:
+            pos = rotate(*pos)
+        for neighbor in neighbors[pos]:
             if neighbor not in seen:
                 seen.add(neighbor)
                 q.append((steps, neighbor))
-
-
-    log(f"{start, end}")
-
-
+    raise RuntimeError("No solution found.")
 
 
 PARSER = parsers.parse_one_str
