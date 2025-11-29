@@ -21,28 +21,24 @@ class Day02(aoc.Challenge):
     ]
 
     def safe(self, line: list[int]) -> bool:
-        """Return if a report is safe.
-
-        A report is safe if the values are monotonically increasing/decreasing
-        and with a step always between 1 and 3.
-        """
-        sign = aoc.sign(line[1] - line[0])
+        """Return if a report is safe."""
         return all(
-                aoc.sign(b - a) == sign
-                and 1 <= abs(b - a) <= 3
+            0 < abs(a - b) <= 3
+            for a, b in zip(line, line[1:])
+        ) and all(
+            (a < b) == (line[0] < line[1])
             for a, b in zip(line, line[1:])
         )
 
-    def part1(self, puzzle_input: list[list[int]]) -> int:
-        """Return the number of safe reports."""
-        return sum(self.safe(line) for line in puzzle_input)
-
-    def part2(self, puzzle_input: list[list[int]]) -> int:
-        """Return the number of safe reports, allowing one reading to be ignored."""
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
+        """Return the number of safe reports, possibly allowing one reading to be removed."""
         return sum(
-            any(
-                self.safe(line[:i] + line[i + 1:])
-                for i in range(len(line))
+            (
+                self.safe(line)
+                or any(
+                    self.safe(line[:i] + line[i + 1:])
+                    for i in range(0 if part_one else len(line))
+                )
             )
             for line in puzzle_input
         )
