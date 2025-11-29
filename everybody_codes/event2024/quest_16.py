@@ -93,7 +93,6 @@ def solve(part: int, data: str) -> int | str:
     return " ".join(str(i) for i in got)
 
 
-
 TEST_DATA = [
     """\
 1,2,3

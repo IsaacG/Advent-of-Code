@@ -1,9 +1,10 @@
 """Everyone Codes Day N."""
 
+
 def counter(conversions: dict[str, list[str]], start: str, steps: int) -> int:
     """Return the number of termines after some steps."""
     counts = {start: 1}
-    for step in range(steps):
+    for _ in range(steps):
         next_counts = {src: 0 for src in conversions}
         for src, num in counts.items():
             for dst in conversions[src]:
@@ -17,7 +18,7 @@ def solve(part: int, data: str) -> int:
     conversions = {}
     for line in data.splitlines():
         src, dst = line.split(":")
-        conversions[src] =  dst.split(",")
+        conversions[src] = dst.split(",")
 
     if part == 1:
         return counter(conversions, "A", 4)

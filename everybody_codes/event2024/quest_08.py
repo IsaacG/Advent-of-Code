@@ -1,5 +1,6 @@
 """Everyone Codes Day N."""
- # pylint: disable=C3001
+# pylint: disable=C3001
+
 
 def solve(part: int, data: str, testing: bool) -> int:
     """Solve the parts."""

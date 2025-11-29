@@ -3,16 +3,18 @@
 from lib import helpers, parsers
 
 
-def solve(part: int, helpers.Map: str) -> int:
+def solve(part: int, data: helpers.Map) -> int:
     """Solve puzzle."""
-    pos = data.coords["#"]
+    positions = data.coords["#"]
     remove = 0
-    offsets = [1j ** i for i in range(4)]
-    if part == 3:
-        offsets.extend(complex(1, 1) * 1j ** i for i in range(4))
-    while pos:
-        remove += len(pos)
-        pos = {i for i in pos if all(i + offset in pos for offset in offsets)}
+    offsets = helpers.STRAIGHT_NEIGHBORS_T if part < 3 else helpers.ALL_NEIGHBORS_T
+    while positions:
+        remove += len(positions)
+        positions = {
+            position
+            for position in positions
+            if all(neighbor in positions for neighbor in helpers.neighbors_t(*position, offsets))
+        }
     return remove
 
 

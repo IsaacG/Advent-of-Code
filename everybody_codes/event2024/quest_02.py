@@ -2,6 +2,7 @@
 
 import re
 
+
 def solve(part: int, data: str) -> int:
     """Solve day two."""
     chunks = data.split("\n\n")

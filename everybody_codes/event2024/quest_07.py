@@ -100,7 +100,10 @@ def solve(part: int, data: str, testing: bool) -> int | str:
     # Running the track 2024 times would give 184x the result of 11 loops.
     # When testing patterns, 11 loops is sufficient.
     track_actions = track(TRACK3) * 11
-    racer = lambda x: race(combine_actions(zip(track_actions, itertools.cycle(x))))  # pylint: disable=C3001
+
+    def racer(x):
+        return race(combine_actions(zip(track_actions, itertools.cycle(x))))
+
     threshold = racer(data.split(":")[1].split(","))
     return sum(
         racer(actions) > threshold

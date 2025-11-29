@@ -10,7 +10,7 @@ def solve(part: int, data: str) -> int | str:
         return solve_one_simple_block(data)
     if part == 2:
         blocks = [
-            "\n".join(lines[line_idx][x : x + 8] for line_idx in range(y, y + 8))
+            "\n".join(lines[line_idx][x:x + 8] for line_idx in range(y, y + 8))
             for x in range(0, len(lines[0]), 9)
             for y in range(0, len(lines), 9)
         ]
@@ -24,7 +24,11 @@ def solve(part: int, data: str) -> int | str:
     def solve_one(corner_x: int, corner_y: int) -> int | None:
         """Attempt to solve one block."""
         # Rely on dict ordering to extract the chars in order by setting the keys in order.
-        solved = {(x, y): None for y in range(corner_y + 2, corner_y + 6) for x in range(corner_x + 2, corner_x + 6)}
+        solved: dict[tuple[int, int], None | str] = {
+            (x, y): None
+            for y in range(corner_y + 2, corner_y + 6)
+            for x in range(corner_x + 2, corner_x + 6)
+        }
         used = {"?"}
         char_updates = {}
 
@@ -60,7 +64,8 @@ def solve(part: int, data: str) -> int | str:
         if all(solved.values()):
             # Update the char map when we complete a block.
             char_map.update(char_updates)
-            return ruin_power(solved.values())
+            return ruin_power(i for i in solved.values() if i is not None)
+        return None
 
     # Track all unsolved blocks.
     width = (len(lines[0]) - 2) // 6
@@ -81,7 +86,7 @@ def solve(part: int, data: str) -> int | str:
     return total
 
 
-def ruin_power(ruin: collections.abc.Sequence[str]) -> int:
+def ruin_power(ruin: collections.abc.Iterable[str]) -> int:
     """Return the power of a ruin."""
     return sum(idx * (string.ascii_uppercase.index(letter) + 1) for idx, letter in enumerate(ruin, 1))
 

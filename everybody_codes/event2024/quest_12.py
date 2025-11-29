@@ -36,10 +36,10 @@ def solve(part: int, data: str) -> int:
     return total
 
 
-def get_rank_and_target(launchers: dict[str, int], targets: set[complex]) -> tuple[int, complex]:
+def get_rank_and_target(launchers: dict[str, complex], targets: set[complex]) -> tuple[int, complex]:
     """Return the minimum power/rank that can be used to hit a target, along with the target."""
-    min_power = (min(t.real for t in targets) - max(l.real for l in launchers.values())) // 3
-    max_power = (max(t.real for t in targets) - min(l.real for l in launchers.values())) // 2
+    min_power = (min(t.real for t in targets) - max(launcher.real for launcher in launchers.values())) // 3
+    max_power = (max(t.real for t in targets) - min(launcher.real for launcher in launchers.values())) // 2
     for power in range(int(min_power), int(max_power)):
         for launcher, pos in launchers.items():
             # Compute the location of the shot right before it starts dropping.
@@ -49,6 +49,7 @@ def get_rank_and_target(launchers: dict[str, int], targets: set[complex]) -> tup
                 delta = target - shot
                 if delta.real == -delta.imag:
                     return LAUNCH_RANK[launcher] * power, target
+    raise RuntimeError("Not solved.")
 
 
 def solve3(data: str) -> int:
@@ -56,7 +57,8 @@ def solve3(data: str) -> int:
 
     def min_power(launcher, meteor):
         # After time t, the height h(t) = meteor_y - t
-        # At the maximum (or, any) wait, we need h(t) >= (meteor_x - t) / 2 in order to hit the meteor before it hits the ground.
+        # At the maximum (or, any) wait, we need h(t) >= (meteor_x - t) / 2 in order
+        # to hit the meteor before it hits the ground.
         # meteor_y - t >= (meteor_x - t) / 2
         # 2 * (meteor_y - t) >= meteor_x - t
         # 2 * meteor_y >= meteor_x + t
@@ -84,7 +86,7 @@ def solve3(data: str) -> int:
         return 0, 0
 
     launchers = [(-1, complex(0, 0)), (-2, complex(0, 1)), (-3, complex(0, 2))]
-    
+
     total = 0
     for line in data.splitlines():
         options = []
@@ -97,7 +99,6 @@ def solve3(data: str) -> int:
         total += max(options)[1]
 
     return -total
-
 
 
 TEST_DATA = [

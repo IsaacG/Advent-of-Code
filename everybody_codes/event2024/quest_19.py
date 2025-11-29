@@ -7,8 +7,8 @@ import string
 log = logging.info
 
 OFFSETS = [
-    complex(-1, -1), complex(0, -1), complex(1, -1), complex(1,  0),
-    complex( 1,  1), complex(0,  1), complex(-1,  1), complex(-1,  0),
+    complex(-1, -1), complex(0, -1), complex( 1, -1), complex( 1, 0),
+    complex( 1,  1), complex(0,  1), complex(-1,  1), complex(-1, 0),
 ]
 ROTATE = {
     "R": OFFSETS[1:] + OFFSETS[:1],

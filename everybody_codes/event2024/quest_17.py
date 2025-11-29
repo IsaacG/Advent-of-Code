@@ -3,6 +3,7 @@
 import itertools
 import math
 
+
 def manhatten(a: tuple[int, int], b: tuple[int, int]) -> int:
     """Return the Manhatten distance between two points."""
     x1, y1 = a
