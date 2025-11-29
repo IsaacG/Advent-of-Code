@@ -306,7 +306,7 @@ def run_solution(data) -> None:
     day = int(data["__file__"].split("_", maxsplit=-1)[-1].split(".")[0])
     solver = data["solve"]
     test_data = data["TESTS"]
-    parser = data["PARSER"].parse
+    parser = data["PARSER"].parse if "PARSER" in data else str
     params = inspect.signature(solver).parameters
 
     kwargs = {}
