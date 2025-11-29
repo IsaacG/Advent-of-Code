@@ -35,9 +35,6 @@ def experiment2(ducks):
 
     steps = 0
     while any(a > b for a, b in zip(ducks, ducks[1:])):
-        print("COLS", " ".join(str(i).rjust(3) for i in ducks), "=", sum(ducks))
-        print("MOVE", " ".join(str(i).rjust(3) for i in moves))
-        print()
         peak_idx, peak_height, peak_adjacent = next(
             (idx, a, b)
             for idx, (a, b) in enumerate(zip(ducks, ducks[1:]))
@@ -67,15 +64,7 @@ def experiment2(ducks):
         if peak_idx + 1 == basin_start_idx:
             fill_amount = min(fill_amount, int(math.ceil((peak_height - peak_adjacent) * basin_width / (basin_width + 1))))
 
-        # t = int(math.ceil(fill_amount / basin_width))
-        # while high - fill_amount + 1 < low + t:
-        #     fill_amount -= 1
-        #     t = int(math.ceil(fill_amount / basin_width))
-        # print(f"{basin_width=}, {high - low=}, {fill_amount=}")
-        print(f"Move {fill_amount} from {peak_idx} to basin {basin_start_idx}..{basin_end_idx}.")
-
         all_fill, extra = divmod(fill_amount, basin_width)
-        # print(f"Fill from {src} to {start}..{edge} with {fill_amount=} -- {all_fill=}, {extra=}")
         ducks[peak_idx] -= fill_amount
         # All ducks flow from the peak into the basin.
         for i in range(peak_idx, basin_start_idx):
@@ -91,10 +80,8 @@ def experiment2(ducks):
             moved += all_fill
             moves[i] += moved
 
-    print("COLS", " ".join(str(i).rjust(3) for i in ducks), "=", sum(ducks))
-    print("MOVE", " ".join(str(i).rjust(3) for i in moves))
-    print("EXPR", ducks, sum(ducks))
     return max(moves), ducks
+
 
 def solve(part: int, data: list[int]) -> int:
     """Solve the parts."""
@@ -113,14 +100,10 @@ def solve(part: int, data: list[int]) -> int:
                     ducks[i + 1] += 1
         end = time.perf_counter_ns()
         brute = end - start
-        print("WANT", ducks, sum(ducks))
         start = time.perf_counter_ns()
         got_steps, got_ducks = experiment2(data)
         end = time.perf_counter_ns()
         flow = end - start
-        print(f"{steps=} <> {got_steps=} :: {brute/1000} vs {flow/1000}")
-        if steps != got_steps:
-            print(f"{steps=} != {got_steps=}")
     else:
         steps, ducks = experiment2(data)
 
