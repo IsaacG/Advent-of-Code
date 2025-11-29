@@ -29,30 +29,30 @@ class Day23(aoc.Challenge):
 
     INPUT_PARSER = aoc.ParseOneWordPerLine(line_parser)
 
-    def solver(self, instructions: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Emulate a program and return register "b"."""
         ptr = 0
-        max_inst = len(instructions) - 1
+        max_inst = len(puzzle_input) - 1
         registers = {"a": 0 if part_one else 1, "b": 0}
 
         while 0 <= ptr <= max_inst:
             jump_offset = 1
-            match instructions[ptr]:
+            match puzzle_input[ptr]:
                 case ["hlf", reg]:
-                    registers[reg] //= 2
+                    registers[str(reg)] //= 2
                 case ["tpl", reg]:
-                    registers[reg] *= 3
+                    registers[str(reg)] *= 3
                 case ["inc", reg]:
-                    registers[reg] += 1
+                    registers[str(reg)] += 1
                 case ["jmp", offset]:
-                    jump_offset = offset
+                    jump_offset = int(offset)
                 case ["jie", reg, offset]:
-                    if registers[reg] % 2 == 0:
-                        jump_offset = offset
+                    if registers[str(reg)] % 2 == 0:
+                        jump_offset = int(offset)
                 case ["jio", reg, offset]:
-                    if registers[reg] == 1:
-                        jump_offset = offset
+                    if registers[str(reg)] == 1:
+                        jump_offset = int(offset)
                 case _:
-                    raise ValueError(f"Invalid instruction, {instructions[ptr]}")
+                    raise ValueError(f"Invalid instruction, {puzzle_input[ptr]}")
             ptr += jump_offset
         return registers["b"]

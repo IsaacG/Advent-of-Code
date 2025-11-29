@@ -9,8 +9,6 @@ SAMPLE = """\
 Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
 Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"""
 
-LineType = int
-InputType = list[LineType]
 PROPERTIES = "capacity durability flavor texture".split()
 
 
@@ -36,7 +34,7 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=57600000),
     ]
 
-    def sorted_limits(self, ingredients: InputType, check_calories: bool) -> int:
+    def sorted_limits(self, ingredients: dict[str, dict[str, int]], check_calories: bool) -> list[tuple[int, str]]:
         """Generate the acceptable ranges for each ingredient.
 
         The upper limit of ingredients can be computed based on their
@@ -69,13 +67,13 @@ class Day15(aoc.Challenge):
                 limits[name] = min(limit, limits[name])
         return sorted((limit, name) for name, limit in limits.items())
 
-    def combo_generator_b(self, ingredients: InputType, check_calories: bool):
+    def combo_generator_b(self, ingredients: dict[str, dict[str, int]], check_calories: bool):
         """Generate amount combinations to try."""
         ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
         for amounts in itertools.product(*[range(i + 1) for i in ranges[:-1]]):
             yield amounts + (100 - sum(amounts),)
 
-    def combo_generator(self, ingredients: InputType, check_calories: bool):
+    def combo_generator(self, ingredients: dict[str, dict[str, int]], check_calories: bool):
         """Generate amount combinations to try."""
         ranges, _ = list(zip(*self.sorted_limits(ingredients, check_calories)))
         num = len(ranges)
@@ -91,7 +89,7 @@ class Day15(aoc.Challenge):
                 if sum(amounts) <= 100:
                     break
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: dict[str, dict[str, int]], part_one: bool) -> int:
         """Solve for the optimal recipe."""
         check_calories = not part_one
         most = 0
@@ -111,11 +109,10 @@ class Day15(aoc.Challenge):
                 ))
                 if total == 0:
                     continue
-            if total > most:
-                most = total
+            most = max(total, most)
         return most
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> dict[str, dict[str, int]]:
         """Parse the input data."""
         data = {}
         for line in puzzle_input.splitlines():

@@ -31,7 +31,7 @@ class Day16(aoc.Challenge):
     ]
 
     @staticmethod
-    def matches(ops: dict[str, Callable[[int], bool]], aunts: list[dict[str, int]]) -> int:
+    def matches(ops: dict[str, Callable], aunts: list[dict[str, int]]) -> int:
         """Return the aunt who matches the comparisons."""
         for i, aunt in enumerate(aunts, start=1):
             if all(ops[k](v, WANT_NUM[k]) for k, v in aunt.items()):

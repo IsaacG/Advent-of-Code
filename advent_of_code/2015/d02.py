@@ -13,12 +13,12 @@ InputType = list[list[int]]
 class Day02(aoc.Challenge):
     """Day 2: I Was Told There Would Be No Math. Compute wrapping materials."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=58),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=43),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=34),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=14),
-    )
+    ]
     INPUT_PARSER = aoc.parse_ints
 
     def part1(self, puzzle_input: InputType) -> int:

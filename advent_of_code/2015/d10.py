@@ -24,7 +24,7 @@ def look_say(string: str) -> str:
             else:
                 return look_say(string[:split]) + look_say(string[split:])
 
-    out = []
+    out: list[str] = []
     count = 0
     prior = string[0]
     for char in string:
@@ -48,7 +48,7 @@ class Day10(aoc.Challenge):
     INPUT_PARSER = aoc.parse_one_str
     TIMEOUT = 70
 
-    def look_say_loop(self, string: str, steps: int) -> str:
+    def look_say_loop(self, string: str, steps: int) -> int:
         """Return look-say length after looping."""
         for _ in range(5 if self.testing else steps):
             string = look_say(string)

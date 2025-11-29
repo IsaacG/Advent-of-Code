@@ -37,7 +37,9 @@ class Day09(aoc.Challenge):
         distances = {}
         locations: set[str] = set()
         for line in puzzle_input.splitlines():
-            src, dst, dist_raw = LINE_RE.match(line).groups()
+            m = LINE_RE.match(line)
+            assert m
+            src, dst, dist_raw = m.groups()
             dist = int(dist_raw)
 
             distances[src, dst] = dist

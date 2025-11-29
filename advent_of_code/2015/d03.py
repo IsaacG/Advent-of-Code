@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 03."""
 
-from collections.abc import Callable
-
 from lib import aoc
 
 SAMPLE = ["^>v<", "^v^v^v^v^v"]
@@ -20,12 +18,12 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=11),
     ]
 
-    def solver(self, line: str, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Return how many houses get presents."""
         pos = {True: complex(0), False: complex(0)}
         robot = False
         visited = {pos[robot]}
-        for char in line:
+        for char in puzzle_input:
             pos[robot] += MAPPING[char]
             visited.add(pos[robot])
             if not part_one:

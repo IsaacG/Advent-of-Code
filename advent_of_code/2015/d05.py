@@ -22,7 +22,7 @@ BAD = {"ab", "cd", "pq", "xy"}
 class Day05(aoc.Challenge):
     """Day 5: Doesn't He Have Intern-Elves For This?. Classify strings as naughty or nice."""
 
-    TESTS = (
+    TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=1),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=1),
         aoc.TestCase(inputs=SAMPLE[2], part=1, want=0),
@@ -32,7 +32,7 @@ class Day05(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[6], part=2, want=1),
         aoc.TestCase(inputs=SAMPLE[7], part=2, want=0),
         aoc.TestCase(inputs=SAMPLE[8], part=2, want=0),
-    )
+    ]
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return how many lines follow rules 1."""

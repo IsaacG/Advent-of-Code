@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 14: Reindeer Olympics."""
 
-import re
-
 from lib import aoc
 
 SAMPLE = """\

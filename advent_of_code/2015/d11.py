@@ -51,7 +51,7 @@ class Day11(aoc.Challenge):
 
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want="abcdffaa"),
-        #aoc.TestCase(inputs=SAMPLE[1], part=1, want="ghjaabcc"),
+        # aoc.TestCase(inputs=SAMPLE[1], part=1, want="ghjaabcc"),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want="abcdffbb"),
     ]
 
@@ -72,14 +72,14 @@ class Day11(aoc.Challenge):
         password = "".join(string.ascii_lowercase[i] for i in parts(num))
         return password
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: InputType) -> str:
         """Rotate once."""
         assert valid(parts(334140716))  # abcdffaa
         assert valid(parts(50460204602))  # ghjaabcc
 
         return self.next_password(puzzle_input)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: InputType) -> str:
         """Rotate twice."""
         password = self.next_password(puzzle_input)
         return self.next_password(password)
