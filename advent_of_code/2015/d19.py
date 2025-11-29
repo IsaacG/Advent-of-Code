@@ -45,10 +45,6 @@ InputType = list[LineType]
 class Day19(aoc.Challenge):
     """Day 19: Medicine for Rudolph."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
         aoc.TestCase(inputs=SAMPLE[1], part=1, want=7),
