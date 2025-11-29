@@ -255,7 +255,7 @@ class CoordinatesParserC(BaseParser):
     origin_top_left: bool = True
     ignore: str | None = None
 
-    def parse(self, puzzle_input: str) -> Map:
+    def parse(self, puzzle_input: str) -> MapC:
         """Parse a map and return the coordinates of different chars."""
         lines = puzzle_input.splitlines()
 
@@ -295,8 +295,8 @@ class CoordinatesParserC(BaseParser):
             chars=char_by_coord,
             coords=dict(coords_by_char),
             all_coords=all_coords,
-            blank_char=blank_char,
-            non_blank_chars=non_blank_chars,
+            blank_char=str(blank_char),
+            non_blank_chars={str(i) for i in non_blank_chars},
         )
 
 
@@ -348,8 +348,8 @@ class CoordinatesParser(BaseParser):
             chars=char_by_coord,
             coords=dict(coords_by_char),
             all_coords=all_coords,
-            blank_char=blank_char,
-            non_blank_chars=non_blank_chars,
+            blank_char=str(blank_char),
+            non_blank_chars={str(i) for i in non_blank_chars},
         )
 
 

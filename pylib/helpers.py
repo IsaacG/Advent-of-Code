@@ -25,6 +25,7 @@ ARROW_DIRECTIONS = {"^": UP, "v": DOWN, ">": RIGHT, "<": LEFT}
 LETTER_DIRECTIONS = {"U": UP, "D": DOWN, "R": RIGHT, "L": LEFT}
 COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
+STRAIGHT_NEIGHBORS_T = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
@@ -140,6 +141,11 @@ def neighbors(point: complex, directions: collections.abc.Sequence[complex] = ST
     return (point + offset for offset in directions)
 
 
+def neighbors_t(x: int, y: int, directions: collections.abc.Iterable[tuple[int, int]] = STRAIGHT_NEIGHBORS_T) -> collections.abc.Iterable[tuple[int, int]]:
+    """Return the 4 neighbors of a point."""
+    for dx, dy in directions:
+        yield x + dx, y + dy
+
 def t_neighbors4(point: collections.abc.Sequence[int]) -> collections.abc.Iterable[tuple[int, int]]:
     """Return the 4 neighbors of a point."""
     x, y = point
@@ -168,7 +174,7 @@ class MapC:
         }
 
     def __sub__(self, key: str) -> set[complex]:
-        return self.all_coords - self[key]
+        return self.all_coords - self.coords[key]
 
     def __contains__(self, item) -> bool:
         if not isinstance(item, complex):
@@ -210,7 +216,7 @@ class MapC:
             complex(self.max_x, self.max_y)
         )
 
-    def neighbors(self, point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> dict[complex, T]:
+    def neighbors(self, point: complex, directions: collections.abc.Sequence[complex] = STRAIGHT_NEIGHBORS) -> dict[complex, int | str]:
         """Return neighboring points and values which are in the map."""
         return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
 
@@ -230,23 +236,7 @@ class Map:
         self.height = self.max_y + 1
 
     def __sub__(self, key: str) -> set[tuple[int, int]]:
-        return self.all_coords - self[key]
-
-    def __contains__(self, item) -> bool:
-        if not isinstance(item, tuple[int, int]):
-            raise TypeError(f"contains not defined for {type(item)}")
-        return item in self.all_coords
-
-    def __getitem__(self, key: str | tuple[int, int]) -> str | int | set[tuple[int, int]] | list[set[tuple[int, int]]]:
-        if isinstance(key, tuple[int, int]):
-            return self.chars[key]
-        if isinstance(key, int):
-            return self.coords[key]
-        if isinstance(key, str) and len(key) == 1:
-            return self.coords[key]
-        if isinstance(key, collections.abc.Sequence):
-            return [self.coords[k] for k in key]
-        raise ValueError(f"Could not index on {key}")
+        return self.all_coords - self.coords[key]
 
     @property
     def size(self) -> int:
@@ -266,15 +256,15 @@ class Map:
     @property
     def corners(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]:
         return (
-            0,
+            (0, 0),
             (0, self.max_y),
             (self.max_x, 0),
             (self.max_x, self.max_y)
         )
 
-    def neighbors(self, point: tuple[int, int], directions: collections.abc.Sequence[tuple[int, int]] = STRAIGHT_NEIGHBORS) -> dict[tuple[int, int], T]:
+    def neighbors(self, point: tuple[int, int], directions: collections.abc.Sequence[tuple[int, int]] = STRAIGHT_NEIGHBORS_T) -> dict[tuple[int, int], str | int]:
         """Return neighboring points and values which are in the map."""
-        return {n: self.chars[n] for n in neighbors(point, directions) if n in self.all_coords}
+        return {n: self.chars[n] for n in neighbors_t(*point, directions) if n in self.all_coords}
 
 
 def render_char_map(chars: dict[complex, str], height: int, width: int) -> str:
