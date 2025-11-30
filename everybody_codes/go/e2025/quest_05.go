@@ -102,3 +102,7 @@ func (q Quest05) Solve(data string, part int) string {
 	}
 	return strconv.Itoa(total)
 }
+
+func init() {
+	Puzzles[5] = Quest05{}
+}

@@ -38,3 +38,7 @@ func (q Quest04) Solve(data string, part int) string {
 	}
 	return helpers.Itoa(int(ratio * 100))
 }
+
+func init() {
+	Puzzles[4] = Quest04{}
+}

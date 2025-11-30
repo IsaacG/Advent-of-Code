@@ -1,5 +1,12 @@
 package e2025
 
+// Solver is able to solve the puzzle for a day.
+type Solver interface {
+	Solve(string, int) string
+}
+
+var Puzzles = map[int]Solver{}
+
 // Clamp b between and c.
 func Clamp(a, b, c int) int {
 	if b < a {

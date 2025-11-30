@@ -53,3 +53,7 @@ func (q Quest13) Solve(data string, part int) string {
 
 	return ""
 }
+
+func init() {
+	Puzzles[13] = Quest13{}
+}

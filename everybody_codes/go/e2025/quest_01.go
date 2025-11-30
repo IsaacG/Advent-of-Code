@@ -41,3 +41,7 @@ func (q Quest01) Solve(data string, part int) string {
 	}
 	return names[pointer]
 }
+
+func init() {
+	Puzzles[1] = Quest01{}
+}

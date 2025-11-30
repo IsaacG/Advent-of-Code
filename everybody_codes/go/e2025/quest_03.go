@@ -36,3 +36,7 @@ func (q Quest03) Solve(data string, part int) string {
 	}
 	return helpers.Itoa(most)
 }
+
+func init() {
+	Puzzles[3] = Quest03{}
+}

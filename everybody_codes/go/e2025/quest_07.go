@@ -97,3 +97,7 @@ func (q Quest07) Solve(data string, part int) string {
 
 	return helpers.Itoa(total)
 }
+
+func init() {
+	Puzzles[7] = Quest07{}
+}

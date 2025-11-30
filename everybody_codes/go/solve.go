@@ -16,36 +16,17 @@ type Day struct {
 	day   int
 }
 
-// Solver is able to solve the puzzle for a day.
-type Solver interface {
-	Solve(string, int) string
-}
-
-var puzzles = map[Day]Solver{
-	Day{"e2025", 1}:  e2025.Quest01{},
-	Day{"e2025", 2}:  e2025.Quest02{},
-	Day{"e2025", 3}:  e2025.Quest03{},
-	Day{"e2025", 4}:  e2025.Quest04{},
-	Day{"e2025", 5}:  e2025.Quest05{},
-	Day{"e2025", 6}:  e2025.Quest06{},
-	Day{"e2025", 7}:  e2025.Quest07{},
-	Day{"e2025", 8}:  e2025.Quest08{},
-	Day{"e2025", 9}:  e2025.Quest09{},
-	Day{"e2025", 10}: e2025.Quest10{},
-	Day{"e2025", 13}: e2025.Quest13{},
-}
-
 // Puzzle has all the data for one day.
 type Puzzle struct {
 	Day
 	input  map[int]string
 	want   map[int]string
-	solver Solver
+	solver e2025.Solver
 }
 
 // NewPuzzle constructs and configures a puzzle.
 func NewPuzzle(event string, day int) *Puzzle {
-	solver, ok := puzzles[Day{event, day}]
+	solver, ok := e2025.Puzzles[day]
 	if !ok {
 		fmt.Printf("No solver configured for %s/%02d\n", event, day)
 		return nil
@@ -94,13 +75,13 @@ func main() {
 		}
 	} else if len(os.Args) == 2 {
 		for day := range 25 {
-			if _, ok := puzzles[Day{os.Args[1], day}]; ok {
+			if _, ok := e2025.Puzzles[day]; ok {
 				NewPuzzle(os.Args[1], day).check()
 			}
 		}
 	} else {
-		for solution := range puzzles {
-			NewPuzzle(solution.event, solution.day).check()
+		for day := range e2025.Puzzles {
+			NewPuzzle("e2025", day).check()
 		}
 	}
 }
