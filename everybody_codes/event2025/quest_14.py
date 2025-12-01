@@ -56,6 +56,7 @@ def solve(part: int, data: str) -> int:
         elif input_active.issubset(active) and input_inactive.isdisjoint(active):
             seen_at[step] = len(active)
             if active in seen:
+                print("Cycle found", step)
                 cycle_start = seen[active]
                 cycle = step - cycle_start
                 spots: set[int] = set()
