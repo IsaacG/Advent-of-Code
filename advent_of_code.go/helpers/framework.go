@@ -29,7 +29,7 @@ func LoadFile(filename string) string {
 
 // ReadData returns the puzzle input data.
 func (p Puzzle) ReadData() string {
-	filename := fmt.Sprintf("../inputs/%d.%02d.txt", p.Year, p.Day)
+	filename := fmt.Sprintf("../advent_of_code/inputs/%d.%02d.txt", p.Year, p.Day)
 	return strings.TrimRight(LoadFile(filename), "\n")
 }
 
@@ -55,7 +55,7 @@ func (p Puzzle) Check(solver Solver) {
 
 // Solutions returns the solutions from the solution file.
 func (p Puzzle) Solutions() ([]string, error) {
-	filename := fmt.Sprintf("../solutions/%d.txt", p.Year)
+	filename := fmt.Sprintf("../advent_of_code/solutions/%d.txt", p.Year)
 	day := fmt.Sprintf("%02d", p.Day)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {

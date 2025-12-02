@@ -6,6 +6,7 @@ import (
 	"isaacgood.com/aoc/y2017"
 	"isaacgood.com/aoc/y2020"
 	"isaacgood.com/aoc/y2024"
+	"isaacgood.com/aoc/y2025"
 	"os"
 	"time"
 )
@@ -26,6 +27,7 @@ var puzzles = map[helpers.Puzzle]helpers.Solver{
 	helpers.Puzzle{2024, 2}:  y2024.New02(),
 	helpers.Puzzle{2024, 3}:  y2024.New03(),
 	helpers.Puzzle{2024, 17}:  y2024.New17(),
+	helpers.Puzzle{2025, 2}:  y2025.New02(),
 }
 
 func main() {
