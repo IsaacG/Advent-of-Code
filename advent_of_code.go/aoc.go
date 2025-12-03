@@ -29,6 +29,7 @@ var puzzles = map[helpers.Puzzle]helpers.Solver{
 	helpers.Puzzle{2024, 17}:  y2024.New17(),
 	helpers.Puzzle{2025, 1}:  y2025.New01(),
 	helpers.Puzzle{2025, 2}:  y2025.New02(),
+	helpers.Puzzle{2025, 3}:  y2025.New03(),
 }
 
 func main() {
