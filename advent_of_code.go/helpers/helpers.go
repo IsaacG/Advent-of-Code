@@ -156,6 +156,36 @@ func Transpose[T any](data [][]T) [][]T {
 	return transposed
 }
 
+type AccumulatorFunc[T any, R any] interface {
+	~func(acc R, i int, s T) R
+}
+
+func Reduce[T any, R any, F AccumulatorFunc[T, R]](items []T, initialAccumulator R, f F) R {
+	acc := initialAccumulator
+	for i, s := range items {
+		acc = f(acc, i, s)
+	}
+	return acc
+}
+
+func SumIf[T any](items []T, f func(item T) bool) int {
+	sum := 0
+	for _, item := range items {
+		if f(item) {
+			sum++
+		}
+	}
+	return sum
+}
+
+func ApplyIf[T any](items []T, apply func(item T), test func(item T) bool) {
+	for _, item := range items {
+		if test(item) {
+			apply(item)
+		}
+	}
+}
+
 func Cmp(a, b int) int {
 	if a == b {
 		return 0

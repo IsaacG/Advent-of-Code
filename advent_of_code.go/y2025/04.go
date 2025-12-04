@@ -21,19 +21,11 @@ func (p *Day04) Solve(data string, part int) string {
 		}
 	}
 
+	isPaper := func(neighbor helpers.Location) bool { return papers.Contains(neighbor) }
+	paperCanMove := func(l helpers.Location) bool { return helpers.SumIf(l.AdjacentAll(), isPaper) < 4 }
 	canMove := func() sets.Set[helpers.Location] {
 		canDo := sets.NewSet[helpers.Location]()
-		for pos := range papers.Iter() {
-			neighborCount := 0
-			for _, neighbor := range pos.AdjacentAll() {
-				if papers.Contains(neighbor) {
-					neighborCount++
-				}
-			}
-			if neighborCount < 4 {
-				canDo.Add(pos)
-			}
-		}
+		helpers.ApplyIf(papers.ToSlice(), func(l helpers.Location) { canDo.Add(l) }, paperCanMove)
 		return canDo
 	}
 
