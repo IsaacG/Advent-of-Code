@@ -1,18 +1,14 @@
 package y2024
 
 import "regexp"
+import "isaacgood.com/aoc/helpers"
 
 // Day03 solves 2024/03.
 type Day03 struct{ data string }
 
-// New03 returns a new solver for 2024/03.
-func New03() *Day03 { return &Day03{} }
-
-// SetInput handles input for this solver.
-func (p *Day03) SetInput(data string) { p.data = data }
-
 // Solve returns the solution for one part.
-func (p *Day03) Solve(part int) string {
+func (p *Day03) Solve(data string, part int) string {
+	p.data = data
 	pattern := regexp.MustCompile(`don't\(\)|do\(\)|mul\((\d{1,3}),(\d{1,3})\)`)
 	enabled := true
 	total := 0
@@ -26,4 +22,8 @@ func (p *Day03) Solve(part int) string {
 		}
 	}
 	return itoa(total)
+}
+
+func init() {
+	helpers.AocRegister(2024, 3, &Day03{})
 }

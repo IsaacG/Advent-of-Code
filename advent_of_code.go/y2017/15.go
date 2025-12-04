@@ -37,26 +37,31 @@ func (p *Day15) SetInput(data string) {
 func generator(ch chan<- int, value, factor, mask, part int) {
 	for {
 		value = (value * factor) % mod
-		if part == 0 || value&mask == 0 {
+		if part == 1 || value&mask == 0 {
 			ch <- value & bitMask
 		}
 	}
 }
 
 // Solve returns the solution for one part.
-func (p *Day15) Solve(part int) string {
+func (p *Day15) Solve(data string, part int) string {
+	p.SetInput(data)
 	total := 0
 
 	var chs []chan int
 	for i := 0; i < 2; i++ {
 		ch := make(chan int)
 		chs = append(chs, ch)
-		go generator(ch, p.start[i], p.factors[i], p.checkMasks[i], part)
+		go generator(ch, p.start[i], p.factors[i], p.checkMasks[i], part-1)
 	}
-	for range p.steps[part] {
+	for range p.steps[part-1] {
 		if <-chs[0] == <-chs[1] {
 			total++
 		}
 	}
 	return helpers.Itoa(total)
+}
+
+func init() {
+	helpers.AocRegister(2017, 15, New15())
 }

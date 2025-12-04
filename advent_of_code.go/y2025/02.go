@@ -12,13 +12,11 @@ type Day02 struct {
 	pairs [][2]int
 }
 
-// New02 returns a new solver for 2025/02.
-func New02() *Day02 {
-	return &Day02{}
-}
-
 // SetInput handles input for this solver.
 func (p *Day02) SetInput(data string) {
+	if p.pairs != nil {
+		return
+	}
 	for pair := range strings.SplitSeq(data, ",") {
 		nums := strings.Split(pair, "-")
 		p.pairs = append(p.pairs, [2]int{helpers.Atoi(nums[0]), helpers.Atoi(nums[1])})
@@ -26,10 +24,11 @@ func (p *Day02) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day02) Solve(part int) string {
+func (p *Day02) Solve(data string, part int) string {
+	p.SetInput(data)
 	total := 0
 	pattern := `^(\d+)\1$`
-	if part == 1 {
+	if part == 2 {
 		pattern = `^(\d+)\1+$`
 	}
 	re := regexp2.MustCompile(pattern, 0)
@@ -41,4 +40,8 @@ func (p *Day02) Solve(part int) string {
 		}
 	}
 	return helpers.Itoa(total)
+}
+
+func init() {
+	helpers.AocRegister(2025, 2, &Day02{})
 }

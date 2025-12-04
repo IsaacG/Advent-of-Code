@@ -10,16 +10,6 @@ type Day01 struct {
 	lists [][]int
 }
 
-// New01 returns a new solver for 2024/01.
-func New01() *Day01 {
-	return &Day01{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day01) SetInput(data string) {
-	p.lists = helpers.Transpose(helpers.ParseMultiNumbersPerLine(data))
-}
-
 // Function partOne computes the abs diff of the sorted elements.
 func (p *Day01) partOne() int {
 	slices.Sort(p.lists[0])
@@ -45,7 +35,12 @@ func (p *Day01) partTwo() int {
 }
 
 // Solve returns the solution for one part.
-func (p *Day01) Solve(part int) string {
-	m := []func() int{p.partOne, p.partTwo}[part]
+func (p *Day01) Solve(data string, part int) string {
+	p.lists = helpers.Transpose(helpers.ParseMultiNumbersPerLine(data))
+	m := []func() int{p.partOne, p.partTwo}[part-1]
 	return itoa(m())
+}
+
+func init() {
+	helpers.AocRegister(2024, 1, &Day01{})
 }

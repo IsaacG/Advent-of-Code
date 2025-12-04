@@ -27,7 +27,7 @@ type Direction struct {
 }
 
 var (
-	FourDirections = []Direction{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+	FourDirections  = []Direction{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
 	EightDirections = []Direction{{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}}
 )
 
@@ -45,7 +45,7 @@ func (d *Direction) Rotate(rotation Rotation) {
 }
 
 // Rotated returns a new Direction with a rotation applied.
-func (d *Direction) Rotated(rotation Rotation) Direction{
+func (d *Direction) Rotated(rotation Rotation) Direction {
 	n := &Direction{d.Dx, d.Dy}
 	n.Rotate(rotation)
 	return *n
@@ -78,7 +78,7 @@ func (r *Robot) Peak(direction Direction) Location {
 }
 
 // Atoi is a convenience wrapper around strconv.Atoi
-func Atoi(a string) int{
+func Atoi(a string) int {
 	i, err := strconv.Atoi(a)
 	if err != nil {
 		panic(fmt.Sprintf("strconv.Atoi failed to parse %s", a))
@@ -87,7 +87,7 @@ func Atoi(a string) int{
 }
 
 // Itoa is a convenience wrapper around strconv.Itoa
-func Itoa(i int) string{
+func Itoa(i int) string {
 	return strconv.Itoa(i)
 }
 
@@ -123,4 +123,14 @@ func Transpose[T any](data [][]T) [][]T {
 		}
 	}
 	return transposed
+}
+
+func Cmp(a, b int) int {
+	if a == b {
+		return 0
+	}
+	if a < b {
+		return -1
+	}
+	return 1
 }

@@ -46,4 +46,3 @@ func ParseMultiWordsPerLine(data string) [][]string {
 	}
 	return words
 }
-

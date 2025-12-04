@@ -1,10 +1,10 @@
 package y2017
 
 import (
+	"isaacgood.com/aoc/helpers"
 	"maps"
 	"slices"
 	"strings"
-	"isaacgood.com/aoc/helpers"
 )
 
 type virusState int
@@ -74,7 +74,8 @@ func (p *Day22) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day22) Solve(part int) string {
+func (p *Day22) Solve(data string, part int) string {
+	p.SetInput(data)
 	nodes := make(map[helpers.Location]virusState)
 	maps.Copy(nodes, p.nodes)
 	s := simulation{
@@ -82,6 +83,10 @@ func (p *Day22) Solve(part int) string {
 		nodes:    nodes,
 		infected: 0,
 	}
-	s.run(p.steps[part], p.nextState[part])
+	s.run(p.steps[part-1], p.nextState[part-1])
 	return helpers.Itoa(s.infected)
+}
+
+func init() {
+	helpers.AocRegister(2017, 22, New22())
 }

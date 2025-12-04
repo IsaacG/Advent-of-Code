@@ -9,16 +9,6 @@ type Day02 struct {
 	reports [][]int
 }
 
-// New02 returns a new solver for 2024/02.
-func New02() *Day02 {
-	return &Day02{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day02) SetInput(data string) {
-	p.reports = helpers.ParseMultiNumbersPerLine(data)
-}
-
 func (p *Day02) safe(data []int) bool {
 	direction := sign(data[1] - data[0])
 	end := len(data) - 1
@@ -60,7 +50,12 @@ func (p *Day02) partTwo() int {
 }
 
 // Solve returns the solution for one part.
-func (p *Day02) Solve(part int) string {
-	m := []func() int{p.partOne, p.partTwo}[part]
+func (p *Day02) Solve(data string, part int) string {
+	p.reports = helpers.ParseMultiNumbersPerLine(data)
+	m := []func() int{p.partOne, p.partTwo}[part-1]
 	return itoa(m())
+}
+
+func init() {
+	helpers.AocRegister(2024, 2, &Day02{})
 }

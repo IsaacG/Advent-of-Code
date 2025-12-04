@@ -7,18 +7,9 @@ type Day03 struct {
 	steps int
 }
 
-// New03 returns a new solver for 2017/03.
-func New03() *Day03 {
-	return &Day03{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day03) SetInput(data string) {
-	p.steps = helpers.ParseOneNumber(data)
-}
-
 // Solve returns the solution for one part.
-func (p *Day03) Solve(part int) string {
+func (p *Day03) Solve(data string, part int) string {
+	p.steps = helpers.ParseOneNumber(data)
 	board := make(map[helpers.Location]int)
 	robot := helpers.Robot{helpers.Location{0, 0}, helpers.Direction{0, -1}}
 	number := 1
@@ -33,7 +24,7 @@ func (p *Day03) Solve(part int) string {
 			}
 			return total
 		},
-	}[part]
+	}[part-1]
 
 	board[robot.Location] = number
 	for i := 2; i <= p.steps; i++ {
@@ -44,9 +35,13 @@ func (p *Day03) Solve(part int) string {
 		robot.Advance()
 		value := val()
 		board[robot.Location] = value
-		if part == 1 && value > p.steps {
+		if part == 2 && value > p.steps {
 			return helpers.Itoa(value)
 		}
 	}
 	return helpers.Itoa(robot.ManhattanDistance())
+}
+
+func init() {
+	helpers.AocRegister(2017, 3, &Day03{})
 }

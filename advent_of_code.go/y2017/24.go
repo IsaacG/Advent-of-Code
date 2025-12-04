@@ -29,11 +29,6 @@ type Day24 struct {
 	components []magneticComponent
 }
 
-// New24 returns a new solver for 2017/24.
-func New24() *Day24 {
-	return &Day24{}
-}
-
 // SetInput handles input for this solver.
 func (p *Day24) SetInput(data string) {
 	lines := strings.Split(data, "\n")
@@ -80,13 +75,18 @@ func (p *Day24) build(start int, components []magneticComponent) (int, int, int)
 }
 
 // Solve returns the solution for one part.
-func (p *Day24) Solve(part int) string {
+func (p *Day24) Solve(data string, part int) string {
+	p.SetInput(data)
 	strongest, longest, _ := p.build(0, p.components)
 	var result int
-	if part == 0 {
+	if part == 1 {
 		result = strongest
 	} else {
 		result = longest
 	}
 	return helpers.Itoa(result)
+}
+
+func init() {
+	// helpers.AocRegister(2017, 24, &Day24{})
 }

@@ -1,23 +1,13 @@
 package y2017
 
 import (
-	"slices"
 	"isaacgood.com/aoc/helpers"
+	"slices"
 )
 
 // Day02 solves 2017/02.
 type Day02 struct {
 	data [][]int
-}
-
-// New02 returns a new solver for 2017/02.
-func New02() *Day02 {
-	return &Day02{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day02) SetInput(data string) {
-	p.data = helpers.ParseMultiNumbersPerLine(data)
 }
 
 func (p *Day02) one() int {
@@ -48,6 +38,11 @@ outer:
 }
 
 // Solve returns the solution for one part.
-func (p *Day02) Solve(part int) string {
-	return helpers.Itoa([]func() int{p.one, p.two}[part]())
+func (p *Day02) Solve(data string, part int) string {
+	p.data = helpers.ParseMultiNumbersPerLine(data)
+	return helpers.Itoa([]func() int{p.one, p.two}[part-1]())
+}
+
+func init() {
+	helpers.AocRegister(2017, 2, &Day02{})
 }

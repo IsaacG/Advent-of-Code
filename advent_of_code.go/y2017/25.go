@@ -1,9 +1,9 @@
 package y2017
 
 import (
+	"isaacgood.com/aoc/helpers"
 	"regexp"
 	"strings"
-	"isaacgood.com/aoc/helpers"
 )
 
 var preambleRe = regexp.MustCompile(`Begin in state (.)\.\nPerform a diagnostic checksum after ([0-9]+) steps.`)
@@ -18,29 +18,24 @@ var ruleRe = regexp.MustCompile(`In state (.):
     - Continue with state (.)\.`)
 
 type turingRule struct {
-	write bool
-	move int
+	write     bool
+	move      int
 	nextState string
 }
 
 func newTuringRule(parts []string) *turingRule {
 	return &turingRule{
-		write: parts[0] == "1",
-		move: map[string]int{"left": -1, "right": 1}[parts[1]],
+		write:     parts[0] == "1",
+		move:      map[string]int{"left": -1, "right": 1}[parts[1]],
 		nextState: parts[2],
 	}
 }
 
 // Day25 solves 2017/25.
 type Day25 struct {
-	rules map[string][2]*turingRule
+	rules        map[string][2]*turingRule
 	initialState string
-	steps int
-}
-
-// New25 returns a new solver for 2017/25.
-func New25() *Day25 {
-	return &Day25{}
+	steps        int
 }
 
 // SetInput handles input for this solver.
@@ -60,11 +55,12 @@ func (p *Day25) SetInput(data string) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day25) Solve(part int) string {
+func (p *Day25) Solve(data string, part int) string {
+	p.SetInput(data)
 	state := p.initialState
 	cursor := 0
 	tape := make(map[int]interface{})
-	for range(p.steps) {
+	for range p.steps {
 		var idx int
 		if _, ok := tape[cursor]; ok {
 			idx = 1
@@ -80,5 +76,9 @@ func (p *Day25) Solve(part int) string {
 		cursor += rule.move
 		state = rule.nextState
 	}
-        return helpers.Itoa(len(tape))
+	return helpers.Itoa(len(tape))
+}
+
+func init() {
+	helpers.AocRegister(2017, 25, &Day25{})
 }

@@ -9,24 +9,15 @@ type Day05 struct {
 	size int
 }
 
-// New05 returns a new solver for 2017/05.
-func New05() *Day05 {
-	return &Day05{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day05) SetInput(data string) {
+// Solve returns the solution for one part.
+func (p *Day05) Solve(data string, part int) string {
 	p.data = helpers.ParseOneNumberPerLine(data)
 	p.size = len(p.data)
-}
-
-// Solve returns the solution for one part.
-func (p *Day05) Solve(part int) string {
 	mem := slices.Clone(p.data)
 	step := 0
 	for ptr := 0; 0 <= ptr && ptr < p.size; step++ {
 		offset := mem[ptr]
-		if part == 1 && offset >= 3 {
+		if part == 2 && offset >= 3 {
 			mem[ptr]--
 		} else {
 			mem[ptr]++
@@ -34,4 +25,8 @@ func (p *Day05) Solve(part int) string {
 		ptr += offset
 	}
 	return helpers.Itoa(step)
+}
+
+func init() {
+	helpers.AocRegister(2017, 5, &Day05{})
 }

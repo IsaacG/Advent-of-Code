@@ -1,8 +1,8 @@
 package y2020
 
 import (
-	"strings"
 	"isaacgood.com/aoc/helpers"
+	"strings"
 )
 
 const (
@@ -18,11 +18,6 @@ func check(err error) {
 // Day01 solves 2020/01.
 type Day01 struct {
 	nums map[int]bool
-}
-
-// New01 returns a new solver for 2020/01.
-func New01() *Day01 {
-	return &Day01{}
 }
 
 // SetInput handles input for this solver.
@@ -58,7 +53,12 @@ func (p *Day01) partTwo() int {
 }
 
 // Solve returns the solution for one part.
-func (p *Day01) Solve(part int) string {
-	m := []func() int{p.partOne, p.partTwo}[part]
+func (p *Day01) Solve(data string, part int) string {
+	p.SetInput(data)
+	m := []func() int{p.partOne, p.partTwo}[part-1]
 	return helpers.Itoa(m())
+}
+
+func init() {
+	helpers.AocRegister(2020, 1, &Day01{})
 }

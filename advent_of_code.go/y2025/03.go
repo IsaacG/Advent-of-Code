@@ -11,16 +11,6 @@ type Day03 struct {
 	data string
 }
 
-// New03 returns a new solver for 2025/03.
-func New03() *Day03 {
-	return &Day03{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day03) SetInput(data string) {
-	p.data = data
-}
-
 func (p *Day03) max(line string) (rune, int) {
 	max := '0'
 	maxIdx := 0
@@ -34,10 +24,10 @@ func (p *Day03) max(line string) (rune, int) {
 }
 
 // Solve returns the solution for one part.
-func (p *Day03) Solve(part int) string {
+func (p *Day03) Solve(data string, part int) string {
 	total := 0
-	size := []int{2, 12}[part]
-	for line := range strings.SplitSeq(p.data, "\n") {
+	size := []int{2, 12}[part-1]
+	for line := range strings.SplitSeq(data, "\n") {
 		var digits []rune
 		for i := -(size - 1); i <= 0; i++ {
 			viable := line
@@ -51,4 +41,8 @@ func (p *Day03) Solve(part int) string {
 		total += helpers.Atoi(string(digits))
 	}
 	return helpers.Itoa(total)
+}
+
+func init() {
+	helpers.AocRegister(2025, 3, &Day03{})
 }

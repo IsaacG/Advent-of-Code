@@ -43,18 +43,13 @@ func partTwo(step int) int {
 	return lastVal
 }
 
-// New17 returns a new solver for 2017/17.
-func New17() *Day17 {
-	return &Day17{}
-}
-
-// SetInput handles input for this solver.
-func (p *Day17) SetInput(data string) {
-	p.steps = helpers.Atoi(data)
-}
-
 // Solve returns the solution for one part.
-func (p *Day17) Solve(part int) string {
-	m := []func(int) int{partOne, partTwo}[part]
+func (p *Day17) Solve(data string, part int) string {
+	p.steps = helpers.Atoi(data)
+	m := []func(int) int{partOne, partTwo}[part-1]
 	return helpers.Itoa(m(p.steps))
+}
+
+func init() {
+	helpers.AocRegister(2017, 17, &Day17{})
 }
