@@ -21,8 +21,11 @@ func (p *Day04) Solve(data string, part int) string {
 		}
 	}
 
+	// isPaper checks if a location contains paper.
 	isPaper := func(neighbor helpers.Location) bool { return papers.Contains(neighbor) }
+	// paperCanMove checks if paper has less than 4 neighbors and can move.
 	paperCanMove := func(l helpers.Location) bool { return helpers.SumIf(l.AdjacentAll(), isPaper) < 4 }
+	// canMove returns the set of papers that can be moved.
 	canMove := func() sets.Set[helpers.Location] {
 		canDo := sets.NewSet[helpers.Location]()
 		helpers.ApplyIf(papers.ToSlice(), func(l helpers.Location) { canDo.Add(l) }, paperCanMove)
