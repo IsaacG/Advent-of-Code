@@ -56,6 +56,37 @@ type Location struct {
 	X, Y int
 }
 
+func (l Location) AdjacentStraight() []Location {
+	return []Location{
+		{l.X+1, l.Y},
+		{l.X-1, l.Y},
+		{l.X, l.Y+1},
+		{l.X, l.Y-1},
+	}
+}
+
+func (l Location) AdjacentDiagonal() []Location {
+	return []Location{
+		{l.X+1, l.Y+1},
+		{l.X-1, l.Y+1},
+		{l.X+1, l.Y-1},
+		{l.X-1, l.Y-1},
+	}
+}
+
+func (l Location) AdjacentAll() []Location {
+	return []Location{
+		{l.X+1, l.Y},
+		{l.X-1, l.Y},
+		{l.X, l.Y+1},
+		{l.X, l.Y-1},
+		{l.X+1, l.Y+1},
+		{l.X-1, l.Y+1},
+		{l.X+1, l.Y-1},
+		{l.X-1, l.Y-1},
+	}
+}
+
 func (l Location) ManhattanDistance() int {
 	return Abs(l.X) + Abs(l.Y)
 }

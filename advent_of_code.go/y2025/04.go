@@ -12,27 +12,22 @@ type Day04 struct{}
 
 // Solve returns the solution for one part.
 func (p *Day04) Solve(data string, part int) string {
-	papers := sets.NewSet[[2]int]()
+	papers := sets.NewSet[helpers.Location]()
 	for y, line := range strings.Split(data, "\n") {
 		for x, char := range line {
 			if char == '@' {
-				papers.Add([2]int{x, y})
+				papers.Add(helpers.Location{x, y})
 			}
 		}
 	}
 
-	canMove := func() sets.Set[[2]int] {
-		canDo := sets.NewSet[[2]int]()
+	canMove := func() sets.Set[helpers.Location] {
+		canDo := sets.NewSet[helpers.Location]()
 		for pos := range papers.Iter() {
 			neighborCount := 0
-			for dx := -1; dx <= 1; dx++ {
-				for dy := -1; dy <= 1; dy++ {
-					if dx == 0 && dy == 0 {
-						continue
-					}
-					if papers.Contains([2]int{pos[0] + dx, pos[1] + dy}) {
-						neighborCount++
-					}
+			for _, neighbor := range pos.AdjacentAll() {
+				if papers.Contains(neighbor) {
+					neighborCount++
 				}
 			}
 			if neighborCount < 4 {
