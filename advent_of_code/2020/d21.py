@@ -13,12 +13,10 @@ sqjhc mxmxvkd sbzzf (contains fish)
 
 class Day21(aoc.Challenge):
 
-  TIMER_ITERATIONS = (20000, 200000)
-
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want='mxmxvkd,sqjhc,fvjkl'),
-  )
+  ]
 
   def allergen_to_food(self, data: List[Tuple[List[str], List[str]]]) -> Dict[str, str]:
     """Map allergens to the ingredient that contains it.

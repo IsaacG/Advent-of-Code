@@ -500,7 +500,6 @@ class Challenge:
     INPUT_PARSER: Optional[parsers.BaseParser] = None
     TESTS: list[TestCase] = []
     DEBUG = False
-    TIMER_ITERATIONS = (None, None)
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
 
@@ -789,7 +788,6 @@ class Challenge:
         solve: bool = False,
         submit: bool = False,
         check: bool = False,
-        benchmark: bool = False,
     ):
         """Run the challenges."""
         f = self.get_run_method(
@@ -797,37 +795,8 @@ class Challenge:
             solve=solve,
             submit=submit,
             check=check,
-            benchmark=benchmark,
         )
         f(input_file)
-
-    def time_func(self, count: int, func: Callable) -> float:
-        """Time a callable, averaged over count runs."""
-        start = time.clock_gettime(time.CLOCK_MONOTONIC)
-        for _ in range(count):
-            func()
-        end = time.clock_gettime(time.CLOCK_MONOTONIC)
-        return 1000 * (end - start) / count
-
-    def benchmark(self, puzzle_input: Any):
-        """Benchmark the solution."""
-        times = []
-        times.append(self.time_func(10000, lambda: self.input_parser(self.raw_data(puzzle_input))))
-
-        for part, func in self.funcs.items():
-
-            r = lambda: func(puzzle_input)
-
-            if self.TIMER_ITERATIONS[part - 1]:
-                _count = self.TIMER_ITERATIONS[part - 1]
-            else:
-                t = self.time_func(5, r) / 1000
-                _count = min(10000, max(1, int(25 / t)))
-
-            t = self.time_func(_count, r)
-            times.append(t)
-
-        print(f'{self.day}: ' + '/'.join(f'{t:.3f}' for t in times) + ' ms')
 
     @contextlib.contextmanager
     def context_timer(self, description: str) -> Generator[None, None, None]:

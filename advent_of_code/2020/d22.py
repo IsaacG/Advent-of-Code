@@ -33,13 +33,11 @@ Player 2:
 
 class Day22(aoc.Challenge):
 
-  TIMER_ITERATIONS = (1, 3)
-
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=306),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=291),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=105),
-  )
+  ]
 
   def part1(self, decks) -> int:
     """Simple Combat."""

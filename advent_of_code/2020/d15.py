@@ -9,14 +9,13 @@ from lib import aoc
 class Day15(aoc.Challenge):
   """Solve for the n'th value in a Van Eck sequence."""
 
-  TIMER_ITERATIONS = (10000, 10)
   INPUT_PARSER = aoc.ParseOneWord(lambda s: [int(i) for i in s.split(',')])
 
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs='0,3,6', part=1, want=436),
     aoc.TestCase(inputs='1,3,2', part=1, want=1),
     aoc.TestCase(inputs='2,1,3', part=1, want=10),
-  )
+  ]
 
   def part1(self, puzzle_input: List[List[int]]) -> int:
     return self.solve(puzzle_input, 2020)

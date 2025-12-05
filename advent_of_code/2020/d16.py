@@ -37,12 +37,10 @@ nearby tickets:
 class Day16(aoc.Challenge):
   """Day 16. Train tickets."""
 
-  TIMER_ITERATIONS = (1000, 1000)
-
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=71),
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
-  )
+  ]
 
   def input_parser(self, puzzle_input: str):
     """Parse the input."""

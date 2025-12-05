@@ -117,12 +117,10 @@ class GameOfLife:
 
 class Day17(aoc.Challenge):
 
-  TIMER_ITERATIONS = (5, 2)
-
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=112),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=848),
-  )
+  ]
 
   def solve_game_of_life(self, puzzle_input: List[str], dimensions: int) -> int:
     board = GameOfLife(dimensions, puzzle_input)

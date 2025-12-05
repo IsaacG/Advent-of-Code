@@ -14,7 +14,6 @@ from typing import List, Optional
 class Cup:
   """Linked list node."""
 
-  TIMER_ITERATIONS = (50, 3)
   next = None  # type: Cup
 
   def __init__(self, val: int, prev: Optional["Cup"]):

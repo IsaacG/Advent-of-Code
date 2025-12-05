@@ -101,12 +101,10 @@ class Seating:
 class Day11(aoc.Challenge):
   """Solve Day 11."""
 
-  TIMER_ITERATIONS = (50, 10)
-
-  TESTS = (
+  TESTS = [
     aoc.TestCase(inputs=S1[0], part=1, want=37),
     aoc.TestCase(inputs=S2[0], part=2, want=26),
-  )
+  ]
   TIMEOUT = 60
 
   def pre_run(self, *args, **kwargs):

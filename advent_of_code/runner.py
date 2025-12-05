@@ -384,7 +384,6 @@ def show_parsers():
 @click.option("--submit", is_flag=True, help="Submit the next part on AoC website.")
 @click.option("--part", "-p", type=int, multiple=True, default=(1, 2), help="Which parts to run.")
 @click.option("--watch", is_flag=True, help="If set, loop and repeat the action when the file is saved.")
-@click.option("--benchmark", is_flag=True, help="Time the solution.")
 @click.option("--all-days", is_flag=True, help="Run action for all days.")
 @click.option("--timeout", type=int, default=30, help="Set the timeout.")
 @click.option("--input-file", "--input", "--file", type=str, default=None, help="Alternative input file.")
@@ -402,7 +401,6 @@ def main(
     submit: bool,
     part: tuple[int, ...],
     watch: bool,
-    benchmark: bool,
     all_days: bool,
     input_file: Optional[str],
     timeout: int,
@@ -443,7 +441,6 @@ def main(
         "solve": solve,
         "submit": submit,
         "check": check,
-        "benchmark": benchmark,
     }
 
     if not watch or all_days:
