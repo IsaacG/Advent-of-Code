@@ -22,7 +22,7 @@ SAMPLE = """\
 """
 
 # A list of point->point pairs, delineating a line.
-InputType = list[aoc.Line]
+InputType = list[tuple[int, int, int, int]]
 
 
 class Day05(aoc.Challenge):
@@ -36,14 +36,21 @@ class Day05(aoc.Challenge):
     def part1(self, puzzle_input: InputType) -> int:
         """Find hot areas where lines overlap. Ignore diagonals."""
         # Filter for horizontal/vertical and call part 2.
-        puzzle_input = [line for line in puzzle_input if line.start.x == line.end.x or line.start.y == line.end.y]
+        puzzle_input = [
+            (start_x, start_y, end_x, end_y)
+            for start_x, start_y, end_x, end_y in puzzle_input
+            if start_x == end_x or start_y == end_y
+        ]
         return self.part2(puzzle_input)
 
     def part2(self, puzzle_input: InputType) -> int:
         """Find hot areas where puzzle_input overlap. Include diagonals."""
         # Count points that are on lines.
         count = collections.Counter(
-            itertools.chain.from_iterable(line.points() for line in puzzle_input)
+            itertools.chain.from_iterable(
+                aoc.points_along_line(start_x, start_y, end_x, end_y)
+                for start_x, start_y, end_x, end_y in puzzle_input
+            )
         )
         return sum(1 for v in count.values() if v > 1)
 
@@ -58,9 +65,9 @@ class Day05(aoc.Challenge):
         for line in puzzle_input.splitlines():
             match = pattern.match(line)
             lines.append(
-                aoc.Line(
-                    aoc.Point(int(match.group(1)), int(match.group(2))),
-                    aoc.Point(int(match.group(3)), int(match.group(4))),
+                (
+                    int(match.group(1)), int(match.group(2)),
+                    int(match.group(3)), int(match.group(4)),
                 )
             )
         return lines

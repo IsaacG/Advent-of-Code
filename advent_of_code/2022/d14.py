@@ -25,8 +25,8 @@ class Day14(aoc.Challenge):
     def solver(self, rocks: InputType, part_one: bool) -> int:
         """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
         # Sand moves in these directions, in this order of preference.
-        movement_directions = (complex(0, 1), complex(-1, 1), complex(1, 1))
-        starting_point = complex(500, 0)
+        movement_directions = ((0, 1), (-1, 1), (1, 1))
+        starting_point = (500, 0)
 
         # Use the input to build a set of rock points and compute the lowest points.
         rocks_and_sand = set()
@@ -34,8 +34,8 @@ class Day14(aoc.Challenge):
         for points in rocks:
             lowest_rock = max(lowest_rock, max(p.imag for p in points))
             for start, end in zip(points[:-1], points[1:]):
-                for point in aoc.Line.from_complex(start, end).points():
-                    rocks_and_sand.add(complex(point))
+                for point in aoc.points_along_line(int(start.real), int(start.imag), int(end.real), int(end.imag)):
+                    rocks_and_sand.add(point)
         # The lowest position a grain may occupy.
         lowest_position = lowest_rock + 1
 
@@ -47,16 +47,16 @@ class Day14(aoc.Challenge):
         # Simulate the grains.
         for grain in itertools.count():
             # Grains can drop until they hit the lowest_position.
-            while cur.imag < lowest_position:
-                for d in movement_directions:
-                    if cur + d not in rocks_and_sand:
-                        cur += d
-                        path.append(d)
+            while cur[1] < lowest_position:
+                for dx, dy in movement_directions:
+                    if (next_pos := (cur[0] + dx, cur[1] + dy)) not in rocks_and_sand:
+                        cur = next_pos
+                        path.append((dx, dy))
                         break
                 else:
                     break
             rocks_and_sand.add(cur)
-            if part_one and cur.imag == lowest_position:
+            if part_one and cur[1] == lowest_position:
                 # Part 1: return the grain prior to the first to pass the lowest rock.
                 return grain
             elif cur == starting_point:
@@ -64,4 +64,5 @@ class Day14(aoc.Challenge):
                 return grain + 1
 
             # Backtrack the position by one movement and resume from the prior location:
-            cur -= path.pop()
+            dx, dy = path.pop()
+            cur = cur[0] - dx, cur[1] - dy

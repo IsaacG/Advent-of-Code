@@ -223,6 +223,7 @@ def bounding_coords(points: Iterable[complex]) -> tuple[int, int, int, int]:
     max_y = int(max(p.imag for p in points))
     return min_x, min_y, max_x, max_y
 
+
 def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
     """Convert a set of complex points to a 2D list of bools."""
     min_x, min_y, max_x, max_y = bounding_coords(points)
@@ -291,38 +292,28 @@ class Rect:
         return Rect(start, end)
 
 
-@dataclasses.dataclass(frozen=True)
-class Line:
-    """A line formed between two cartesian points."""
-    start: Point
-    end: Point
+def points_along_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
+    """Return the points on the line."""
+    if (
+        abs(start_x - end_x) != abs(start_y - end_y)  # 45 degrees
+        and abs(start_x - end_x) != 0  # vertical
+        and abs(start_y - end_y) != 0  # horizontal
+    ):
+        raise RuntimeError(f"Line not 90 nor 45 degrees")
 
-    def points(self) -> list[Point]:
-        """Return the points on the line."""
-        if (
-            abs(self.start.x - self.end.x) != abs(self.start.y - self.end.y)  # 45 degrees
-            and abs(self.start.x - self.end.x) != 0  # vertical
-            and abs(self.start.y - self.end.y) != 0  # horizontal
-        ):
-            raise RuntimeError(f"{self} not 90 nor 45 degrees")
+    if start_x == end_x and start_y == end_y:
+        steps = 1
+    elif abs(start_x - end_x) != 0:
+        steps = abs(start_x - end_x)
+    else:
+        steps = abs(start_y - end_y)
 
-        if self.start == self.end:
-            steps = 1
-        elif abs(self.start.x - self.end.x) != 0:
-            steps = abs(self.start.x - self.end.x)
-        else:
-            steps = abs(self.start.y - self.end.y)
-
-        dir_x = (self.end.x - self.start.x) / steps
-        dir_y = (self.end.y - self.start.y) / steps
-        return [
-            Point(int(self.start.x + dir_x * i), int(self.start.y + dir_y * i))
-            for i in range(steps + 1)
-        ]
-
-    @classmethod
-    def from_complex(cls, start: complex, end: complex) -> Line:
-        return cls(Point.from_complex(start), Point.from_complex(end))
+    dir_x = (end_x - start_x) / steps
+    dir_y = (end_y - start_y) / steps
+    return [
+        (int(start_x + dir_x * i), int(start_y + dir_y * i))
+        for i in range(steps + 1)
+    ]
 
 
 def render(points: set[complex], off: str = COLOR_EMPTY, on: str = COLOR_SOLID) -> str:
