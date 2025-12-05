@@ -234,20 +234,6 @@ def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
     return rows
 
 
-@dataclasses.dataclass(frozen=True)
-class Point:
-    """A cartesian point."""
-    x: int
-    y: int
-
-    def __complex__(self) -> complex:
-        return complex(self.x, self.y)
-
-    @classmethod
-    def from_complex(cls, point: complex) -> Point:
-        return cls(int(point.real), int(point.imag))
-
-
 def n_dim_directions(dims: int, diagonal=False):
     """Return all the directions of a point for an n-dimensional point."""
     if diagonal:
@@ -263,33 +249,6 @@ def n_dim_add(p1: tuple[int, ...], p2: tuple[int, ...]) -> tuple[int, ...]:
 def n_dim_neighbors(point: tuple[int, ...], diagonal=False) -> set[tuple[int, ...]]:
     """Return all the neighbors of a point for an n-dimensional point."""
     return {n_dim_add(point, direction) for direction in n_dim_directions(len(point), diagonal)}
-
-
-@dataclasses.dataclass(frozen=True)
-class Rect:
-    """A rectangle formed between two cartesian points."""
-
-    start: Point
-    end: Point
-
-    @classmethod
-    def from_input(cls, line: str) -> Rect:
-        x1, y1, x2, y2 = (int(i) for i in re.findall(r"\d+", line))
-        start = Point(min(x1, x2), min(y1, y2))
-        end = Point(max(x1, x2), max(y1, y2))
-        return cls(start, end)
-
-    def area(self) -> int:
-        return abs(self.end.x - self.start.x + 1) * abs(self.end.y - self.start.y + 1)
-
-    def overlap(self, other: Rect) -> Optional[Rect]:
-        if other.end.x < self.start.x or other.end.y < self.start.y:
-            return None
-        if other.start.x > self.end.x or other.start.x > self.end.y:
-            return None
-        start = Point(max(self.start.x, other.start.x), max(self.start.y, other.start.y))
-        end = Point(min(self.end.x, other.end.x), min(self.end.y, other.end.y))
-        return Rect(start, end)
 
 
 def points_along_line(start_x: int, start_y: int, end_x: int, end_y: int) -> list[tuple[int, int]]:
