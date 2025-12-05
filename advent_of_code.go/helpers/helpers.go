@@ -58,32 +58,32 @@ type Location struct {
 
 func (l Location) AdjacentStraight() []Location {
 	return []Location{
-		{l.X+1, l.Y},
-		{l.X-1, l.Y},
-		{l.X, l.Y+1},
-		{l.X, l.Y-1},
+		{l.X + 1, l.Y},
+		{l.X - 1, l.Y},
+		{l.X, l.Y + 1},
+		{l.X, l.Y - 1},
 	}
 }
 
 func (l Location) AdjacentDiagonal() []Location {
 	return []Location{
-		{l.X+1, l.Y+1},
-		{l.X-1, l.Y+1},
-		{l.X+1, l.Y-1},
-		{l.X-1, l.Y-1},
+		{l.X + 1, l.Y + 1},
+		{l.X - 1, l.Y + 1},
+		{l.X + 1, l.Y - 1},
+		{l.X - 1, l.Y - 1},
 	}
 }
 
 func (l Location) AdjacentAll() []Location {
 	return []Location{
-		{l.X+1, l.Y},
-		{l.X-1, l.Y},
-		{l.X, l.Y+1},
-		{l.X, l.Y-1},
-		{l.X+1, l.Y+1},
-		{l.X-1, l.Y+1},
-		{l.X+1, l.Y-1},
-		{l.X-1, l.Y-1},
+		{l.X + 1, l.Y},
+		{l.X - 1, l.Y},
+		{l.X, l.Y + 1},
+		{l.X, l.Y - 1},
+		{l.X + 1, l.Y + 1},
+		{l.X - 1, l.Y + 1},
+		{l.X + 1, l.Y - 1},
+		{l.X - 1, l.Y - 1},
 	}
 }
 
@@ -131,14 +131,6 @@ func Sign(i int) int {
 		return -1
 	}
 	return 0
-}
-
-// Abs returns the absolute int value.
-func Abs(i int) int {
-	if i >= 0 {
-		return i
-	}
-	return -i
 }
 
 // Transpose a rectangular 2D list.
@@ -194,4 +186,48 @@ func Cmp(a, b int) int {
 		return -1
 	}
 	return 1
+}
+
+// Clamp b between and c.
+func Clamp(a, b, c int) int {
+	if b < a {
+		return a
+	}
+	if b > c {
+		return c
+	}
+	return b
+}
+
+// Sum up an int slice.
+func Sum(i []int) int {
+	total := 0
+	for _, j := range i {
+		total += j
+	}
+	return total
+}
+
+// Max is max.
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Min is min.
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// Abs is abs.
+func Abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
 }
