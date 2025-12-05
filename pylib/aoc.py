@@ -95,17 +95,6 @@ def print_io(func):
     return inner
 
 
-def print_point_set(board: set[complex]) -> None:
-    """Print out a set of points as a map."""
-    min_x, min_y, max_x, max_y = bounding_coords(board)
-    for y in range(min_y, max_y+1):
-        line = ""
-        for x in range(min_x, max_x + 1):
-            line += "#" if complex(x, y) in board else "."
-        print(line)
-    print()
-
-
 class CachedIterable(Iterable[T]):
     """Cached Iterable by phy1729."""
 
