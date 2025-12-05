@@ -23,7 +23,6 @@ class Day04(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=13),
         aoc.TestCase(part=2, inputs=SAMPLE, want=43),
     ]
-    INPUT_PARSER = aoc.CoordinatesParser(chars=None, origin_top_left=True)
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         papers = puzzle_input.coords["@"]
