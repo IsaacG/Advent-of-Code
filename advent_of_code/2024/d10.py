@@ -21,7 +21,6 @@ class Day10(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=36),
         aoc.TestCase(part=2, inputs=SAMPLE, want=81),
     ]
-    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         """Score and rate trails by computing how to walk the trail to a 9."""
@@ -33,8 +32,8 @@ class Day10(aoc.Challenge):
                 new_trails = set()
                 for last_pos, path in trails:
                     coords = maps[elevation]
-                    for neighbor in aoc.FOUR_DIRECTIONS:
-                        if (new_pos := last_pos + neighbor) in coords:
+                    for dx, dy in aoc.FOUR_DIRECTIONS_T:
+                        if (new_pos := (last_pos[0] + dx, last_pos[1] + dy)) in coords:
                             new_trails.add((new_pos, path + (new_pos,)))
                 trails = new_trails
             total += len({trail[0 if part_one else 1] for trail in trails})

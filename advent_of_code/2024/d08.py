@@ -33,7 +33,7 @@ class Day08(aoc.Challenge):
         all_locations = puzzle_input.all_coords
         antinodes = set()
         for freq in puzzle_input.non_blank_chars:
-            for a, b in itertools.combinations(puzzle_input[freq], 2):
+            for a, b in itertools.combinations(puzzle_input.coords[freq], 2):
                 sequences: tuple[collections.abc.Iterable[int], collections.abc.Iterable[int]]
                 if part_one:
                     sequences = ([2], [-1])

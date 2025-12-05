@@ -27,7 +27,6 @@ class Day16(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=0),
         # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-
     INPUT_PARSER = aoc.parse_one_str
 
     @functools.cache

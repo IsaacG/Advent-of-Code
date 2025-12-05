@@ -20,7 +20,6 @@ class Day06(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=17),
         aoc.TestCase(part=2, inputs=SAMPLE, want=16),
     ]
-    INPUT_PARSER = aoc.parse_ints
 
     def minmax(self, puzzle_input: list[list[int]]) -> tuple[int, int, int, int]:
         """Return the boundaries of the puzzle."""

@@ -614,11 +614,25 @@ class Challenge:
             return self.INPUT_PARSER
         # Use heuristics to guess at an input parser.
         data = self.raw_data(None)
+        got = self._guess_parser(data)
+        # print("Guessing at parser", got)
+        return got
+
+    def _guess_parser(self, data: str) -> parsers.BaseParser:
+        for i in range(5, 1, -1):
+            sep = "\n" * i
+            if sep in data:
+                parsers = [self._guess_parser(chunk) for chunk in data.split(sep)]
+                if len(parsers) > 5 and all(type(parser) == type(parsers[0]) for parser in parsers):
+                    parsers = parsers[:1]
+                return ParseBlocks(separator=sep, parsers=parsers)
+
         lines = data.splitlines()
         multi_line = len(lines) > 1
         one_line = lines[0]
 
-        if len(lines) > 5 and len(lines[0]) > 5 and len(lines) == len(lines[0]):
+        check_lines = lines if len(lines) < 10 else lines[:-1]
+        if len(lines) >= 5 and len(lines[0]) >= 5 and all(len(line) == len(lines[0]) for line in check_lines):
             return CoordinatesParser()
         pi = ParseIntergers(multi_line=multi_line)
         if pi.matches(data):
@@ -640,7 +654,7 @@ class Challenge:
         word_count = max(len(line.split()) for line in data.splitlines())
         if word_count == 1:
             return parse_one_str_per_line if multi_line else parse_one_str
-        return parse_multi_str_per_line if multi_line else parse_one_str
+        return parse_multi_mixed_per_line if multi_line else parse_one_str
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""

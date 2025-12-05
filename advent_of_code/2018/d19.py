@@ -22,7 +22,6 @@ class Day19(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=6),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def compute(self, puzzle_input: list[list[str | int]], initial: int) -> int:
         """Run a CPU simulator."""

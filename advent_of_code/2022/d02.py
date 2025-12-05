@@ -22,7 +22,6 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=15),
         aoc.TestCase(inputs=SAMPLE, part=2, want=12),
     ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def part1(self, puzzle_input: InputType) -> int:
         """Score a tournament with the columns representing the choices."""

@@ -47,7 +47,6 @@ class Day14(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=12),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_ints
 
     def part1(self, puzzle_input: list[list[int]]) -> int:
         """Simulate robots for 100 steps."""

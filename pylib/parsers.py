@@ -18,6 +18,8 @@ from .helpers import *
 
 RE_INT = re.compile(r"[+-]?\d{1,1000}")
 RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
+RE_BOUNDED_INT_UNSIGNED = re.compile(r"\b\d+\b")
+RE_INT_RANGES = re.compile(r"\d+(-\d+)+")
 RE_POINT = re.compile(r"[+-]?\d+,[+-]?\d+")
 
 
@@ -68,16 +70,24 @@ class ParseIntergers(BaseParser):
     """Get integers from input."""
 
     multi_line: bool | None = None
-    NUMBER_LINE = re.compile(r"^[+-]?\d{1,1000}( +[+-]?\d{1,1000})*$")
 
     def matches(self, puzzle_input) -> bool:
         """Check if the input is all numbers."""
-        return all(self.NUMBER_LINE.fullmatch(line) for line in puzzle_input.splitlines())
+        patterns = [
+            re.compile(r"[+-]?\d{1,1000}( *[+-]?\d{1,1000})*"),
+        ]
+        return any(
+            all(pattern.fullmatch(line) for line in puzzle_input.splitlines())
+            for pattern in patterns
+        )
 
     def parse(self, puzzle_input: str) -> int | list[int] | list[list[int]]:
         """Parse a puzzle input."""
         lines = puzzle_input.splitlines()
-        numbers = [[int(num) for num in RE_BOUNDED_INT.findall(line)] for line in lines]
+        regex = RE_BOUNDED_INT
+        if all(RE_INT_RANGES.fullmatch(line) for line in lines):
+            regex = RE_BOUNDED_INT_UNSIGNED
+        numbers = [[int(num) for num in regex.findall(line)] for line in lines]
         numbers = [n for n in numbers if n]
         multi_line = len(numbers) > 1 if self.multi_line is None else self.multi_line
         multi_word = any(len(line) > 1 for line in numbers)

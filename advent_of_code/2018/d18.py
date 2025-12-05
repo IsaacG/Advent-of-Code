@@ -27,7 +27,7 @@ class Day18(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=1147),
         aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.CoordinatesParserC(chars=None, origin_top_left=True)
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         area = typing.cast(frozendict.frozendict[complex, str], frozendict.frozendict(puzzle_input.chars))

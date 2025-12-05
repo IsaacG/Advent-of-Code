@@ -28,7 +28,6 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=24000),
         aoc.TestCase(inputs=SAMPLE, part=2, want=45000),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_one_int_per_line])
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the sum calories held by the elf with the most calories."""

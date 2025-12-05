@@ -58,7 +58,6 @@ class Day21(aoc.Challenge):
         aoc.TestCase(part=1, inputs="", want=aoc.TEST_SKIP),
         aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def part1(self, puzzle_input: list[list[str | int]]) -> int:
         """Return the r0 value needed to make the program terminate."""

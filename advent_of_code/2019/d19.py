@@ -14,7 +14,6 @@ class Day19(aoc.Challenge):
         aoc.TestCase(part=1, inputs="", want=aoc.TEST_SKIP),
         aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def is_on(self, computer, x: int, y: int) -> bool:
         """Return if a given coordinate is on."""

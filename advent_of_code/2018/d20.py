@@ -18,7 +18,6 @@ class Day20(aoc.Challenge):
         aoc.TestCase(part=1, inputs="^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", want=31),
         aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Walk a regex to explore a map."""

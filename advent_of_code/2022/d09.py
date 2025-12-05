@@ -35,7 +35,6 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=13),
         aoc.TestCase(inputs=SAMPLE[1], part=2, want=36),
     ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def solver(self, lines: list[tuple[str, int]], part_one: bool) -> int:
         """Track the movement of knots on a rope. Return the number of positions the tail visits."""
@@ -48,8 +47,8 @@ class Day09(aoc.Challenge):
                 for i, (a, b) in enumerate(zip(knots, knots[1:])):
                     if a - b in aoc.EIGHT_DIRECTIONS:
                         continue
-                    x = self.cmp(a.real, b.real)
-                    y = self.cmp(a.imag, b.imag)
+                    x = aoc.cmp(a.real, b.real)
+                    y = aoc.cmp(a.imag, b.imag)
                     knots[i + 1] += complex(x, y)
                 points.add(knots[-1])
         return len(points)

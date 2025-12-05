@@ -164,7 +164,6 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=13140),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def run_program(self, lines: InputType) -> list[int]:
         """Run the program and store the `X` register value for each cycle."""

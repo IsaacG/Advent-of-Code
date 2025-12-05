@@ -23,13 +23,12 @@ class Day05(aoc.Challenge):
         aoc.TestCase(part=1, inputs=SAMPLE, want=3),
         aoc.TestCase(part=2, inputs=SAMPLE, want=14),
     ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_re_findall_int(r"\d+")])
 
-    def part1(self, puzzle_input: list[list[list[int]]]) -> int:
+    def part1(self, puzzle_input: list[list[int] | list[list[int]]]) -> int:
         """Return how many available ingredients are fresh."""
         fresh, available = puzzle_input
         return sum(
-            any(x <= ingredient[0] <= y for x, y in fresh)
+            any(x <= ingredient <= y for x, y in fresh)
             for ingredient in available
         )
 

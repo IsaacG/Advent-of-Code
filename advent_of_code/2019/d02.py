@@ -16,7 +16,6 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=1, want=3500),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
-    INPUT_PARSER = aoc.parse_one_str
 
     def run_with_inputs(self, program: str, noun: int, verb: int) -> int:
         computer = intcode.Computer(program)

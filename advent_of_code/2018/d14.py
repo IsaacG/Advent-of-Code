@@ -7,7 +7,6 @@ from lib import aoc
 class Day14(aoc.Challenge):
     """Day 14: Chocolate Charts. Mix recipes until a pattern is found."""
 
-    INPUT_PARSER = aoc.parse_one_str
     TESTS = [
         aoc.TestCase(inputs="9", part=1, want="5158916779"),
         aoc.TestCase(inputs="5", part=1, want="0124515891"),
@@ -18,6 +17,7 @@ class Day14(aoc.Challenge):
         aoc.TestCase(inputs="92510", part=2, want=18),
         aoc.TestCase(inputs="59414", part=2, want=2018),
     ]
+    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int | str:
         """Solve for the target recipes."""

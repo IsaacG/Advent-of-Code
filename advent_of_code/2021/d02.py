@@ -23,7 +23,6 @@ class Day02(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=150),
         aoc.TestCase(inputs=SAMPLE, part=2, want=900),
     )
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
     def part1(self, puzzle_input: list[tuple[str, int]]) -> int:
         """Compute the submarine's horizontal position and depth."""

@@ -48,8 +48,6 @@ class Day19(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_multi_str_per_line, aoc.parse_one_str])
-
     def part1(self, puzzle_input: InputType) -> int:
         mappings, start = puzzle_input
         found = set()
