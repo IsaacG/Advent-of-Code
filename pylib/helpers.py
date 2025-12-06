@@ -6,6 +6,7 @@ import dataclasses
 import datetime
 import inspect
 import logging
+import math
 import operator
 import os
 import re
@@ -52,6 +53,10 @@ HEX_AXIAL_DIRS_FLAT_TOP = {
 
 RE_INT = re.compile(r"[+-]?\d{1,1000}")
 RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
+LIST_OPS: dict[str, collections.abc.Callable[[collections.abc.Sequence[int]], int]] = {
+    "+": sum,
+    "*": math.prod,
+}
 OPERATORS = {
     ">": operator.gt,
     ">=": operator.ge,
