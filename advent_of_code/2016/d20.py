@@ -16,7 +16,7 @@ class Day20(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=2),
     ]
 
-    def solver(self, puzzle_input: InputType, param: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Find valid IPs between blacklisted ranges."""
         # Set the upper limit.
         if self.testing:
@@ -31,7 +31,7 @@ class Day20(aoc.Challenge):
                 cur = high + 1
             elif cur < low:
                 # Part 1: return the first allowed IP.
-                if not param:
+                if part_one:
                     return cur
                 # Part 2: count valid IPS.
                 allowed += low - cur

@@ -12,14 +12,12 @@ class Day18(aoc.Challenge):
         aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: str, param: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Return the number of safe tiles."""
         width = len(puzzle_input)
         width_mask = (1 << (width)) - 1
 
-        rows = 10 if self.testing else 40
-        if param:
-            rows = 400_000
+        rows = 10 if self.testing else 40 if part_one else 400_000
 
         traps = 0
         for i, char in enumerate(reversed(puzzle_input)):

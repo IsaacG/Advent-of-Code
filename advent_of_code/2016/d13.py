@@ -16,7 +16,7 @@ class Day13(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: int, param: bool) -> int | str:
+    def solver(self, puzzle_input: int, part_one: bool) -> int | str:
         """Walk a cubicle maze."""
         want = complex(7, 4) if self.testing else complex(31, 39)
         # Calculate where the walls are vs open space.
@@ -37,7 +37,7 @@ class Day13(aoc.Challenge):
         while todo:
             steps, cur = todo.popleft()
             # Part one: return step count when we get to a coordinate.
-            if not param and cur == want:
+            if part_one and cur == want:
                 return steps
             steps += 1
             # Step two: return the number of locations visited in 50 moves.

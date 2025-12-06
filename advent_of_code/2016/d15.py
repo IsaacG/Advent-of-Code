@@ -20,9 +20,9 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: InputType, param: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the correct time to press the button to get a capsule."""
-        if param:
+        if not part_one:
             # Part two. Add an additional disk.
             new_disk = [puzzle_input[-1][0] + 1, 11, 0, 0]
             puzzle_input.append(new_disk)

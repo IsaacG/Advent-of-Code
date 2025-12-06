@@ -7,7 +7,6 @@ Determine how long a complete cycle takes.
 
 import itertools
 import math
-from typing import List, Tuple
 
 from lib import aoc
 
@@ -74,7 +73,7 @@ class Day12(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
     )
 
-    def part1(self, puzzle_input: List[Tuple[int]]) -> int:
+    def part1(self, puzzle_input: list[tuple[int]]) -> int:
         """Run the similation for N cycles and return total energy at the end."""
         moons = [Moon(position) for position in puzzle_input]
         lim = 100 if self.testing else 1000
@@ -85,7 +84,7 @@ class Day12(aoc.Challenge):
                 a.apply_velocity()
         return sum(m.energy() for m in moons)
 
-    def part2(self, puzzle_input: List[Tuple[int]]) -> int:
+    def part2(self, puzzle_input: list[tuple[int]]) -> int:
         """Calculate how many cycles before looping back to the begining."""
 
         def fp(moons):

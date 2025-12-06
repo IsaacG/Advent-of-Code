@@ -28,7 +28,7 @@ class Day24(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: InputType, param: bool) -> int:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
         """Return the shortest path through a maze which hits certain points."""
         floor, wires = puzzle_input
 
@@ -60,7 +60,7 @@ class Day24(aoc.Challenge):
                     seen.add(next_pos)
 
         # Optionally append the start position to the end of the route.
-        extra = (0,) if param else tuple()
+        extra = (0,) if not part_one else tuple()
 
         other_wires = set(wires.values()) - {0}
         # Find the shortest distrance that walks a specific wire path...

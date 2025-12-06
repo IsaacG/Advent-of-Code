@@ -20,10 +20,11 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=s[0], part=2, want=s[2]) for s in SAMPLE
     ]
 
-    def solver(self, puzzle_input: str, find_longest: bool) -> int | str:
+    def solver(self, puzzle_input: str, part_one: bool) -> int | str:
         """Compute the route through a maze or doors which lock and unlock."""
         todo: collections.deque[tuple[str, int, int]] = collections.deque()
         todo.append(("", 0, 0))
+        find_longest = not part_one
 
         dirs = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1)}
         doors = "UDLR"

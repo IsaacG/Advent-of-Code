@@ -23,11 +23,11 @@ class Day21(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_multi_str_per_line
 
-    def solver(self, puzzle_input: list[list[str]], part2: bool) -> str:
+    def solver(self, puzzle_input: list[list[str]], part_one: bool) -> str:
         """Scramble a password following instructions."""
         if self.testing:
             input_word = "abcde"
-        elif not part2:
+        elif part_one:
             input_word = "abcdefgh"
         else:
             input_word = "fbgdceah"
@@ -35,8 +35,8 @@ class Day21(aoc.Challenge):
         data = list(input_word)
         size = len(data)
         # Rotate right, rotate left. Reversed for part 2.
-        rotate_direction = {False: {"right": -1, "left": 1}, True: {"right": 1, "left": -1}}[part2]
-        if part2:
+        rotate_direction = {True: {"right": -1, "left": 1}, False: {"right": 1, "left": -1}}[part_one]
+        if not part_one:
             puzzle_input.reverse()
 
         for instruction in puzzle_input:
@@ -54,11 +54,11 @@ class Day21(aoc.Challenge):
                     start, end = int(reg_x), int(reg_y) + 1
                     data[start:end] = reversed(data[start:end])
                 case ["move", "position", reg_x, "to", "position", reg_y]:
-                    if part2:
+                    if not part_one:
                         reg_x, reg_y = reg_y, reg_x
                     data.insert(int(reg_y), data.pop(int(reg_x)))
                 case ["rotate", "based", "on", "position", "of", "letter", reg_x]:
-                    if not part2:
+                    if part_one:
                         dist = data.index(reg_x)
                         dist = -1 * (dist + (2 if dist >= 4 else 1)) % size
                     else:
