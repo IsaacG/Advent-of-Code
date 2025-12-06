@@ -304,7 +304,6 @@ def cmp(a: float, b: float) -> int:
     return sign(a - b)
 
 
-
 def reading_order(data: Sequence[complex]) -> list[complex]:
     return sorted(data, key=lambda x: (x.imag, x.real))
 
@@ -471,7 +470,7 @@ class Challenge:
                 print('Input does not exist. Downloading.')
                 path.write_text(self.site.get_input())
 
-            self._filecache[path] = path.read_text().rstrip()
+            self._filecache[path] = path.read_text().removesuffix("\n")
         return self._filecache[path]
 
     @functools.cache
