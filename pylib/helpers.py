@@ -73,6 +73,14 @@ OPERATORS = {
 Interval = tuple[int, int]
 
 
+def rotate_clockwise(x: int, y: int) -> tuple[int, int]:
+    return y, -x
+
+
+def rotate_counterclockwise(x: int, y: int) -> tuple[int, int]:
+    return -y, x
+
+
 class LogFormatter(logging.Formatter):
     """Custom log formatter to insert time deltas and part numbers."""
     def __init__(self, day: int = 0, *args, **kwargs):
