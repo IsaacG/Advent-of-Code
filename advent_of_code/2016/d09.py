@@ -26,7 +26,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=i[0], part=2, want=i[1]) for i in SAMPLE[6:]
     ]
 
-    def solver(self, puzzle_input: str, expand: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Compute the length of an encoded sequence."""
         length = 0
         data = list(reversed(puzzle_input))
@@ -41,7 +41,7 @@ class Day09(aoc.Challenge):
                     buf.append(char)
                 sub_count, repeat = "".join(buf).split("x")
                 sub_sequence = "".join(data.pop() for _ in range(int(sub_count)))
-                sub_length = self.solver(sub_sequence, expand) if expand else len(sub_sequence)
+                sub_length = self.solver(sub_sequence, part_one) if not part_one else len(sub_sequence)
                 length += int(repeat) * sub_length
 
         return length
