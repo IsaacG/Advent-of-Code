@@ -6,7 +6,7 @@ SAMPLE = """\
 123 328  51 64 
  45 64  387 23 
   6 98  215 314
-*   +   *   +"""
+*   +   *   +  """
 
 
 class Day06(aoc.Challenge):
@@ -20,12 +20,10 @@ class Day06(aoc.Challenge):
 
     def part1(self, puzzle_input: str) -> int:
         """Return the answer for the math homework."""
-        *lines, operators = [line.split() for line in puzzle_input.splitlines()]
-        numbers = [[int(i) for i in line] for line in lines]
-        transposed = zip(*numbers)
+        words = [line.split() for line in puzzle_input.splitlines()]
         return sum(
-            aoc.LIST_OPS[op](nums)
-            for nums, op in zip(transposed, operators)
+            aoc.LIST_OPS[op](int(i) for i in nums)
+            for *nums, op in zip(*words)
         )
 
     def part2(self, puzzle_input: str) -> int:
