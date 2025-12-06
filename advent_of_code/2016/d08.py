@@ -22,7 +22,7 @@ class Day08(aoc.Challenge):
 
     INPUT_PARSER = aoc.parse_re_group_mixed(r".*(rect|row|column)[^\d]+(\d+)[^\d]+(\d+)")
 
-    def solver(self, puzzle_input: InputType, p2: bool) -> int | str:
+    def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
         width, height = (7, 3) if self.testing else (50, 6)
         grid = [[False] * width for _ in range(height)]
 
@@ -39,6 +39,6 @@ class Day08(aoc.Challenge):
                     for row in range(height):
                         grid[row][col] = column[(row - distance + height) % height]
 
-        if not p2:
+        if part_one:
             return sum(i for row in grid for i in row)
-        return aoc.OCR(grid, validate=p2).as_string()
+        return aoc.OCR(grid, validate=True).as_string()
