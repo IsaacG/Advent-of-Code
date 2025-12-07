@@ -303,6 +303,7 @@ class Day23(aoc.Challenge):
 
     TESTS = (
         aoc.TestCase(inputs=SAMPLE, part=1, want=12521),
+        # Times out.
         aoc.TestCase(inputs=SAMPLE, part=2, want=44169),
     )
 
