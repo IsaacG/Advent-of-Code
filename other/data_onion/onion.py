@@ -155,7 +155,6 @@ def layer4(data: bytes) -> str:
         if src == want_from and dst == want_to and udp_to_port == want_port and checksum_ok(ipv4_header) and checksum_ok(udp_pseudo_header):
             data_out.write(udp_data)
             valid_count += 1
-    print("Valid packets:", valid_count, "out of", packets_count)
     return data_out.getvalue().decode()
 
 
@@ -205,9 +204,7 @@ def layer5(data: bytes) -> str:
 
 def layer6(data: bytes) -> str:
     """Layer 6/6: Virtual Machine."""
-    memory = dict(enumerate(bytearray(data)))
-    print(" ".join(f"{i:08b}" for i in data[:15]))
-    print(" ".join(f"{i:08b}" for i in data[15:30]))
+    memory = bytearray(data)
     data_out = io.BytesIO()
     reg = {i: 0 for i in "abcdef"} | {f"l{i}": 0 for i in "abcd"} | {i: 0 for i in ["ptr", "pc"]}
 
@@ -221,46 +218,42 @@ def layer6(data: bytes) -> str:
             return reg[regmap[long][i]]
         elif i == 7 and not long:
             target = reg["ptr"] + reg["c"]
-            if target > len(memory):
-                print(reg["ptr"], reg["c"], f"{target=} {len(memory)=}")
-            return memory.get(target, 0)
+            return memory[target]
         raise ValueError()
 
     def memwrite(i: int, long: bool, val: int) -> int:
         if 1 <= i <= 6:
             target = regmap[long][i]
-            print(f"memwrite {target} = {val}")
             reg[target] = val
         elif i == 7 and not long:
             memory[reg["ptr"] + reg["c"]] = val
         else:
             raise ValueError(f"Invalid write to destination {i} {long=}")
 
-    OPS = {
+    OPNAME = {
         0xC2: "ADD", 0xE1: "APTR", 0xC1: "CMP", 0x01: "HALT",
         0x21: "JEZ", 0x22: "JNZ", 0x02: "OUT", 0xC3: "SUB", 0xC4: "XOR",
     }
 
     def get_pc(size: int) -> int:
         pc = reg["pc"]
-        val = int.from_bytes(bytes(bytearray([memory[i] for i in range(pc, pc + size)])))
+        val = int.from_bytes(bytes(bytearray([memory[i] for i in range(pc, pc + size)][::-1])))
         reg["pc"] += size
-        if size == 1:
-            print(f"@{pc:3} read {val:08b} = {val}")
-        else:
-            print(f"@{pc:3} read {val:32b} = {val}")
+        # if size == 1:
+        #     print(f"@{pc:3} read {val:08b} = {val}")
+        # else:
+        #     print(f"@{pc:3} read {val:32b} = {val}")
         return val
 
-    for i in range(1000):
+    while True:
         op = get_pc(1)
-        print(f"{i + 1}: @{reg["pc"]:4}: {op:3} = {op:02x} = {op:08b}")
+        # print(f"{i + 1}: @{reg["pc"]:4}: {op:3} = {op:02x} = {op:08b}")
         # print(OPS.get(op, "MV"))
         match op:
             case 0xC2:  # (1 byte) ADD a <- b
                 reg["a"] = (reg["a"] + reg["b"]) % 256
             case 0xE1:  # 0x__ (2 bytes) APTR imm8
                 reg["ptr"] += get_pc(1)
-                print(f"APTR {reg["ptr"]=}")
             case 0xC1:  # (1 byte) CMP
                 reg["f"] = 0 if reg["a"] == reg["b"] else 1
             case 0x01:  # (1 byte) HALT
@@ -289,7 +282,6 @@ def layer6(data: bytes) -> str:
                 dst = (op >> 3) & 0b111
                 if src != 0:
                     val = memread(src, long)
-                    print(f"Read {val} from {src} {long}")
                 else:
                     val = get_pc(4 if long else 1)
                 memwrite(dst, long, val)
@@ -297,10 +289,22 @@ def layer6(data: bytes) -> str:
     return data_out.getvalue().decode()
 
 
+def hello_world():
+    hex_hello_world = """
+        50 48 C2 02 A8 4D 00 00 00 4F 02 50 09 C4 02 02
+        E1 01 4F 02 C1 22 1D 00 00 00 48 30 02 58 03 4F
+        02 B0 29 00 00 00 48 31 02 50 0C C3 02 AA 57 48
+        02 C1 21 3A 00 00 00 48 32 02 48 77 02 48 6F 02
+        48 72 02 48 6C 02 48 64 02 48 21 02 01 65 6F 33
+        34 2C"""
+    return layer6(bytes.fromhex(hex_hello_world.replace(" ", "").replace("\n", "")))
+
+
 
 PARTS = [starting, layer0, layer1, layer2, layer3, layer4, layer5, layer6]
 
 if len(sys.argv) > 1:
     print(get_instructions(int(sys.argv[1])))
-layer5(get_data(5))
+else:
+    print(layer6(get_data(6)))
 
