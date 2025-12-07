@@ -1,6 +1,9 @@
 package helpers
 
-import "strings"
+import (
+	"strings"
+	sets "github.com/deckarep/golang-set/v2"
+)
 
 func ParseOneNumber(data string) int {
 	return Atoi(data)
@@ -45,4 +48,17 @@ func ParseMultiWordsPerLine(data string) [][]string {
 		words[l] = strings.Fields(line)
 	}
 	return words
+}
+
+func ParseCharCoords(data string) map[rune]sets.Set[[2]int] {
+	c := make(map[rune]sets.Set[[2]int])
+	for y, line := range strings.Split(data, "\n") {
+		for x, char := range line {
+			if _, ok := c[char]; !ok {
+				c[char] = sets.NewSet[[2]int]()
+			}
+			c[char].Add([2]int{x, y})
+		}
+	}
+	return c
 }
