@@ -307,6 +307,36 @@ def binary_search(low: int, high: int, predicate: collections.abc.Callable[[int]
     return high
 
 
+def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
+    """Merge disjoint sets."""
+    finalized = []
+    candidates = collections.deque(sets)
+    while candidates:
+        a = candidates.popleft()
+        changed = False
+        for b in list(candidates):
+            if a & b:
+                a |= b
+                candidates.remove(b)
+                changed = True
+        if changed:
+            candidates.append(a)
+        else:
+            finalized.append(a)
+    return finalized
+
+
+def add_to_disjoint_sets(sets: list[set[T]], new: set[T]) -> set[T]:
+    """Add a new set to a list of disjoint sets. Return the combined set."""
+    for a in list(sets):
+        if a & new:
+            sets.remove(a)
+            a |= new
+            return add_to_disjoint_sets(sets, a)
+    sets.append(new)
+    return new
+
+
 def run_solution(data) -> None:
     day = int(data["__file__"].split("_", maxsplit=-1)[-1].split(".")[0])
     solver = data["solve"]

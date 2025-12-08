@@ -44,24 +44,17 @@ class Day08(aoc.Challenge):
             if a < b
         )
 
-        circuits = list[set[tuple[int, ...]]]()
-        total_boxes = len(boxes)
-        p1_stop = 10 if self.testing else 1000
+        if part_one:
+            circuits = [{a, b} for _, a, b in distances[:10 if self.testing else 1000]]
+            circuits = aoc.merge_disjoint_sets(circuits)
+            return math.prod(sorted((len(i) for i in circuits), reverse=True)[:3])
 
-        for idx, (_, box_a, box_b) in enumerate(distances):
-            if part_one and idx == p1_stop:
-                return math.prod(sorted((len(i) for i in circuits), reverse=True)[:3])
-            circuit_a = next((i for i in circuits if box_a in i), {box_a, })
-            circuit_b = next((i for i in circuits if box_b in i), {box_b, })
-            if circuit_a == circuit_b:
-                continue
-            if len(circuit_a) > 1:
-                circuits.remove(circuit_a)
-            if len(circuit_b) > 1:
-                circuits.remove(circuit_b)
-            combined = circuit_a | circuit_b
-            circuits.append(combined)
-            if len(combined) == total_boxes:
+        total_boxes = len(boxes)
+        circuits = list[set[tuple[int, ...]]]()
+
+        for _, box_a, box_b in distances:
+            changed = aoc.add_to_disjoint_sets(circuits, {box_a, box_b})
+            if len(changed) == total_boxes:
                 return box_a[0] * box_b[0]
         raise RuntimeError("Not solved")
 
