@@ -1,5 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 8: Playground."""
+import collections
+import heapq
 import math
 from lib import aoc
 
@@ -36,26 +38,33 @@ class Day08(aoc.Challenge):
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Return stats from connecting junction boxes into circuits using minimum distances."""
-        boxes = set(tuple(i) for i in puzzle_input)
-        distances = sorted(
-            (math.dist(a, b), a, b)
-            for a in boxes
-            for b in boxes
-            if a < b
-        )
+        boxes = [tuple(i) for i in puzzle_input]
+        distances = [
+            (math.dist(a, b), idx_a, idx_b)
+            for idx_a, a in enumerate(boxes)
+            for idx_b, b in enumerate(boxes)
+            if idx_a < idx_b
+        ]
+        heapq.heapify(distances)
+        dsu = aoc.DisjointSet()
 
         if part_one:
-            circuits = [{a, b} for _, a, b in distances[:10 if self.testing else 1000]]
-            circuits = aoc.merge_disjoint_sets(circuits)
-            return math.prod(sorted((len(i) for i in circuits), reverse=True)[:3])
+            for _ in range(10 if self.testing else 1000):
+                _, a, b = heapq.heappop(distances)
+                aoc.dsu_add_pair(dsu, a, b)
+            sizes = [
+                count for i, count in collections.Counter(
+                    aoc.dsu_find(dsu, i) for i in dsu
+                ).most_common(3)
+            ]
+            return math.prod(sizes)
 
         total_boxes = len(boxes)
-        circuits = list[set[tuple[int, ...]]]()
-
-        for _, box_a, box_b in distances:
-            changed = aoc.add_to_disjoint_sets(circuits, {box_a, box_b})
-            if len(changed) == total_boxes:
-                return box_a[0] * box_b[0]
+        while distances:
+            _, a, b = heapq.heappop(distances)
+            root = aoc.dsu_add_pair(dsu, a, b)
+            if dsu[root][1] == total_boxes:
+                return boxes[a][0] * boxes[b][0]
         raise RuntimeError("Not solved")
 
 # vim:expandtab:sw=4:ts=4

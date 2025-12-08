@@ -71,6 +71,7 @@ OPERATORS = {
     "/": operator.floordiv,
 }
 Interval = tuple[int, int]
+DisjointSet = dict[T, [tuple[int, int]]]
 
 
 def rotate_clockwise(x: int, y: int) -> tuple[int, int]:
@@ -307,27 +308,54 @@ def binary_search(low: int, high: int, predicate: collections.abc.Callable[[int]
     return high
 
 
-def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
-    """Merge disjoint sets."""
-    finalized = []
-    candidates = collections.deque(sets)
-    while candidates:
-        a = candidates.popleft()
-        changed = False
-        for b in list(candidates):
-            if a & b:
-                a |= b
-                candidates.remove(b)
-                changed = True
-        if changed:
-            candidates.append(a)
-        else:
-            finalized.append(a)
-    return finalized
+def dsu_make_set(d: DisjointSet, item: T) -> None:
+    """Disjoint Set MakeSet.
+
+    https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+    """
+    if item in d:
+        return
+    # Parent and size. Self-reference means it is the root.
+    d[item] = (item, 1)
+
+
+def dsu_find(d: DisjointSet, item: T) -> T:
+    """Disjoint Set Find.
+
+    https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+    """
+    if d[item][0] == item:
+        return item
+    parent = dsu_find(d, d[item][0])
+    d[item] == (parent, -1)
+    return parent
+
+
+def dsu_union(d: DisjointSet, x: T, y: T) -> T:
+    """Disjoint Set Union. Return the root.
+
+    https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+    """
+    x = dsu_find(d, x)
+    y = dsu_find(d, y)
+    if x == y:
+        return x
+    if d[x][1] < d[y][1]:
+        x, y = y, x
+    d[x] = (x, d[x][1] + d[y][1])
+    d[y] = (x, -1)
+    return x
+
+
+def dsu_add_pair(d: DisjointSet, x: T, y: T) -> T:
+    """Disjoint Set MakeSet + MakeSet + Union helper."""
+    dsu_make_set(d, x)
+    dsu_make_set(d, y)
+    return dsu_union(d, x, y)
 
 
 def add_to_disjoint_sets(sets: list[set[T]], new: set[T]) -> set[T]:
-    """Add a new set to a list of disjoint sets. Return the combined set."""
+    """Add in-place a new set to a list of disjoint sets. Return the newly added combined set."""
     for a in list(sets):
         if a & new:
             sets.remove(a)
@@ -335,6 +363,14 @@ def add_to_disjoint_sets(sets: list[set[T]], new: set[T]) -> set[T]:
             return add_to_disjoint_sets(sets, a)
     sets.append(new)
     return new
+
+
+def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
+    """Merge disjoint sets."""
+    finalized = []
+    for i in sets:
+        add_to_disjoint_sets(finalized, i)
+    return finalized
 
 
 def run_solution(data) -> None:
