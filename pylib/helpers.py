@@ -71,7 +71,7 @@ OPERATORS = {
     "/": operator.floordiv,
 }
 Interval = tuple[int, int]
-DisjointSet = dict[T, [tuple[int, int]]]
+DisjointSet = dict[T, tuple[T, int]]
 
 
 def rotate_clockwise(x: int, y: int) -> tuple[int, int]:
@@ -367,7 +367,7 @@ def add_to_disjoint_sets(sets: list[set[T]], new: set[T]) -> set[T]:
 
 def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
     """Merge disjoint sets."""
-    finalized = []
+    finalized = list[set[T]]()
     for i in sets:
         add_to_disjoint_sets(finalized, i)
     return finalized
