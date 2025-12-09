@@ -2,6 +2,7 @@
 """Advent of Code, Day 8: Playground."""
 import collections
 import heapq
+import itertools
 import math
 from lib import aoc
 
@@ -39,32 +40,33 @@ class Day08(aoc.Challenge):
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         """Return stats from connecting junction boxes into circuits using minimum distances."""
         boxes = [tuple(i) for i in puzzle_input]
-        distances = [
-            (math.dist(a, b), idx_a, idx_b)
-            for idx_a, a in enumerate(boxes)
-            for idx_b, b in enumerate(boxes)
-            if idx_a < idx_b
-        ]
+        distances = [(math.dist(a, b), a, b) for a, b in itertools.combinations(boxes, 2)]
         heapq.heapify(distances)
-        dsu = aoc.DisjointSet()
+        circuits = []
+
+        def add_connection(new: set[int]) -> set[int]:
+            """Add a new connection to the collection of circuits. Simplified Disjoint Set Union."""
+            for a in list(circuits):
+                if a & new:
+                    circuits.remove(a)
+                    a |= new
+                    return add_connection(a)
+            circuits.append(new)
+            return new
 
         if part_one:
             for _ in range(10 if self.testing else 1000):
                 _, a, b = heapq.heappop(distances)
-                aoc.dsu_add_pair(dsu, a, b)
-            sizes = [
-                count for i, count in collections.Counter(
-                    aoc.dsu_find(dsu, i) for i in dsu
-                ).most_common(3)
-            ]
+                add_connection({a, b})
+            sizes = sorted(len(i) for i in circuits)[-3:]
             return math.prod(sizes)
 
         total_boxes = len(boxes)
         while distances:
             _, a, b = heapq.heappop(distances)
-            root = aoc.dsu_add_pair(dsu, a, b)
-            if dsu[root][1] == total_boxes:
-                return boxes[a][0] * boxes[b][0]
+            circuit = add_connection({a, b})
+            if len(circuit) == total_boxes:
+                return a[0] * b[0]
         raise RuntimeError("Not solved")
 
 # vim:expandtab:sw=4:ts=4
