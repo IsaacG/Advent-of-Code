@@ -45,8 +45,8 @@ class Day12(aoc.Challenge):
 
     TESTS = [
         # Only one part. The "trick" with the actual input doesn't apply to the example.
-        # aoc.TestCase(part=1, inputs=SAMPLE[0], want=2),
-        # aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
+        # aoc.TestCase(part=1, inputs=SAMPLE, want=2),
+        # aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> int:

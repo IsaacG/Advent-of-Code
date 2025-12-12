@@ -55,6 +55,10 @@ class Day08(aoc.Challenge):
             return new
 
         if part_one:
+            for _ in range(10):
+                _, a, b = heapq.heappop(distances)
+                print((a, b, math.dist(a, b)))
+            return
             for _ in range(10 if self.testing else 1000):
                 _, a, b = heapq.heappop(distances)
                 add_connection({a, b})

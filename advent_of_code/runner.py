@@ -146,6 +146,10 @@ class Runner:
         return self.year_path / f"d{self.day:02}.py"
 
     @property
+    def total_parts(self) -> int:
+        return 1 if self.day == 25 or (self.day == 12 and self.year == 2025) else 2
+
+    @property
     def solution_path(self) -> pathlib.Path:
         return self.base / f"solutions/{self.year}.txt"
 
@@ -208,7 +212,7 @@ class Runner:
         submitted = {1: False, 2: False}
         solutions: dict[int, int | str] = {}
         part = obj.site.part()
-        if part is None or day == 25 and part == 2:
+        if part is None or part > self.total_parts:
             print("It looks like you completed this day.")
             self.update_solutions(day)
         else:
@@ -275,7 +279,7 @@ class Runner:
 
         print("Watch and run test/check.")
         if not solutions:
-            solutions = {part: obj.run_solver(part, raw_data) for part in (1, 2)}
+            solutions = {part: obj.run_solver(part, raw_data) for part in range(1, self.total_parts + 1)}
         inotify = inotify_simple.INotify()
         inotify.add_watch(self.year_path, inotify_simple.flags.CLOSE_WRITE)
 
@@ -326,7 +330,7 @@ class Runner:
             # Reload code and get the Challenge.
             module = load_module(self.year, day)
             obj = getattr(module, f"Day{day:02}")()
-            parts = [1] if day == 25 else [1, 2]
+            parts = range(1, self.total_parts + 1)
             for part in parts:
                 if part not in day_solutions:
                     if got := obj.run_solver(part, obj.raw_data(None)):
@@ -340,7 +344,7 @@ class Runner:
         lines = [
             " ".join(
                 [f"{line_day:02}"]
-                + [str(existing[line_day][p]) for p in (1, 2) if p in existing[line_day]]
+                + [str(existing[line_day][p]) for p in range(1, self.total_parts + 1) if p in existing[line_day]]
             )
             for line_day in sorted(existing)
         ]
