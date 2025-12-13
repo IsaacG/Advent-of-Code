@@ -498,13 +498,22 @@ class Challenge:
         lines = data.splitlines()
         multi_line = len(lines) > 1
         one_line = lines[0]
+        line_lengths = [len(line) for line in lines]
 
         check_lines = lines if len(lines) < 10 else lines[:-1]
-        if len(lines) >= 5 and len(lines[0]) >= 5 and all(len(line) == len(lines[0]) for line in check_lines):
+        if len(lines) >= 5 and line_lengths[0] >= 5 and len(set(line_lengths)) == 1:
             return CoordinatesParser()
         pi = ParseIntergers(multi_line=multi_line)
         if pi.matches(data):
             return pi
+
+        if all(i < 100 for i in line_lengths):
+            pat = re.compile(r'\w+: \w+')
+            if all(pat.fullmatch(line) for line in lines[:30]):
+                return ParseDict(scalar=True, separator=": ")
+            pat = re.compile(r'\w+:( \S+)+')
+            if all(pat.fullmatch(line) for line in lines[:30]):
+                return ParseDict(scalar=False, separator=": ")
 
         if len(RE_INT.findall(one_line)) > 1 and multi_line:
             lines = lines[:4]

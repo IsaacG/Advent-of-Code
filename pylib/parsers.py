@@ -49,6 +49,10 @@ def input_to_auto(inputs: Iterable[str]) -> list[int] | list[str]:
     return input_to_strs(inputs)
 
 
+def value_to_mixed(input: str) -> int | str:
+    return int(input) if RE_INT.fullmatch(input) else str(input)
+
+
 def input_to_mixed(inputs: Iterable[str]) -> list[int | str]:
     """Return a list of int | str values from an iterable."""
     return [int(i) if RE_INT.fullmatch(i) else str(i) for i in inputs]
@@ -367,6 +371,27 @@ class CoordinatesParser(BaseParser):
             blank_char=str(blank_char),
             non_blank_chars={str(i) for i in non_blank_chars},
         )
+
+
+@dataclasses.dataclass
+class ParseDict(BaseParser):
+    """Parse an input into a dict by splitting on ': '."""
+
+    scalar: bool
+    separator: str = ": "
+
+    def parse(self, puzzle_input: str) -> list[Any]:
+        """Convert input into a dict or values."""
+        blocks = puzzle_input.split(self.separator)
+        outputs = {}
+        for line in puzzle_input.splitlines():
+            key_, val = line.split(self.separator, maxsplit=1)
+            key = value_to_mixed(key_)
+            if self.scalar:
+                outputs[key] = value_to_mixed(val)
+            else:
+                outputs[key] = input_to_mixed(val.split())
+        return outputs
 
 
 # Convert the entire input into one str.

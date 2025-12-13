@@ -34,7 +34,7 @@ class Day13(aoc.Challenge):
         we don't need to track the position.
         We just need the interval `(range - 1) * 2.
         """
-        ranges: dict[int, int] = dict(sorted(puzzle_input))  # type: ignore
+        ranges: dict[int, int] = dict(sorted(puzzle_input.items()))  # type: ignore
         intervals = {depth: (range_ - 1) * 2 for depth, range_ in ranges.items()}
 
         # Part one: sum(range * depth) for each sensor that would catch us (i.e. position == 0).

@@ -83,7 +83,7 @@ class Day24(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=aoc.TEST_SKIP),
     ]
     # Split the input into two blocks. Convert each block into a list of words for each line.
-    INPUT_PARSER = aoc.ParseBlocks([aoc.BaseParseMultiPerLine(word_separator=": "), aoc.parse_multi_str_per_line])
+    INPUT_PARSER = aoc.ParseBlocks([aoc.ParseDict(separator=": ", scalar=True), aoc.parse_multi_str_per_line])
 
     def compute(self, circuit: Circuit, values: dict[str, bool]):
         """Propagate values through a bunch of gates to compute the final z value."""
@@ -204,8 +204,8 @@ class Day24(aoc.Challenge):
 
     def part1(self, puzzle_input: tuple[list[list[str]], list[list[str]]]) -> int:
         """Return the output of the circuit for a given input."""
-        raw_inputs, raw_gates = puzzle_input
-        values = {a: bool(int(b)) for a, b in raw_inputs}
+        raw_values, raw_gates = puzzle_input
+        values = {k: bool(v) for k, v in raw_values.items()}
         circuit = {out: (a, OPS[op], b) for a, op, b, _, out in raw_gates}
         return self.compute(circuit, values)
 

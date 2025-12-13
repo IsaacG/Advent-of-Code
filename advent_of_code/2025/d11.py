@@ -56,12 +56,4 @@ class Day11(aoc.Challenge):
             return paths_via("you", 2)
         return paths_via("svr", 0)
 
-    def input_parser(self, puzzle_input: str) -> dict[str, list[str]]:
-        """Parse the input data."""
-        out = {}
-        for line in puzzle_input.splitlines():
-            src, *dst = line.replace(":", "").split()
-            out[src] = dst
-        return out
-
 # vim:expandtab:sw=4:ts=4
