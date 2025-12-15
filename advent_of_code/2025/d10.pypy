@@ -2,18 +2,29 @@
 """Advent of Code, Day 10: Factory."""
 
 import collections
+import functools
 import itertools
 import math
+import pathlib
+import time
 
-def solve_one_line(buttons, jolts) -> int:
-    # Find all the results (with min steps) of hitting any button combination.
+def button_combinations(buttons, jolts, part_one: bool):
+    """Return all the results (with min steps) of hitting any button combination."""
     button_combos = {}
     for steps in range(0, len(buttons) + 1):
         for combo in itertools.combinations(buttons, steps):
             count = collections.Counter(itertools.chain.from_iterable(combo))
-            counts = tuple(count.get(i, 0) for i in range(len(jolts)))
-            button_combos.setdefault(counts, steps)
+            counts = [count.get(i, 0) for i in range(len(jolts))]
+            if part_one:
+                counts = [i % 2 for i in counts]
+            button_combos.setdefault(tuple(counts), steps)
+    return button_combos
 
+
+def solve_one_line(buttons, jolts, part_one) -> int:
+    button_combos = button_combinations(buttons, jolts, part_one)
+
+    @functools.cache
     def recursive_solve_bit(jolts):
         """Recursively solve rightmost bit."""
         if all(i == 0 for i in jolts):
@@ -23,45 +34,41 @@ def solve_one_line(buttons, jolts) -> int:
             remaining = [jolt - pushed for jolt, pushed in zip(jolts, pattern)]
             if any(i % 2 == 1 or i < 0 for i in remaining):
                 continue
-            total_steps = steps + 2 * recursive_solve_bit([i >> 1 for i in remaining])
+            total_steps = steps + 2 * recursive_solve_bit(tuple([i >> 1 for i in remaining]))
             best = min(best, total_steps)
         return best
 
-    return recursive_solve_bit(jolts)
+    got = recursive_solve_bit(jolts)
+    assert got != math.inf, f"{buttons=}, {jolts=}"
+    return got
 
 
-def part2(puzzle_input) -> int:
+def solve(puzzle_input, part_one) -> int:
     """Solve p2 using the bifurcate approach and minimal imports.
 
     https://www.reddit.com/r/adventofcode/comments/1pk87hl/2025_day_10_part_2_bifurcate_your_way_to_victory/
     """
-    return sum(solve_one_line(buttons, jolts) for *_, buttons, jolts in puzzle_input)
+    puzzle_input = puzzle_input[:1]
+    return sum(solve_one_line(buttons, lights if part_one else jolts, part_one) for lights, buttons, jolts in puzzle_input)
+
 
 def input_parser(puzzle_input: str):
     """Parse the input data."""
     lines = []
     for line in puzzle_input.splitlines():
         lights_, *buttons_, joltage_ = [i[1:-1] for i in line.split()]
-        # Convert the lights to an int, each light being a bit.
-        lights = 0
-        for i in lights_[::-1]:
-            lights <<= 1
-            if i == "#":
-                lights |= 1
+        lights = [1 if i == "#" else 0 for i in lights_]
         buttons = [[int(i) for i in b.split(",")] for b in buttons_]
-        # Buttons to bits for p1. This lets us use bitwise XOR to combine buttons.
-        bits = [sum(1 << i for i in b) for b in buttons]
         joltage = [int(i) for i in joltage_.split(",")]
-        lines.append((lights, bits, buttons, joltage))
+        lines.append((tuple(lights), tuple(tuple(i) for i in buttons), tuple(joltage)))
     return lines
 
 
-import pathlib
-import time
 d = input_parser(pathlib.Path("inputs/2025.10.txt").read_text())
-start = time.time()
-r = part2(d)
-end = time.time()
-print(f"Got {r} (correct: {r == 19210}) in {int(end-start)} seconds")
+for part_one, want in [(True, 484), (False, 19210)]:
+    start = time.time()
+    r = solve(d, part_one)
+    end = time.time()
+    print(f"Got {r} (correct: {r == want}) in {int(end-start)} seconds")
 
 # vim:expandtab:sw=4:ts=4
