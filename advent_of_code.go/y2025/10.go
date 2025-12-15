@@ -41,49 +41,46 @@ type d10ButtonPushes struct {
 	pushes int
 }
 
+func (bp d10ButtonPushes) key() string {
+	return fmt.Sprint(bp.counts)
+}
+
+// d10ButtonPushes returns a new push with a button added.
+func (bp d10ButtonPushes) withButton(button []int, part int) d10ButtonPushes {
+	newPushes := d10ButtonPushes {
+		pushes: bp.pushes + 1,
+		counts: slices.Clone(bp.counts),
+	}
+	for _, out := range button {
+		if part == 1 {
+			newPushes.counts[out] = (newPushes.counts[out] + 1) % 2
+		} else {
+			newPushes.counts[out]++
+		}
+	}
+	return newPushes
+}
+
 // d10ButtonCombiner is used to find all combinations of (0 or 1 each) button pushes.
 type d10ButtonCombiner struct {
 	buttons [][]int
 	outputs int
 }
 
-// _getCombos is a recursive `itertools.combinations()` type function.
-// It returns the possible combinations of button pushes.
-func (bc d10ButtonCombiner) _getCombos(buttons [][]int) []d10ButtonPushes {
-	if len(buttons) == 0 {
-		return []d10ButtonPushes{{make([]int, bc.outputs), 0}}
-	}
-	subCombos := bc._getCombos(buttons[1:])
-	// For each sub-combination, try with and without the first button pushed.
-	withPush := make([]d10ButtonPushes, len(subCombos))
-	for idx, push := range subCombos {
-		pushed := &withPush[idx]
-		pushed.pushes = push.pushes + 1
-		pushed.counts = slices.Clone(push.counts)
-		for _, button := range buttons[0] {
-			pushed.counts[button]++
-		}
-	}
-
-	return append(subCombos, withPush...)
-}
-
 // allCombos returns all combinations of button pushes.
 // When different combinations have the same outputs, take the one with fewest pushes.
 func (bc d10ButtonCombiner) allCombos(part int) []d10ButtonPushes {
 	min := make(map[string]d10ButtonPushes)
-	combos := bc._getCombos(bc.buttons)
-	for _, push := range combos {
-		// In part one we only care about the right most bit,
-		// ie pushing (1) twice is the same as not pushing it.
-		if part == 1 {
-			for idx, count := range push.counts {
-				push.counts[idx] = count % 2
+	empty := d10ButtonPushes{make([]int, bc.outputs), 0}
+	min[empty.key()] = empty
+
+	for _, button := range bc.buttons {
+		for _, push := range slices.Collect(maps.Values(min)) {
+			newPush := push.withButton(button, part)
+			key := newPush.key()
+			if prior, ok := min[key]; !ok || newPush.pushes < prior.pushes {
+				min[key] = newPush
 			}
-		}
-		key := fmt.Sprintf("%v", push.counts)
-		if prior, ok := min[key]; !ok || prior.pushes > push.pushes {
-			min[key] = push
 		}
 	}
 	return slices.Collect(maps.Values(min))
