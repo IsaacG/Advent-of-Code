@@ -42,9 +42,6 @@ class Day09(aoc.Challenge):
             for i in range(1, lines + 1, 2)
         ]
 
-        # Used for the accurate_valid() test:
-        white_tiles = self.white_tiles(points, vertical_walls, horizontal_walls)
-
         def accurate_valid(rect_x1: int, rect_y1: int, rect_x2: int, rect_y2: int) -> bool:
             """Check if a rectangle is fully enclosed by the border.
 
@@ -54,10 +51,13 @@ class Day09(aoc.Challenge):
             top, bottom = sorted([rect_y1, rect_y2])
             left, right = sorted([rect_x1, rect_x2])
 
-            return not any(
-                y1 <= bottom and y2 >= top and x1 <= right and x2 >= left
-                for x1, y1, x2, y2 in white_tiles
-            )
+            for (y1, y2), x_vals in white_tiles.items():
+                if y1 > bottom or y2 < top:
+                    continue
+                for x1, x2 in x_vals:
+                    if x1 <= right and x2 >= left:
+                        return False
+            return True
 
         def valid_with_assumptions(rect_x1: int, rect_y1: int, rect_x2: int, rect_y2: int) -> bool:
             """Check if a rectangle is fully enclosed by the border.
@@ -79,10 +79,15 @@ class Day09(aoc.Challenge):
             return True
 
         best = 0
+        if True:
+            valid = valid_with_assumptions
+        else:
+            white_tiles = self.white_tiles(points, vertical_walls, horizontal_walls)
+            valid = accurate_valid
+
         for (x1, y1), (x2, y2) in itertools.combinations(puzzle_input, 2):
             size = (abs(x2 - x1) + 1) * (abs(y2 - y1) + 1)
-            # if size > best and (part_one or accurate_valid(x1, y1, x2, y2)):
-            if size > best and (part_one or valid_with_assumptions(x1, y1, x2, y2)):
+            if size > best and (part_one or valid(x1, y1, x2, y2)):
                 best = size
         return best
 
@@ -146,8 +151,8 @@ class Day09(aoc.Challenge):
         # This is kept sorted by x so we can identify wall pairs which bound inside/outside.
         active = list[list[int]]()
 
-        # x1, y1, x2, y2
-        white_tiles = []
+        # y1, y2 -> list[x1, x2]
+        white_tiles = collections.defaultdict(list)
 
         # Arbitrary start location.
         prior_y = min_y - 10
@@ -162,7 +167,7 @@ class Day09(aoc.Challenge):
                 cur_y -= 1
                 for (x1, *_), (x2, *_) in itertools.batched(active, 2):
                     if x1 + 1 < x2:  # ignore adjacent touching lines
-                        white_tiles.append((x1 + 1, prior_y, x2 - 1, cur_y))
+                        white_tiles[prior_y, cur_y].append((x1 + 1, x2 - 1))
                 cur_y += 1
 
             # Treat the fold line as its own range.
@@ -180,7 +185,7 @@ class Day09(aoc.Challenge):
                     if top1 == bottom2 or bottom1 == top2:
                         white = not white
                 elif white:  # Otherwise there are tiles between them.
-                    white_tiles.append((x1 + 1, cur_y, x2 - 1, cur_y))
+                    white_tiles[cur_y, cur_y].append((x1 + 1, x2 - 1))
 
             # Remove walls that ended.
             while wall_ends and wall_ends[0][2] == cur_y:
@@ -188,8 +193,6 @@ class Day09(aoc.Challenge):
 
             # The next block starts after the fold line.
             prior_y = cur_y + 1
-        # Sort the ranges for easier reading.
-        white_tiles.sort(key=lambda x: (x[1], x[0]))
         return white_tiles
 
 # vim:expandtab:sw=4:ts=4
