@@ -1,6 +1,7 @@
 #!/bin/python
 import base64
 import collections
+import inspect
 import io
 import itertools
 import os
@@ -18,33 +19,32 @@ import requests
 ASCII85 = bytearray(b"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuz")
 
 
-def get_path(n: int, data: bool) -> pathlib.Path:
-    return pathlib.Path(f".cache/payload.{n}." + ("data" if data else "instructions") + ".txt")
+def get_path(n: int) -> pathlib.Path:
+    return pathlib.Path(f".cache/layer.{n}.txt")
 
-def load(n: int, data: bool) -> str:
-    path = get_path(n, data)
+
+def load(n: int) -> str:
+    path = get_path(n)
     if not path.exists():
         write(PARTS[n](get_data(n - 1) if n else ""), n)
-    return path.read_text()
+    return path.read_text().strip()
 
 
 def get_data(n: int) -> bytes:
-    return base64.a85decode(load(n, data=True).strip(), adobe=True)
+    data = load(n).split("\n\n")[-1]
+    return base64.a85decode(data, adobe=True)
 
 
 def get_instructions(n: int) -> str:
-    return load(n, data=False)
+    instructions = load(n).split("\n\n")[:-1]
+    return "\n\n".join(instructions)
 
 
 def write(out, n):
     if not out:
         print("Nothing to write")
-        return
-    parts = out.strip().split("\n\n")
-    for data, output in [(False, "\n\n".join(parts[:-1])), (True, parts[-1])]:
-        path = get_path(n, data=data)
-        if not path.exists():
-            path.write_text(output)
+    else:
+        get_path(n).write_text(out)
 
 
 def starting(data: bytes) -> str:
@@ -245,46 +245,64 @@ def layer6(data: bytes) -> str:
         #     print(f"@{pc:3} read {val:32b} = {val}")
         return val
 
+
+    def ADD():
+        reg["a"] = (reg["a"] + reg["b"]) % 256
+    def APTR(imm8):
+        reg["ptr"] += imm8
+    def CMP():
+        reg["f"] = 0 if reg["a"] == reg["b"] else 1
+    def HALT():
+        raise StopIteration()
+    def JEZ(imm32):
+        if reg["f"] == 0:
+            reg["pc"] = imm32
+    def JNZ(imm32):
+        if reg["f"] != 0:
+            reg["pc"] = imm32
+    def OUT():
+        data_out.write(reg["a"].to_bytes(1))
+    def SUB():
+        reg["a"] = (reg["a"] - reg["b"]) % 256
+    def XOR():
+        reg["a"] = reg["a"] ^ reg["b"]
+
+    funcs = {op: locals()[name] for op, name in OPNAME.items()}
+    sizes = {}
+    for op, func in funcs.items():
+        params = inspect.signature(func).parameters
+        if "imm8" in params:
+            sizes[op] = 1
+        elif "imm32" in params:
+            sizes[op] = 4
+        else:
+            sizes[op] = 0
+
     while True:
         op = get_pc(1)
-        # print(f"{i + 1}: @{reg["pc"]:4}: {op:3} = {op:02x} = {op:08b}")
-        # print(OPS.get(op, "MV"))
-        match op:
-            case 0xC2:  # (1 byte) ADD a <- b
-                reg["a"] = (reg["a"] + reg["b"]) % 256
-            case 0xE1:  # 0x__ (2 bytes) APTR imm8
-                reg["ptr"] += get_pc(1)
-            case 0xC1:  # (1 byte) CMP
-                reg["f"] = 0 if reg["a"] == reg["b"] else 1
-            case 0x01:  # (1 byte) HALT
-                break
-            case 0x21:  # 0x__ 0x__ 0x__ 0x__ (5 bytes) JEZ imm32
-                imm = get_pc(4)
-                if reg["f"] == 0:
-                    reg["pc"] = imm
-            case 0x22:  # 0x__ 0x__ 0x__ 0x__ (5 bytes) JNZ imm32
-                imm = get_pc(4)
-                if reg["f"] != 0:
-                    reg["pc"] = imm
-            case 0x02:  # (1 byte) OUT a
-                data_out.write(reg["a"].to_bytes(1))
-            case 0xC3:  # (1 byte) SUB a <- b
-                reg["a"] = (reg["a"] - reg["b"]) % 256
-            case 0xC4:  # (1 byte) XOR a <- b
-                reg["a"] = reg["a"] ^ reg["b"]
-            case _:
-                # 0b01DDDSSS:  # (1 byte) MV {dest} <- {src}
-                # 0b10DDDSSS:  # (1 byte) MV32 {dest} <- {src}
-                # 0b01DDD000:  # 0x__ (2 bytes) MVI {dest} <- imm8
-                # 0b10DDD000:  # 0x__ 0x__ 0x__ 0x__ (5 bytes) MVI32 {dest} <- imm32
-                long = (op & 0b11000000) == 0b10000000
-                src = op & 0b111
-                dst = (op >> 3) & 0b111
-                if src != 0:
-                    val = memread(src, long)
+        if op in funcs:
+            func = funcs[op]
+            size = sizes[op]
+            try:
+                if size:
+                    func(get_pc(size))
                 else:
-                    val = get_pc(4 if long else 1)
-                memwrite(dst, long, val)
+                    func()
+            except StopIteration:
+                break
+        else:
+            # 0b01DDDSSS:  # (1 byte) MV {dest} <- {src}
+            # 0b10DDDSSS:  # (1 byte) MV32 {dest} <- {src}
+            # 0b01DDD000:  # 0x__ (2 bytes) MVI {dest} <- imm8
+            # 0b10DDD000:  # 0x__ 0x__ 0x__ 0x__ (5 bytes) MVI32 {dest} <- imm32
+            long = (op & 0b11000000) == 0b10000000
+            src = op & 0b111
+            dst = (op >> 3) & 0b111
+            if src != 0:
+                val = memread(src, long)
+            else:
+                val = get_pc(4 if long else 1)
+            memwrite(dst, long, val)
 
     return data_out.getvalue().decode()
 
