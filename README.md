@@ -9,5 +9,6 @@ These are mostly in Python with a handful of Golang.
 * Pi Coding Quest - [website](https://ivanr3d.com/projects/pi/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/ivanr3d.pi) - [README.md](./ivanr3d.pi)
 * Marches & Gnats - [website](https://mng.quest/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/mng) - [README.md](./mng)
 * aquaq - [website](https://challenges.aquaq.co.uk/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/aquaq) - [README.md](./aquaq)
+* FlipFlop Codes - [website](https://flipflop.slome.org/) - [my solutions](https://github.com/IsaacG/Advent-of-Code/tree/main/flipflop) - FlipFlop is a fun little puzzle. 7 days, 3 parts each, on the easier side of things.
 
 The `lib/` contains a number of helpers and base runner code.
