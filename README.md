@@ -36,5 +36,5 @@ The `lib/` contains a number of helpers and base runner code.
 [c_pi]: https://github.com/IsaacG/Advent-of-Code/tree/main/ivanr3d.pi
 [c_mng]: https://github.com/IsaacG/Advent-of-Code/tree/main/mng
 [c_aquaq]: https://github.com/IsaacG/Advent-of-Code/tree/main/aquaq
-[c_flip]: https://github.com/IsaacG/Advent-of-Code/tree/main/flipflop
+[c_flip]: https://github.com/IsaacG/Advent-of-Code/tree/main/flipflop.slome
 [c_onion]: https://github.com/IsaacG/Advent-of-Code/tree/main/other/data_onion
