@@ -29,7 +29,7 @@ TOGGLE = {1: (OP_INC, {OP_INC: OP_DEC}), 2: (OP_JNZ, {OP_JNZ: OP_CPY})}
 class Assembunny:
     """Assembunny computer emulator."""
 
-    def __init__(self, instructions: list[str]):
+    def __init__(self, instructions: list[str | int]):
         """Initialize, parse the instructions."""
         inst = []
         for instruction in instructions:
@@ -113,8 +113,8 @@ class Assembunny:
             register[var_b] = 0
             ptr += 2
 
-        def value(arg: str) -> int:
-            return int(arg) if aoc.RE_INT.match(arg) else register[arg]
+        def value(arg: int | str) -> int:
+            return arg if isinstance(arg, int) else register[arg]
 
         # Clock signal tracker.
         last_out = None

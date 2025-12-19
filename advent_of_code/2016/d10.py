@@ -23,7 +23,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=2 * 3 * 5),
     ]
 
-    def solver(self, puzzle_input: list[str], param: bool) -> int:
+    def solver(self, puzzle_input: list[str], part_one: bool) -> int:
         """Simulate a bot factory."""
         want = [2, 5] if self.testing else [17, 61]
         bots = collections.defaultdict(list)
@@ -32,14 +32,14 @@ class Day10(aoc.Challenge):
 
         # Parse the input, setting up initial bot states and instructions.
         for line in puzzle_input:
-            match line.split():
+            match line:
                 case ["value", value, "goes", "to", "bot", bot]:
-                    bots[int(bot)].append(int(value))
+                    bots[bot].append(value)
                 case [
                     "bot", bot, "gives", "low", "to",
                     low_type, low, "and", "high", "to", high_type, high,
                 ]:
-                    instructions[int(bot)] = ((low_type, int(low)), (high_type, int(high)))
+                    instructions[bot] = ((low_type, low), (high_type, high))
 
         # Simulate bots until nothing is changing.
         # Note: we can exit earlier by waiting for the needed exit conditions.
@@ -55,7 +55,7 @@ class Day10(aoc.Challenge):
                 values.clear()
 
                 # Part one: return which bot handles the wanted pieces.
-                if not param and ordered == want:
+                if part_one and ordered == want:
                     return bot
 
                 for value, (out_type, out) in zip(ordered, instructions[bot]):
@@ -63,7 +63,7 @@ class Day10(aoc.Challenge):
                     sink[out].append(value)
 
         # Part two: outputs 0, 1, 2 should have exactly one piece.
-        assert param
+        assert not part_one
         stacks = [outputs[i] for i in range(3)]
         assert all(len(stack) == 1 for stack in stacks)
         return math.prod(stack[0] for stack in stacks)

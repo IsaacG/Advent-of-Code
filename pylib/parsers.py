@@ -432,7 +432,7 @@ def _guess_parser(data: str) -> BaseParser:
     line_lengths = [len(line) for line in lines]
 
     check_lines = lines if len(lines) < 10 else lines[:-1]
-    if len(lines) >= 5 and line_lengths[0] >= 5 and len(set(line_lengths)) == 1:
+    if len(lines) >= 5 and line_lengths[0] >= 5 and len(set(line_lengths)) == 1 and all(" " not in line for line in check_lines):
         return CoordinatesParser()
     pi = ParseIntergers(multi_line=multi_line)
     if pi.matches(data):

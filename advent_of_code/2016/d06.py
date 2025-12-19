@@ -24,6 +24,7 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want="easter"),
         aoc.TestCase(inputs=SAMPLE, part=2, want="advent"),
     ]
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def solver(self, puzzle_input: InputType, part_one: bool) -> str:
         idx = 0 if part_one else -1

@@ -27,7 +27,7 @@ class Day12(aoc.Challenge):
     ]
     TIMEOUT = 45
 
-    def solver(self, puzzle_input: list[str], param: bool) -> int:
+    def solver(self, puzzle_input: list[str], part_one: bool) -> int:
         """Simulate a computer."""
         instructions = []
         for instruction in puzzle_input:
@@ -35,11 +35,11 @@ class Day12(aoc.Challenge):
             instructions.append([op_code] + instruction[1:])
         end = len(instructions)
         register = {i: 0 for i in "abcd"}
-        if param:
+        if not part_one:
             register["c"] = 1
 
-        def value(arg):
-            return int(arg) if aoc.RE_INT.match(arg) else register[arg]
+        def value(arg: str | int) -> int:
+            return arg if isinstance(arg, int) else register[arg]
 
         ptr = 0
         while ptr < end:
