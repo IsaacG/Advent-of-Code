@@ -1,55 +1,24 @@
 #!/bin/python
-"""Advent of Code: Day 05."""
+"""Advent of Code, Day 5: Doesn't He Have Intern-Elves For This? Classify strings as naughty or nice."""
 
 from lib import aoc
 
-SAMPLE = """\
-ugknbfddgicrmopn
-aaa
-jchzalrnumimnmhp
-haegwjzuvuyypxyu
-dvszwmarrgswjxmb
-qjhvhtzxzqqjkmpb
-xxyxx
-uurcxstgmygtbstg
-ieodomkazucvgmuy""".splitlines()
-
-InputType = list[str]
 VOWELS = set("aeiou")
 BAD = {"ab", "cd", "pq", "xy"}
 
 
-class Day05(aoc.Challenge):
-    """Day 5: Doesn't He Have Intern-Elves For This?. Classify strings as naughty or nice."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=1),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=1),
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[3], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[4], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[5], part=2, want=1),
-        aoc.TestCase(inputs=SAMPLE[6], part=2, want=1),
-        aoc.TestCase(inputs=SAMPLE[7], part=2, want=0),
-        aoc.TestCase(inputs=SAMPLE[8], part=2, want=0),
-    ]
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return how many lines follow rules 1."""
-        total = 0
-        for line in puzzle_input:
+def solve(data: list[str], part: int) -> int:
+    """Return how many lines follow rules 1 or 2."""
+    total = 0
+    for line in data:
+        if part == 1:
             if (
                 sum(True for i in line if i in VOWELS) >= 3
                 and all(b not in line for b in BAD)
                 and any(a == b for a, b in zip(line, line[1:]))
             ):
                 total += 1
-        return total
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return how many lines follow rules 2."""
-        total = 0
-        for line in puzzle_input:
+        else:
             repeated = False
             doubled = False
             for i in range(len(line) - 2):
@@ -60,4 +29,19 @@ class Day05(aoc.Challenge):
                 if repeated and doubled:
                     total += 1
                     break
-        return total
+    return total
+
+
+PARSER = aoc.parse_one_str_per_line
+TESTS = [
+    (1, "ugknbfddgicrmopn", 1),
+    (1, "aaa", 1),
+    (1, "jchzalrnumimnmhp", 0),
+    (1, "haegwjzuvuyypxyu", 0),
+    (1, "dvszwmarrgswjxmb", 0),
+    (2, "qjhvhtzxzqqjkmpb", 1),
+    (2, "xxyxx", 1),
+    (2, "uurcxstgmygtbstg", 0),
+    (2, "ieodomkazucvgmuy", 0),
+]
+

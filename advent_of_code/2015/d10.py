@@ -1,13 +1,9 @@
 #!/bin/python
-"""Advent of Code: Day 10."""
+"""Advent of Code: Day 10, Day 10: Elves Look, Elves Say. Run a look-say algorithm."""
 
 import functools
 
 from lib import aoc
-
-SAMPLE = "1"
-
-InputType = str
 
 
 @functools.cache
@@ -38,27 +34,14 @@ def look_say(string: str) -> str:
     return "".join(out)
 
 
-class Day10(aoc.Challenge):
-    """Day 10: Elves Look, Elves Say. Run a look-say algorithm."""
+def solve(data: str, part: int, *, testing: bool) -> int:
+    """Return look-say length after looping."""
+    steps = 40 if part == 1 else 50
+    for _ in range(5 if testing else steps):
+        data = look_say(data)
+        # data = "".join(f"{len(list(b))}{a}" for a, b in itertools.groupby(data))
+    return len(data)
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=6),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=6),
-    ]
-    INPUT_PARSER = aoc.parse_one_str
-    TIMEOUT = 70
 
-    def look_say_loop(self, string: str, steps: int) -> int:
-        """Return look-say length after looping."""
-        for _ in range(5 if self.testing else steps):
-            string = look_say(string)
-            # string = "".join(f"{len(list(b))}{a}" for a, b in itertools.groupby(string))
-        return len(string)
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Look-say, 40 iterations."""
-        return self.look_say_loop(puzzle_input, 40)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Look-say, 50 iterations."""
-        return self.look_say_loop(puzzle_input, 50)
+PARSER = aoc.parse_one_str
+TESTS = [(1, "1", 6), (2, "1", 6)]

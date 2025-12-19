@@ -1,13 +1,8 @@
 #!/bin/python
 """Advent of Code: Day 11. Corporate Policy. Rotate passwords. Find next password which satisfies contraints."""
-
 import string
 
-from lib import aoc
 
-SAMPLE = ["abcdefgh", "ghijklmn"]
-
-InputType = str
 NOT_ALLOWED = {
     string.ascii_lowercase.index(i) for i in "iol"
 }
@@ -46,17 +41,12 @@ def valid(password: list[int]) -> bool:
     return pairs > 1
 
 
-class Day11(aoc.Challenge):
-    """Day 11: Corporate Policy. Rotate passwords."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want="abcdffaa"),
-        # aoc.TestCase(inputs=SAMPLE[1], part=1, want="ghjaabcc"),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want="abcdffbb"),
-    ]
-
-    def next_password(self, password: str) -> str:
-        """Generate the next password."""
+def solve(data: str, part: int) -> str:
+    """Rotate the password."""
+    assert valid(parts(334140716))  # abcdffaa
+    assert valid(parts(50460204602))  # ghjaabcc
+    password = data
+    for _ in range(part):
         # String to int
         num = 0
         for char in password:
@@ -70,16 +60,11 @@ class Day11(aoc.Challenge):
 
         # Int to string.
         password = "".join(string.ascii_lowercase[i] for i in parts(num))
-        return password
+    return password
 
-    def part1(self, puzzle_input: InputType) -> str:
-        """Rotate once."""
-        assert valid(parts(334140716))  # abcdffaa
-        assert valid(parts(50460204602))  # ghjaabcc
 
-        return self.next_password(puzzle_input)
-
-    def part2(self, puzzle_input: InputType) -> str:
-        """Rotate twice."""
-        password = self.next_password(puzzle_input)
-        return self.next_password(password)
+TESTS = [
+    (1, "abcdefgh", "abcdffaa"),
+    # (1, "ghijklmn", "ghjaabcc"),  # Very slow example.
+    (2, "abcdefgh", "abcdffbb"),
+]

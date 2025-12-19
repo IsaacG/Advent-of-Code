@@ -2,7 +2,7 @@
 """Advent of Code, Day 16: Aunt Sue. Find the aunt who matches the criteria."""
 
 import operator
-from typing import Callable
+import collections.abc
 
 from lib import aoc
 
@@ -22,42 +22,38 @@ WANT_NUM = {
 OPS = {k: operator.eq for k in WANT_NUM}
 
 
-class Day16(aoc.Challenge):
-    """Day 16: Aunt Sue."""
+@staticmethod
+def matches(ops: dict[str, collections.abc.Callable], aunts: list[dict[str, int]]) -> int:
+    """Return the aunt who matches the comparisons."""
+    for i, aunt in enumerate(aunts, start=1):
+        if all(ops[k](v, WANT_NUM[k]) for k, v in aunt.items()):
+            return i
+    raise RuntimeError("Not found.")
 
-    TESTS = [
-        aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
-        aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
-    ]
 
-    @staticmethod
-    def matches(ops: dict[str, Callable], aunts: list[dict[str, int]]) -> int:
-        """Return the aunt who matches the comparisons."""
-        for i, aunt in enumerate(aunts, start=1):
-            if all(ops[k](v, WANT_NUM[k]) for k, v in aunt.items()):
-                return i
-        raise RuntimeError("Not found.")
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Find the aunt who matches exactly."""
-        return self.matches(OPS, puzzle_input)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Find the aunt who matches more fuzzy rules."""
-        ops = OPS | {
+def solve(data: InputType, part: int) -> int:
+    """Find the aunt who matches optionally with fuzzy rules."""
+    ops = OPS
+    if part == 2:
+        ops |= {
             "cats": operator.gt,
             "trees": operator.gt,
             "goldfish": operator.lt,
             "pomeranians": operator.lt,
         }
-        return self.matches(ops, puzzle_input)
+    return matches(ops, data)
 
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return [
-            dict(
-                (prop.split(": ")[0], int(prop.split(": ")[1]))
-                for prop in line.split(": ", 1)[1].split(", ")
-            )
-            for line in puzzle_input.splitlines()
-        ]
+
+def input_parser(puzzle_input: str) -> InputType:
+    """Parse the input data."""
+    return [
+        dict(
+            (prop.split(": ")[0], int(prop.split(": ")[1]))
+            for prop in line.split(": ", 1)[1].split(", ")
+        )
+        for line in puzzle_input.splitlines()
+    ]
+
+
+PARSER = aoc.ParseCustom(input_parser)
+TESTS = []

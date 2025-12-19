@@ -1,31 +1,29 @@
 #!/bin/python
-"""Advent of Code: Day 03."""
+"""Advent of Code, Day 3: Perfectly Spherical Houses in a Vacuum. Track which houses get presents."""
 
 from lib import aoc
-
-SAMPLE = ["^>v<", "^v^v^v^v^v"]
-InputType = list[str]
 MAPPING = aoc.ARROW_DIRECTIONS
 
 
-class Day03(aoc.Challenge):
-    """Day 3: Perfectly Spherical Houses in a Vacuum. Track which houses get presents."""
+def solve(data: str, part: int) -> int:
+    """Return how many houses get presents."""
+    pos = {True: complex(0), False: complex(0)}
+    robot = False
+    visited = {pos[robot]}
+    for char in data:
+        pos[robot] += MAPPING[char]
+        visited.add(pos[robot])
+        if part == 2:
+            robot = not robot
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=2),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=3),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=11),
-    ]
+    return len(visited)
 
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
-        """Return how many houses get presents."""
-        pos = {True: complex(0), False: complex(0)}
-        robot = False
-        visited = {pos[robot]}
-        for char in puzzle_input:
-            pos[robot] += MAPPING[char]
-            visited.add(pos[robot])
-            if not part_one:
-                robot = not robot
-        return len(visited)
+
+SAMPLE = ["^>v<", "^v^v^v^v^v"]
+TESTS = [
+    (1, SAMPLE[0], 4),
+    (1, SAMPLE[1], 2),
+    (2, SAMPLE[0], 3),
+    (2, SAMPLE[1], 11),
+]
+

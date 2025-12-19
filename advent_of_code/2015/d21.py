@@ -40,56 +40,50 @@ ITEMS = {
     ],
 }
 
-InputType = list[tuple[str, int]]
+PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
 
 
-class Day21(aoc.Challenge):
-    """Day 21: RPG Simulator 20XX."""
+def player_wins(you: dict[str, int], boss: dict[str, int]) -> bool:
+    """Return if the player wins the battle."""
+    players = {True: you, False: boss}
+    rounds_to_win = {}
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=78),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=148),
-    ]
-    INPUT_PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
+    for player_turn in (True, False):
+        damage = players[player_turn]["Damage"]
+        damage -= players[not player_turn]["Armor"]
+        damage = max(damage, 1)
+        hp = players[not player_turn]["Hit Points"]
+        rounds_to_win[player_turn] = math.ceil(hp / damage)
 
-    def player_wins(self, you: dict[str, int], boss: dict[str, int]) -> bool:
-        """Return if the player wins the battle."""
-        players = {True: you, False: boss}
-        rounds_to_win = {}
+    return rounds_to_win[True] <= rounds_to_win[False]
 
-        for player_turn in (True, False):
-            damage = players[player_turn]["Damage"]
-            damage -= players[not player_turn]["Armor"]
-            damage = max(damage, 1)
-            hp = players[not player_turn]["Hit Points"]
-            rounds_to_win[player_turn] = math.ceil(hp / damage)
 
-        return rounds_to_win[True] <= rounds_to_win[False]
+def simulate(boss: dict[str, int]) -> dict[bool, list[int]]:
+    """Compute all costs for all outcomes."""
+    costs: dict[bool, list[int]] = {True: [], False: []}
+    you = {"Hit Points": 100}
 
-    def simulate(self, boss: dict[str, int]) -> dict[bool, list[int]]:
-        """Compute all costs for all outcomes."""
-        costs: dict[bool, list[int]] = {True: [], False: []}
-        you = {"Hit Points": 100}
+    weapon = ITEMS["Weapons"]
+    armor = ITEMS["Armor"]
+    rings = itertools.combinations(ITEMS["Rings"], 2)
 
-        weapon = ITEMS["Weapons"]
-        armor = ITEMS["Armor"]
-        rings = itertools.combinations(ITEMS["Rings"], 2)
+    for a, b, (c, d) in itertools.product(weapon, armor, rings):
+        gear = (a, b, c, d)
+        # Name Cost Damage Armor
+        cost = sum(i[1] for i in gear)
+        you["Damage"] = sum(i[2] for i in gear)
+        you["Armor"] = sum(i[3] for i in gear)
+        costs[player_wins(you, boss)].append(cost)
+    return costs
 
-        for a, b, (c, d) in itertools.product(weapon, armor, rings):
-            gear = (a, b, c, d)
-            # Name Cost Damage Armor
-            cost = sum(i[1] for i in gear)
-            you["Damage"] = sum(i[2] for i in gear)
-            you["Armor"] = sum(i[3] for i in gear)
-            costs[self.player_wins(you, boss)].append(cost)
-        return costs
 
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return the min cost for the player to win."""
-        costs = self.simulate(dict(puzzle_input))
+def solve(data: list[tuple[str, int]], part: int) -> int:
+    """Return the min cost for the player to win/max cost for the boss to win."""
+    costs = simulate(dict(data))
+    if part == 1:
         return min(costs[True])
+    return max(costs[False])
 
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return the max cost for the boss to win."""
-        costs = self.simulate(dict(puzzle_input))
-        return max(costs[False])
+
+TESTS = [(1, SAMPLE, 78), (2, SAMPLE, 148)]
+

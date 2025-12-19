@@ -1,33 +1,25 @@
 #!/bin/python
-"""Advent of Code: Day 01."""
-
-from lib import aoc
-
-SAMPLE = ["(())", "()()", "(()(()(", ")", "()())"]
-InputType = str
+"""Advent of Code, Day 1: Not Quite Lisp. Count Santa's floor level."""
 MAPPING = {"(": 1, ")": -1}
 
 
-class Day01(aoc.Challenge):
-    """Day 1: Not Quite Lisp. Count Santa's floor level."""
+def solve(data: str, part: int) -> int:
+    """Return Santa's final floor and when he gets to the basement."""
+    if part == 1:
+        return sum(MAPPING[i] for i in data)
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=0),
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=3),
-        aoc.TestCase(inputs=SAMPLE[3], part=2, want=1),
-        aoc.TestCase(inputs=SAMPLE[4], part=2, want=5),
-    ]
+    floor = 0
+    for count, i in enumerate(data, start=1):
+        floor += MAPPING[i]
+        if floor == -1:
+            return count
+    raise RuntimeError("No solution found.")
 
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return Santa's final floor."""
-        return sum(MAPPING[i] for i in puzzle_input)
 
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return when Santa hits the basement."""
-        floor = 0
-        for count, i in enumerate(puzzle_input, start=1):
-            floor += MAPPING[i]
-            if floor == -1:
-                return count
-        raise RuntimeError("No solution found.")
+TESTS = [
+    (1, "(())", 0),
+    (1, "()()", 0),
+    (1, "(()(()(", 3),
+    (2, ")", 1),
+    (2, "()())", 5),
+]

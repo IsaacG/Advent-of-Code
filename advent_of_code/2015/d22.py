@@ -8,12 +8,6 @@ from typing import Any
 
 from lib import aoc
 
-SAMPLE = """\
-Hit Points: 51
-Damage: 9"""
-
-LineType = list[int | str]
-InputType = list[LineType]
 
 # Lowest to highest mana cost
 MISSILE, DRAIN, SHIELD, POISON, RECHARGE = range(5)
@@ -125,56 +119,43 @@ class GameState:
         return GameState(**data)
 
 
-class Day22(aoc.Challenge):
-    """Day 22: Wizard Simulator 20XX."""
+PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
+TESTS = []
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=aoc.TEST_SKIP),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
-    ]
-    INPUT_PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
+def simulate(boss: dict[str, int], hard: bool) -> int:
+    """Return the min mana needed to beat the boss."""
+    start = GameState(
+        player_hp=50,
+        player_mana=500,
+        boss_hp=boss["Hit Points"],
+        boss_damage=boss["Damage"],
+        mana_spent=0,
+        effects=(0, 0, 0, 0, 0),
+        hard=hard,
+    )
 
-    def simulate(self, boss: dict[str, int], hard: bool) -> int:
-        """Return the min mana needed to beat the boss."""
-        start = GameState(
-            player_hp=50,
-            player_mana=500,
-            boss_hp=boss["Hit Points"],
-            boss_damage=boss["Damage"],
-            mana_spent=0,
-            effects=(0, 0, 0, 0, 0),
-            hard=hard,
-        )
+    todo: queue.Queue[GameState] = queue.PriorityQueue()
+    todo.put(start)
 
-        todo: queue.Queue[GameState] = queue.PriorityQueue()
-        todo.put(start)
+    seen = set()
+    while todo:
+        state = todo.get()
+        # State checking: reduce runtime significantly!
+        if state in seen:
+            continue
+        seen.add(state)
+        # Terminate on first win.
+        if state.win:
+            return state.mana_spent
+        # Add future states.
+        for move in state.valid_moves():
+            outcome = state.move(move)
+            if not outcome.lose:
+                todo.put(outcome)
 
-        seen = set()
-        while todo:
-            state = todo.get()
-            # State checking: reduce runtime significantly!
-            if state in seen:
-                continue
-            seen.add(state)
-            # Terminate on first win.
-            if state.win:
-                return state.mana_spent
-            # Add future states.
-            for move in state.valid_moves():
-                outcome = state.move(move)
-                if not outcome.lose:
-                    todo.put(outcome)
+    raise RuntimeError("No solution found.")
 
-        raise RuntimeError("No solution found.")
 
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return mana to win, easy mode."""
-        return self.simulate(dict(puzzle_input), False)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return mana to win, hard mode."""
-        got = self.simulate(dict(puzzle_input), True)
-        assert got > 900   # Attempt 1
-        assert got < 1242  # Attempt 2
-        assert got > 1189  # Attempt 3
-        return got
+def solve(data: list[list[str | int]], part: int) -> int:
+    """Return mana to win, easy/hard mode."""
+    return simulate(dict(data), part == 2)

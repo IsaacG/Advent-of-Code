@@ -1,37 +1,26 @@
 #!/bin/python
-"""Advent of Code: Day 02."""
-
+"""Advent of Code, Day 2: I Was Told There Would Be No Math. Compute wrapping materials."""
 import itertools
 import math
 
-from lib import aoc
 
-SAMPLE = ["2x3x4", "1x1x10"]
-InputType = list[list[int]]
-
-
-class Day02(aoc.Challenge):
-    """Day 2: I Was Told There Would Be No Math. Compute wrapping materials."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=58),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=43),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=34),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=14),
-    ]
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return the amount of wrapping paper needed."""
-        total = 0
-        for dims in puzzle_input:
+def solve(data: list[list[int]], part: int) -> int:
+    """Return the amount of wrapping paper and ribbon needed."""
+    total = 0
+    for dims in data:
+        if part == 1:
             sides = [a * b for a, b in itertools.combinations(dims, 2)]
             total += sum(sides) * 2 + min(sides)
-        return total
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return the amount of wrapping ribbon needed."""
-        total = 0
-        for dims in puzzle_input:
+        else:
             perimeters = [a + b for a, b in itertools.combinations(dims, 2)]
             total += min(perimeters) * 2 + math.prod(dims)
-        return total
+    return total
+
+
+SAMPLE = ["2x3x4", "1x1x10"]
+TESTS = [
+    (1, SAMPLE[0], 58),
+    (1, SAMPLE[1], 43),
+    (2, SAMPLE[0], 34),
+    (2, SAMPLE[1], 14),
+]
