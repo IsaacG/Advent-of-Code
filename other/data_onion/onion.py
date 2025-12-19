@@ -206,7 +206,7 @@ def layer6(data: bytes) -> str:
     """Layer 6/6: Virtual Machine."""
     memory = bytearray(data)
     data_out = io.BytesIO()
-    reg = {i: 0 for i in "abcdef"} | {f"l{i}": 0 for i in "abcd"} | {i: 0 for i in ["ptr", "pc"]}
+    reg = {i: 0 for i in "abcdef"} | {f"l{i}": 0 for i in "abcd"} | {i: 0 for i in ["ptr", "pc"]} | {"RUN": 1}
 
     regmap = {
         False: dict(enumerate("abcdef", start=1)), # short
@@ -230,66 +230,42 @@ def layer6(data: bytes) -> str:
         else:
             raise ValueError(f"Invalid write to destination {i} {long=}")
 
-    OPNAME = {
-        0xC2: "ADD", 0xE1: "APTR", 0xC1: "CMP", 0x01: "HALT",
-        0x21: "JEZ", 0x22: "JNZ", 0x02: "OUT", 0xC3: "SUB", 0xC4: "XOR",
-    }
-
     def get_pc(size: int) -> int:
         pc = reg["pc"]
-        val = int.from_bytes(bytes(bytearray([memory[i] for i in range(pc, pc + size)][::-1])))
         reg["pc"] += size
-        # if size == 1:
-        #     print(f"@{pc:3} read {val:08b} = {val}")
-        # else:
-        #     print(f"@{pc:3} read {val:32b} = {val}")
-        return val
+        return int.from_bytes(memory[pc:pc + size], byteorder="little")
 
+    def set_reg(reg_name: str, val: int, cond: bool = True):
+        if cond:
+            reg[reg_name] = val
 
-    def ADD():
-        reg["a"] = (reg["a"] + reg["b"]) % 256
-    def APTR(imm8):
-        reg["ptr"] += imm8
-    def CMP():
-        reg["f"] = 0 if reg["a"] == reg["b"] else 1
-    def HALT():
-        raise StopIteration()
-    def JEZ(imm32):
-        if reg["f"] == 0:
-            reg["pc"] = imm32
-    def JNZ(imm32):
-        if reg["f"] != 0:
-            reg["pc"] = imm32
-    def OUT():
-        data_out.write(reg["a"].to_bytes(1))
-    def SUB():
-        reg["a"] = (reg["a"] - reg["b"]) % 256
-    def XOR():
-        reg["a"] = reg["a"] ^ reg["b"]
+    funcs = {
+        0xC2: lambda      : set_reg("a",   (reg["a"] + reg["b"]) % 256),       # ADD
+        0xC3: lambda      : set_reg("a", (reg["a"] - reg["b"]) % 256),         # SUB
+        0xC4: lambda      : set_reg("a", reg["a"] ^ reg["b"]),                 # XOR
+        0xC1: lambda      : set_reg("f",   0 if reg["a"] == reg["b"] else 1),  # CMP
+        0xE1: lambda  imm8: set_reg("ptr", reg["ptr"] + imm8),                 # APTR
+        0x21: lambda imm32: set_reg("pc",  imm32, cond=reg["f"] == 0),         # JEZ
+        0x22: lambda imm32: set_reg("pc",  imm32, cond=reg["f"] != 0),         # JNZ
+        0x02: lambda      : data_out.write(reg["a"].to_bytes(1)),              # OUT
+        0x01: lambda      : set_reg("RUN", 0),                                 # HALT
+    }
 
-    funcs = {op: locals()[name] for op, name in OPNAME.items()}
-    sizes = {}
-    for op, func in funcs.items():
+    def op_size(func):
         params = inspect.signature(func).parameters
-        if "imm8" in params:
-            sizes[op] = 1
-        elif "imm32" in params:
-            sizes[op] = 4
-        else:
-            sizes[op] = 0
+        return 1 if "imm8" in params else 4 if "imm32" in params else 0
 
-    while True:
+    sizes = {op: op_size(func) for op, func in funcs.items()}
+
+    while reg["RUN"]:
         op = get_pc(1)
         if op in funcs:
             func = funcs[op]
             size = sizes[op]
-            try:
-                if size:
-                    func(get_pc(size))
-                else:
-                    func()
-            except StopIteration:
-                break
+            if size:
+                func(get_pc(size))
+            else:
+                func()
         else:
             # 0b01DDDSSS:  # (1 byte) MV {dest} <- {src}
             # 0b10DDDSSS:  # (1 byte) MV32 {dest} <- {src}
