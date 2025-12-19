@@ -16,6 +16,7 @@ import typing
 
 import inotify_simple  # type: ignore
 from lib import helpers
+from lib import parsers
 
 
 T = typing.TypeVar("T")
@@ -88,9 +89,7 @@ class Runner:
             return None
         return data_path.read_text().rstrip()
 
-    def compare(self, want, data: str, parser: typing.Callable, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs):
-        if parser:
-            data = parser(data)
+    def compare(self, want, data: typing.Any, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs):
         time_s, got = helpers.timed(func, data=data, **kwargs)
         if str(got) == str(want):
             print(msg_success % time_s)
@@ -110,7 +109,8 @@ class Runner:
             shutil.copyfile("tmpl.py", solution_file)
         module = importlib.import_module(self.module_name())
         module = importlib.reload(module)
-        parser = module.PARSER if hasattr(module, "PARSER") else None
+        parser_override = getattr(module, "PARSER", None)
+        parser = parsers.get_parser(self.input_data(1), parser_override)
         if test:
             for part in self.parts:
                 formatter.set_part(part)
@@ -118,7 +118,7 @@ class Runner:
                     if test_part != part:
                         continue
                     self.compare(
-                        test_want, test_data, parser,
+                        test_want, parser.parse(test_data),
                         f"TEST  {self.day:02}.{part} %s PASS (test {test_number})",
                         f"TEST  {self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
                         module.solve,
@@ -146,10 +146,10 @@ class Runner:
                     formatter.set_part(part)
                     data = self.input_data(part)
                     if data is None:
-                        print(f"CHECK No input data found for day {day} part {part}")
+                        print(f"CHECK No input data found for day {self.day} part {part}")
                         continue
                     self.compare(
-                        want[part - 1], data, parser,
+                        want[part - 1], parser.parse(data),
                         f"CHECK {self.day:02}.{part} %s PASS",
                         f"CHECK {self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
                         module.solve,
