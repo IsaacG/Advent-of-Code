@@ -372,7 +372,9 @@ class Challenge:
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
 
-    def __init__(self, parts_to_run: tuple[int, ...] = (1, 2)):
+    def __init__(self, year: int, day: int, parts_to_run: tuple[int, ...] = (1, 2)):
+        self.year = year
+        self.day = day
         if self.day == 25:
             parts_to_run = tuple(set(parts_to_run) - {2, })
         self.funcs = {1: self.part1, 2: self.part2}
@@ -415,20 +417,6 @@ class Challenge:
             if d.exists():
                 return d
         raise RuntimeError('No solution dir found')
-
-    @property
-    def day(self) -> int:
-        """Return the day of this class."""
-        name = type(self).__name__
-        assert name.startswith('Day')
-        return int(name[3:])
-
-    @property
-    def year(self) -> str:
-        """Return the year of this class."""
-        p = pathlib.Path(__file__).parent.parent.name
-        assert len(p) == 4 and p.isnumeric(), p
-        return p
 
     def print_input_stats(self):
         """Print some stats about the input."""
@@ -535,7 +523,7 @@ class Challenge:
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-        return self._parser().parse(puzzle_input)
+        return get_parser(self.raw_data(None), self.INPUT_PARSER).parse(puzzle_input)
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""

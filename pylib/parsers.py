@@ -245,6 +245,16 @@ class ParseMultiple(BaseMultiParser):
         return [parser.parse(puzzle_input) for parser in self.parsers]
 
 
+@dataclasses.dataclass
+class ParseCustom(BaseParser):
+    """Parse an input via a custom function."""
+
+    func: collections.abc.Callable[[str], T]
+
+    def parse(self, puzzle_input: str) -> T:
+        return self.func(puzzle_input)
+
+
 class ParseChain(BaseMultiParser):
     """Parse an input via a chain of serial parser steps."""
 
@@ -392,6 +402,68 @@ class ParseDict(BaseParser):
             else:
                 outputs[key] = input_to_mixed(val.split())
         return outputs
+
+
+def get_parser(data: str, parser: BaseParser) -> BaseParser:
+    """Return the parsed data. Guess at a parser if needed."""
+    # print("Code defined" if self.INPUT_PARSER is not None else "Heuristic determined")
+    if parser is not None:
+        if not isinstance(parser, BaseParser):
+            raise ValueError(f"{parser!r} is a class and not an instance!")
+        return parser
+    # Use heuristics to guess at an input parser.
+    got = _guess_parser(data)
+    # print("Guessing at parser", got)
+    return got
+
+
+def _guess_parser(data: str) -> BaseParser:
+    for i in range(5, 1, -1):
+        sep = "\n" * i
+        if sep in data:
+            parsers = [_guess_parser(chunk) for chunk in data.split(sep)]
+            if len(parsers) > 5 and all(type(parser) == type(parsers[0]) for parser in parsers):
+                parsers = parsers[:1]
+            return ParseBlocks(separator=sep, parsers=parsers)
+
+    lines = data.splitlines()
+    multi_line = len(lines) > 1
+    one_line = lines[0]
+    line_lengths = [len(line) for line in lines]
+
+    check_lines = lines if len(lines) < 10 else lines[:-1]
+    if len(lines) >= 5 and line_lengths[0] >= 5 and len(set(line_lengths)) == 1:
+        return CoordinatesParser()
+    pi = ParseIntergers(multi_line=multi_line)
+    if pi.matches(data):
+        return pi
+
+    if all(i < 100 for i in line_lengths):
+        pat = re.compile(r'\w+: \w+')
+        if all(pat.fullmatch(line) for line in lines[:30]):
+            return ParseDict(scalar=True, separator=": ")
+        pat = re.compile(r'\w+:( \S+)+')
+        if all(pat.fullmatch(line) for line in lines[:30]):
+            return ParseDict(scalar=False, separator=": ")
+
+    if len(RE_INT.findall(one_line)) > 1 and multi_line:
+        lines = lines[:4]
+        for char in "?()+*":
+            lines = [l.replace(char, "\\" + char) for l in lines]
+        lines = [re.sub("  +", " ", line) for line in lines]
+        one_line = lines[0]
+        template = re.compile(RE_INT.sub(lambda x: RE_INT.pattern, one_line))
+        # print(template)
+        if all(template.fullmatch(line) for line in lines):
+            return parse_ints_per_line
+    elif not multi_line and all(RE_INT.fullmatch(i) for i in one_line.split()):
+        return parse_ints_one_line
+
+    word_count = max(len(line.split()) for line in data.splitlines())
+    if word_count == 1:
+        return parse_one_str_per_line if multi_line else parse_one_str
+    return parse_multi_mixed_per_line if multi_line else parse_one_str
+
 
 
 # Convert the entire input into one str.

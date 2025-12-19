@@ -80,7 +80,7 @@ class ChallengeRunner:
 
     def challenge(self, *args, **kwargs) -> aoc.Challenge:
         """Return a Challenge instance."""
-        return getattr(self.module(), f"Day{self.day:02}")(*args, **kwargs)
+        return getattr(self.module(), f"Day{self.day:02}")(*args, year=self.year, day=self.day, **kwargs)
 
     def run_code(
         self,
