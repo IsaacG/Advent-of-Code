@@ -27,7 +27,11 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str | None:
         """Download the input."""
-        return None
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/aoc").read_text().strip()
+        url = f"https://adventofcode.com/{year}/day/{day}/input"
+        resp = requests.get(url, cookies={"session": cookie.removeprefix("session=")})
+        resp.raise_for_status()
+        return resp.text
 
 
 @click.command()
