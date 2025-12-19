@@ -49,7 +49,7 @@ def load_module(year: int, day: int) -> None:
     base = pathlib.Path(__file__).parent
     filename = base / f"{year}/d{day:02}.py"
     if not filename.exists():
-        template_file = base / "shared/tmpl.py"
+        template_file = base / "tmpl.py"
         template = string.Template(template_file.read_text())
         website = site.Website(year, day)
         out = template.substitute(
