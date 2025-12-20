@@ -34,4 +34,3 @@ TESTS = [
     (2, SAMPLE[0], 6),
     (2, SAMPLE[1], 4),
 ]
-

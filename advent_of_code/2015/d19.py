@@ -3,7 +3,6 @@
 
 import re
 
-from lib import aoc
 
 def part1(puzzle_input: tuple[list[list[str]], str]) -> int:
     mappings, start = puzzle_input
@@ -14,6 +13,7 @@ def part1(puzzle_input: tuple[list[list[str]], str]) -> int:
             if start[x:].startswith(a):
                 found.add(start[:x] + b + start[x + len(a):])
     return len(found)
+
 
 def part2(puzzle_input: tuple[list[list[str]], str]) -> int:
     _, start = puzzle_input
@@ -65,4 +65,3 @@ TESTS = [
     # (2, SAMPLE[2], 3),
     # (2, SAMPLE[3], 6),
 ]
-

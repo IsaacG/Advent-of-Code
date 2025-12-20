@@ -120,7 +120,8 @@ class GameState:
 
 
 PARSER = aoc.parse_re_group_mixed(r"(.*): (\d+)")
-TESTS = []
+TESTS = list[tuple[int, int, int]]()
+
 
 def simulate(boss: dict[str, int], hard: bool) -> int:
     """Return the min mana needed to beat the boss."""

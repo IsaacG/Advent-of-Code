@@ -1,5 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 20: Infinite Elves and Infinite Houses."""
+TESTS = [(1, "70", 4), (1, "130", 8)]
+
 
 def solve(data: int, part: int) -> int:
     target = data // (10 if part == 1 else 11)
@@ -16,6 +18,3 @@ def solve(data: int, part: int) -> int:
             return i
 
     raise RuntimeError
-
-
-TESTS = [(1, "70", 4), (1, "130", 8)]

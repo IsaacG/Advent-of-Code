@@ -6,6 +6,7 @@ from lib import aoc
 
 def solve(data: list[list[int]], part: int) -> int:
     """Return the code given on a row/column."""
+    del part
     row, column = data[0]
     # Determine the code generation number based on row/column.
     code_num = 1

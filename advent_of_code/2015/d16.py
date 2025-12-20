@@ -22,7 +22,6 @@ WANT_NUM = {
 OPS = {k: operator.eq for k in WANT_NUM}
 
 
-@staticmethod
 def matches(ops: dict[str, collections.abc.Callable], aunts: list[dict[str, int]]) -> int:
     """Return the aunt who matches the comparisons."""
     for i, aunt in enumerate(aunts, start=1):

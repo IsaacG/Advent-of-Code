@@ -4,17 +4,16 @@
 import collections
 import itertools
 
-from lib import aoc
 
 def count(containers: list[int], testing: bool) -> dict[int, int]:
     """Compute the number of ways to fill containers."""
     target = 25 if testing else 150
-    count: dict[int, int] = collections.defaultdict(int)
+    counts: dict[int, int] = collections.defaultdict(int)
     for number in range(len(containers)):
         for combo in itertools.combinations(containers, number):
             if sum(combo) == target:
-                count[number] += 1
-    return count
+                counts[number] += 1
+    return counts
 
 
 def solve(data: list[int], part: int, testing: bool) -> int:
@@ -32,4 +31,3 @@ SAMPLE = """\
 5
 5"""
 TESTS = [(1, SAMPLE, 4), (2, SAMPLE, 3)]
-

@@ -44,4 +44,3 @@ TESTS = [
     (2, "uurcxstgmygtbstg", 0),
     (2, "ieodomkazucvgmuy", 0),
 ]
-

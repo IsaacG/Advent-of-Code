@@ -4,10 +4,6 @@
 import itertools
 import math
 
-from lib import aoc
-
-SAMPLE = "\n".join([str(i) for i in list(range(1, 6)) + list(range(7, 12))])
-
 
 def balance(packages: list[int], groups: int) -> int:
     """Return the group of packages which meets the constraints."""
@@ -27,4 +23,5 @@ def solve(data: list[int], part: int) -> int:
     return balance(data, 3 if part == 1 else 4)
 
 
+SAMPLE = "\n".join([str(i) for i in list(range(1, 6)) + list(range(7, 12))])
 TESTS = [(1, SAMPLE, 99), (2, SAMPLE, 44)]

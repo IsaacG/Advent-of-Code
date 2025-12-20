@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 8: Matchsticks. Escape and un-escape strings."""
-from lib import aoc
 
 
 def solve(data: list[str], part: int) -> int:
@@ -21,4 +20,3 @@ TESTS = [
     (2, SAMPLE[2], 6),
     (2, SAMPLE[3], 5),
 ]
-

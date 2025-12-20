@@ -86,4 +86,3 @@ def solve(data: list[tuple[str, int]], part: int) -> int:
 
 
 TESTS = [(1, SAMPLE, 78), (2, SAMPLE, 148)]
-

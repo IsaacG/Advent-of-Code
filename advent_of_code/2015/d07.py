@@ -32,7 +32,6 @@ def get_wire(data: list[tuple[str, str, str, str]]) -> int:
     while unresolved_parts:
         # Infinite loop check
         if prior == len(unresolved_parts):
-            self.debug("No progress!")
             break
         prior = len(unresolved_parts)
 
