@@ -12,7 +12,7 @@ import dataclasses
 import inspect
 import itertools
 import re
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, TypeVar
 
 from .helpers import *
 
@@ -21,6 +21,7 @@ RE_BOUNDED_INT = re.compile(r"[+-]?\b\d+\b")
 RE_BOUNDED_INT_UNSIGNED = re.compile(r"\b\d+\b")
 RE_INT_RANGES = re.compile(r"\d+(-\d+)+")
 RE_POINT = re.compile(r"[+-]?\d+,[+-]?\d+")
+U = TypeVar("U")
 
 
 def input_to_ints(inputs: Iterable[str]) -> list[int]:
@@ -245,11 +246,11 @@ class ParseMultiple(BaseMultiParser):
         return [parser.parse(puzzle_input) for parser in self.parsers]
 
 
-@dataclasses.dataclass
-class ParseCustom(BaseParser):
+class ParseCustom[T](BaseParser):
     """Parse an input via a custom function."""
 
-    func: collections.abc.Callable[[str], T]
+    def __init__(self, func: collections.abc.Callable[[str], T]):
+        self.func = func
 
     def parse(self, puzzle_input: str) -> T:
         return self.func(puzzle_input)
@@ -390,10 +391,10 @@ class ParseDict(BaseParser):
     scalar: bool
     separator: str = ": "
 
-    def parse(self, puzzle_input: str) -> list[Any]:
+    def parse(self, puzzle_input: str) -> dict[int | str, int | str | list[int | str]]:
         """Convert input into a dict or values."""
         blocks = puzzle_input.split(self.separator)
-        outputs = {}
+        outputs = dict[int | str, int | str | list[int | str]]()
         for line in puzzle_input.splitlines():
             key_, val = line.split(self.separator, maxsplit=1)
             key = value_to_mixed(key_)
@@ -404,7 +405,7 @@ class ParseDict(BaseParser):
         return outputs
 
 
-def get_parser(data: str, parser: BaseParser) -> BaseParser:
+def get_parser(data: str, parser: BaseParser | None) -> BaseParser:
     """Return the parsed data. Guess at a parser if needed."""
     # print("Code defined" if self.INPUT_PARSER is not None else "Heuristic determined")
     if parser is not None:

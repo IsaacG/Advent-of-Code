@@ -3,41 +3,37 @@
 
 from lib import aoc
 
-SAMPLE = "5-8\n0-2\n4-7"
-LineType = tuple[int, int]
-InputType = list[LineType]
+
+def solve(data: list[tuple[int, int]], part: int, testing: bool) -> int:
+    """Find valid IPs between blacklisted ranges."""
+    # Set the upper limit.
+    if testing:
+        data.append((10, 10))
+    else:
+        data.append((4294967296, 4294967296))
+
+    cur = 0
+    allowed = 0
+    for low, high in data:
+        if low <= cur <= high:
+            cur = high + 1
+        elif cur < low:
+            # Part 1: return the first allowed IP.
+            if part == 1:
+                return cur
+            # Part 2: count valid IPS.
+            allowed += low - cur
+            cur = high + 1
+    return allowed
 
 
-class Day20(aoc.Challenge):
-    """Day 20: Firewall Rules."""
+def input_parser(puzzle_input: str) -> list[tuple[int, int]]:
+    """Parse the input data."""
+    return sorted(tuple(int(i) for i in line.split("-")) for line in puzzle_input.splitlines())
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=3),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=2),
-    ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Find valid IPs between blacklisted ranges."""
-        # Set the upper limit.
-        if self.testing:
-            puzzle_input.append((10, 10))
-        else:
-            puzzle_input.append((4294967296, 4294967296))
-
-        cur = 0
-        allowed = 0
-        for low, high in puzzle_input:
-            if low <= cur <= high:
-                cur = high + 1
-            elif cur < low:
-                # Part 1: return the first allowed IP.
-                if part_one:
-                    return cur
-                # Part 2: count valid IPS.
-                allowed += low - cur
-                cur = high + 1
-        return allowed
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        return sorted(tuple(int(i) for i in line.split("-")) for line in puzzle_input.splitlines())
+PARSER = aoc.ParseCustom(input_parser)
+TESTS = [
+    (1, "5-8\n0-2\n4-7", 3),
+    (2, "5-8\n0-2\n4-7", 2),
+]

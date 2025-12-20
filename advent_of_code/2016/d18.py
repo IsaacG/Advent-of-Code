@@ -1,32 +1,25 @@
 #!/bin/python
 """Advent of Code, Day 18: Like a Rogue. Return the number of safe tiles."""
 
-from lib import aoc
+
+def solve(data: str, part: int, testing: bool) -> int:
+    """Return the number of safe tiles."""
+    width = len(data)
+    width_mask = (1 << (width)) - 1
+
+    rows = 10 if testing else 40 if part == 1 else 400_000
+
+    traps = 0
+    for i, char in enumerate(reversed(data)):
+        if char == "^":
+            traps |= 1 << i
+
+    safe = 0
+    for _ in range(rows):
+        safe += width - traps.bit_count()
+        traps = ((traps << 1) ^ (traps >> 1)) & width_mask
+
+    return safe
 
 
-class Day18(aoc.Challenge):
-    """Day 18: Like a Rogue."""
-
-    TESTS = [
-        aoc.TestCase(inputs=".^^.^.^^^^", part=1, want=38),
-        aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
-    ]
-
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
-        """Return the number of safe tiles."""
-        width = len(puzzle_input)
-        width_mask = (1 << (width)) - 1
-
-        rows = 10 if self.testing else 40 if part_one else 400_000
-
-        traps = 0
-        for i, char in enumerate(reversed(puzzle_input)):
-            if char == "^":
-                traps |= 1 << i
-
-        safe = 0
-        for _ in range(rows):
-            safe += width - traps.bit_count()
-            traps = ((traps << 1) ^ (traps >> 1)) & width_mask
-
-        return safe
+TESTS = [(1, ".^^.^.^^^^", 38)]

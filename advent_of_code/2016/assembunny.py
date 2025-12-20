@@ -29,11 +29,11 @@ TOGGLE = {1: (OP_INC, {OP_INC: OP_DEC}), 2: (OP_JNZ, {OP_JNZ: OP_CPY})}
 class Assembunny:
     """Assembunny computer emulator."""
 
-    def __init__(self, instructions: list[str | int]):
+    def __init__(self, instructions: list[list[str | int]]):
         """Initialize, parse the instructions."""
-        inst = []
-        for instruction in instructions:
-            inst.append([Operation[instruction[0].upper()].value] + instruction[1:])
+        inst = list[list[str | int]]()
+        for op, *rest in instructions:
+            inst.append([Operation[str(op).upper()].value, *rest])
         self.instructions = inst
         self.instruction_count = len(instructions)
 
@@ -120,14 +120,14 @@ class Assembunny:
         last_out = None
 
         while ptr < end:
-            args: list[str]
+            args: list[str | int]
             operation, *args = instructions[ptr]
 
             if operation == OP_CPY:
-                register[args[1]] = value(args[0])
+                register[str(args[1])] = value(args[0])
                 multiply()
             elif operation == OP_INC:
-                register[args[0]] += 1
+                register[str(args[0])] += 1
             elif operation == OP_DEC:
                 decrement_or_addition()
             elif operation == OP_JNZ:
@@ -153,7 +153,7 @@ class Assembunny:
                 if 0 <= loc < end:
                     old = instructions[loc]
                     default, alts = TOGGLE[len(old) - 1]
-                    old[0] = alts.get(old[0], default)
+                    old[0] = alts.get(int(old[0]), default)
             # case _:
             #     raise RuntimeError(f"Could not parse {instructions[ptr]}")
             ptr += 1

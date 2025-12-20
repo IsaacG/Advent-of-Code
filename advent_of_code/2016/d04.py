@@ -16,40 +16,33 @@ totally-real-room-200[decoy]"""
 InputType = list[tuple[str, int, str]]
 
 
-class Day04(aoc.Challenge):
-    """Day 4: Security Through Obscurity."""
+def is_real(name: str, checksum: str) -> bool:
+    """Return if a name matches its checksum."""
+    name = name.replace("-", "")
+    top = sorted((-v, k) for k, v in collections.Counter(name).items())
+    return "".join(b for a, b in top[:5]) == checksum
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=1514),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
-    ]
-    INPUT_PARSER = aoc.parse_re_group_mixed(r"([\w-]+)-(\d+)\[(\w+)\]")
 
-    def is_real(self, name: str, checksum: str) -> bool:
-        """Return if a name matches its checksum."""
-        name = name.replace("-", "")
-        top = sorted((-v, k) for k, v in collections.Counter(name).items())
-        return "".join(b for a, b in top[:5]) == checksum
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Return the sum of real sectors."""
-        return sum(
-            sector
-            for name, sector, checksum in puzzle_input
-            if self.is_real(name, checksum)
+def solve(data: InputType, part: int) -> int:
+    """Return the sector with Northpole storage."""
+    real_sectors = (
+        (name, sector, checksum) for name, sector, checksum in data
+        if is_real(name, checksum)
+    )
+    if part == 1:
+        # Return the sum of real sectors.
+        return sum(sector for name, sector, checksum in real_sectors)
+    for name, sector, checksum in real_sectors:
+        name = "".join(
+            string.ascii_lowercase[
+                (string.ascii_lowercase.index(i) + sector) % 26
+            ] if i.isalpha() else " "
+            for i in name
         )
+        if "northpole" in name.split():
+            return sector
+    raise RuntimeError("No solution found.")
 
-    def part2(self, puzzle_input: InputType) -> int:
-        """Return the sector with Northpole storage."""
-        for name, sector, checksum in puzzle_input:
-            if not self.is_real(name, checksum):
-                continue
-            name = "".join(
-                string.ascii_lowercase[
-                    (string.ascii_lowercase.index(i) + sector) % 26
-                ] if i.isalpha() else " "
-                for i in name
-            )
-            if "northpole" in name.split():
-                return sector
-        raise RuntimeError("No solution found.")
+
+PARSER = aoc.parse_re_group_mixed(r"([\w-]+)-(\d+)\[(\w+)\]")
+TESTS = [(1, SAMPLE, 1514)]

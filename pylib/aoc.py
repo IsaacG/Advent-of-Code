@@ -109,6 +109,9 @@ class CachedIterable(Iterable[T]):
             self._cache.append(val)
             yield val
 
+    def populate_cache(self, values: Iterable[T]) -> None:
+        self._cache.extend(values)
+
 
 class CachedIterator(Iterator[T]):
     """Cached Iterator by phy1729."""
