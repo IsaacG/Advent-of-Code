@@ -119,8 +119,8 @@ class Runner:
                         continue
                     self.compare(
                         test_want, parser.parse(test_data),
-                        f"TEST  {self.day:02}.{part} %s PASS (test {test_number})",
-                        f"TEST  {self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
+                        f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
+                        f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
                         module.solve,
                         part=part, testing=True, test_number=test_number,
                     )
@@ -150,8 +150,8 @@ class Runner:
                         continue
                     self.compare(
                         want[part - 1], parser.parse(data),
-                        f"CHECK {self.day:02}.{part} %s PASS",
-                        f"CHECK {self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
+                        f"CHECK {self.year}.{self.day:02}.{part} %s PASS",
+                        f"CHECK {self.year}.{self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
                         module.solve,
                         part=part, testing=False, test_number=None,
                     )
