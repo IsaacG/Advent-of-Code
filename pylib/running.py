@@ -53,6 +53,10 @@ class Runner:
         """Download the input."""
         raise NotImplemented
 
+    def submit_solution(self, year: int, day: int, solutions: list[int | str]) -> str:
+        """Submit the solution."""
+        raise NotImplemented
+
     def get_solutions(self, day: int) -> list[int] | None:
         solutions_path = self.solutions_path()
         want_raw = [line for line in solutions_path.read_text().splitlines() if line.startswith(f"{day:02}.")]
@@ -89,21 +93,78 @@ class Runner:
             return None
         return data_path.read_text().rstrip()
 
-    def compare(self, want, data: typing.Any, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs):
+    def compare(self, want, data: typing.Any, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs) -> bool:
         time_s, got = helpers.timed(func, data=data, **kwargs)
         if str(got) == str(want):
             print(msg_success % time_s)
-        else:
-            msg = msg_fail % (time_s, got)
-            if str(want).isdigit() and str(got).isdigit():
-                delta = int(want) - int(got)
-                if delta > 0:
-                    msg += f" Too low by {delta}."
-                else:
-                    msg += f" Too high by {-delta}."
-            print(msg)
+            return True
+        msg = msg_fail % (time_s, got)
+        if str(want).isdigit() and str(got).isdigit():
+            delta = int(want) - int(got)
+            if delta > 0:
+                msg += f" Too low by {delta}."
+            else:
+                msg += f" Too high by {-delta}."
+        print(msg)
 
-    def run_day(self, check: bool, solve: bool, test: bool, formatter) -> None:
+    def test(self, module, parser: parsers.BaseParser, formatter) -> bool:
+        success = True
+        for part in self.parts:
+            formatter.set_part(part)
+            for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
+                if test_part != part:
+                    continue
+                success = success and self.compare(
+                    test_want, parser.parse(test_data),
+                    f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
+                    f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
+                    module.solve,
+                    part=part, testing=True, test_number=test_number,
+                )
+        return success
+
+    def solve(self, module, parser: parsers.BaseParser, formatter) -> list[str | int]:
+        solutions = []
+        for part in self.parts:
+            formatter.set_part(part)
+            data = self.input_data(part)
+            if data is None:
+                print(f"SOLVE No input data found for day {self.day} part {part}")
+                continue
+            time_s, got = helpers.timed(module.solve, part=part, data=parser.parse(data), testing=False, test_number=None)
+            solutions.append(got)
+            print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
+        return solutions
+
+    def submit(self, module, parser: parsers.BaseParser, formatter) -> None:
+        if not self.test(module, parser, formatter):
+            print("Tests failed; skip submit.")
+            return
+        solutions = self.solve(module, parser, formatter)
+        self.submit_solution(self.year, self.day, solutions)
+
+    def check(self, module, parser: parsers.BaseParser, formatter) -> None:
+        want = self.get_solutions(self.day)
+        if want is None:
+            print(f"No solutions found for {self.day}")
+            return
+        for part in self.parts:
+            if part > len(want):
+                continue
+            formatter.set_part(part)
+            data = self.input_data(part)
+            if data is None:
+                print(f"CHECK No input data found for day {self.day} part {part}")
+                continue
+            self.compare(
+                want[part - 1], parser.parse(data),
+                f"CHECK {self.year}.{self.day:02}.{part} %s PASS",
+                f"CHECK {self.year}.{self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
+                module.solve,
+                part=part, testing=False, test_number=None,
+            )
+
+    def run_day(self, check: bool, solve: bool, test: bool, submit: bool, formatter) -> None:
         solution_file = pathlib.Path(f"{self.year}/{self.module_name()}.py")
         if not solution_file.exists():
             shutil.copyfile("tmpl.py", solution_file)
@@ -111,55 +172,14 @@ class Runner:
         module = importlib.reload(module)
         parser_override = getattr(module, "PARSER", None)
         parser = parsers.get_parser(self.input_data(1), parser_override)
-        if test:
-            for part in self.parts:
-                formatter.set_part(part)
-                for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
-                    if test_part != part:
-                        continue
-                    self.compare(
-                        test_want, parser.parse(test_data),
-                        f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
-                        f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
-                        module.solve,
-                        part=part, testing=True, test_number=test_number,
-                    )
-        if solve:
-            for part in self.parts:
-                formatter.set_part(part)
-                data = self.input_data(part)
-                if data is None:
-                    print(f"SOLVE No input data found for day {self.day} part {part}")
-                    continue
-                if parser:
-                    data = parser(data)
-                time_s, got = helpers.timed(module.solve, part=part, data=data, testing=False, test_number=None)
-                print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
-        if check:
-            want = self.get_solutions(self.day)
-            if want is None:
-                print(f"No solutions found for {self.day}")
-            else:
-                for part in self.parts:
-                    if part > len(want):
-                        continue
-                    formatter.set_part(part)
-                    data = self.input_data(part)
-                    if data is None:
-                        print(f"CHECK No input data found for day {self.day} part {part}")
-                        continue
-                    self.compare(
-                        want[part - 1], parser.parse(data),
-                        f"CHECK {self.year}.{self.day:02}.{part} %s PASS",
-                        f"CHECK {self.year}.{self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
-                        module.solve,
-                        part=part, testing=False, test_number=None,
-                    )
+        for want, func in [(test, self.test), (solve, self.solve), (check, self.check), (submit, self.submit)]:
+            if want:
+                func(module, parser, formatter)
 
-    def run(self, check: bool, solve: bool, test: bool, live: bool) -> None:
+    def run(self, check: bool, solve: bool, test: bool, submit: bool, live: bool) -> None:
         formatter = helpers.setup_logging(self.day, self.verbose)
         helpers.setup_resources()
-        self.run_day(check, solve, test, formatter)
+        self.run_day(check, solve, test, submit, formatter)
         if not live:
             return
         inotify = inotify_simple.INotify()
@@ -170,6 +190,6 @@ class Runner:
                 continue
             count += 1
             print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))
-            self.run_day(check, solve, test, formatter)
+            self.run_day(check, solve, test, submit, formatter)
 
 # vim:ts=4:sw=4:expandtab
