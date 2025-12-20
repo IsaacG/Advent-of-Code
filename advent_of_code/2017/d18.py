@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code, Day 18: Duet."""
+"""Advent of Code, Day 18: Duet.  Simulate parallel programs with bidirectional communication."""
 
 import collections
 import collections.abc
@@ -7,33 +7,11 @@ import itertools
 
 from lib import aoc
 
-SAMPLE = [
-    """\
-set a 1
-add a 2
-mul a a
-mod a 5
-snd a
-set a 0
-rcv a
-jgz a -1
-set a 1
-jgz a -2""",
-    """\
-snd 1
-snd 2
-snd p
-rcv a
-rcv b
-rcv c
-rcv d""",
-]
-
 
 def program(
     code: list[list[str | int]],
     program_id: int,
-    part_one: bool,
+    part: int,
 ) -> collections.abc.Generator[list[int], list[int], int]:
     """Run a program with IO queues.
 
@@ -58,23 +36,23 @@ def program(
         instructions = code[ptr]
         ptr += 1
         match instructions:
-            case ["set", str(X), Y]:
-                registers[X] = val(Y)
-            case ["add", str(X), Y]:
-                registers[X] += val(Y)
-            case ["mul", str(X), Y]:
-                registers[X] *= val(Y)
-            case ["mod", str(X), Y]:
-                registers[X] %= val(Y)
-            case ["jgz", X, Y] if val(X) > 0:
-                ptr += val(Y) - 1
-            case ["snd", X]:
-                outputs.append(val(X))
+            case ["set", str() as arg_x, arg_y]:
+                registers[arg_x] = val(arg_y)
+            case ["add", str() as arg_x, arg_y]:
+                registers[arg_x] += val(arg_y)
+            case ["mul", str() as arg_x, arg_y]:
+                registers[arg_x] *= val(arg_y)
+            case ["mod", str() as arg_x, arg_y]:
+                registers[arg_x] %= val(arg_y)
+            case ["jgz", arg_x, arg_y] if val(arg_x) > 0:
+                ptr += val(arg_y) - 1
+            case ["snd", arg_x]:
+                outputs.append(val(arg_x))
                 sent += 1
-            case ["rcv", X] if part_one and val(X):
+            case ["rcv", arg_x] if part == 1 and val(arg_x):
                 # Part one. On the first non-zero rcv, return the last send value.
                 return outputs.pop()
-            case ["rcv", str(X)] if not part_one:
+            case ["rcv", str() as arg_x] if part == 2:
                 # Yield if we are out of values.
                 # If we have recv values, read one.
                 # If we yielded and still do not have values, return the sent count.
@@ -84,32 +62,47 @@ def program(
                     q_in.extend(inputs)
                     if not inputs:
                         return sent
-                registers[X] = q_in.popleft()
+                registers[arg_x] = q_in.popleft()
 
 
-class Day18(aoc.Challenge):
-    """Day 18: Duet. Simulate parallel programs with bidirectional communication."""
+def solve(data: list[list[str | int]], part: int) -> int:
+    """Run two programs and get IO details."""
+    # Create two programs.
+    programs = {i: program(data, i, part) for i in range(2)}
+    # Initialize then run the programs.
+    next(programs[0])
+    vals = next(programs[1])
+    for i in itertools.cycle(programs):
+        try:
+            vals = programs[i].send(vals)
+        except StopIteration as e:
+            # On a StopIteration, handle the return value.
+            if part == 1 or i == 1:
+                return e.value
+    raise RuntimeError
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE[0], want=4),
-        aoc.TestCase(part=2, inputs=SAMPLE[1], want=3),
-    ]
-    INPUT_PARSER = aoc.parse_multi_mixed_per_line
 
-    def solver(self, puzzle_input: list[list[str | int]], part_one: bool) -> int:
-        """Run two programs and get IO details."""
-        # Create two programs.
-        programs = {i: program(puzzle_input, i, part_one) for i in range(2)}
-        # Initialize then run the programs.
-        next(programs[0])
-        vals = next(programs[1])
-        for i in itertools.cycle(programs):
-            try:
-                vals = programs[i].send(vals)
-            except StopIteration as e:
-                # On a StopIteration, handle the return value.
-                if part_one or i == 1:
-                    return e.value
-        raise RuntimeError
-
+INPUT_PARSER = aoc.parse_multi_mixed_per_line
+SAMPLE = [
+    """\
+set a 1
+add a 2
+mul a a
+mod a 5
+snd a
+set a 0
+rcv a
+jgz a -1
+set a 1
+jgz a -2""",
+    """\
+snd 1
+snd 2
+snd p
+rcv a
+rcv b
+rcv c
+rcv d""",
+]
+TESTS = [(1, SAMPLE[0], 4), (2, SAMPLE[1], 3)]
 # vim:expandtab:sw=4:ts=4

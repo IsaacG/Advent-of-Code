@@ -5,8 +5,6 @@ import functools
 import more_itertools
 from lib import aoc
 
-SAMPLE = "flqrgnkx"
-
 
 def knot_hash(data: str) -> list[int]:
     """Implement a Knot Hash."""
@@ -40,43 +38,39 @@ def knot_hash(data: str) -> list[int]:
     ]
 
 
-class Day14(aoc.Challenge):
-    """Day 14: Disk Defragmentation."""
+def solve(data: str, part: int) -> int:
+    """Defragment a disk and return stats."""
+    # Compute all the Knot Hashes as lines of binary values.
+    lines = (
+        "".join([f"{i:08b}" for i in knot_hash(f"{data}-{pos_y}")])
+        for pos_y in range(128)
+    )
+    # Make a set of locations which are in use.
+    used = {
+        complex(pos_x, pos_y)
+        for pos_y, line in enumerate(lines)
+        for pos_x, val in enumerate(line)
+        if val == "1"
+    }
+    # Part one: return the number of locations which are in use.
+    if part == 1:
+        return len(used)
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=8108),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=1242),
-    ]
+    # Part two: count in use islands.
+    count = 0
+    while used:
+        # Select any in use location and expand outwards until we consume the entire island.
+        todo = {used.pop()}
+        count += 1
+        while todo:
+            todo = {
+                neighbor
+                for position in todo
+                for neighbor in aoc.neighbors(position)
+                if neighbor in used
+            }
+            used -= todo
+    return count
 
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
-        # Compute all the Knot Hashes as lines of binary values.
-        lines = (
-            "".join([f"{i:08b}" for i in knot_hash(f"{puzzle_input}-{pos_y}")])
-            for pos_y in range(128)
-        )
-        # Make a set of locations which are in use.
-        used = {
-            complex(pos_x, pos_y)
-            for pos_y, line in enumerate(lines)
-            for pos_x, val in enumerate(line)
-            if val == "1"
-        }
-        # Part one: return the number of locations which are in use.
-        if part_one:
-            return len(used)
 
-        # Part two: count in use islands.
-        count = 0
-        while used:
-            # Select any in use location and expand outwards until we consume the entire island.
-            todo = {used.pop()}
-            count += 1
-            while todo:
-                todo = {
-                    neighbor
-                    for position in todo
-                    for neighbor in aoc.neighbors(position)
-                    if neighbor in used
-                }
-                used -= todo
-        return count
+TESTS = [(1, "flqrgnkx", 8108), (2, "flqrgnkx", 1242)]

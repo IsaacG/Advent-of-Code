@@ -1,12 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 21: Fractal Art."""
-
-from lib import aoc
-
-SAMPLE = """\
-../.# => ##./#../...
-.#./..#/### => #..#/..../..../#..#"""
-
 SHIFT = complex(1, 1)
 SUBPIXELS = {i: {complex(x, y) for x in range(i) for y in range(i)} for i in [2, 3]}
 InputType = dict[int, dict[frozenset[complex], set[complex]]]
@@ -49,62 +42,59 @@ def permutations(pixels: frozenset[complex], block_size: int) -> list[frozenset[
     return [frozenset(i) for i in matches]
 
 
-class Day21(aoc.Challenge):
-    """Day 21: Fractal Art."""
+def solve(data: InputType, part: int, testing: bool) -> int:
+    """Return the number of pixels which are on after repeating the image enhancement."""
+    pixels = START
+    replacements = data
+    size = 3
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=12),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
-    ]
+    for _ in range(2 if testing else 5 if part == 1 else 18):
+        blocksize_in = 3 if size % 2 else 2
+        blockcount = size // blocksize_in
+        blocksize_out = blocksize_in + 1
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Return the number of pixels which are on after repeating the image enhancement."""
-        pixels = START
-        replacements = puzzle_input
-        size = 3
+        size += blockcount
 
-        for _ in range(2 if self.testing else 5 if part_one else 18):
-            blocksize_in = 3 if size % 2 else 2
-            blockcount = size // blocksize_in
-            blocksize_out = blocksize_in + 1
+        # For each sub-block, shift the block to (0,0), enhance and unshift.
+        new_pixels = set()
+        for y in range(blockcount):
+            for x in range(blockcount):
+                corner_in = complex(x * blocksize_in, y * blocksize_in)
+                subpixels_in = frozenset({
+                    p for p in SUBPIXELS[blocksize_in] if corner_in + p in pixels
+                })
+                corner_out = complex(x * blocksize_out, y * blocksize_out)
+                subpixels_out = {
+                    corner_out + p for p in replacements[blocksize_in][subpixels_in]
+                }
+                new_pixels.update(subpixels_out)
 
-            size += blockcount
+        pixels = new_pixels
 
-            # For each sub-block, shift the block to (0,0), enhance and unshift.
-            new_pixels = set()
-            for y in range(blockcount):
-                for x in range(blockcount):
-                    corner_in = complex(x * blocksize_in, y * blocksize_in)
-                    subpixels_in = frozenset({
-                        p for p in SUBPIXELS[blocksize_in] if corner_in + p in pixels
-                    })
-                    corner_out = complex(x * blocksize_out, y * blocksize_out)
-                    subpixels_out = {
-                        corner_out + p for p in replacements[blocksize_in][subpixels_in]
-                    }
-                    new_pixels.update(subpixels_out)
+    return len(pixels)
 
-            pixels = new_pixels
 
-        return len(pixels)
+def input_parser(data: str) -> InputType:
+    """Parse the input data."""
+    rules: InputType = {2: {}, 3: {}}
+    for line in data.splitlines():
+        match, _, replace = line.split()
+        block_size = match.count("/") + 1
+        rules[block_size][frozenset(to_complex_set(match))] = to_complex_set(replace)
 
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        rules: InputType = {2: {}, 3: {}}
-        for line in puzzle_input.splitlines():
-            match, _, replace = line.split()
-            block_size = match.count("/") + 1
-            rules[block_size][frozenset(to_complex_set(match))] = to_complex_set(replace)
-
-        # Build the enhance dict.
-        return {
-            block_size: {
-                match: replace
-                for match, replace in block_rules.items()
-                for match in permutations(match, block_size)
-            }
-            for block_size, block_rules in rules.items()
+    # Build the enhance dict.
+    return {
+        block_size: {
+            match: replace
+            for match, replace in block_rules.items()
+            for match in permutations(match, block_size)
         }
+        for block_size, block_rules in rules.items()
+    }
 
 
+SAMPLE = """\
+../.# => ##./#../...
+.#./..#/### => #..#/..../..../#..#"""
+TESTS = [(1, SAMPLE, 12)]
 # vim:expandtab:sw=4:ts=4

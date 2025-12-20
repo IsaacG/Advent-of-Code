@@ -1,37 +1,27 @@
 #!/bin/python
 """Advent of Code, Day 17: Spinlock."""
-from lib import aoc
 
 
-class Day17(aoc.Challenge):
-    """Day 17: Spinlock."""
+def solve(data: int, part: int) -> int:
+    """Return the value after 2017/50M step-inserts."""
+    step = data
+    pos = 0
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs="3", want=638),
-        aoc.TestCase(part=2, inputs="3", want=aoc.TEST_SKIP),
-    ]
-
-    def part1(self, puzzle_input: int) -> int:
-        """Step and insert 2017 times then return the next value."""
-        step = puzzle_input
-        data = [0]
-        pos = 0
+    if part == 1:
+        vals = [0]
         for i in range(1, 2017 + 1):
             pos = (pos + step) % i + 1
-            data.insert(pos % (i + 1), i)
+            vals.insert(pos % (i + 1), i)
+        return vals[(pos + 1) % len(vals)]
 
-        return data[(pos + 1) % len(data)]
+    last_insert = 0
+    for i in range(1, 50000000 + 1):
+        pos = ((pos + step) % i) + 1
+        if pos == 1:
+            last_insert = i
 
-    def part2(self, puzzle_input: int) -> int:
-        """Return the value after 0 after 50M step-inserts."""
-        step = puzzle_input
-        pos = 0
-        last_insert = 0
-        for i in range(1, 50000000 + 1):
-            pos = ((pos + step) % i) + 1
-            if pos == 1:
-                last_insert = i
+    return last_insert
 
-        return last_insert
 
+TESTS = [(1, "3", 638)]
 # vim:expandtab:sw=4:ts=4

@@ -526,12 +526,13 @@ class Challenge:
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-        return get_parser(self.raw_data(None), self.INPUT_PARSER).parse(puzzle_input)
+        return get_parser(self.raw_data(None), self.INPUT_PARSER)(puzzle_input)
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""
         func = {1: self.part1, 2: self.part2}
         parsed_input = self.input_parser(puzzle_input.rstrip())
+        get_parser(self.raw_data(None), self.INPUT_PARSER)(puzzle_input)
         self.pre_run(parsed_input)
         try:
             return self.solver(parsed_input, part == 1)
