@@ -1,9 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 20: Firewall Rules. Find valid IPs between blacklisted ranges."""
 
-from lib import aoc
-
-
 def solve(data: list[tuple[int, int]], part: int, testing: bool) -> int:
     """Find valid IPs between blacklisted ranges."""
     # Set the upper limit.
@@ -32,7 +29,6 @@ def input_parser(puzzle_input: str) -> list[tuple[int, int]]:
     return sorted(tuple(int(i) for i in line.split("-")) for line in puzzle_input.splitlines())
 
 
-PARSER = aoc.ParseCustom(input_parser)
 TESTS = [
     (1, "5-8\n0-2\n4-7", 3),
     (2, "5-8\n0-2\n4-7", 2),

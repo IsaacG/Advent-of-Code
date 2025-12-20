@@ -77,7 +77,6 @@ def input_parser(puzzle_input: str) -> InputType:
     return floor, wires
 
 
-PARSER = aoc.ParseCustom(input_parser)
 SAMPLE = """\
 ###########
 #0.1.....2#

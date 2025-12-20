@@ -4,8 +4,6 @@
 import re
 import more_itertools
 
-from lib import aoc
-
 LineType = tuple[list[str], list[str]]
 InputType = list[LineType]
 
@@ -47,7 +45,6 @@ def input_parser(puzzle_input: str) -> InputType:
     return lines
 
 
-PARSER = aoc.ParseCustom(input_parser)
 SAMPLE = [
     """\
 abba[mnop]qrst

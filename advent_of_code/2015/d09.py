@@ -3,8 +3,6 @@
 import itertools
 import re
 
-from lib import aoc
-
 
 def solve(data: list[int], part: int) -> int:
     """Return the shortest/longest route."""
@@ -38,7 +36,6 @@ def input_parser(data: str) -> list[int]:
     ]
 
 
-PARSER = aoc.ParseCustom(input_parser)
 SAMPLE = """\
 London to Dublin = 464
 London to Belfast = 518

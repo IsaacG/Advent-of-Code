@@ -115,7 +115,7 @@ class Runner:
                 if test_part != part:
                     continue
                 success = success and self.compare(
-                    test_want, parser.parse(test_data),
+                    test_want, parser(test_data),
                     f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
                     f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
                     module.solve,
@@ -131,7 +131,7 @@ class Runner:
             if data is None:
                 print(f"SOLVE No input data found for day {self.day} part {part}")
                 continue
-            time_s, got = helpers.timed(module.solve, part=part, data=parser.parse(data), testing=False, test_number=None)
+            time_s, got = helpers.timed(module.solve, part=part, data=parser(data), testing=False, test_number=None)
             solutions.append(got)
             print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
         return solutions
@@ -157,7 +157,7 @@ class Runner:
                 print(f"CHECK No input data found for day {self.day} part {part}")
                 continue
             self.compare(
-                want[part - 1], parser.parse(data),
+                want[part - 1], parser(data),
                 f"CHECK {self.year}.{self.day:02}.{part} %s PASS",
                 f"CHECK {self.year}.{self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
                 module.solve,
@@ -170,7 +170,7 @@ class Runner:
             shutil.copyfile("tmpl.py", solution_file)
         module = importlib.import_module(self.module_name())
         module = importlib.reload(module)
-        parser_override = getattr(module, "PARSER", None)
+        parser_override = getattr(module, "PARSER", None) or getattr(module, "input_parser", None)
         parser = parsers.get_parser(self.input_data(1), parser_override)
         for want, func in [(test, self.test), (solve, self.solve), (check, self.check), (submit, self.submit)]:
             if want:

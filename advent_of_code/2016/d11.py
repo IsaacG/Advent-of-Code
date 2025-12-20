@@ -9,8 +9,6 @@ import queue
 import re
 from collections.abc import Generator, Iterable
 
-from lib import parsers
-
 SAMPLE = """\
 The first floor contains a hydrogen-compatible microchip and a lithium-compatible microchip.
 The second floor contains a hydrogen generator.
@@ -138,5 +136,4 @@ def input_parser(data: str) -> InputType:
     return tuple(frozenset(floor) for floor in state), materials
 
 
-PARSER = parsers.ParseCustom(input_parser)
 TESTS = [(1, SAMPLE, 11)]

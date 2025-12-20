@@ -7,7 +7,6 @@ Compute a repeat-checksum of dragon-curve data.
 import collections
 from collections.abc import Generator
 import more_itertools
-from lib import aoc
 
 
 def solve(data: list[bool], part: int, testing: bool) -> str:
@@ -63,5 +62,4 @@ def input_parser(data: str) -> list[bool]:
     return [i == "1" for i in data]
 
 
-PARSER = aoc.ParseCustom(input_parser)
 TESTS = [(1, "10000", "01100")]

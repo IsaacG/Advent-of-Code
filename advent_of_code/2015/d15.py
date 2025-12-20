@@ -3,12 +3,7 @@
 
 import itertools
 
-from lib import parsers
-
-
 PROPERTIES = "capacity durability flavor texture".split()
-
-
 ATTEMPTED = """
 Attempt to write a product() with better limiting:
     names = list(data)
@@ -118,7 +113,6 @@ def input_parser(data: str) -> dict[str, dict[str, int]]:
     return recipe
 
 
-PARSER = parsers.ParseCustom(input_parser)
 SAMPLE = """\
 Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
 Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"""

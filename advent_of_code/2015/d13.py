@@ -4,8 +4,6 @@
 import itertools
 import re
 
-from lib import aoc
-
 InputType = tuple[dict[tuple[str, str], int], set[str]]
 
 
@@ -47,7 +45,6 @@ def input_parser(puzzle_input: str) -> InputType:
     return data, people
 
 
-PARSER = aoc.ParseCustom(input_parser)
 SAMPLE = """\
 Alice would gain 54 happiness units by sitting next to Bob.
 Alice would lose 79 happiness units by sitting next to Carol.

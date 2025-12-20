@@ -3,7 +3,6 @@
 
 import json
 import typing
-from lib import parsers
 
 
 def doc_sum(obj, skip_red: bool) -> int:
@@ -26,7 +25,7 @@ def solve(data: typing.Any, part: int) -> int:
     return doc_sum(data, part == 2)
 
 
-PARSER = parsers.ParseCustom(json.loads)
+PARSER = json.loads
 SAMPLE = ["[1,2,3]", '[1, {"a": "red", "b": 2}, 3]']
 TESTS = [
     (1, SAMPLE[0], 6),

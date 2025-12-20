@@ -119,5 +119,4 @@ def input_parser(data: str) -> InputType:
     return parsed
 
 
-PARSER = aoc.ParseCustom(input_parser)
 TESTS = list[tuple[int, int, int]]()

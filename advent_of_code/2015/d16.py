@@ -4,8 +4,6 @@
 import operator
 import collections.abc
 
-from lib import aoc
-
 InputType = list[dict[str, int]]
 WANT_NUM = {
     "children": 3,
@@ -54,5 +52,4 @@ def input_parser(puzzle_input: str) -> InputType:
     ]
 
 
-PARSER = aoc.ParseCustom(input_parser)
 TESTS = []

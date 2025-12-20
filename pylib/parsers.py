@@ -405,17 +405,15 @@ class ParseDict(BaseParser):
         return outputs
 
 
-def get_parser(data: str, parser: BaseParser | None) -> BaseParser:
+def get_parser(data: str, parser: BaseParser | collections.abc.Callable[[str], Any] | None) -> collections.abc.Callable[[str], Any]:
     """Return the parsed data. Guess at a parser if needed."""
     # print("Code defined" if self.INPUT_PARSER is not None else "Heuristic determined")
     if parser is not None:
-        if not isinstance(parser, BaseParser):
-            raise ValueError(f"{parser!r} is a class and not an instance!")
-        return parser
+        return parser if callable(parser) else parser.parse
     # Use heuristics to guess at an input parser.
     got = _guess_parser(data)
     # print("Guessing at parser", got)
-    return got
+    return got.parse
 
 
 def _guess_parser(data: str) -> BaseParser:
