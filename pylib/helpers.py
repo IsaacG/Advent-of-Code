@@ -27,11 +27,12 @@ LETTER_DIRECTIONS = {"U": UP, "D": DOWN, "R": RIGHT, "L": LEFT}
 COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
 FOUR_DIRECTIONS_T = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+EIGHT_DIRECTIONS_T = FOUR_DIRECTIONS_T + [(1, 1), (1, -1), (-1, -1), (-1, 1)]
 STRAIGHT_NEIGHBORS_T = FOUR_DIRECTIONS_T
 DIAGONALS = [((1 + 1j) * -1j ** i) for i in range(4)]
 EIGHT_DIRECTIONS = FOUR_DIRECTIONS + DIAGONALS
 ALL_NEIGHBORS = EIGHT_DIRECTIONS
-ALL_NEIGHBORS_T = STRAIGHT_NEIGHBORS_T + [(1, 1), (1, -1), (-1, -1), (-1, 1)]
+ALL_NEIGHBORS_T = EIGHT_DIRECTIONS_T
 
 HEX_AXIAL_DIRS_POINTY_TOP = {
   'e':  +1 +0j,
@@ -169,6 +170,19 @@ def t_neighbors4(point: collections.abc.Sequence[int]) -> collections.abc.Iterab
     yield x - 1, y
     yield x, y + 1
     yield x, y - 1
+
+
+def t_neighbors8(point: collections.abc.Sequence[int]) -> collections.abc.Iterable[tuple[int, int]]:
+    """Return the 8 neighbors of a point."""
+    x, y = point
+    yield x + 1, y
+    yield x - 1, y
+    yield x, y + 1
+    yield x, y - 1
+    yield x + 1, y + 1
+    yield x + 1, y - 1
+    yield x - 1, y + 1
+    yield x - 1, y - 1
 
 
 @dataclasses.dataclass
