@@ -30,8 +30,8 @@ class Day03(aoc.Challenge):
   def tree_count(self, grid, x_step, y_step) -> int:
     count = 0
     x = 0
-    for y in range(0, len(grid), y_step):
-      if grid[y][x % len(grid[0])] == '#':
+    for y in range(0, grid.height, y_step):
+      if grid.chars[x % grid.width, y] == '#':
         count += 1
       x += x_step
     return count

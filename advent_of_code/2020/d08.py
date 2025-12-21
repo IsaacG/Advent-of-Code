@@ -35,7 +35,7 @@ class Day08(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[1], part=2, want=8),
   )
 
-  def compute(self, lines: List[str]) -> Tuple[int, bool]:
+  def compute(self, lines: list[list[str]]) -> Tuple[int, bool]:
     """Run the code, returning the accumulator and if the end was hit."""
     # Accumulator
     acc = 0
@@ -48,7 +48,7 @@ class Day08(aoc.Challenge):
 
     while True:
       seen.add(ptr)
-      op, sval = lines[ptr].split()
+      op, sval = lines[ptr]
       val = int(sval)
       if op == 'nop':
         ptr += 1
@@ -76,14 +76,14 @@ class Day08(aoc.Challenge):
   def part2(self, puzzle_input: List[str]) -> int:
     """Swap jmp<>nop until the code can run to the end."""
     for i in range(len(puzzle_input)):
-      op, val = puzzle_input[i].split()
+      op, val = puzzle_input[i]
       line = puzzle_input[i]
       if op == 'acc':
         continue
       if op == 'nop':
-        puzzle_input[i] = f'jmp {val}'
+        puzzle_input[i] = ['jmp', val]
       elif op == 'jmp':
-        puzzle_input[i] = f'nop {val}'
+        puzzle_input[i] = ['nop', val]
       acc, end = self.compute(puzzle_input)
       if end:
         return acc

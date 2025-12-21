@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import itertools
-from typing import List, Tuple
 from lib import aoc
 
-Coord = Tuple[int, ...]
+Coord = tuple[int, ...]
 
 SAMPLE = ["""\
 .#.
@@ -19,7 +18,7 @@ class GameOfLife:
   ACTIVE = '#'
   INACTIVE = '.'
 
-  def __init__(self, dimensions: int, block: List[str]):
+  def __init__(self, dimensions: int, block: list[str]):
     """Build the board from a 2x2 list of strings."""
     self.dimensions = dimensions
     self.board = set()
@@ -43,7 +42,7 @@ class GameOfLife:
     """Return if a spot is live."""
     return coord in self.board
 
-  def neighbors(self, coord: Coord) -> List[Coord]:
+  def neighbors(self, coord: Coord) -> list[Coord]:
     """List of all neighboring cells for a given Coord."""
     return [
       tuple(a + b for (a, b) in zip(coord, d))
@@ -121,8 +120,9 @@ class Day17(aoc.Challenge):
     aoc.TestCase(inputs=SAMPLE[0], part=1, want=112),
     aoc.TestCase(inputs=SAMPLE[0], part=2, want=848),
   ]
+  INPUT_PARSER = aoc.parse_one_str_per_line
 
-  def solve_game_of_life(self, puzzle_input: List[str], dimensions: int) -> int:
+  def solve_game_of_life(self, puzzle_input: list[str], dimensions: int) -> int:
     board = GameOfLife(dimensions, puzzle_input)
     if dimensions == 4:
       func = board.fast_calc_next
@@ -132,8 +132,8 @@ class Day17(aoc.Challenge):
       func()
     return board.live_count()
 
-  def part1(self, puzzle_input: List[str]) -> int:
+  def part1(self, puzzle_input: list[str]) -> int:
     return self.solve_game_of_life(puzzle_input, 3)
 
-  def part2(self, puzzle_input: List[str]) -> int:
+  def part2(self, puzzle_input: list[str]) -> int:
     return self.solve_game_of_life(puzzle_input, 4)
