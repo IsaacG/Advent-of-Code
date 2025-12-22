@@ -18,17 +18,10 @@ class Day06(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=26984457539),
     )
 
-    def part1(self, puzzle_input: InputType) -> int:
-        """Compute fish population after 80 days."""
-        return self.solve(puzzle_input[0], 80)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Compute fish population after 256 days."""
-        return self.solve(puzzle_input[0], 256)
-
     @staticmethod
-    def solve(puzzle_input: InputType, days: int) -> int:
+    def solver(puzzle_input: InputType, part_one) -> int:
         """Compute fish population after N days."""
+        days = 80 if part_one else 256
         # Construct the initial population map. Age -> count.
         counter = dict(collections.Counter(puzzle_input))
         for _ in range(days):

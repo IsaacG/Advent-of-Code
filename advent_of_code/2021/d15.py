@@ -25,6 +25,7 @@ class Day15(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=315),
     )
     TIMEOUT = 90
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def part1(self, puzzle_input: aoc.Map) -> int:
         """Return the lowest cost path from start to end."""

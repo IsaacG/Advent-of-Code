@@ -3,7 +3,7 @@
 
 from lib import aoc
 
-SAMPLE = ["""\
+SAMPLE = """\
 5483143223
 2745854711
 5264556173
@@ -14,16 +14,17 @@ SAMPLE = ["""\
 6882881134
 4846848554
 5283751526
-"""]
+"""
 
 
 class Day11(aoc.Challenge):
     """Count the flashing octopuses."""
 
     TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=1656),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=195),
+        aoc.TestCase(inputs=SAMPLE, part=1, want=1656),
+        aoc.TestCase(inputs=SAMPLE, part=2, want=195),
     )
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def step(self, octopuses: dict[complex, int]) -> dict[complex, int]:
         """Apply one clock step to the octopuses."""
@@ -46,7 +47,7 @@ class Day11(aoc.Challenge):
         new.update({point: 0 for point in flashed})
         return new
 
-    def part1(self, puzzle_input: aoc.Map) -> int:
+    def part1(self, puzzle_input: aoc.MapC) -> int:
         """Count how many octopuses flash after 100 steps."""
         octopuses = puzzle_input.chars
         flashes = 0
@@ -55,7 +56,7 @@ class Day11(aoc.Challenge):
             flashes += sum(1 for v in octopuses.values() if v == 0)
         return flashes
 
-    def part2(self, puzzle_input: aoc.Map) -> int:
+    def part2(self, puzzle_input: aoc.MapC) -> int:
         """Count how many steps until all the octopuses flashed in the same step."""
         octopuses = puzzle_input.chars
         # Stop after a bunch of steps, just in case this isn't working.

@@ -317,13 +317,12 @@ class Day24(aoc.Challenge):
     14 input values.
     """
 
-    DEBUG = False
-
     TESTS = [
         aoc.TestCase(inputs=v, part=p + 1, want=input_data.DAY24_SOLUTIONS[k][p])
         for k, v in input_data.DAY24.items()
         for p in (0, 1)
     ]
+    INPUT_PARSER = aoc.parse_multi_str_per_line
 
     def part1(self, puzzle_input: list[tuple[str, ...]]) -> int:
         """Return the max valid seriel number."""

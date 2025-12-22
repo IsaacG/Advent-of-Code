@@ -20,7 +20,7 @@ class Day07(aoc.Challenge):
 
     def solver(self, puzzle_input: list[int], part_one: bool) -> int:
         """Find the location where it is cheapest for all the crabs to move."""
-        positions = puzzle_input[0]
+        positions = puzzle_input
         costs = []
         # Return the optimal blast position with constant movement cost.
         # Return the optimal blast position with linear movement cost.

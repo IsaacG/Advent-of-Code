@@ -526,13 +526,12 @@ class Challenge:
 
     def input_parser(self, puzzle_input: str) -> Any:
         """Parse input data. Block of text -> output."""
-        return get_parser(self.raw_data(None), self.INPUT_PARSER)(puzzle_input)
+        return get_parser(self.raw_data(None), self.INPUT_PARSER)(puzzle_input.rstrip("\n"))
 
     def run_solver(self, part: int, puzzle_input: str) -> Any:
         """Run a solver for one part."""
         func = {1: self.part1, 2: self.part2}
-        parsed_input = self.input_parser(puzzle_input.rstrip())
-        get_parser(self.raw_data(None), self.INPUT_PARSER)(puzzle_input)
+        parsed_input = self.input_parser(puzzle_input)
         self.pre_run(parsed_input)
         try:
             return self.solver(parsed_input, part == 1)
@@ -564,7 +563,7 @@ class Challenge:
             if len(case.inputs) <= 1:
                 print('WARNING TestCase.inputs is less than two chars.')
             start = time.perf_counter_ns()
-            got = self.run_solver(case.part, case.inputs.rstrip())
+            got = self.run_solver(case.part, case.inputs)
             end = time.perf_counter_ns()
             if case.want != got:
                 print(f'{self.year}/{self.day:02d} Test {i + 1}: FAILED! {case.part}: want({case.want}) != got({got})')
