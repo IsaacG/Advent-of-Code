@@ -1,53 +1,25 @@
 #!/usr/bin/env python
 """Day 14. Write data to memory?"""
 
-from lib import aoc
-from typing import Callable, Dict, List, Tuple
 
+def solve(data: list[tuple[str, ...]], part: int) -> int:
+    """Read input. Track mask. Apply writes with the mem_writer.
 
-SAMPLE = ["""\
-mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
-mem[8] = 11
-mem[7] = 101
-mem[8] = 0
-""", """\
-mask = 000000000000000000000000000000X1001X
-mem[42] = 100
-mask = 00000000000000000000000000000000X0XX
-mem[26] = 1
-"""]
-
-
-class Day14(aoc.Challenge):
-  """Solve Day 14.
-
-  Both parts do similar read, track mask, apply write.
-  They only differ in how a "write" is applied.
-  """
-
-  TESTS = (
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=165),
-    aoc.TestCase(inputs=SAMPLE[1], part=2, want=208),
-  )
-
-  def part1(self, puzzle_input: List[Tuple[str, ...]]) -> int:
-    return self.solve(puzzle_input, self.write1)
-
-  def part2(self, puzzle_input: List[Tuple[str, ...]]) -> int:
-    return self.solve(puzzle_input, self.write2)
-
-  def solve(self, puzzle_input: List[Tuple[str, ...]], mem_writer: Callable[[str, int, int], None]) -> int:
-    """Read input. Track mask. Apply writes with the mem_writer."""
-    self.mem = {}  # type:Dict[int, int]
+    Both parts do similar read, track mask, apply write.
+    They only differ in how a "write" is applied.
+    """
+    mem = dict[int, int]()
+    mem_writer = write1 if part == 1 else write2
     mask = ''
-    for (op, val) in puzzle_input:
-      if op == 'mask':
-        mask = val
-      else:
-        mem_writer(mask, int(op[4:-1]), int(val))
-    return sum(self.mem.values())
+    for (op, val) in data:
+        if op == 'mask':
+            mask = val
+        else:
+            mem_writer(mem, mask, int(op[4:-1]), int(val))
+    return sum(mem.values())
 
-  def write1(self, mask: str, address: int, value: int):
+
+def write1(mem: dict[int, int], mask: str, address: int, value: int):
     """Use the mask to modify the value then write it to memory.
 
     Replace X=>0 then do a bool-OR to apply 1's
@@ -55,9 +27,10 @@ class Day14(aoc.Challenge):
     """
     m0 = int(mask.replace('X', '0'), 2)
     m1 = int(mask.replace('X', '1'), 2)
-    self.mem[address] = (value | m0) & m1
+    mem[address] = (value | m0) & m1
 
-  def write2(self, mask: str, address: int, value: int):
+
+def write2(mem: dict[int, int], mask: str, address: int, value: int):
     """Use the mask to generate multiple addresses to write the value to."""
     # 36-bit binary string of the address.
     padded_addr = f'{address:036b}'
@@ -71,12 +44,29 @@ class Day14(aoc.Challenge):
     # make a binary string and replace the X's with the 0|1.
     count = sum(True for i in masked_addr if i == 'X')
     for i in range(2**count):
-      # count-length binary string. 0 => 000 => [0, 0, 0]
-      substitute = list(format(i, ('0%db' % count)))
-      # Rebuild the address, replacing 'X' with a char from substitute.
-      final_addr = [substitute.pop(0) if a == 'X' else a for a in masked_addr]
-      addr = int("".join(final_addr), 2)
-      self.mem[addr] = value
+        # count-length binary string. 0 => 000 => [0, 0, 0]
+        substitute = list(format(i, ('0%db' % count)))
+        # Rebuild the address, replacing 'X' with a char from substitute.
+        final_addr = [substitute.pop(0) if a == 'X' else a for a in masked_addr]
+        addr = int("".join(final_addr), 2)
+        mem[addr] = value
 
-  def input_parser(self, puzzle_input: str) -> List[Tuple[str, ...]]:
+
+def input_parser(puzzle_input: str) -> list[tuple[str, ...]]:
+    """Parse the input."""
     return [tuple(line.split(' = ')) for line in puzzle_input.split('\n')]
+
+
+SAMPLE = ["""\
+mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
+mem[8] = 11
+mem[7] = 101
+mem[8] = 0""", """\
+mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1"""]
+TESTS = [
+    (1, SAMPLE[0], 165),
+    (2, SAMPLE[1], 208),
+]

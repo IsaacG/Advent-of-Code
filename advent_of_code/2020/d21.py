@@ -1,24 +1,8 @@
 #!/usr/bin/env python
-
-from typing import Dict, List, Tuple
-from lib import aoc
-
-SAMPLE = ["""\
-mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
-trh fvjkl sbzzf mxmxvkd (contains dairy)
-sqjhc fvjkl (contains soy)
-sqjhc mxmxvkd sbzzf (contains fish)
-"""]
+"""AoC Day 21: Allergen Assessment."""
 
 
-class Day21(aoc.Challenge):
-
-  TESTS = [
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-    aoc.TestCase(inputs=SAMPLE[0], part=2, want='mxmxvkd,sqjhc,fvjkl'),
-  ]
-
-  def allergen_to_food(self, data: List[Tuple[List[str], List[str]]]) -> Dict[str, str]:
+def allergen_to_food(data: list[tuple[list[str], list[str]]]) -> dict[str, str]:
     """Map allergens to the ingredient that contains it.
 
     Map an allergen to a list of potential ingredients and pair down that list until
@@ -29,44 +13,53 @@ class Day21(aoc.Challenge):
     # Map allergens to the intersections of candidates.
     candidates = {}
     for pair in data:
-      ingredients, allergens = pair
-      for allergen in allergens:
-        if allergen not in candidates:
-          candidates[allergen] = set(ingredients)  # Copy the set.
-        else:
-          candidates[allergen] &= set(ingredients)
+        ingredients, allergens = pair
+        for allergen in allergens:
+            if allergen not in candidates:
+                candidates[allergen] = set(ingredients)    # Copy the set.
+            else:
+                candidates[allergen] &= set(ingredients)
 
     # Pair up allergens to ingredients and remove candidates.
     while candidates:
-      # Find an allergen with only one candidate.
-      allergen, foods = [(i, j) for i, j in candidates.items() if len(j) == 1][0]
-      food = foods.pop()
-      solved[allergen] = food
-      # Drop the candidate and remove the ingredient from all other candidate lists.
-      del candidates[allergen]
-      for i in candidates.values():
-        if food in i:
-          i.remove(food)
+        # Find an allergen with only one candidate.
+        allergen, foods = [(i, j) for i, j in candidates.items() if len(j) == 1][0]
+        food = foods.pop()
+        solved[allergen] = food
+        # Drop the candidate and remove the ingredient from all other candidate lists.
+        del candidates[allergen]
+        for i in candidates.values():
+            if food in i:
+                i.remove(food)
     return solved
 
-  def part1(self, data: List[Tuple[List[str], List[str]]]) -> int:
-    """Count the ingredients (including repeats) of food without allergens."""
-    solved = self.allergen_to_food(data)
-    all_ingredients = [b for line in data for b in line[0]]
-    bad_ingredients = solved.values()
-    return sum(True for i in all_ingredients if i not in bad_ingredients)
 
-  def part2(self, data: List[Tuple[List[str], List[str]]]) -> str:
-    """Return the foods containing allergens, sorted by allergen."""
-    solved = self.allergen_to_food(data)
+def solve(data: list[tuple[list[str], list[str]]], part: int) -> int | str:
+    """Determine food allergens."""
+    solved = allergen_to_food(data)
+    if part == 1:
+        # Count the ingredients (including repeats) of food without allergens.
+        all_ingredients = [b for line in data for b in line[0]]
+        bad_ingredients = solved.values()
+        return sum(True for i in all_ingredients if i not in bad_ingredients)
+    # Return the foods containing allergens, sorted by allergen.
     return ",".join(solved[i] for i in sorted(solved.keys()))
 
-  def input_parser(self, puzzle_input: str):
+
+def input_parser(puzzle_input: str):
     """Parse input lines into tuple(list[ingredients], list[allergens])."""
     out = []
-    for line in puzzle_input.split('\n'):
-      ingredients_raw, allergens_raw = line.split(' (contains ')
-      ingredients = ingredients_raw.split(' ')
-      allergens = allergens_raw[:-1].split(', ')
-      out.append((set(ingredients), set(allergens)))
+    for line in puzzle_input.splitlines():
+        ingredients_raw, allergens_raw = line.split(' (contains ')
+        ingredients = ingredients_raw.split(' ')
+        allergens = allergens_raw[:-1].split(', ')
+        out.append((set(ingredients), set(allergens)))
     return out
+
+
+SAMPLE = """\
+mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish)"""
+TESTS = [(1, SAMPLE, 5), (2, SAMPLE, 'mxmxvkd,sqjhc,fvjkl')]

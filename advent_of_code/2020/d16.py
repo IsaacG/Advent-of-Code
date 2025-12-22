@@ -2,7 +2,108 @@
 """Train tickets."""
 
 import math
-from lib import aoc
+
+
+def input_parser(puzzle_input: str):
+    """Parse the input."""
+    rules, your_ticket_raw, nearby_tickets_raw = puzzle_input.split('\n\n')
+
+    rule_by_name = {}
+    for line in rules.split('\n'):
+        name, val = line.split(': ')
+        rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in val.split(' or '))
+    # CSV data, one row (after the header).
+    your_ticket = [int(i) for i in your_ticket_raw.split('\n')[1].split(',')]
+    # CSV data. Split in "\n" for a record, split record on "," for values.
+    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets_raw.split('\n')[1:]]
+
+    return rule_by_name, your_ticket, nearby_tickets
+
+
+def solve(data, part: int) -> int:
+    """Analyze train schedules."""
+    return (part1 if part == 1 else part2)(data)
+
+
+def part1(data) -> int:
+    """Find bad fields."""
+    rule_by_name, _, nearby_tickets = data
+    # Bad fields are values that do not meet any rule.
+    bad_values = [
+        # Find all numbers on all tickets
+        number for ticket in nearby_tickets for number in ticket
+        if not any(
+            # Where number does not satify any part of any rule.
+            rule_part[0] <= number <= rule_part[1] for rule in rule_by_name.values() for rule_part in rule
+        )
+    ]
+    return sum(bad_values)
+
+
+def part2(data) -> int:
+    """Find departure times."""
+    rule_by_name, your_ticket, nearby_tickets = data
+    # Find good tickets.
+    # Good tickets mean all values pass any part of any rules.
+    nearby_tickets = [
+        ticket
+        for ticket in nearby_tickets
+        if all(     # All numbers on the ticket
+            any(        # pass any of the rules
+                any(    # by matching any part of the rule
+                    rule_part[0] <= number <= rule_part[1] for rule_part in rule
+                )
+                for rule in rule_by_name.values()
+            )
+            for number in ticket
+        )
+    ]
+    # Construct a list of values in each column/field. Transpose the ticket info.
+    col_values = [{ticket[n] for ticket in nearby_tickets} for n in range(len(nearby_tickets[0]))]
+
+    # Fill out your ticket, mapping field name to value.
+    completed_ticket = {}
+
+    # Map each rule name to the columns that satisfy that rule.
+    candidate_cols_for_rule = {
+        rule_name: {
+            c for c in range(len(rule_by_name))
+            if all(    # All the column values pass
+                any(     # any of the parts of the rule.
+                    rule_part[0] <= number <= rule_part[1] for rule_part in rule
+                )
+                for number in col_values[c]
+            )
+        }
+        for rule_name, rule in rule_by_name.items()
+    }
+
+    # Match all rules to a column count until all rules are used up.
+    while candidate_cols_for_rule:
+        # Get the rule that can only be satisfied by one column.
+        rule_with_one_candidate = [
+            rule_name
+            for rule_name, candidates in candidate_cols_for_rule.items()
+            if len(candidates) == 1
+        ]
+        # It had better exist!
+        assert len(rule_with_one_candidate) == 1
+        rule_name = rule_with_one_candidate[0]
+
+        # Get the column ID and drop the rule.
+        column = candidate_cols_for_rule[rule_name].pop()
+        del candidate_cols_for_rule[rule_name]
+
+        # Update our ticket with the rule name and value.
+        completed_ticket[rule_name] = your_ticket[column]
+
+        # Drop the column we just used from the candidates. It's no longer available.
+        for candidates in candidate_cols_for_rule.values():
+            candidates.remove(column)
+
+    # Multiply all the fields that start with "departure".
+    return math.prod(v for k, v in completed_ticket.items() if k.startswith('departure'))
+
 
 # Fudge the second sample to include departure rows
 # so it would be valid input to part2.
@@ -18,8 +119,7 @@ nearby tickets:
 7,3,47
 40,4,50
 55,2,20
-38,6,12
-""", """\
+38,6,12""", """\
 departure class: 0-1 or 4-19
 departure row: 0-5 or 8-19
 seat: 0-13 or 16-19
@@ -30,106 +130,8 @@ your ticket:
 nearby tickets:
 3,9,18
 15,1,5
-5,14,9
-"""]
-
-
-class Day16(aoc.Challenge):
-  """Day 16. Train tickets."""
-
-  TESTS = [
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=71),
-    aoc.TestCase(inputs=SAMPLE[1], part=2, want=132),
-  ]
-
-  def input_parser(self, puzzle_input: str):
-    """Parse the input."""
-    rules, your_ticket_raw, nearby_tickets_raw = puzzle_input.split('\n\n')
-
-    rule_by_name = {}
-    for line in rules.split('\n'):
-       name, val = line.split(': ')
-       rule_by_name[name] = tuple(tuple(int(p) for p in o.split('-')) for o in val.split(' or '))
-    # CSV data, one row (after the header).
-    your_ticket = [int(i) for i in your_ticket_raw.split('\n')[1].split(',')]
-    # CSV data. Split in "\n" for a record, split record on "," for values.
-    nearby_tickets = [[int(i) for i in line.split(',')] for line in nearby_tickets_raw.split('\n')[1:]]
-
-    return rule_by_name, your_ticket, nearby_tickets
-
-  def part1(self, data) -> int:
-    """Find bad fields."""
-    rule_by_name, your_ticket, nearby_tickets = data
-    # Bad fields are values that do not meet any rule.
-    bad_values = [
-      # Find all numbers on all tickets
-      number for ticket in nearby_tickets for number in ticket
-      if not any(
-        # Where number does not satify any part of any rule.
-        rule_part[0] <= number <= rule_part[1] for rule in rule_by_name.values() for rule_part in rule
-      )
-    ]
-    return sum(bad_values)
-
-  def part2(self, data) -> int:
-    rule_by_name, your_ticket, nearby_tickets = data
-    # Find good tickets.
-    # Good tickets mean all values pass any part of any rules.
-    nearby_tickets = [
-      ticket
-      for ticket in nearby_tickets
-      if all(   # All numbers on the ticket
-        any(    # pass any of the rules
-          any(  # by matching any part of the rule
-            rule_part[0] <= number <= rule_part[1] for rule_part in rule
-          )
-          for rule in rule_by_name.values()
-        )
-        for number in ticket
-      )
-    ]
-    # Construct a list of values in each column/field. Transpose the ticket info.
-    col_values = [{ticket[n] for ticket in nearby_tickets} for n in range(len(nearby_tickets[0]))]
-
-    # Fill out your ticket, mapping field name to value.
-    completed_ticket = {}
-
-    # Map each rule name to the columns that satisfy that rule.
-    candidate_cols_for_rule = {
-      rule_name: {
-        c for c in range(len(rule_by_name))
-        if all(  # All the column values pass
-          any(   # any of the parts of the rule.
-            rule_part[0] <= number <= rule_part[1] for rule_part in rule
-          )
-          for number in col_values[c]
-        )
-      }
-      for rule_name, rule in rule_by_name.items()
-    }
-
-    # Match all rules to a column count until all rules are used up.
-    while candidate_cols_for_rule:
-      # Get the rule that can only be satisfied by one column.
-      rule_with_one_candidate = [
-        rule_name
-        for rule_name, candidates in candidate_cols_for_rule.items()
-        if len(candidates) == 1
-      ]
-      # It had better exist!
-      assert len(rule_with_one_candidate) == 1
-      rule_name = rule_with_one_candidate[0]
-
-      # Get the column ID and drop the rule.
-      column = candidate_cols_for_rule[rule_name].pop()
-      del candidate_cols_for_rule[rule_name]
-
-      # Update our ticket with the rule name and value.
-      completed_ticket[rule_name] = your_ticket[column]
-
-      # Drop the column we just used from the candidates. It's no longer available.
-      for candidates in candidate_cols_for_rule.values():
-        candidates.remove(column)
-
-    # Multiply all the fields that start with "departure".
-    return math.prod(v for k, v in completed_ticket.items() if k.startswith('departure'))
+5,14,9"""]
+TESTS = [
+    (1, SAMPLE[0], 71),
+    (2, SAMPLE[1], 132),
+]

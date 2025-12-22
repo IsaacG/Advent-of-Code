@@ -1,8 +1,62 @@
 #!/usr/bin/env python
+"""AoC Day 8: Handheld Halting."""
 
-from typing import List, Tuple
 
-from lib import aoc
+def compute(lines: list[list[str]]) -> tuple[int, bool]:
+    """Run the code, returning the accumulator and if the end was hit."""
+    # Accumulator
+    acc = 0
+    # Instruction pointer. The next instruction to execute.
+    ptr = 0
+    # Track which instructions were previously executed for loop detection.
+    seen = set()
+    # max value for the ptr, ie the end of the instructions.
+    max_ptr = len(lines) - 1
+
+    while True:
+        seen.add(ptr)
+        op, sval = lines[ptr]
+        val = int(sval)
+        if op == 'nop':
+            ptr += 1
+        elif op == 'jmp':
+            ptr += val
+        elif op == 'acc':
+            ptr += 1
+            acc += val
+        else:
+            raise ValueError(f'Invalid op {op}')
+
+        # Got to the end.
+        if ptr > max_ptr:
+            return acc, True
+        # Loop detection.
+        if ptr in seen:
+            return acc, False
+
+
+def solve(data, part: int) -> int:
+    """Run a program to get the accumulator value."""
+    if part == 1:
+        # Run the code until a loop is detected.
+        acc, end = compute(data)
+        return acc
+
+    # Swap jmp<>nop until the code can run to the end.
+    for i, (op, val) in enumerate(data.copy()):
+        op, val = data[i]
+        line = data[i]
+        if op == 'acc':
+            continue
+        if op == 'nop':
+            data[i] = ['jmp', val]
+        elif op == 'jmp':
+            data[i] = ['nop', val]
+        acc, end = compute(data)
+        if end:
+            return acc
+        data[i] = line
+    raise RuntimeError
 
 
 SAMPLE = ["""\
@@ -26,66 +80,7 @@ acc +1
 jmp -4
 acc +6
 """]
-
-
-class Day08(aoc.Challenge):
-
-  TESTS = (
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=5),
-    aoc.TestCase(inputs=SAMPLE[1], part=2, want=8),
-  )
-
-  def compute(self, lines: list[list[str]]) -> Tuple[int, bool]:
-    """Run the code, returning the accumulator and if the end was hit."""
-    # Accumulator
-    acc = 0
-    # Instruction pointer. The next instruction to execute.
-    ptr = 0
-    # Track which instructions were previously executed for loop detection.
-    seen = set()
-    # max value for the ptr, ie the end of the instructions.
-    max_ptr = len(lines) - 1
-
-    while True:
-      seen.add(ptr)
-      op, sval = lines[ptr]
-      val = int(sval)
-      if op == 'nop':
-        ptr += 1
-      elif op == 'jmp':
-        ptr += val
-      elif op == 'acc':
-        ptr += 1
-        acc += val
-      else:
-        raise ValueError(f'Invalid op {op}')
-
-      # Got to the end.
-      if ptr > max_ptr:
-        return acc, True
-      # Loop detection.
-      if ptr in seen:
-        return acc, False
-
-  def part1(self, puzzle_input: List[str]) -> int:
-    """Run the code until a loop is detected."""
-    acc, end = self.compute(puzzle_input)
-    assert not end
-    return acc
-
-  def part2(self, puzzle_input: List[str]) -> int:
-    """Swap jmp<>nop until the code can run to the end."""
-    for i in range(len(puzzle_input)):
-      op, val = puzzle_input[i]
-      line = puzzle_input[i]
-      if op == 'acc':
-        continue
-      if op == 'nop':
-        puzzle_input[i] = ['jmp', val]
-      elif op == 'jmp':
-        puzzle_input[i] = ['nop', val]
-      acc, end = self.compute(puzzle_input)
-      if end:
-        return acc
-      puzzle_input[i] = line
-    raise RuntimeError
+TESTS = [
+    (1, SAMPLE[0], 5),
+    (2, SAMPLE[1], 8),
+]

@@ -91,7 +91,7 @@ class Runner:
                 data_path.write_text(data)
         if not data_path.exists():
             return None
-        return data_path.read_text().rstrip()
+        return data_path.read_text().rstrip("\n")
 
     def compare(self, want, data: typing.Any, msg_success: str, msg_fail: str, func: typing.Callable, **kwargs) -> bool:
         time_s, got = helpers.timed(func, data=data, **kwargs)
@@ -115,7 +115,7 @@ class Runner:
                 if test_part != part:
                     continue
                 success = success and self.compare(
-                    test_want, parser(test_data),
+                    test_want, parser(test_data.rstrip("\n")),
                     f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
                     f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
                     module.solve,

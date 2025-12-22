@@ -19,60 +19,33 @@ In order to keep 0 <= bearing < 360, bearing = (bearing + n) % 360.
 [1] https://en.wikipedia.org/wiki/Complex_plane
 [2] https://en.wikipedia.org/wiki/Polar_coordinate_system
 """
-
 from lib import aoc
 
-SAMPLE = ["""\
-F10
-N3
-F7
-R90
-F11
-"""]
+PARSER = lambda x: [(line[0], int(line[1:])) for line in x.splitlines()]
+# Modifier to map EWNS or degrees to a complex rotation.
+MOD = aoc.COMPASS_DIRECTIONS
 
 
-class Day12(aoc.Challenge):
-  """Day 12."""
-
-  DEBUG = False
-  INPUT_PARSER = aoc.ParseOneWordPerLine(lambda l: (l[0], int(l[1:])))
-
-  TESTS = (
-    aoc.TestCase(inputs=SAMPLE[0], part=1, want=25),
-    aoc.TestCase(inputs=SAMPLE[0], part=2, want=286),
-  )
-
-  # Modifier to map EWNS or degrees to a complex rotation.
-  MOD = aoc.COMPASS_DIRECTIONS
-
-  def manhattan_dist(self, num: complex) -> int:
-    """Manhattan distance of a complex number."""
-    return int(abs(num.real) + abs(num.imag))
-
-  def solve(self, puzzle_input: list[tuple[str, int]], waypoint: complex, part: int) -> int:
+def solve(data: list[tuple[str, int]], part: int) -> int:
     """Track the ship's position - with a magical waypoint."""
     ship = 0 + 0j
-    for instruction, num in puzzle_input:
-      if instruction in 'NEWS':
-        change = num * self.MOD[instruction]
-        if part == 1:
-          ship += change
-        else:
-          waypoint += change
-      if instruction in 'LR':
-        if instruction == 'R':
-          num = 360 - num
-        num //= 90
-        waypoint *= 1j ** num
-      if instruction == 'F':
-        ship += num * waypoint
-    return self.manhattan_dist(ship)
-
-  def part1(self, puzzle_input: list[tuple[str, int]]) -> int:
-    return self.solve(puzzle_input, 1, 1)
-
-  def part2(self, puzzle_input: list[tuple[str, int]]) -> int:
-    return self.solve(puzzle_input, (10 + 1j), 2)
+    waypoint = complex(1, 0) if part == 1 else complex(10, 1)
+    for instruction, num in data:
+        if instruction in 'NEWS':
+            change = num * MOD[instruction]
+            if part == 1:
+                ship += change
+            else:
+                waypoint += change
+        if instruction in 'LR':
+            if instruction == 'R':
+                num = 360 - num
+            num //= 90
+            waypoint *= 1j ** num
+        if instruction == 'F':
+            ship += num * waypoint
+    return int(abs(ship.real) + abs(ship.imag))
 
 
-# vim:ts=2:sw=2:expandtab
+SAMPLE = "F10 N3 F7 R90 F11".replace(" ", "\n")
+TESTS = [(1, SAMPLE, 25), (2, SAMPLE, 286)]
