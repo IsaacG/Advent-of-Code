@@ -312,35 +312,34 @@ def reading_order(data: Sequence[complex]) -> list[complex]:
 
 
 def floodfill(
-    data: set[complex],
-    start: complex,
-    predicate: Callable[[complex, complex], bool],
-    directions: list[complex] = FOUR_DIRECTIONS
-) -> set[complex]:
+    data: set[T],
+    start: T,
+    predicate: Callable[[T, T], bool],
+) -> set[T]:
     """Expand a point to its region by flood filling so long as the char matches."""
+    adjacent = neighbors if isinstance(list(data)[0], complex) else t_neighbors4
     todo = {start}
     region = set()
     while todo:
         cur = todo.pop()
         region.add(cur)
         todo.update(
-            p for p in neighbors(cur, directions)
-            if p in data and p not in region and predicate(cur, p)
+            p for p in adjacent(cur)  # type: ignore
+            if p in data and p not in region and predicate(cur, p)  # type: ignore
         )
     return region
 
 
 def partition_regions(
-    data: set[complex],
-    predicate: Callable[[complex, complex], bool],
-    directions: list[complex] = FOUR_DIRECTIONS,
-) -> list[set[complex]]:
+    data: set[T],
+    predicate: Callable[[T, T], bool],
+) -> list[set[T]]:
     """Partition a map into regions."""
     regions = []
     todo = set(data)
     while todo:
         cur = todo.pop()
-        region = floodfill(data, cur, predicate, directions)
+        region = floodfill(data, cur, predicate)
         todo -= region
         regions.append(region)
     return regions
