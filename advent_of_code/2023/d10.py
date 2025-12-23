@@ -85,6 +85,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[2], part=2, want=4),
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=8),
     ]
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int:
         pipes = puzzle_input.chars

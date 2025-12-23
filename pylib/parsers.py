@@ -374,8 +374,6 @@ class CoordinatesParser(BaseParser):
         non_blank_chars = set(coords_by_char) - {blank_char}
 
         return Map(
-            max_x=x,
-            max_y=y,
             chars=char_by_coord,
             coords=dict(coords_by_char),
             all_coords=all_coords,

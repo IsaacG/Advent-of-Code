@@ -29,7 +29,7 @@ SAMPLE = """\
 #.....###...###...#...#
 #####################.#"""
 
-InputType = dict[complex, str]
+InputType = dict[tuple[int, int], str]
 
 
 class Day23(aoc.Challenge):
@@ -39,14 +39,13 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=94),
         aoc.TestCase(inputs=SAMPLE, part=2, want=154),
     ]
-    TIMEOUT = 45
 
     def part1(self, puzzle_input: InputType) -> int:
         """Return the max steps to the end, taking slopes into account."""
         board = puzzle_input.chars
-        _, min_y, _, max_y = aoc.bounding_coords(board)
-        start = next(i for i, char in board.items() if i.imag == min_y and char == ".")
-        end = next(i for i, char in board.items() if i.imag == max_y and char == ".")
+        min_y, max_y = puzzle_input.min_y, puzzle_input.max_y
+        start = next(i for i, char in board.items() if i[1] == min_y and char == ".")
+        end = next(i for i, char in board.items() if i[1] == max_y and char == ".")
 
         # Explore nodes, tracking the current location and all visited locations to get here.
         to_explore = [(start, {start})]
@@ -62,11 +61,11 @@ class Day23(aoc.Challenge):
             # Determine what nodes are viable as next steps.
             char = board[current_node]
             if char in aoc.ARROW_DIRECTIONS:
-                options = [current_node + aoc.ARROW_DIRECTIONS[char]]
+                options = [(current_node[0] + aoc.ARROW_DIRECTIONS_T[char][0], current_node[1] + aoc.ARROW_DIRECTIONS_T[char][1])]
             else:
                 options = [
                     next_pos
-                    for next_pos in aoc.neighbors(current_node)
+                    for next_pos in aoc.t_neighbors4(current_node)
                     if board.get(next_pos, "#") != "#"
                 ]
             # Add nodes for future exploration.
@@ -78,29 +77,29 @@ class Day23(aoc.Challenge):
         # The correct step count should not include the start.
         return max_steps - 1
 
-    def compressed_graph(self, board: set[complex]) -> tuple[dict[int, dict[int, int]], int, int]:
+    def compressed_graph(self, board: set[tuple[int, int]]) -> tuple[dict[int, dict[int, int]], int, int]:
         """Return a "hallway compressed" graph, i.e. a weighted graph between points of interest."""
-        _, min_y, _, max_y = aoc.bounding_coords(board)
-        start_coord = next(i for i in board if i.imag == min_y)
-        end_coord = next(i for i in board if i.imag == max_y)
+        min_y, max_y = min(p[1] for p in board), max(p[1] for p in board)
+        start_coord = next(i for i in board if i[1] == min_y)
+        end_coord = next(i for i in board if i[1] == max_y)
 
         # Find all the interesting locations on the board, ignoring the hallways in between.
-        forks = {coord for coord in board if len(set(aoc.neighbors(coord)) & board) > 2}
+        forks = {coord for coord in board if len(set(aoc.t_neighbors4(coord)) & board) > 2}
         forks.add(start_coord)
         forks.add(end_coord)
 
         # Compute the longest distances between all interesting locations.
-        longest_dist: dict[complex, dict[complex, int]] = collections.defaultdict(lambda: collections.defaultdict(int))
+        longest_dist: dict[tuple[int, int], dict[tuple[int, int], int]] = collections.defaultdict(lambda: collections.defaultdict(int))
         # For each start location, pick one direction and
         # walk down that hallway until hitting another fork.
         for coord in forks:
-            neighbors = set(aoc.neighbors(coord)) & board
+            neighbors = set(aoc.t_neighbors4(coord)) & board
             for current_node in neighbors:
                 steps = 1
                 prior = coord
                 while current_node not in forks:
                     steps += 1
-                    options = set(aoc.neighbors(current_node)) & board
+                    options = set(aoc.t_neighbors4(current_node)) & board
                     current_node, prior = next(i for i in options if i != prior), current_node
 
                 # Record the longest hallways between these two locations.

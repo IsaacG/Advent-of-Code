@@ -29,6 +29,7 @@ RANKS = {
 class Day07(aoc.Challenge):
     """Day 7: Camel Cards. Rank poker card hands."""
 
+    INPUT_PARSER = aoc.parse_multi_str_per_line
     TESTS = [
         aoc.TestCase(inputs=SAMPLE, part=1, want=6440),
         aoc.TestCase(inputs=SAMPLE, part=2, want=5905),

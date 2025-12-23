@@ -23,6 +23,7 @@ UP, DOWN, RIGHT, LEFT = complex(0, -1), complex(0, 1), complex(1), complex(-1)
 FOUR_DIRECTIONS = [UP, DOWN, RIGHT, LEFT]
 # UP, DOWN, RIGHT, LEFT = aoc.FOUR_DIRECTIONS
 ARROW_DIRECTIONS = {"^": UP, "v": DOWN, ">": RIGHT, "<": LEFT}
+ARROW_DIRECTIONS_T = {"^": (0, -1), "v": (0, 1), ">": (1, 0), "<": (-1, 0)}
 LETTER_DIRECTIONS = {"U": UP, "D": DOWN, "R": RIGHT, "L": LEFT}
 COMPASS_DIRECTIONS = {"S": -1j, "N": 1j, "E": 1, "W": -1}
 STRAIGHT_NEIGHBORS = FOUR_DIRECTIONS
@@ -253,8 +254,6 @@ class MapC:
 
 @dataclasses.dataclass
 class Map:
-    max_x: int
-    max_y: int
     chars: dict[tuple[int, int], str | int]
     coords: dict[str | int, set[tuple[int, int]]]
     all_coords: set[tuple[int, int]]
@@ -262,6 +261,10 @@ class Map:
     non_blank_chars: set[str]
 
     def __post_init__(self) -> None:
+        self.min_x = min(c[0] for c in self.chars)
+        self.min_y = min(c[1] for c in self.chars)
+        self.max_x = max(c[0] for c in self.chars)
+        self.max_y = max(c[1] for c in self.chars)
         self.width = self.max_x + 1
         self.height = self.max_y + 1
 
@@ -286,11 +289,15 @@ class Map:
     @property
     def corners(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]:
         return (
-            (0, 0),
-            (0, self.max_y),
-            (self.max_x, 0),
+            (self.min_x, self.min_y),
+            (self.min_x, self.max_y),
+            (self.max_x, self.min_y),
             (self.max_x, self.max_y)
         )
+
+    @property
+    def edges(self) -> tuple[int, int, int, int]:
+        return (self.min_x, self.min_y, self.max_x, self.max_y)
 
     def neighbors(self, point: tuple[int, int], directions: collections.abc.Sequence[tuple[int, int]] = STRAIGHT_NEIGHBORS_T) -> dict[tuple[int, int], str | int]:
         """Return neighboring points and values which are in the map."""

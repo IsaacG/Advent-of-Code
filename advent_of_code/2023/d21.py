@@ -17,7 +17,7 @@ SAMPLE = """\
 ..........."""
 
 # Size, starting position, garden
-InputType = tuple[tuple[int, int], set[complex], set[complex]]
+InputType = tuple[tuple[int, int], set[tuple[int, int]], set[tuple[int, int]]]
 
 
 class Day21(aoc.Challenge):
@@ -27,15 +27,14 @@ class Day21(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=16),
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
-    TIMEOUT = 60
 
-    def walk(self, start: set[complex], garden: set[complex], steps: int) -> int:
+    def walk(self, start: set[tuple[int, int]], garden: set[tuple[int, int]], steps: int) -> int:
         """Return reachable coordinates after walking N steps from the start."""
         for _ in range(steps):
-            new: set[complex] = set()
+            new = set[tuple[int, int]]()
             # Expand all coordinates to their neighbors.
             for coord in start:
-                new.update(aoc.neighbors(coord))
+                new.update(aoc.t_neighbors4(coord))
             # Restrict to valid locations.
             start = new & garden
         return len(start)
@@ -55,12 +54,14 @@ class Day21(aoc.Challenge):
         garden.update(start)
         steps = 26501365
 
-        four_directions = [complex(1, 0), complex(0, -1), complex(-1, 0), complex(0, 1)]
+        four_directions = [(1, 0), (0, -1), (-1, 0), (0, 1)]
         half_size = (size - 1) // 2
-        center = complex(half_size, half_size)  # This should be the start location.
+        max_x = puzzle_input.max_x
+        max_y = puzzle_input.max_y
+        center = (half_size, half_size)  # This should be the start location.
 
-        centered_edges = [center + half_size * direction for direction in four_directions]
-        corners = [center + center * direction for direction in four_directions]
+        centered_edges = [(max_x, half_size), (half_size, 0), (0, half_size), (half_size, max_y)]
+        corners = [(max_x, max_y), (max_x, 0), (0, 0), (0, max_y)]
 
         # Start at the middle of an edge and walk to the far side.
         tips = sum(self.walk({start}, garden, size - 1) for start in centered_edges)
