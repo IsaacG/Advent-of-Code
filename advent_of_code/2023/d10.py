@@ -1,14 +1,87 @@
 #!/bin/python
-"""Advent of Code, Day 10: Pipe Maze."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
-
+"""Advent of Code, Day 10: Pipe Maze. Navigate a pipe maze then identify interior cells."""
+import typing
 from lib import aoc
+
+
+# Valid neighboring pipes from the start in each direction.
+START_NEIGHBORS = {
+    complex(+1, 0): "-J7",
+    complex(0, -1): "|F7",
+    complex(-1, 0): "-FL",
+    complex(0, +1): "|JL",
+}
+# Rotation to apply when entering corners from either side.
+ROTATE = {
+    (complex(+1, 0), "J"): complex(0, -1),
+    (complex(+1, 0), "7"): complex(0, +1),
+    (complex(0, -1), "F"): complex(+1, 0),
+    (complex(0, -1), "7"): complex(-1, 0),
+    (complex(-1, 0), "F"): complex(0, +1),
+    (complex(-1, 0), "L"): complex(0, -1),
+    (complex(0, +1), "J"): complex(-1, 0),
+    (complex(0, +1), "L"): complex(+1, 0),
+}
+# The replacement starting symbol based on which sides has a connecting pipe.
+START_SYMBOL = {
+    frozenset({complex(-1, 0), complex(+1, 0)}): "-",
+    frozenset({complex(-1, 0), complex(0, -1)}): "J",
+    frozenset({complex(-1, 0), complex(0, +1)}): "7",
+    frozenset({complex(+1, 0), complex(0, -1)}): "L",
+    frozenset({complex(+1, 0), complex(0, +1)}): "F",
+    frozenset({complex(0, -1), complex(0, +1)}): "|",
+}
+
+PARSER = aoc.CoordinatesParserC()
+
+
+def solve(data: aoc.MapC, part: int) -> int:
+    pipes = typing.cast(dict[complex, str], data.chars)
+
+    # Figure out the start position details.
+    start = data.coords["S"].copy().pop()
+    start_neighbors = [
+        (direction, options)
+        for direction, options in START_NEIGHBORS.items()
+        if pipes.get(start + direction, "?") in options
+    ]
+    # Update the start position symbol.
+    pipes[start] = START_SYMBOL[frozenset(direction for direction, _ in start_neighbors)]
+    # Start in either direction.
+    direction = start_neighbors[0][0]
+
+    # Walk the loop and record each position.
+    location = start + direction
+    loop = {start}
+    while location != start:
+        loop.add(location)
+        if (pipe := pipes[location]) in "J7FL":
+            direction = ROTATE[direction, pipe]
+        location += direction
+
+    # Part 1: return the length of the loop.
+    if part == 1:
+        return len(loop) // 2
+
+    # Walk the board. Track if we are inside the loop (odd number of crossings).
+    # If inside the loop and we find a surrounded cell, tally it up.
+    min_x, min_y, max_x, max_y = aoc.bounding_coords(loop)
+    count = 0
+    for y in range(min_y, max_y + 1):
+        # Start each line outside the loop.
+        inside = False
+        for x in range(min_x, max_x + 1):
+            pos = complex(x, y)
+            if pos in loop:
+                if pipes[pos] in "|F7":
+                    # Toggle inside when crossing a pipe.
+                    # Shift by a fractional percent and look at just lower junctions.
+                    # If we look at right/left then crossings like LJ are incorrect.
+                    inside = not inside
+            elif inside:
+                count += 1
+    return count
+
 
 SAMPLE = [
     """\
@@ -45,93 +118,11 @@ L--J.L7...LJS7F-7L7.
 ....FJL-7.||.||||...
 ....L---J.LJ.LJLJ..."""
 ]
-
-# Valid neighboring pipes from the start in each direction.
-START_NEIGHBORS = {
-    complex(+1, 0): "-J7",
-    complex(0, -1): "|F7",
-    complex(-1, 0): "-FL",
-    complex(0, +1): "|JL",
-}
-# Rotation to apply when entering corners from either side.
-ROTATE = {
-    (complex(+1, 0), "J"): complex(0, -1),
-    (complex(+1, 0), "7"): complex(0, +1),
-    (complex(0, -1), "F"): complex(+1, 0),
-    (complex(0, -1), "7"): complex(-1, 0),
-    (complex(-1, 0), "F"): complex(0, +1),
-    (complex(-1, 0), "L"): complex(0, -1),
-    (complex(0, +1), "J"): complex(-1, 0),
-    (complex(0, +1), "L"): complex(+1, 0),
-}
-# The replacement starting symbol based on which sides has a connecting pipe.
-START_SYMBOL = {
-    frozenset({complex(-1, 0), complex(+1, 0)}): "-",
-    frozenset({complex(-1, 0), complex(0, -1)}): "J",
-    frozenset({complex(-1, 0), complex(0, +1)}): "7",
-    frozenset({complex(+1, 0), complex(0, -1)}): "L",
-    frozenset({complex(+1, 0), complex(0, +1)}): "F",
-    frozenset({complex(0, -1), complex(0, +1)}): "|",
-}
-
-
-class Day10(aoc.Challenge):
-    """Day 10: Pipe Maze. Navigate a pipe maze then identify interior cells."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=4),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=8),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=1),
-        aoc.TestCase(inputs=SAMPLE[2], part=2, want=4),
-        aoc.TestCase(inputs=SAMPLE[3], part=2, want=8),
-    ]
-    INPUT_PARSER = aoc.CoordinatesParserC()
-
-    def solver(self, puzzle_input: dict[complex, str], part_one: bool) -> int:
-        pipes = puzzle_input.chars
-
-        # Figure out the start position details.
-        start = puzzle_input.coords["S"].copy().pop()
-        start_neighbors = [
-            (direction, options)
-            for direction, options in START_NEIGHBORS.items()
-            if pipes.get(start + direction, "?") in options
-        ]
-        # Update the start position symbol.
-        pipes[start] = START_SYMBOL[frozenset(direction for direction, _ in start_neighbors)]
-        # Start in either direction.
-        direction = start_neighbors[0][0]
-
-        # Walk the loop and record each position.
-        location = start + direction
-        loop = {start}
-        while location != start:
-            loop.add(location)
-            if (pipe := pipes[location]) in "J7FL":
-                direction = ROTATE[direction, pipe]
-            location += direction
-
-        # Part 1: return the length of the loop.
-        if part_one:
-            return len(loop) // 2
-
-        # Walk the board. Track if we are inside the loop (odd number of crossings).
-        # If inside the loop and we find a surrounded cell, tally it up.
-        min_x, min_y, max_x, max_y = aoc.bounding_coords(loop)
-        count = 0
-        for y in range(min_y, max_y + 1):
-            # Start each line outside the loop.
-            inside = False
-            for x in range(min_x, max_x + 1):
-                pos = complex(x, y)
-                if pos in loop:
-                    if pipes[pos] in "|F7":
-                        # Toggle inside when crossing a pipe.
-                        # Shift by a fractional percent and look at just lower junctions.
-                        # If we look at right/left then crossings like LJ are incorrect.
-                        inside = not inside
-                elif inside:
-                    count += 1
-        return count
-
+TESTS = [
+    (1, SAMPLE[0], 4),
+    (1, SAMPLE[1], 8),
+    (2, SAMPLE[0], 1),
+    (2, SAMPLE[2], 4),
+    (2, SAMPLE[3], 8),
+]
 # vim:expandtab:sw=4:ts=4

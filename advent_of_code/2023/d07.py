@@ -1,16 +1,10 @@
 #!/bin/python
-"""Advent of Code, Day 7: Camel Cards."""
+"""Advent of Code, Day 7: Camel Cards. Rank poker card hands."""
+
 
 import collections
 
 from lib import aoc
-
-SAMPLE = """\
-32T3K 765
-T55J5 684
-KK677 28
-KTJJT 220
-QQQJA 483"""
 
 InputType = list[list[str]]
 
@@ -24,48 +18,48 @@ RANKS = {
     largest_and_pairs: rank
     for rank, largest_and_pairs in enumerate(reversed(RANK_ORDER))
 }
+PARSER = aoc.parse_multi_str_per_line
 
 
-class Day07(aoc.Challenge):
-    """Day 7: Camel Cards. Rank poker card hands."""
+def sort(part_two: int, line: list[str]) -> tuple[int, int]:
+    """Sort cards based on ranking then highest card."""
+    hand = line[0]
 
-    INPUT_PARSER = aoc.parse_multi_str_per_line
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=6440),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=5905),
-    ]
+    # Compute the secondary order.
+    card_order = ORDERS[part_two]
+    secondary = 0
+    for card in hand:
+        secondary = secondary * CARD_COUNT + card_order.index(card)
 
-    def sort(self, part_two: int, line: list[str]) -> tuple[int, int]:
-        """Sort cards based on ranking then highest card."""
-        hand = line[0]
+    # Replace J values if needed.
+    if part_two and "J" in hand:
+        card_counter = collections.Counter(i for i in hand if i != "J")
+        # Pick the best replacement.
+        # First, prefer the card that appears the most times.
+        # Second, prefer the highest value card.
+        replacement = max(card_counter, key=lambda x: (card_counter[x], card_order.index(x)), default="A")
+        hand = hand.replace("J", replacement)
 
-        # Compute the secondary order.
-        card_order = ORDERS[part_two]
-        secondary = 0
-        for card in hand:
-            secondary = secondary * CARD_COUNT + card_order.index(card)
+    # Compute the primary order, using potentially an updated hand.
+    card_counts = list(collections.Counter(hand).values())
+    largest_group = max(card_counts)
+    pairs = card_counts.count(2)
+    primary = RANKS[largest_group, pairs]
 
-        # Replace J values if needed.
-        if part_two and "J" in hand:
-            card_counter = collections.Counter(i for i in hand if i != "J")
-            # Pick the best replacement.
-            # First, prefer the card that appears the most times.
-            # Second, prefer the highest value card.
-            card_ordering = lambda x: (card_counter[x], card_order.index(x))
-            replacement = max(card_counter, key=card_ordering, default="A")
-            hand = hand.replace("J", replacement)
+    return (primary, secondary)
 
-        # Compute the primary order, using potentially an updated hand.
-        card_counts = list(collections.Counter(hand).values())
-        largest_group = max(card_counts)
-        pairs = card_counts.count(2)
-        primary = RANKS[largest_group, pairs]
 
-        return (primary, secondary)
+def solve(data: InputType, part: int) -> int:
+    """Sort hands then return the bid returns."""
+    data.sort(key=lambda x: sort(0 if part == 1 else 1, x))
+    return sum(idx * int(bid) for idx, (_, bid) in enumerate(data, start=1))
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Sort hands then return the bid returns."""
-        puzzle_input.sort(key=lambda x: self.sort(0 if part_one else 1, x))
-        return sum(idx * int(bid) for idx, (_, bid) in enumerate(puzzle_input, start=1))
 
+SAMPLE = """\
+32T3K 765
+T55J5 684
+KK677 28
+KTJJT 220
+QQQJA 483"""
+TESTS = [(1, SAMPLE, 6440), (2, SAMPLE, 5905)]
 # vim:expandtab:sw=4:ts=4
