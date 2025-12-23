@@ -1,14 +1,9 @@
 #!/bin/python
 """Advent of Code, Day 22: Monkey Market."""
-
 import collections
-from lib import aoc
 MOD = 16777216
 
 
-TIMEOUT = 300
-
-@staticmethod
 def pseudo_randon(number: int) -> int:
     """Generate the next pseudo random number."""
     number = (number ^ (number << 6)) % MOD   # i <<  6 == i  *   64
@@ -16,19 +11,22 @@ def pseudo_randon(number: int) -> int:
     number = (number ^ (number << 11)) % MOD  # i << 11 == i  * 2048
     return number
 
-def solve(data: str, part: int, testing: bool) -> int:
+
+def solve(data: list[int], part: int, testing: bool) -> int:
     """Solve the parts."""
     return (part1 if part == 1 else part2)(data, testing)
 
 
 def part1(data: list[int], testing: bool) -> int:
     """Compute the 2000th pseudo random number."""
+    del testing
     total = 0
     for number in data:
         for _ in range(2000):
             number = pseudo_randon(number)
         total += number
     return total
+
 
 def part2(data: list[int], testing: bool) -> int:
     """Find the delta-pattern which maximizes returns."""

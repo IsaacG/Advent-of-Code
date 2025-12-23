@@ -7,6 +7,7 @@ from lib import aoc
 InputType = tuple[list[int], list[int]]
 PARSER = aoc.ParseBlocks([aoc.ParseIntergers()])
 
+
 def simulate(reg: dict[str, int], instructions: list[int]) -> list[int]:
     """Simulate a CPU."""
     ptr = 0
@@ -21,27 +22,27 @@ def simulate(reg: dict[str, int], instructions: list[int]) -> list[int]:
         instruction, op = instructions[ptr:ptr + 2]
         ptr += 2
         match instruction:
-            case 0: # adv
+            case 0:  # adv
                 reg["A"] = reg["A"] // (2 ** val(op))
-            case 1: # bxl
+            case 1:  # bxl
                 reg["B"] = reg["B"] ^ op
-            case 2: # bst
+            case 2:  # bst
                 reg["B"] = val(op) % 8
-            case 3 if reg["A"] != 0: # jnz
+            case 3 if reg["A"] != 0:  # jnz
                 ptr = op
-            case 4: # bxc
+            case 4:  # bxc
                 reg["B"] = reg["B"] ^ reg["C"]
-            case 5: # out
+            case 5:  # out
                 out.append((val(op) % 8))
-            case 6: # bdv
+            case 6:  # bdv
                 reg["B"] = reg["A"] // (2 ** val(op))
-            case 7: # cdv
+            case 7:  # cdv
                 reg["C"] = reg["A"] // (2 ** val(op))
 
     return out
 
 
-def solve(data: InputType, part: int, testing: bool) -> int:
+def solve(data: InputType, part: int, testing: bool) -> int | str:
     """Compute the initial A value to make a program a quine."""
     reg_vals, instructions = data
     registers = {char: reg_vals[i] for i, char in enumerate("ABC")}
@@ -67,7 +68,7 @@ def solve(data: InputType, part: int, testing: bool) -> int:
             reg_a = reg_a >> 3
         return out
 
-    def solve(given: int, output_pos: int, preserve: int) -> int | None:
+    def solve_next(given: int, output_pos: int, preserve: int) -> int | None:
         """Solve for the next digit of the output.
 
         Each output digit is composed on the right-most (3 bit) byte, int_one,
@@ -120,11 +121,11 @@ def solve(data: InputType, part: int, testing: bool) -> int:
             # Try using the number to generate the next digit(s).
             reg_a_vals = set()
             for option, new_preserve in candidates:
-                if (next_step := solve(option, output_pos - 1, new_preserve)) is not None:
+                if (next_step := solve_next(option, output_pos - 1, new_preserve)) is not None:
                     reg_a_vals.add(next_step)
         return min(reg_a_vals) if reg_a_vals else None
 
-    result = solve(0, len(instructions) - 1, 0)
+    result = solve_next(0, len(instructions) - 1, 0)
     if result is None:
         raise RuntimeError("No solution found.")
     return result

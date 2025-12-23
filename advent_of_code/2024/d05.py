@@ -5,10 +5,8 @@ import collections
 from lib import aoc
 
 InputType = list[list[list[int]]]
-Reports = list[list[int]]
-
-
 PARSER = aoc.ParseBlocks([aoc.parse_ints])
+
 
 def solve(data: InputType, part: int) -> int:
     """Return the sum of the middle number of reports."""

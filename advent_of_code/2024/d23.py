@@ -7,7 +7,7 @@ from lib import aoc
 PARSER = aoc.BaseParseMultiPerLine(word_separator="-")
 
 
-def solve(data: list[list[str]], part: int) -> str:
+def solve(data: list[list[str]], part: int) -> int | str:
     """Return the largest clique."""
     connections = collections.defaultdict(set)
     for a, b in data:

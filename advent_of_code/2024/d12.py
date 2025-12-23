@@ -57,13 +57,13 @@ SAMPLE = [
 AAAA
 BBCD
 BBCC
-EEEC""",  # 0
+EEEC""",
     """\
 OOOOO
 OXOXO
 OOOOO
 OXOXO
-OOOOO""",  # 1
+OOOOO""",
     """\
 RRRRIICCFF
 RRRRIICCCF
@@ -74,28 +74,28 @@ VVIVCCJJEE
 VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
-MMMISSJEEE""",  # 2
+MMMISSJEEE""",
     """\
 EEEEE
 EXXXX
 EEEEE
 EXXXX
-EEEEE""",  # 3
+EEEEE""",
     """\
 AAAAAA
 AAABBA
 AAABBA
 ABBAAA
 ABBAAA
-AAAAAA"""  # 4
+AAAAAA"""
 ]
 TESTS = [
-    (1, SAMPLE[0], 140),  # 1
-    (1, SAMPLE[1], 772),  # 2
-    (1, SAMPLE[2], 1930), # 3
-    (2, SAMPLE[0], 80),   # 4
-    (2, SAMPLE[3], 236),  # 5
-    (2, SAMPLE[4], 368),  # 6
-    (2, SAMPLE[2], 1206), # 7
+    (1, SAMPLE[0], 140),
+    (1, SAMPLE[1], 772),
+    (1, SAMPLE[2], 1930),
+    (2, SAMPLE[0], 80),
+    (2, SAMPLE[3], 236),
+    (2, SAMPLE[4], 368),
+    (2, SAMPLE[2], 1206),
 ]
 # vim:expandtab:sw=4:ts=4

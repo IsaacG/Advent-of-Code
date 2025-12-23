@@ -4,7 +4,7 @@ from lib import aoc
 PARSER = aoc.CoordinatesParserC()
 
 
-def solve(data: aoc.Map, part: int) -> int:
+def solve(data: aoc.MapC, part: int) -> int:
     """Count occurances of XMAS in the word search."""
     if part == 1:
         return sum(

@@ -1,13 +1,10 @@
 #!/bin/python
 """Advent of Code, Day 14: Restroom Redoubt."""
 
-import collections
 import dataclasses
 import itertools
 import math
 import operator
-
-from lib import aoc
 
 
 @dataclasses.dataclass

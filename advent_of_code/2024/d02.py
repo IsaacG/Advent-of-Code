@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 2: Red-Nosed Reports."""
 
-from lib import aoc
 
 def safe(line: list[int]) -> bool:
     """Return if a report is safe."""
@@ -12,6 +11,7 @@ def safe(line: list[int]) -> bool:
         (a < b) == (line[0] < line[1])
         for a, b in zip(line, line[1:])
     )
+
 
 def solve(data: list[list[int]], part: int) -> int:
     """Return the number of safe reports, possibly allowing one reading to be removed."""

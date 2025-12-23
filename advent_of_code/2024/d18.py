@@ -31,14 +31,13 @@ def maze_solver(data: list[list[int]], steps: int, testing: bool) -> int | None:
     return None
 
 
-def solve(data: list[list[int]], part: int, testing: bool) -> str:
+def solve(data: list[list[int]], part: int, testing: bool) -> int | str:
     """Return the first block which makes solving the maze impossible."""
     if part == 1:
         # Return the number of steps to get to the end after a fixed number of blocks have fallen.
         num_fallen = 12 if testing else 1024
         got = maze_solver(data, num_fallen, testing)
-        if got is None:
-            raise RuntimeError("Not solved")
+        assert got is not None
         return got
 
     low = 0
@@ -50,10 +49,12 @@ def solve(data: list[list[int]], part: int, testing: bool) -> str:
             high = cur
         else:
             low = cur + 1
-    got = ",".join(str(i) for i in data[high - 1])
-    return got
+    return ",".join(str(i) for i in data[high - 1])
 
 
-SAMPLE = "5,4\n4,2\n4,5\n3,0\n2,1\n6,3\n2,4\n1,5\n0,6\n3,3\n2,6\n5,1\n1,2\n5,5\n2,5\n6,5\n1,4\n0,4\n6,4\n1,1\n6,1\n1,0\n0,5\n1,6\n2,0"
+SAMPLE = (
+    "5,4\n4,2\n4,5\n3,0\n2,1\n6,3\n2,4\n1,5\n0,6\n3,3\n2,6\n"
+    "5,1\n1,2\n5,5\n2,5\n6,5\n1,4\n0,4\n6,4\n1,1\n6,1\n1,0\n0,5\n1,6\n2,0"
+)
 TESTS = [(1, SAMPLE, 22), (2, SAMPLE, "6,1")]
 # vim:expandtab:sw=4:ts=4

@@ -1,14 +1,14 @@
 #!/bin/python
 """Advent of Code, Day 10: Hoof It."""
-
 from lib import aoc
+
 
 def solve(data: aoc.Map, part: int) -> int:
     """Score and rate trails by computing how to walk the trail to a 9."""
     total = 0
     maps = data.coords
     for trailhead in maps[0]:
-        trails: set[tuple[complex, tuple[complex, ...]]] = {(trailhead, (trailhead,))}
+        trails: set[tuple[tuple[int, int], tuple[tuple[int, int], ...]]] = {(trailhead, (trailhead,))}
         for elevation in range(1, 10):
             new_trails = set()
             for last_pos, path in trails:

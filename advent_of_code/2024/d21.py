@@ -30,7 +30,6 @@ DIGIT_PAD, DIGIT_X = pad_parse(DIGITS_LAYOUT)
 ARROW_PAD, ARROW_X = pad_parse(ARROWS_LAYOUT)
 
 
-
 def solve(data: list[str], part: int) -> int:
     """Figure out the shortest way to open a door through multiple indirections."""
 

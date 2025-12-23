@@ -1,12 +1,12 @@
 #!/bin/python
 """Advent of Code, Title."""
-
 import collections
 import itertools
 from lib import aoc
 PARSER = aoc.CoordinatesParserC()
 
-def solve(data: aoc.Map, part: int) -> int:
+
+def solve(data: aoc.MapC, part: int) -> int:
     all_locations = data.all_coords
     antinodes = set()
     for freq in data.non_blank_chars:

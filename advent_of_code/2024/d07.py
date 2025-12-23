@@ -1,8 +1,8 @@
 #!/bin/python
 """Advent of Code, Bridge Repair."""
-
 from lib import aoc
 PARSER = aoc.parse_ints
+
 
 def solve(data: list[list[int]], part: int) -> int | str:
     """Return the results of the valid equations."""

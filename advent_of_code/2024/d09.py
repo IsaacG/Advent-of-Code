@@ -3,7 +3,6 @@
 
 import heapq
 import itertools
-from lib import aoc
 
 HOLE = -1
 

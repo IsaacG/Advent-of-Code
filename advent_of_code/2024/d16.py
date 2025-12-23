@@ -5,9 +5,10 @@ import queue
 from lib import aoc
 PARSER = aoc.CoordinatesParserC()
 
+
 def networkx_solver(open_space: set[complex], start: complex, end: complex, part: int) -> int:
     """Solve using networkx.DiGraph."""
-    import networkx
+    import networkx  # type: ignore
     G = networkx.DiGraph()
     # Build the graph.
     for p in open_space:
@@ -28,7 +29,8 @@ def networkx_solver(open_space: set[complex], start: complex, end: complex, part
     nodes = {node[0] for node in nodes}
     return len(nodes)
 
-def solve(data: aoc.Map, part: int) -> int:
+
+def solve(data: aoc.MapC, part: int) -> int:
     """Find the cheapest paths through a maze."""
     starts = data.coords["S"]
     ends = data.coords["E"]

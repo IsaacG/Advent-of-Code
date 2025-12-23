@@ -1,11 +1,11 @@
 #!/bin/python
 """Advent of Code, Day 13: Claw Contraption."""
-import math
 
 from lib import aoc
 PARSER = aoc.ParseBlocks([aoc.parse_ints])
 
-def solve(data: list[list[int]], part: int) -> int:
+
+def solve(data: list[list[list[int]]], part: int) -> int:
     """Solved by linear algebra and a system of two equations with two unknowns.
 
     presses_a * a_x + presses_b * b_x = target_x  (1)
@@ -27,7 +27,7 @@ def solve(data: list[list[int]], part: int) -> int:
         target_x, target_y = chunks[2]
 
         presses_a = (target_y - (b_y * target_x / b_x)) / (a_y - (b_y * a_x / b_x))
-        presses_b = (target_x - presses_a * a_x ) / b_x
+        presses_b = (target_x - presses_a * a_x) / b_x
         # Check the numbers are round integers ... or close enough.
         rounded_a = round(presses_a)
         rounded_b = round(presses_b)

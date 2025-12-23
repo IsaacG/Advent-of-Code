@@ -15,10 +15,6 @@ Circuit = dict[str, tuple[str, collections.abc.Callable[[bool, bool], bool], str
 SolverState = tuple[dict[str, bool], dict[str, bool]]
 
 
-# Split the input into two blocks. Convert each block into a list of words for each line.
-INPUT_PARSER = aoc.ParseBlocks([aoc.ParseDict(separator=": ", scalar=True), aoc.parse_multi_str_per_line])
-
-
 def compute(circuit: Circuit, values: dict[str, bool]):
     """Propagate values through a bunch of gates to compute the final z value."""
     values = values.copy()
@@ -138,7 +134,7 @@ def solve_from(
     return [], True
 
 
-def solve(data: tuple[list[list[str]], list[list[str]]], part: int) -> str:
+def solve(data: tuple[dict[str, int], list[list[str]]], part: int) -> str:
     """Return which wires need to be swapped to turn a circuit into a working adder."""
     raw_values, raw_gates = data
     circuit = {out: (a, OPS[op], b) for a, op, b, _, out in raw_gates}

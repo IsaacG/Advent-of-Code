@@ -1,14 +1,14 @@
 #!/bin/python
 """Advent of Code, Guard Gallivant. Simulate a guard walking a floor."""
-
 from lib import aoc
 
+
 def walk(
-    all_spots: set[complex], blocked: set[complex], pos: complex, direction: complex
-) -> tuple[set[complex], bool]:
+    all_spots: set[tuple[int, int]], blocked: set[tuple[int, int]], pos: tuple[int, int], direction: tuple[int, int]
+) -> tuple[set[tuple[int, int]], bool]:
     """Walk the map until hitting the edge or entering a loop."""
-    spots: set[complex] = set()
-    seen: set[complex] = set()
+    spots: set[tuple[int, int]] = set()
+    seen: set[tuple[int, int]] = set()
     while pos in all_spots:
         spots.add(pos)
         if (pos[0] + direction[0], pos[1] + direction[1]) in blocked:
@@ -19,6 +19,7 @@ def walk(
                 direction = aoc.rotate_counterclockwise(*direction)
         pos = pos[0] + direction[0], pos[1] + direction[1]
     return spots, False
+
 
 def solve(data: aoc.Map, part: int) -> int:
     all_spots = data.all_coords

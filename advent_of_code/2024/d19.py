@@ -27,7 +27,7 @@ def part1_fast(data: tuple[list[str], list[str]]) -> int:
     return sum(1 for pattern in patterns if possible(pattern))
 
 
-def solve(data: tuple[list[str], list[str]], part: int, testing: bool) -> int:
+def solve(data: tuple[list[str], list[str]], part: int) -> int:
     """Return how many ways the patterns can be formed with the given towels."""
     towels, patterns = data
 
