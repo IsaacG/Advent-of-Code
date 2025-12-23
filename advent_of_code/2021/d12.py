@@ -1,12 +1,58 @@
 #!/bin/python
-"""Advent of Code: Day 12."""
+"""Advent of Code: Day 12. Find all the paths through a maze/graph."""
 
 import collections
 import functools
-from typing import Optional
 
 
-from lib import aoc
+def solve(data: dict[str, list[str]], part: int) -> int:
+    """Count the number of paths from "start" to "end".
+
+    Do not revisit small caves... excepting maybe one small cave.
+    """
+    twice = "start" if part == 1 else None
+
+    @functools.cache
+    def paths(start: str, seen: frozenset[str], twice: str | None) -> int:
+        """Count all the paths from `start` to "end" without revisiting `seen`.
+
+        Allow a single small cave to be visited twice.
+        """
+        # If we are at the end, there are no further options.
+        if start == "end":
+            return 1
+        # The start node should not appear in the seen nodes.
+        assert start not in seen or start == twice
+        # Update the list of nodes we cannot revisit.
+        if start.islower():
+            seen = frozenset(seen | set([start]))
+        # Count paths from every neighbor to the end.
+        subpaths = 0
+        for node in data[start]:
+            # The start node should not be visited twice.
+            if node == "start":
+                continue
+            # If the node is not a small cave we already visited, visit it.
+            if node not in seen:
+                subpaths += paths(node, seen, twice)
+            # If we already visited it once, maybe visit it a second time.
+            elif twice is None:
+                subpaths += paths(node, seen, node)
+        return subpaths
+
+    return paths("start", frozenset(), twice)
+
+
+def input_parser(data: str) -> dict[str, list[str]]:
+    """Parse the input data."""
+    graph = collections.defaultdict(list)
+    # Form nodes of a non-directional graph.
+    for line in data.splitlines():
+        start, end = line.split("-")
+        graph[start].append(end)
+        graph[end].append(start)
+    return dict(graph)
+
 
 SAMPLE = ["""\
 start-A
@@ -47,77 +93,11 @@ zg-he
 pj-fs
 start-RW
 """]
-# Node edges.
-InputType = dict[str, list[str]]
-
-
-class Day12(aoc.Challenge):
-    """Find all the paths through a maze/graph."""
-
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=10),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=19),
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=226),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=36),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=103),
-        aoc.TestCase(inputs=SAMPLE[2], part=2, want=3509),
-    )
-
-    @functools.cache
-    def paths(self, start: str, seen: frozenset[str], twice: Optional[str]) -> int:
-        """Count all the paths from `start` to "end" without revisiting `seen`.
-
-        Allow a single small cave to be visited twice.
-        """
-        # If we are at the end, there are no further options.
-        if start == "end":
-            return 1
-        # The start node should not appear in the seen nodes.
-        assert start not in seen or start == twice
-        # Update the list of nodes we cannot revisit.
-        if start.islower():
-            seen = frozenset(seen | set([start]))
-        # Count paths from every neighbor to the end.
-        subpaths = 0
-        for node in self.graph[start]:
-            # The start node should not be visited twice.
-            if node == "start":
-                continue
-            # If the node is not a small cave we already visited, visit it.
-            if node not in seen:
-                subpaths += self.paths(node, seen, twice)
-            # If we already visited it once, maybe visit it a second time.
-            elif twice is None:
-                subpaths += self.paths(node, seen, node)
-        return subpaths
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Count the number of paths from "start" to "end".
-
-        Do not revisit small caves.
-        """
-        return self.solve(puzzle_input, "start")
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Count the number of paths from "start" to "end".
-
-        Do not revisit small caves... excepting one small cave.
-        """
-        return self.solve(puzzle_input, None)
-
-    def solve(self, graph: InputType, twice: Optional[str]) -> int:
-        """Solve the problem for either day."""
-        self.paths.cache_clear()  # pylint:disable=E1101
-        # Set self.graph to avoid having it be part of the cache keys.
-        self.graph = graph  # pylint:disable=W0201
-        return self.paths("start", frozenset(), twice)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        graph = collections.defaultdict(list)
-        # Form nodes of a non-directional graph.
-        for line in puzzle_input.splitlines():
-            start, end = line.split("-")
-            graph[start].append(end)
-            graph[end].append(start)
-        return dict(graph)
+TESTS = (
+    (1, SAMPLE[0], 10),
+    (1, SAMPLE[1], 19),
+    (1, SAMPLE[2], 226),
+    (2, SAMPLE[0], 36),
+    (2, SAMPLE[1], 103),
+    (2, SAMPLE[2], 3509),
+)

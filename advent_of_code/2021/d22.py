@@ -2,8 +2,84 @@
 """Advent of Code: Day 22. Reactor Reboot. Compute cuboid overlaps."""
 
 import re
+InputType = list[tuple[bool, int, int, int, int, int, int]]
+Cube = tuple[int, int, int, int, int, int]
 
-from lib import aoc
+
+def overlaps(
+    others: list[Cube],
+    ax0: int, ax1: int, ay0: int, ay1: int, az0: int, az1: int,
+) -> list[Cube]:
+    """Return the overlapping sections of one cube with others."""
+    out = []
+    for bx0, bx1, by0, by1, bz0, bz1 in others:
+        if (
+            bx1 < ax0 or bx0 > ax1 or
+            by1 < ay0 or by0 > ay1 or
+            bz1 < az0 or bz0 > az1
+        ):
+            continue
+        out.append((
+            max(ax0, bx0), min(ax1, bx1),
+            max(ay0, by0), min(ay1, by1),
+            max(az0, bz0), min(az1, bz1),
+        ))
+    return out
+
+
+def volume(cubes: list[Cube]) -> int:
+    """Return the sum volume of cubes."""
+    return sum(
+        (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1)
+        for x0, x1, y0, y1, z0, z1 in cubes
+    )
+
+
+def restrict(data: InputType) -> InputType:
+    """Filter the input to a -50..50 volume."""
+    modified: InputType = []
+    for on, x0, x1, y0, y1, z0, z1 in data:
+        if (x1 < -50 or y1 < -50 or z1 < -50):
+            continue
+        if (x0 > 50 or y0 > 50 or z0 > 50):
+            continue
+        modified.append((
+            on,
+            max(x0, -50), min(x1, 50),
+            max(y0, -50), min(y1, 50),
+            max(z0, -50), min(z1, 50),
+        ))
+    return modified
+
+
+def solve(data: InputType, part: int) -> int:
+    """Return the number of points which are on, no restrictions."""
+    if part == 1:
+        data = restrict(data)
+
+    add: list[Cube] = []
+    sub: list[Cube] = []
+
+    for on, *cube in data:
+        new_sub = overlaps(add, *cube)
+        new_add = overlaps(sub, *cube)
+        add.extend(new_add)
+        sub.extend(new_sub)
+        if on:
+            add.append(tuple(cube))  # type: ignore
+
+    return volume(add) - volume(sub)
+
+
+def input_parser(data: str) -> InputType:
+    """Parse the input data."""
+    instructions: InputType = []
+    for line in data.splitlines():
+        on = line.split()[0] == "on"
+        nums = re.findall(r"-?[0-9]+", line)
+        instructions.append((on, ) + tuple(int(i) for i in nums))  # type: ignore
+    return instructions
+
 
 SAMPLE = ["""\
 on x=10..12,y=10..12,z=10..12
@@ -95,90 +171,8 @@ off x=-70369..-16548,y=22648..78696,z=-1892..86821
 on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 """]
-
-InputType = list[tuple[bool, int, int, int, int, int, int]]
-Cube = tuple[int, int, int, int, int, int]
-
-
-class Day22(aoc.Challenge):
-    """Day 22. Reactor Reboot."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=39),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=590784),
-        aoc.TestCase(inputs=SAMPLE[2], part=2, want=2758514936282235),
-    ]
-
-    @staticmethod
-    def overlaps(
-        others: list[Cube],
-        ax0: int, ax1: int, ay0: int, ay1: int, az0: int, az1: int,
-    ) -> list[Cube]:
-        """Return the overlapping sections of one cube with others."""
-        out = []
-        for bx0, bx1, by0, by1, bz0, bz1 in others:
-            if (
-                bx1 < ax0 or bx0 > ax1 or
-                by1 < ay0 or by0 > ay1 or
-                bz1 < az0 or bz0 > az1
-            ):
-                continue
-            out.append((
-                max(ax0, bx0), min(ax1, bx1),
-                max(ay0, by0), min(ay1, by1),
-                max(az0, bz0), min(az1, bz1),
-            ))
-        return out
-
-    @staticmethod
-    def volume(cubes: list[Cube]) -> int:
-        """Return the sum volume of cubes."""
-        return sum(
-            (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1)
-            for x0, x1, y0, y1, z0, z1 in cubes
-        )
-
-    def restrict(self, puzzle_input: InputType) -> InputType:
-        """Filter the input to a -50..50 volume."""
-        modified: InputType = []
-        for on, x0, x1, y0, y1, z0, z1 in puzzle_input:
-            if (x1 < -50 or y1 < -50 or z1 < -50):
-                continue
-            if (x0 > 50 or y0 > 50 or z0 > 50):
-                continue
-            modified.append((
-                on,
-                max(x0, -50), min(x1, 50),
-                max(y0, -50), min(y1, 50),
-                max(z0, -50), min(z1, 50),
-            ))
-        return modified
-
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Return the number of points which are on, no restrictions."""
-        if part_one:
-            puzzle_input = self.restrict(puzzle_input)
-
-        add: list[Cube] = []
-        sub: list[Cube] = []
-
-        for on, *cube in puzzle_input:
-            new_sub = self.overlaps(add, *cube)
-            new_add = self.overlaps(sub, *cube)
-            add.extend(new_add)
-            sub.extend(new_sub)
-            if on:
-                add.append(tuple(cube))  # type: ignore
-
-        return self.volume(add) - self.volume(sub)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data."""
-        instructions: InputType = []
-        for line in puzzle_input.splitlines():
-            on = line.split()[0] == "on"
-            nums = re.findall(r"-?[0-9]+", line)
-            instructions.append((on, ) + tuple(int(i) for i in nums))  # type: ignore
-        return instructions
-
-
+TESTS = [
+    (1, SAMPLE[0], 39),
+    (1, SAMPLE[1], 590784),
+    (2, SAMPLE[2], 2758514936282235),
+]

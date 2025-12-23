@@ -1,27 +1,15 @@
 #!/bin/python
-"""Advent of Code: Day 21."""
+"""Advent of Code: Day 21. Implement Dirac Dice."""
 
 import collections
-import functools
 import itertools
-
-from lib import aoc
-
-SAMPLE = "Player 1 starting position: 4\nPlayer 2 starting position: 8"
 DICE_COUNTS = collections.Counter(sum(vals) for vals in itertools.product(range(1, 4), repeat=3))
 
 
-class Day21(aoc.Challenge):
-    """Implement Dirac Dice."""
-
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE, part=1, want=739785),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=444356092776315),
-    )
-
-    def part1(self, puzzle_input: tuple[int, int]) -> int:
-        """Play Dirac Dice to 100 points with deterministic dice."""
-        positions = list(puzzle_input)
+def solve(data: tuple[int, int], part: int) -> int:
+    """Play Dirac Dice (classic or Quantum edition) to N points."""
+    if part == 1:
+        positions = list(data)
         scores = [0, 0]
         dice = itertools.cycle(range(100))
         turn = 0
@@ -36,61 +24,61 @@ class Day21(aoc.Challenge):
             turn = 1 - turn
         return step * 3 * scores[1 - turn]
 
-    def part2(self, puzzle_input: tuple[int, int]) -> int:
-        """Play Dirac Dice, Quantum Edition to 21 points."""
-        positions = puzzle_input
-        wins = self.play_quantum_round(0, 0, positions[0], positions[1])
-        return max(wins)
+    wins = play_quantum_round(0, 0, data[0], data[1])
+    return max(wins)
 
-    @functools.cache
-    def play_quantum_round(
-        self,
-        score_self: int,
-        score_other: int,
-        position_self: int,
-        position_other: int,
-    ) -> tuple[int, int]:
-        """Play a Quantum Round of Dirac Dice.
 
-        By keeping the interface single, the code doesn't have to worry about
-        mutable objects and the caching is more efficient.
+def play_quantum_round(
+    score_self: int,
+    score_other: int,
+    position_self: int,
+    position_other: int,
+) -> tuple[int, int]:
+    """Play a Quantum Round of Dirac Dice.
 
-        This method plays a round, considering all possible dice roll combinations,
-        and recursively runs sub-rounds.
+    By keeping the interface single, the code doesn't have to worry about
+    mutable objects and the caching is more efficient.
 
-        Since rolls [1,1,2] [1,2,1] [2,1,1] are all the same and we just care about
-        the sum, we can collapse all rolls into just their sum.
+    This method plays a round, considering all possible dice roll combinations,
+    and recursively runs sub-rounds.
 
-        The sum 6 shows up 7 times; each version produces the same results so we don't
-        need to run it multiple times. Instead, do it once and track the count.
-        If play A wins 4 tims, multiply the wins by the count and it's all good.
+    Since rolls [1,1,2] [1,2,1] [2,1,1] are all the same and we just care about
+    the sum, we can collapse all rolls into just their sum.
 
-        Rather then tracking players directly and having to maintain all that extra state,
-        we can just track "self" and "other" then swap those positions on each iteration.
-        This logic is applied to the scores, positions and wins.
+    The sum 6 shows up 7 times; each version produces the same results so we don't
+    need to run it multiple times. Instead, do it once and track the count.
+    If play A wins 4 tims, multiply the wins by the count and it's all good.
 
-        The variables can be collapsed into tuples for a cleaner namespace but this is faster.
-        """
-        win_self, win_other = 0, 0
-        # collections.Counter(sum(vals) for vals in itertools.product(range(1, 4), repeat=3))
-        for roll, count in DICE_COUNTS.items():
-            new_position = (position_self + roll) % 10
-            new_score = score_self + new_position
-            if new_position == 0:
-                new_score += 10
-            if new_score >= 21:
-                win_self += count
-            else:
-                sub_win_other, sub_win_self = self.play_quantum_round(
-                    score_other,
-                    new_score,
-                    position_other,
-                    new_position,
-                )
-                win_self += sub_win_self * count
-                win_other += sub_win_other * count
-        return win_self, win_other
+    Rather then tracking players directly and having to maintain all that extra state,
+    we can just track "self" and "other" then swap those positions on each iteration.
+    This logic is applied to the scores, positions and wins.
 
-    def input_parser(self, puzzle_input: str) -> tuple[int, ...]:
-        """Parse the input data."""
-        return tuple([int(line.split(": ")[1]) for line in puzzle_input.splitlines()])
+    The variables can be collapsed into tuples for a cleaner namespace but this is faster.
+    """
+    win_self, win_other = 0, 0
+    for roll, count in DICE_COUNTS.items():
+        new_position = (position_self + roll) % 10
+        new_score = score_self + new_position
+        if new_position == 0:
+            new_score += 10
+        if new_score >= 21:
+            win_self += count
+        else:
+            sub_win_other, sub_win_self = play_quantum_round(
+                score_other,
+                new_score,
+                position_other,
+                new_position,
+            )
+            win_self += sub_win_self * count
+            win_other += sub_win_other * count
+    return win_self, win_other
+
+
+def input_parser(data: str) -> tuple[int, ...]:
+    """Parse the input data."""
+    return tuple(int(line.split(": ")[1]) for line in data.splitlines())
+
+
+SAMPLE = "Player 1 starting position: 4\nPlayer 2 starting position: 8"
+TESTS = [(1, SAMPLE, 739785), (2, SAMPLE, 444356092776315)]

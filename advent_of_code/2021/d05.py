@@ -1,12 +1,52 @@
 #!/bin/python
-
-"""Advent of Code: Day 05."""
+"""Advent of Code: Day 05. Map where geothermal vent clouds cross paths."""
 
 import collections
 import itertools
 import re
 
 from lib import aoc
+
+
+def solve(data: list[tuple[int, int, int, int]], part: int) -> int:
+    """Find hot areas where lines overlap."""
+    if part == 1:
+        # Filter for horizontal/vertical and call part 2.
+        data = [
+            (start_x, start_y, end_x, end_y)
+            for start_x, start_y, end_x, end_y in data
+            if start_x == end_x or start_y == end_y
+        ]
+
+    # Count points that are on lines.
+    count = collections.Counter(
+        itertools.chain.from_iterable(
+            aoc.points_along_line(start_x, start_y, end_x, end_y)
+            for start_x, start_y, end_x, end_y in data
+        )
+    )
+    return sum(1 for v in count.values() if v > 1)
+
+
+def input_parser(data: str) -> list[tuple[int, int, int, int]]:
+    """Parse the input data.
+
+    Split into lines. Split each line into a `start -> end`.
+    Make a tuple(begin, end) Points for each line.
+    """
+    pattern = re.compile(r'^([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)$')
+    lines = []
+    for line in data.splitlines():
+        match = pattern.match(line)
+        assert match is not None
+        lines.append(
+            (
+                int(match.group(1)), int(match.group(2)),
+                int(match.group(3)), int(match.group(4)),
+            )
+        )
+    return lines
+
 
 SAMPLE = """\
 0,9 -> 5,9
@@ -20,54 +60,4 @@ SAMPLE = """\
 0,0 -> 8,8
 5,5 -> 8,2
 """
-
-# A list of point->point pairs, delineating a line.
-InputType = list[tuple[int, int, int, int]]
-
-
-class Day05(aoc.Challenge):
-    """Map where geothermal vent clouds cross paths."""
-
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE, part=1, want=5),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=12),
-    )
-
-    def part1(self, puzzle_input: InputType) -> int:
-        """Find hot areas where lines overlap. Ignore diagonals."""
-        # Filter for horizontal/vertical and call part 2.
-        puzzle_input = [
-            (start_x, start_y, end_x, end_y)
-            for start_x, start_y, end_x, end_y in puzzle_input
-            if start_x == end_x or start_y == end_y
-        ]
-        return self.part2(puzzle_input)
-
-    def part2(self, puzzle_input: InputType) -> int:
-        """Find hot areas where puzzle_input overlap. Include diagonals."""
-        # Count points that are on lines.
-        count = collections.Counter(
-            itertools.chain.from_iterable(
-                aoc.points_along_line(start_x, start_y, end_x, end_y)
-                for start_x, start_y, end_x, end_y in puzzle_input
-            )
-        )
-        return sum(1 for v in count.values() if v > 1)
-
-    def input_parser(self, puzzle_input: str) -> InputType:
-        """Parse the input data.
-
-        Split into lines. Split each line into a `start -> end`.
-        Make a tuple(begin, end) Points for each line.
-        """
-        pattern = re.compile(r'^([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)$')
-        lines = []
-        for line in puzzle_input.splitlines():
-            match = pattern.match(line)
-            lines.append(
-                (
-                    int(match.group(1)), int(match.group(2)),
-                    int(match.group(3)), int(match.group(4)),
-                )
-            )
-        return lines
+TESTS = [(1, SAMPLE, 5), (2, SAMPLE, 12)]

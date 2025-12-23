@@ -245,267 +245,263 @@ class Node:
         raise RuntimeError(f"Unhandled eval: {self}")
 
 
-class Day24(aoc.Challenge):
-    """Compute which serial numbers are valid for the MONAD.
+"""Compute which serial numbers are valid for the MONAD.
 
-    This exercise is mostly focused around reverse engineering the "MONAD"
-    input program and only minimally about implementing the VM described in the prose.
+This exercise is mostly focused around reverse engineering the "MONAD"
+input program and only minimally about implementing the VM described in the prose.
 
-    The input MONADs have certain characteristics which need to be sussed out and used.
-    The MONAD follows the same pattern 14 times:
-    * Input is loaded into `w`.
-    * The `x` and `y` are set to 0.
-    * There are two `eql` statements back to back, `eql x w` then `eql x 0`. Combined,
-      this can be treated as `x != w`.
-    * The `z` is set to a function of the prior `z` and a conditional on the input.
+The input MONADs have certain characteristics which need to be sussed out and used.
+The MONAD follows the same pattern 14 times:
+* Input is loaded into `w`.
+* The `x` and `y` are set to 0.
+* There are two `eql` statements back to back, `eql x w` then `eql x 0`. Combined,
+  this can be treated as `x != w`.
+* The `z` is set to a function of the prior `z` and a conditional on the input.
 
-    Step 1
-    ------
+Step 1
+------
 
-    Resolve all 14 `z` values (indicated by `add z y`) in terms of a prior `z`.
-    This gives the form:
-    z_(n+1) =
-        (f(z_(n)) * ((25 * (((z_(n) % 26) + a) != Input_(n+1))) + 1))
-        + ((Input_(n+1) + b) * (((z_(n) % 26) + a) != Input_(n+1)))
-    where a, b are fixed ints and `f(x) = x` or `f(x) = x // 26`
+Resolve all 14 `z` values (indicated by `add z y`) in terms of a prior `z`.
+This gives the form:
+z_(n+1) =
+    (f(z_(n)) * ((25 * (((z_(n) % 26) + a) != Input_(n+1))) + 1))
+    + ((Input_(n+1) + b) * (((z_(n) % 26) + a) != Input_(n+1)))
+where a, b are fixed ints and `f(x) = x` or `f(x) = x // 26`
 
-    Rewritten as a conditional,
+Rewritten as a conditional,
 
-    ```
-    if ((z_(n) % 26) + a) != Input_(n+1):
-        z_(n+1) = 26 * f(z_(n)) + Input_(n+1) + c
-    else:
-        z_(n+1) = f((z_(n))
-    ```
+```
+if ((z_(n) % 26) + a) != Input_(n+1):
+    z_(n+1) = 26 * f(z_(n)) + Input_(n+1) + c
+else:
+    z_(n+1) = f((z_(n))
+```
 
-    Step 2
-    ------
+Step 2
+------
 
-    Examining the conditionals and bearing in mind that inputs must be [1..9],
-    `(z % 26) + a != Input` will be true for all possible inputs if `a > 9`.
+Examining the conditionals and bearing in mind that inputs must be [1..9],
+`(z % 26) + a != Input` will be true for all possible inputs if `a > 9`.
 
-    Applying that reduction to the code yields seven instances of:
+Applying that reduction to the code yields seven instances of:
 
-    ```
-    z_(n+1) = z_(n) * 26 + Input_(n+1) + a
-    ```
+```
+z_(n+1) = z_(n) * 26 + Input_(n+1) + a
+```
 
-    where `z_(-1) = 0` and `a` is a known int.
+where `z_(-1) = 0` and `a` is a known int.
 
-    Given that inputs are valid iff `z_13 = 0`, there must be seven instances of:
-    `z_(n+1) = z_(n) // 26` to reduce the `z` value to 0. These are found by setting
-    the conditional `(z_n % 26) + a = Input_(n+1)`.
+Given that inputs are valid iff `z_13 = 0`, there must be seven instances of:
+`z_(n+1) = z_(n) // 26` to reduce the `z` value to 0. These are found by setting
+the conditional `(z_n % 26) + a = Input_(n+1)`.
 
-    Step 3
-    ------
+Step 3
+------
 
-    Given `z_(n+1) = z_(n) * 26 + Input_(n+1) + a` and `z_(n+2) = z_(n+1) // 26`,
-    we can reduce `z_(n+2) = z_(n)`. Using this transformation, this allows us to write
-    all `z` values in the form `z_(x) = z_(y) * 26 + Input_(z) + a`
+Given `z_(n+1) = z_(n) * 26 + Input_(n+1) + a` and `z_(n+2) = z_(n+1) // 26`,
+we can reduce `z_(n+2) = z_(n)`. Using this transformation, this allows us to write
+all `z` values in the form `z_(x) = z_(y) * 26 + Input_(z) + a`
 
-    Applying the reduced `z` for to the known equallities,
-    `(z_n % 26) + a = Input_(n+1)`, `z % 26` becomes `(z_y * 26 + Input + a) % 26`
-    which becomes `(z_y * 26) % 26 + (Input + a) % 26` which further reduces to
-    simply `Input + a`. That gives us seven instances of
-    `Input_x = Input_y + a`, each with unrelated `x` and `y` values.
+Applying the reduced `z` for to the known equallities,
+`(z_n % 26) + a = Input_(n+1)`, `z % 26` becomes `(z_y * 26 + Input + a) % 26`
+which becomes `(z_y * 26) % 26 + (Input + a) % 26` which further reduces to
+simply `Input + a`. That gives us seven instances of
+`Input_x = Input_y + a`, each with unrelated `x` and `y` values.
 
-    Step 4
-    ------
+Step 4
+------
 
-    Recalling that all inputs must be [1..9], `Input_x = Input_y + a` gives a min
-    and max value for both `Input` values. This gives upper and lower limits on all
-    14 input values.
+Recalling that all inputs must be [1..9], `Input_x = Input_y + a` gives a min
+and max value for both `Input` values. This gives upper and lower limits on all
+14 input values.
+"""
+PARSER = aoc.parse_multi_str_per_line
+
+
+def solve(data: list[tuple[str, ...]], part: int) -> int:
+    """Return the max/min valid seriel number."""
+    serials = solve_ranges(data)
+    return int("".join(str(serials[i][1 if part == 1 else 0]) for i in range(14)))
+
+
+def build_ast(monad: list[tuple[str, ...]]) -> tuple[dict[int, Node], dict[int, Node]]:
+    """Parse the input Monad and return both the z Nodes and eql Nodes."""
+    mem = {v: Node(literal=0) for v in 'wxyz'}
+
+    z_vals = {}
+    eql_vals = {}
+
+    input_counter = 0
+    z_counter = 0
+    eql_counter = 0
+
+    # Parse the input into a Node tree.
+    for operation, *operands in monad:
+        # All "eql" statements come in pairs of "eql x ?" then "eql x 0" which
+        # can be combined and treated as "neq x ?". Skip the negation.
+        if operation == "eql" and operands == ["x", "0"]:
+            continue
+
+        # Set the memory to the value/instruction.
+        if operation == "inp":
+            var = operands[0]
+            mem[var] = Node(input_idx=input_counter)
+            input_counter += 1
+        else:
+            op_a, op_b = operands
+            if op_b in "wxyz":
+                op_b = mem[op_b]
+            else:
+                op_b = Node(literal=int(op_b))
+            mem[op_a] = OP[operation](mem[op_a], op_b)
+
+        # Replace `add z y` values with special z Nodes and track them.
+        if operation == "add" and operands == ["z", "y"]:
+            node = Node(z_idx=z_counter, z_val=mem[op_a])
+            mem[op_a] = node
+            z_vals[z_counter] = node
+            z_counter += 1
+
+        # Replace `eql` values with special eql Nodes and track them.
+        if operation == "eql":
+            node = Node(eql_idx=eql_counter, eql_val=mem[op_a])
+            mem[op_a] = node
+            eql_vals[eql_counter] = node
+            eql_counter += 1
+
+    return z_vals, eql_vals
+
+
+def resolve_eqls(eql_vals: dict[int, Node]) -> None:
+    """Resolve all eql/neq nodes to 0 or 1/.
+
+    Range check the eql Nodes to determine if they can be resolved.
+    (input_x + a != input_y for a >= 10) must be True since input < 10.
+
+    If not True, assume False and assert the counts of True and False balance.
+
+    The number of True and False neq Nodes must balance for z_13 == 0
+    because we must balance the z_n * 26 with the z_n // 26.
+
+    After resolving, the eqls where we know eql is Tue looks like:
+
+    Input_5 = ((z_03 % 26) + -8)
+    Input_7 = ((z_05 % 26) + -11)
+    Input_9 = ((z_07 % 26) + -6)
+    Input_10 = ((z_08 % 26) + -9)
+    Input_12 = ((z_10 % 26) + -5)
+    Input_13 = ((z_11 % 26) + -4)
+    Input_14 = ((z_12 % 26) + -9)
     """
+    for node in eql_vals.values():
+        if node.eql_val.eql_range_check_true():
+            node.eql_evaled = Node(literal=1)
+        else:
+            node.eql_evaled = Node(literal=0)
 
-    TESTS = [
-        aoc.TestCase(inputs=v, part=p + 1, want=input_data.DAY24_SOLUTIONS[k][p])
-        for k, v in input_data.DAY24.items()
-        for p in (0, 1)
-    ]
-    INPUT_PARSER = aoc.parse_multi_str_per_line
+    count = collections.Counter(node.eql_evaled.literal for node in eql_vals.values())
+    assert count[0] == count[1]
 
-    def part1(self, puzzle_input: list[tuple[str, ...]]) -> int:
-        """Return the max valid seriel number."""
-        ranges = self.solve_ranges(puzzle_input)
-        return int("".join(str(ranges[i][1]) for i in range(14)))
 
-    def part2(self, puzzle_input: list[tuple[str, ...]]) -> int:
-        """Return the min valid seriel number."""
-        ranges = self.solve_ranges(puzzle_input)
-        return int("".join(str(ranges[i][0]) for i in range(14)))
+def resolve_z_values(z_vals: dict[int, Node]) -> None:
+    """Resolve z values using fixed eql values.
 
-    def build_ast(self, monad: list[tuple[str, ...]]) -> tuple[dict[int, Node], dict[int, Node]]:
-        """Parse the input Monad and return both the z Nodes and eql Nodes."""
-        mem = {v: Node(literal=0) for v in 'wxyz'}
+    Once all eql Nodes have a fixed 0 or 1 value, the z Nodes can be evaluated
+    using the fixed eql value.
 
-        z_vals = {}
-        eql_vals = {}
+    This results in z Nodes having values like:
 
-        input_counter = 0
-        z_counter = 0
-        eql_counter = 0
+    z_00 = (Input_1 + 7)
+    z_01 = ((z_0 * 26) + (Input_2 + 8))
+    z_02 = ((z_1 * 26) + (Input_3 + 16))
+    z_04 = (z_3 // 26)
+    z_06 = (z_5 // 26)
 
-        # Parse the input into a Node tree.
-        for operation, *operands in monad:
-            # All "eql" statements come in pairs of "eql x ?" then "eql x 0" which
-            # can be combined and treated as "neq x ?". Skip the negation.
-            if operation == "eql" and operands == ["x", "0"]:
-                continue
+    Next, (z // 26) can be resolved by referencing prior z values, resulting in:
 
-            # Set the memory to the value/instruction.
-            if operation == "inp":
-                var = operands[0]
-                mem[var] = Node(input_idx=input_counter)
-                input_counter += 1
-            else:
-                op_a, op_b = operands
-                if op_b in "wxyz":
-                    op_b = mem[op_b]
-                else:
-                    op_b = Node(literal=int(op_b))
-                mem[op_a] = OP[operation](mem[op_a], op_b)
+    z_00 = Input_01 + 7
+    z_01 = z_00 * 26 + Input_02 + 8
+    z_02 = z_01 * 26 + Input_03 + 16
+    z_04 = z_02
+    z_06 = z_02
+    z_11 = z_01
+    z_12 = z_00
+    z_13 = 0
+    """
+    # Update the z Nodes now that the eql Nodes have all been assigned a value.
+    for node in z_vals.values():
+        # Update z value using the fixed eql values.
+        node.z_val = node.z_val.eval_node()
 
-            # Replace `add z y` values with special z Nodes and track them.
-            if operation == "add" and operands == ["z", "y"]:
-                node = Node(z_idx=z_counter, z_val=mem[op_a])
-                mem[op_a] = node
-                self.debug(f"{node} = {node.z_val}")
-                z_vals[z_counter] = node
-                z_counter += 1
+    # Simplify z Nodes of the form z // 26.
+    for node in z_vals.values():
+        assert node.z_val.operator in ("add", "div"), node.z_val
+        if node.z_val.operator == "div":
+            assert node.z_val.right == 26
+            val = node.z_val.left.div26()
+            while val.is_z:
+                val = z_vals[val.z_idx].z_val
+            node.z_val = val
 
-            # Replace `eql` values with special eql Nodes and track them.
-            if operation == "eql":
-                node = Node(eql_idx=eql_counter, eql_val=mem[op_a])
-                mem[op_a] = node
-                eql_vals[eql_counter] = node
-                eql_counter += 1
 
-        return z_vals, eql_vals
+def input_offsets(eql_vals: dict[int, Node]) -> dict[int, int]:
+    """Return the "offset" of each input.
 
-    def resolve_eqls(self, eql_vals: dict[int, Node]) -> None:
-        """Resolve all eql/neq nodes to 0 or 1/.
+    For neq Nodes set to 0, ie eql is True, evaluate Nodes to find equalities
+    of the form `input_x = input_y + a`. Conversely this gives
+    `input_y = input_x + b, b = -a`. Return the "offset" for each input.
 
-        Range check the eql Nodes to determine if they can be resolved.
-        (input_x + a != input_y for a >= 10) must be True since input < 10.
+    Input_01 = Input_02
+    Input_03 = Input_04 + 1
+    Input_05 = Input_06 - 3
 
-        If not True, assume False and assert the counts of True and False balance.
+    => {1: 0, 2: 0, 3: 1, 4: -1, 5: -33, 6: 3}
+    """
+    # Discard inequalities. Only equalities can be used to assess values.
+    eql_vals = [node for node in eql_vals.values() if node.eql_evaled.literal == 0]
 
-        The number of True and False neq Nodes must balance for z_13 == 0
-        because we must balance the z_n * 26 with the z_n // 26.
+    offsets = {}
+    for node in eql_vals:
+        # neq is True. eql is False. Cannot assign ranges.
+        left, right = [p.eval() for p in node.eql_val.parts]
+        # assert: input_x + a = input_b
+        assert left.operator == "add" and left.left.is_input and left.right.is_literal
+        assert right.is_input
+        offset = left.right.literal
+        offsets[left.left.input_idx] = offset
+        offsets[right.input_idx] = -offset
+    return offsets
 
-        After resolving, the eqls where we know eql is Tue looks like:
 
-        Input_5 = ((z_03 % 26) + -8)
-        Input_7 = ((z_05 % 26) + -11)
-        Input_9 = ((z_07 % 26) + -6)
-        Input_10 = ((z_08 % 26) + -9)
-        Input_12 = ((z_10 % 26) + -5)
-        Input_13 = ((z_11 % 26) + -4)
-        Input_14 = ((z_12 % 26) + -9)
-        """
-        for node in eql_vals.values():
-            if node.eql_val.eql_range_check_true():
-                node.eql_evaled = Node(literal=1)
-            else:
-                node.eql_evaled = Node(literal=0)
-            self.debug(f"{node} {node.eql_val} {node.eql_evaled}")
+def ranges(offsets: dict[int, int]) -> dict[int, tuple[int, int]]:
+    """Return valid values for each input (min, max) based on the known offsets."""
+    return {
+        idx: (max(1, 1 - offset), min(9, 9 - offset))
+        for idx, offset in offsets.items()
+    }
 
-        count = collections.Counter(node.eql_evaled.literal for node in eql_vals.values())
-        assert count[0] == count[1]
 
-    def resolve_z_values(self, z_vals: dict[int, Node]) -> None:
-        """Resolve z values using fixed eql values.
+def solve_ranges(monad: list[tuple[str, ...]]) -> dict[int, tuple[int, int]]:
+    """Decompose a MONAD program to derive valid input values."""
+    # Build the AST to get the z Nodes and eql Nodes.
+    z_vals, eql_vals = build_ast(monad)
 
-        Once all eql Nodes have a fixed 0 or 1 value, the z Nodes can be evaluated
-        using the fixed eql value.
+    # Assign a fixed value (0 or 1) to all eql Nodes.
+    resolve_eqls(eql_vals)
 
-        This results in z Nodes having values like:
+    # Simplify z Nodes using the fixed eql values.
+    resolve_z_values(z_vals)
 
-        z_00 = (Input_1 + 7)
-        z_01 = ((z_0 * 26) + (Input_2 + 8))
-        z_02 = ((z_1 * 26) + (Input_3 + 16))
-        z_04 = (z_3 // 26)
-        z_06 = (z_5 // 26)
+    # Given the known z values and half the equalities fixed, resolve the
+    # "offset" of each input from another input. `input_x = input_y + offset`.
+    offsets = input_offsets(eql_vals)
 
-        Next, (z // 26) can be resolved by referencing prior z values, resulting in:
+    # Use the known input offsets to compute the min/max value for each input.
+    return ranges(offsets)
 
-        z_00 = Input_01 + 7
-        z_01 = z_00 * 26 + Input_02 + 8
-        z_02 = z_01 * 26 + Input_03 + 16
-        z_04 = z_02
-        z_06 = z_02
-        z_11 = z_01
-        z_12 = z_00
-        z_13 = 0
-        """
-        # Update the z Nodes now that the eql Nodes have all been assigned a value.
-        for node in z_vals.values():
-            # Update z value using the fixed eql values.
-            node.z_val = node.z_val.eval_node()
-            self.debug(f"{node} = {node.z_val}")
 
-        # Simplify z Nodes of the form z // 26.
-        for node in z_vals.values():
-            assert node.z_val.operator in ("add", "div"), node.z_val
-            if node.z_val.operator == "div":
-                assert node.z_val.right == 26
-                val = node.z_val.left.div26()
-                while val.is_z:
-                    val = z_vals[val.z_idx].z_val
-                node.z_val = val
-            self.debug(f"{node} = {node.z_val}")
-
-    def input_offsets(self, eql_vals: dict[int, Node]) -> dict[int, int]:
-        """Return the "offset" of each input.
-
-        For neq Nodes set to 0, ie eql is True, evaluate Nodes to find equalities
-        of the form `input_x = input_y + a`. Conversely this gives
-        `input_y = input_x + b, b = -a`. Return the "offset" for each input.
-
-        Input_01 = Input_02
-        Input_03 = Input_04 + 1
-        Input_05 = Input_06 - 3
-
-        => {1: 0, 2: 0, 3: 1, 4: -1, 5: -33, 6: 3}
-        """
-        # Discard inequalities. Only equalities can be used to assess values.
-        eql_vals = [node for node in eql_vals.values() if node.eql_evaled.literal == 0]
-
-        offsets = {}
-        for node in eql_vals:
-            # neq is True. eql is False. Cannot assign ranges.
-            left, right = [p.eval() for p in node.eql_val.parts]
-            # assert: input_x + a = input_b
-            assert left.operator == "add" and left.left.is_input and left.right.is_literal
-            assert right.is_input
-            offset = left.right.literal
-            offsets[left.left.input_idx] = offset
-            offsets[right.input_idx] = -offset
-            self.debug(f"{left} = {right}")
-        return offsets
-
-    @staticmethod
-    def ranges(offsets: dict[int, int]) -> dict[int, tuple[int, int]]:
-        """Return valid values for each input (min, max) based on the known offsets."""
-        return {
-            idx: (max(1, 1 - offset), min(9, 9 - offset))
-            for idx, offset in offsets.items()
-        }
-
-    def solve_ranges(self, monad: list[tuple[str, ...]]) -> dict[int, tuple[int, int]]:
-        """Decompose a MONAD program to derive valid input values."""
-        # Build the AST to get the z Nodes and eql Nodes.
-        z_vals, eql_vals = self.build_ast(monad)
-
-        # Assign a fixed value (0 or 1) to all eql Nodes.
-        self.resolve_eqls(eql_vals)
-
-        # Simplify z Nodes using the fixed eql values.
-        self.resolve_z_values(z_vals)
-
-        # Given the known z values and half the equalities fixed, resolve the
-        # "offset" of each input from another input. `input_x = input_y + offset`.
-        offsets = self.input_offsets(eql_vals)
-
-        # Use the known input offsets to compute the min/max value for each input.
-        return self.ranges(offsets)
+TESTS = [
+    (p + 1, v, input_data.DAY24_SOLUTIONS[k][p])
+    for k, v in input_data.DAY24.items()
+    for p in (0, 1)
+]

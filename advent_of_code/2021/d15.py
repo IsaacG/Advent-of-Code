@@ -1,7 +1,60 @@
 #!/bin/python
-"""Advent of Code: Day 15."""
-
+"""Advent of Code: Day 15. Navigate through a maze of chiton, minimizing damage/cost."""
+import typing
 from lib import aoc
+
+
+def solve(data: aoc.Map, part: int) -> int:
+    """Return the lowest cost path from start to end."""
+    graph = typing.cast(dict[tuple[int, int], int], data.chars)
+    width = data.width
+    height = data.height
+
+    if part == 2:
+        # Expand the graph.
+        full_graph = {}
+        for repeat_x in range(5):
+            for repeat_y in range(5):
+                repeat_offset = repeat_x + repeat_y
+                for (p_x, p_y), val in graph.items():
+                    # Scale the point by repeat_x, repeat_y
+                    point = repeat_x * width + p_x, repeat_y * height + p_y
+                    # Add +1 to the value for each shift. Modulus 9 so that 10 wraps around to 1.
+                    val = ((val + repeat_offset - 1) % 9) + 1
+                    # Insert the point.
+                    full_graph[point] = val
+        graph = full_graph
+
+    return solve_graph(graph)
+
+
+def solve_graph(node_weights: dict[tuple[int, int], int]) -> int:
+    """Return the lowest cost path from start to end with Djiksta's."""
+    starting_point = (0, 0)
+    end_point = max(node_weights)
+
+    # Use Djiksta's to compute the cost from start to every node.
+    cost = {starting_point: 0}
+    visited = set()
+    todo = {starting_point}
+    while todo:
+        # Pop the lowest cost node.
+        current = sorted(todo, key=lambda x: cost[x])[0]
+        todo.remove(current)
+        # Mark it visited.
+        visited.add(current)
+        # Update neighbors with min(existing cost, cost through current)
+        for neighbor in aoc.t_neighbors4(current):
+            if neighbor in visited or neighbor not in node_weights:
+                continue
+            ncost = node_weights[neighbor]
+            cost_through_current = cost[current] + ncost
+            if neighbor not in cost or cost[neighbor] > cost_through_current:
+                cost[neighbor] = cost_through_current
+                # Add unvisited neighbors to the todo list.
+                todo.add(neighbor)
+    return cost[end_point]
+
 
 SAMPLE = """\
 1163751742
@@ -15,73 +68,4 @@ SAMPLE = """\
 1293138521
 2311944581
 """
-
-
-class Day15(aoc.Challenge):
-    """Navigate through a maze of chiton, minimizing damage/cost."""
-
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE, part=1, want=40),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=315),
-    )
-    TIMEOUT = 90
-    INPUT_PARSER = aoc.CoordinatesParserC()
-
-    def part1(self, puzzle_input: aoc.Map) -> int:
-        """Return the lowest cost path from start to end."""
-        return self.solve(puzzle_input)
-
-    def part2(self, puzzle_input: aoc.Map) -> int:
-        """Return the lowest cost path from start to end ... with larger input."""
-        graph = puzzle_input
-        width = graph.width
-        height = graph.height
-
-        full_graph = {}
-        for x in range(5):
-            for y in range(5):
-                repeat_offset = x + y
-                for point, val in graph.chars.items():
-                    # Scale the point by x, y
-                    point = (x * width + point.real) + (y * height + point.imag) * 1j
-                    # Add +1 to the value for each shift. Modulus 9 so that 10 wraps around to 1.
-                    val = ((val + repeat_offset - 1) % 9) + 1
-                    # Insert the point.
-                    full_graph[point] = val
-
-        rows = [
-            "".join(
-                str(full_graph[complex(x, y)])
-                for x in range(graph.width * 5)
-            )
-            for y in range(graph.height * 5)
-        ]
-        graph = aoc.CoordinatesParserC().parse("\n".join(rows))
-        return self.solve(graph)
-
-    @staticmethod
-    def solve(node_weights: aoc.Map) -> int:
-        """Return the lowest cost path from start to end with Djiksta's."""
-        starting_point = complex(0)
-        end_point = complex(node_weights.max_x, node_weights.max_y)
-
-        # Use Djiksta's to compute the cost from start to every node.
-        cost = {starting_point: 0}
-        visited = set()
-        todo = {starting_point}
-        while todo:
-            # Pop the lowest cost node.
-            current = sorted(todo, key=lambda x: cost[x])[0]
-            todo.remove(current)
-            # Mark it visited.
-            visited.add(current)
-            # Update neighbors with min(existing cost, cost through current)
-            for neighbor, ncost in node_weights.neighbors(current).items():
-                if neighbor in visited:
-                    continue
-                cost_through_current = cost[current] + ncost
-                if neighbor not in cost or cost[neighbor] > cost_through_current:
-                    cost[neighbor] = cost_through_current
-                    # Add unvisited neighbors to the todo list.
-                    todo.add(neighbor)
-        return cost[end_point]
+TESTS = [(1, SAMPLE, 40), (2, SAMPLE, 315)]

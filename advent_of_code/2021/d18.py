@@ -1,39 +1,10 @@
 #!/bin/python
-"""Advent of Code: Day 18."""
+"""Advent of Code: Day 18. Solve snailfish arithmetic."""
 
 from __future__ import annotations
 import copy
+import itertools
 import json
-
-from lib import aoc
-
-
-SAMPLE = [
-    """\
-[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
-[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
-[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
-[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
-[7,[5,[[3,8],[1,4]]]]
-[[2,[2,2]],[8,[8,1]]]
-[2,9]
-[1,[[[9,3],9],[[9,0],[0,7]]]]
-[[[5,[7,4]],7],1]
-[[[[4,2],2],6],[8,7]]
-""",
-    """\
-[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
-[[[5,[2,8]],4],[5,[[9,9],0]]]
-[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
-[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
-[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
-[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
-[[[[5,4],[7,7]],8],[[8,3],8]]
-[[9,3],[[9,9],[6,[4,9]]]]
-[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
-[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
-"""
-]
 
 
 class Node:
@@ -161,60 +132,56 @@ class Node:
         """Return a deep copy of self."""
         return copy.deepcopy(self)
 
-    # def verbose_reduce(self):
-    #     while self.need_explode() or self.need_split():
-    #         print(f"{self} {self.need_explode()=} {self.need_split()=}")
-    #         if self.need_explode():
-    #             self.explode()
-    #             print(f"{self} exploded")
-    #         if self.need_split():
-    #             self.split()
-    #             print(f"{self} split")
-    #     return self
 
-    # def need_split(self):
-    #     if self.is_number:
-    #         return self.number > 9
-    #     return any(node.need_split() for node in self.subnodes)
+def solve(data: list[Node], part: int) -> int:
+    """Compute Snailfish metrics."""
+    if part == 1:
+        # Return the sum.
+        return sum(data[1:], start=data[0]).magnitude()
 
-    # def need_explode(self, depth=0):
-    #     if self.is_number:
-    #         return False
-    #     if depth == 4:
-    #         return True
-    #     return any(node.need_explode(depth + 1) for node in self.subnodes)
+    # Compute the max magnitude from adding any two numbers.
+    return max((a + b).magnitude() for a, b in itertools.permutations(data, r=2))
 
 
-class Day18(aoc.Challenge):
-    """Solve snailfish arithmetic."""
+def input_parser(data: str) -> list[Node]:
+    """Parse the input data."""
+    return [Node(json.loads(line)) for line in data.splitlines()]
 
-    TESTS = (
-        aoc.TestCase(inputs="[[1,2],[[3,4],5]]", part=1, want=143),
-        aoc.TestCase(inputs="[[[[1,1],[2,2]],[3,3]],[4,4]]", part=1, want=445),
-        aoc.TestCase(
-            inputs="[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]",
-            part=1,
-            want=3488
-        ),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 5)]), part=1, want=445),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 6)]), part=1, want=791),
-        aoc.TestCase(inputs="\n".join([f"[{i},{i}]" for i in range(1, 7)]), part=1, want=1137),
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=3488),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=4140),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=3993),
-    )
 
-    def part1(self, puzzle_input: list[Node]) -> int:
-        """Sum a list of numbers."""
-        result = puzzle_input[0]
-        for number in puzzle_input[1:]:
-            result += number
-        return result.magnitude()
-
-    def part2(self, puzzle_input: list[Node]) -> int:
-        """Compute the max magnitude from adding any two numbers."""
-        return max((a + b).magnitude() for a in puzzle_input for b in puzzle_input if a != b)
-
-    def input_parser(self, puzzle_input: str) -> list[Node]:
-        """Parse the input data."""
-        return [Node(json.loads(line)) for line in puzzle_input.splitlines()]
+SAMPLE = [
+    """\
+[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+[7,[5,[[3,8],[1,4]]]]
+[[2,[2,2]],[8,[8,1]]]
+[2,9]
+[1,[[[9,3],9],[[9,0],[0,7]]]]
+[[[5,[7,4]],7],1]
+[[[[4,2],2],6],[8,7]]
+""",
+    """\
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+"""
+]
+TESTS = (
+    (1, "[[1,2],[[3,4],5]]", 143),
+    (1, "[[[[1,1],[2,2]],[3,3]],[4,4]]", 445),
+    (1, "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]", 3488),
+    (1, "\n".join([f"[{i},{i}]" for i in range(1, 5)]), 445),
+    (1, "\n".join([f"[{i},{i}]" for i in range(1, 6)]), 791),
+    (1, "\n".join([f"[{i},{i}]" for i in range(1, 7)]), 1137),
+    (1, SAMPLE[0], 3488),
+    (1, SAMPLE[1], 4140),
+    (2, SAMPLE[1], 3993),
+)

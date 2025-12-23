@@ -1,5 +1,5 @@
 #!/bin/python
-"""Advent of Code: Day 16."""
+"""Advent of Code: Day 16. Parse and evaluate Packet data."""
 
 from __future__ import annotations
 
@@ -8,8 +8,6 @@ import enum
 import io
 import math
 import operator
-
-from lib import aoc
 
 
 class PacketType(enum.IntEnum):
@@ -101,9 +99,8 @@ class Operator(BasePacket):
         }[self.packet_type]
         if self.packet_type in BINARY_OPERATORS:
             a, b = [p.eval() for p in self.operands]
-            return 1 if operation(a, b) else 0
-        else:
-            return operation(p.eval() for p in self.operands)
+            return 1 if operation(a, b) else 0  # type: ignore
+        return operation(p.eval() for p in self.operands)  # type: ignore
 
     def __str__(self) -> str:
         sub_packets = ", ".join(str(p) for p in self.operands)
@@ -180,31 +177,26 @@ def packet_parser(bits_io: BitStream) -> BasePacket:
     return Operator(version, packet_type, sub_packets)
 
 
-class Day16(aoc.Challenge):
-    """Parse and evaluate Packet data."""
+def solve(data: str, part: int) -> int:
+    """Parse the packets and sum up all the versions/evaluate."""
+    assert isinstance(data, str)
+    bits_io = BitStream.from_hex(data)
+    parser = packet_parser(bits_io)
+    return parser.sum_versions() if part == 1 else parser.eval()
 
-    TESTS = (
-        aoc.TestCase(inputs="8A004A801A8002F478", part=1, want=16),
-        aoc.TestCase(inputs="8A004A801A8002F478", part=1, want=16),
-        aoc.TestCase(inputs="620080001611562C8802118E34", part=1, want=12),
-        aoc.TestCase(inputs="C0015000016115A2E0802F182340", part=1, want=23),
-        aoc.TestCase("A0016C880162017C3686B18A3D4780", part=1, want=31),
-        aoc.TestCase(inputs="C200B40A82", part=2, want=3),
-        aoc.TestCase(inputs="04005AC33890", part=2, want=54),
-        aoc.TestCase(inputs="880086C3E88112", part=2, want=7),
-        aoc.TestCase(inputs="CE00C43D881120", part=2, want=9),
-        aoc.TestCase(inputs="D8005AC2A8F0", part=2, want=1),
-        aoc.TestCase(inputs="F600BC2D8F", part=2, want=0),
-        aoc.TestCase(inputs="9C005AC2F8F0", part=2, want=0),
-        aoc.TestCase(inputs="9C0141080250320F1802104A08", part=2, want=1),
-    )
 
-    def part1(self, puzzle_input: str) -> int:
-        """Parse the packets and sum up all the versions."""
-        bits_io = BitStream.from_hex(puzzle_input)
-        return packet_parser(bits_io).sum_versions()
-
-    def part2(self, puzzle_input: str) -> int:
-        """Parse the packets and evaluate."""
-        bits_io = BitStream.from_hex(puzzle_input)
-        return packet_parser(bits_io).eval()
+TESTS = [
+    (1, "8A004A801A8002F478", 16),
+    (1, "8A004A801A8002F478", 16),
+    (1, "620080001611562C8802118E34", 12),
+    (1, "C0015000016115A2E0802F182340", 23),
+    (1, "A0016C880162017C3686B18A3D4780", 31),
+    (2, "C200B40A82", 3),
+    (2, "04005AC33890", 54),
+    (2, "880086C3E88112", 7),
+    (2, "CE00C43D881120", 9),
+    (2, "D8005AC2A8F0", 1),
+    (2, "F600BC2D8F", 0),
+    (2, "9C005AC2F8F0", 0),
+    (2, "9C0141080250320F1802104A08", 1),
+]

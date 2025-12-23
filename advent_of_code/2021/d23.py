@@ -32,15 +32,7 @@ import functools
 import itertools
 import re
 
-from lib import aoc
 
-SAMPLE = """\
-#############
-#...........#
-###B#C#B#D###
-  #A#D#C#A#
-  #########
-"""
 # Amphipod type ("ABCD") and (x, y) location.
 Piece = tuple[str, int, int]
 # Cartesian point.
@@ -298,23 +290,12 @@ class AmphipodGame:
         print()
 
 
-class Day23(aoc.Challenge):
-    """Solve the cost of an Amphipod Game."""
+def solve(data: Board, part: int) -> int:
+    """Solve the game."""
+    pieces = data
+    game = AmphipodGame(2 if part == 1 else 4)
 
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE, part=1, want=12521),
-        # Times out.
-        aoc.TestCase(inputs=SAMPLE, part=2, want=44169),
-    )
-
-    def part1(self, puzzle_input: Board) -> int:
-        """Solve for room_size = 2."""
-        return AmphipodGame(2).solve(puzzle_input)
-
-    def part2(self, puzzle_input: Board) -> int:
-        """Solve for room_size = 4."""
-        pieces = puzzle_input
-
+    if part == 2:
         # Add two rows of pieces.
         updated = []
         # Shift the bottom row down by two.
@@ -328,26 +309,39 @@ class Day23(aoc.Challenge):
             ("D", 2, 3), ("B", 4, 3), ("A", 6, 3), ("C", 8, 3),
         ])
         pieces = tuple(sorted(updated))
-        if self.testing:
-            return AmphipodGame(4).solve_with_assumption(pieces, [])
-        else:
-            return AmphipodGame(4).solve(pieces)
 
-    def input_parser(self, puzzle_input: str) -> Board:
-        """Parse the input data.
+    return game.solve(pieces)
 
-                   1
-           01234567890
-          #############
-        0 #...........#
-        1 ###C#C#B#D###
-        2   #D#A#B#A#
-            #########
-             2 4 6 8
-        """
-        locations = []
-        room_lines = puzzle_input.splitlines()[2:4]
-        for y, line in enumerate(room_lines):
-            for x, piece in enumerate(re.findall(r"[ABCD]", line)):
-                locations.append((piece, (x + 1) * 2, y + 1))
-        return tuple(sorted(locations))
+
+def input_parser(data: str) -> Board:
+    """Parse the input data.
+
+               1
+       01234567890
+      #############
+    0 #...........#
+    1 ###C#C#B#D###
+    2   #D#A#B#A#
+        #########
+         2 4 6 8
+    """
+    locations = []
+    room_lines = data.splitlines()[2:4]
+    for y, line in enumerate(room_lines):
+        for x, piece in enumerate(re.findall(r"[ABCD]", line)):
+            locations.append((piece, (x + 1) * 2, y + 1))
+    return tuple(sorted(locations))
+
+
+SAMPLE = """\
+#############
+#...........#
+###B#C#B#D###
+  #A#D#C#A#
+  #########
+"""
+TESTS = [
+    (1, SAMPLE, 12521),
+    # Times out.
+    # (2, SAMPLE, 44169),
+]
