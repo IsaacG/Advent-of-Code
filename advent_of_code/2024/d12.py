@@ -93,10 +93,11 @@ class Day12(aoc.Challenge):
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         perimeter = self.perimeter1 if part_one else self.perimeter2
+        garden = {complex(*p): v for p, v in puzzle_input.chars.items()}
         return sum(
             len(region) * perimeter(region)
             for region in aoc.partition_regions(
-                puzzle_input.chars, predicate=lambda a, b: puzzle_input[a] == puzzle_input[b]
+                garden, predicate=lambda a, b: garden[a] == garden[b]
             )
         )
 

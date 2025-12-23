@@ -51,6 +51,7 @@ class Day16(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE[0], want=45),
         aoc.TestCase(part=2, inputs=SAMPLE[1], want=64),
     ]
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def networkx_solver(self, open_space: set[complex], start: complex, end: complex, part_one: bool) -> int:
         """Solve using networkx.DiGraph."""

@@ -33,9 +33,9 @@ class Day20(aoc.Challenge):
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         # I use tuples for walking the maze and complex for cheat logic.
         spaces = puzzle_input.coords["."] | puzzle_input.coords["E"] | puzzle_input.coords["S"]
-        t_coords = puzzle_input.t_coords
-        t_spaces = t_coords["."] | t_coords["E"] | t_coords["S"]
-        end = t_coords["E"].pop()
+        coords = puzzle_input.coords
+        spaces = coords["."] | coords["E"] | coords["S"]
+        end = coords["E"].pop()
 
         cheat_distance = 2 if part_one else 20
         threshold = (15 if part_one else 70) if self.testing else 100
@@ -48,16 +48,16 @@ class Day20(aoc.Challenge):
 
         while not todo.empty():
             cost, pos = todo.get()
-            distance_from_end[complex(*pos)] = cost
+            distance_from_end[pos] = cost
 
             for neighbor in aoc.t_neighbors4(pos):
-                if neighbor not in seen and neighbor in t_spaces:
+                if neighbor not in seen and neighbor in spaces:
                     seen.add(neighbor)
                     todo.put((cost + 1, neighbor))
 
         # Compute all the cheat offsets and how many steps those take.
         offsets = {
-            complex(x, y): abs(x) + abs(y)
+            (x, y): abs(x) + abs(y)
             for x in range(-cheat_distance, cheat_distance + 1)
             for y in range(-cheat_distance, cheat_distance + 1)
             if abs(x) + abs(y) <= cheat_distance
@@ -67,7 +67,7 @@ class Day20(aoc.Challenge):
         cheats = 0
         for cheat_from in spaces:
             for cheat_delta, cheat_cost in offsets.items():
-                cheat_to = cheat_from + cheat_delta
+                cheat_to = (cheat_from[0] + cheat_delta[0], cheat_from[1] + cheat_delta[1])
                 if cheat_to in spaces:
                     saves = distance_from_end[cheat_from] - distance_from_end[cheat_to] - cheat_cost
                     if saves >= threshold:

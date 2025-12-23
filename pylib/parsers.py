@@ -80,10 +80,10 @@ class ParseIntergers(BaseParser):
         """Check if the input is all numbers."""
         lines = puzzle_input.splitlines()
         trans = str.maketrans({i: "" for i in "-,;|"})
-        if all(line.translate(trans).isdigit() for line in lines):
-            return True
         if any(len(line) > 1000 for line in lines):
             return False
+        if all(line.translate(trans).isdigit() for line in lines):
+            return True
         patterns = [
             re.compile(r"[+-]?\d{1,1000}( +[+-]?\d{1,1000})*"),
         ]

@@ -33,20 +33,20 @@ class Day06(aoc.Challenge):
         seen: set[complex] = set()
         while pos in all_spots:
             spots.add(pos)
-            if pos + direction in blocked:
+            if (pos[0] + direction[0], pos[1] + direction[1]) in blocked:
                 if pos in seen:
                     return spots, True
                 seen.add(pos)
-                while pos + direction in blocked:
-                    direction *= 1j
-            pos += direction
+                while (pos[0] + direction[0], pos[1] + direction[1]) in blocked:
+                    direction = aoc.rotate_counterclockwise(*direction)
+            pos = pos[0] + direction[0], pos[1] + direction[1]
         return spots, False
 
     def solver(self, puzzle_input: aoc.Map, part_one: bool) -> int:
         all_spots = puzzle_input.all_coords
-        blocked = puzzle_input["#"]
+        blocked = puzzle_input.coords["#"]
         start_pos, start_dir = next(
-            (puzzle_input[arrow].copy().pop(), aoc.ARROW_DIRECTIONS[arrow])
+            (puzzle_input.coords[arrow].copy().pop(), aoc.ARROW_DIRECTIONS_T[arrow])
             for arrow in "<>v^"
             if arrow in puzzle_input.coords
         )
