@@ -4,6 +4,29 @@
 import collections
 from lib import aoc
 
+InputType = list[list[list[int]]]
+Reports = list[list[int]]
+
+
+PARSER = aoc.ParseBlocks([aoc.parse_ints])
+
+def solve(data: InputType, part: int) -> int:
+    """Return the sum of the middle number of reports."""
+    pairs, reports = data
+    prereq_tree = collections.defaultdict(set)
+    for a, b in pairs:
+        prereq_tree[b].add(a)
+
+    total = 0
+    for report in reports:
+        pages = set(report)
+        simplified_rules = {a: b & pages for a, b in prereq_tree.items() if a in pages}
+        correct_order = sorted(pages, key=lambda p: len(simplified_rules.get(p, [])))
+        if (report == correct_order) == (part == 1):
+            total += correct_order[len(correct_order) // 2]
+    return total
+
+
 SAMPLE = """\
 47|53
 97|13
@@ -33,35 +56,5 @@ SAMPLE = """\
 75,97,47,61,53
 61,13,29
 97,13,75,29,47"""
-
-InputType = list[list[list[int]]]
-Reports = list[list[int]]
-
-
-class Day05(aoc.Challenge):
-    """Day 5: Print Queue."""
-
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=143),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=123),
-    ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.parse_ints])
-
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Return the sum of the middle number of reports."""
-        pairs, reports = puzzle_input
-        prereq_tree = collections.defaultdict(set)
-        for a, b in pairs:
-            prereq_tree[b].add(a)
-
-        total = 0
-        for report in reports:
-            pages = set(report)
-            simplified_rules = {a: b & pages for a, b in prereq_tree.items() if a in pages}
-            correct_order = sorted(pages, key=lambda p: len(simplified_rules.get(p, [])))
-            if (report == correct_order) == part_one:
-                total += correct_order[len(correct_order) // 2]
-        return total
-
-
+TESTS = [(1, SAMPLE, 143), (2, SAMPLE, 123)]
 # vim:expandtab:sw=4:ts=4

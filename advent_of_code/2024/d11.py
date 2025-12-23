@@ -1,11 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 11: Plutonian Pebbles."""
-from __future__ import annotations
-
 import functools
-from lib import aoc
-
-SAMPLE = "125 17"
 
 
 @functools.cache
@@ -23,16 +18,10 @@ def count_stone(stone: int, steps: int) -> int:
     return count_stone(stone // div, steps - 1) + count_stone(stone % div, steps - 1)
 
 
-class Day11(aoc.Challenge):
-    """Day 11: Plutonian Pebbles."""
+def solve(data: list[int], part: int) -> int:
+    steps = 25 if part == 1 else 75
+    return sum(count_stone(stone, steps) for stone in data)
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=55312),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=65601038650482),
-    ]
 
-    def solver(self, puzzle_input: list[int], part_one: bool) -> int:
-        steps = 25 if part_one else 75
-        return sum(count_stone(stone, steps) for stone in puzzle_input)
-
+TESTS = [(1, "125 17", 55312), (2, "125 17", 65601038650482)]
 # vim:expandtab:sw=4:ts=4

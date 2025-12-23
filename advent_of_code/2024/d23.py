@@ -4,6 +4,40 @@
 import collections
 import itertools
 from lib import aoc
+PARSER = aoc.BaseParseMultiPerLine(word_separator="-")
+
+
+def solve(data: list[list[str]], part: int) -> str:
+    """Return the largest clique."""
+    connections = collections.defaultdict(set)
+    for a, b in data:
+        connections[a].add(b)
+        connections[b].add(a)
+
+    if part == 1:
+        triples = set()
+        for a, bs in connections.items():
+            if not a.startswith("t"):
+                continue
+            for b, c in itertools.combinations(bs, 2):
+                if c in connections[b]:
+                    triples.add(frozenset({a, b, c}))
+        return len(triples)
+
+    for a, bs in connections.items():
+        bs.add(a)
+
+    longest = max(len(i) for i in connections.values())
+
+    for length in range(longest, 1, -1):
+        for party in connections.values():
+            if len(party) < length:
+                continue
+            for candidates in itertools.combinations(party, length):
+                if all(i in connections[j] for i, j in itertools.combinations(candidates, 2)):
+                    return ",".join(sorted(candidates))
+    raise RuntimeError("No solution found")
+
 
 SAMPLE = """\
 kh-tc
@@ -38,52 +72,5 @@ co-tc
 wh-qp
 tb-vc
 td-yn"""
-
-
-class Day23(aoc.Challenge):
-    """Day 23: LAN Party."""
-
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=7),
-        aoc.TestCase(part=2, inputs=SAMPLE, want="co,de,ka,ta"),
-    ]
-    INPUT_PARSER = aoc.BaseParseMultiPerLine(word_separator="-")
-
-    def part1(self, puzzle_input: list[list[str]]) -> int:
-        """Count the number of three interconnected nodes."""
-        connections = collections.defaultdict(set)
-        for a, b in puzzle_input:
-            connections[a].add(b)
-            connections[b].add(a)
-
-        triples = set()
-        for a, bs in connections.items():
-            if not a.startswith("t"):
-                continue
-            for b, c in itertools.combinations(bs, 2):
-                if c in connections[b]:
-                    triples.add(frozenset({a, b, c}))
-        return len(triples)
-
-    def part2(self, puzzle_input: list[list[str]]) -> str:
-        """Return the largest clique."""
-        connections = collections.defaultdict(set)
-        for a, b in puzzle_input:
-            connections[a].add(b)
-            connections[b].add(a)
-
-        for a, bs in connections.items():
-            bs.add(a)
-
-        longest = max(len(i) for i in connections.values())
-
-        for length in range(longest, 1, -1):
-            for party in connections.values():
-                if len(party) < length:
-                    continue
-                for candidates in itertools.combinations(party, length):
-                    if all(i in connections[j] for i, j in itertools.combinations(candidates, 2)):
-                        return ",".join(sorted(candidates))
-        raise RuntimeError("No solution found")
-
+TESTS = [(1, SAMPLE, 7), (2, SAMPLE, "co,de,ka,ta")]
 # vim:expandtab:sw=4:ts=4

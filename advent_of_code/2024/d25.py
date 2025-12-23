@@ -4,6 +4,16 @@
 import itertools
 from lib import aoc
 
+
+def solve(data: list[aoc.Map], part: int) -> int:
+    """Count how many keys (loosely) fit inside a locks."""
+    del part
+    return sum(
+        a.coords["#"].isdisjoint(b.coords["#"])
+        for a, b in itertools.combinations(data, r=2)
+    )
+
+
 SAMPLE = """\
 #####
 .####
@@ -44,21 +54,5 @@ SAMPLE = """\
 #.#..
 #.#.#
 #####"""
-
-
-class Day25(aoc.Challenge):
-    """Day 25: Code Chronicle."""
-
-    TESTS = [
-        aoc.TestCase(part=1, inputs=SAMPLE, want=3),
-        aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
-    ]
-
-    def part1(self, puzzle_input: list[aoc.Map]) -> int:
-        """Count how many keys (loosely) fit inside a locks."""
-        return sum(
-            a.coords["#"].isdisjoint(b.coords["#"])
-            for a, b in itertools.combinations(puzzle_input, r=2)
-        )
-
+TESTS = [(1, SAMPLE, 3)]
 # vim:expandtab:sw=4:ts=4
