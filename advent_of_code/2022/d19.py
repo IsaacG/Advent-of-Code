@@ -11,10 +11,6 @@ SAMPLE = [
 Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.""", # 0
 ]
-
-LineType = int
-InputType = list[LineType]
-
 ORE = 0
 CLAY = 1
 OBSIDIAN = 2
@@ -36,7 +32,7 @@ class Day19(aoc.Challenge):
     ]
     TIMEOUT = 300
 
-    def simulator(self, puzzle_input: InputType, minutes: int) -> int:
+    def simulator(self, puzzle_input: list[list[int]], minutes: int) -> int:
         scores = []
         for idx, blueprint in enumerate(puzzle_input, start=1):
             self.debug(f"Testing blueprint {idx}")
@@ -136,14 +132,14 @@ class Day19(aoc.Challenge):
             scores.append(highest)
         return scores
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[list[int]]) -> int:
         scores = self.simulator(puzzle_input, 24)
         return sum(idx * score for idx, score in enumerate(scores, start=1))
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[list[int]]) -> int:
         return math.prod(self.simulator(puzzle_input[:3], 32))
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> list[list[int]]:
         """Parse the input data."""
         blueprints = []
         RE = re.compile("Each (.*) robot costs (.*)")

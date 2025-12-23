@@ -13,8 +13,6 @@ accszExk
 acctuvwj
 abdefghi"""
 
-InputType = tuple[complex, complex, dict[complex, int]]
-
 
 class Day12(aoc.Challenge):
     """Day 12: Hill Climbing Algorithm."""
@@ -44,12 +42,12 @@ class Day12(aoc.Challenge):
                 to_visit.append((neighbor, n_height))
         raise RuntimeError("Not found.")
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: tuple[complex, complex, dict[complex, int]]) -> int:
         """Return steps from start to end."""
         start, end, board = puzzle_input
         return self.get_steps([start], end, board)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: tuple[complex, complex, dict[complex, int]]) -> int:
         """Return steps from any low point to end."""
         _, end, board = puzzle_input
         starts = [
@@ -59,7 +57,7 @@ class Day12(aoc.Challenge):
         ]
         return self.get_steps(starts, end, board)
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> tuple[complex, complex, dict[complex, int]]:
         """Parse the input data."""
         parser = aoc.CoordinatesParserC()
         data = parser.parse(puzzle_input)

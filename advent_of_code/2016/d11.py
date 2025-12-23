@@ -15,7 +15,6 @@ The second floor contains a hydrogen generator.
 The third floor contains a lithium generator.
 The fourth floor contains nothing relevant."""
 LineType = int
-InputType = list[LineType]
 Device = tuple[int, bool]
 
 
@@ -49,11 +48,11 @@ def cost(floors: Iterable[Device]) -> int:
     return sum(len(floor) * i for i, floor in zip((3, 2, 1), floors[:3]))
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data, part: int) -> int:
     return part1(data) if part == 1 else part2(data)
 
 
-def part1(data: InputType) -> int:
+def part1(data) -> int:
     """Solve for minimum moves using A*."""
     state, _ = data
 
@@ -96,7 +95,7 @@ def part1(data: InputType) -> int:
     raise RuntimeError("No solution found.")
 
 
-def part2(data: InputType) -> int:
+def part2(data) -> int:
     """Add extra devices then solve the puzzle."""
     state, materials = data
     floors = list(state)
@@ -110,7 +109,7 @@ def part2(data: InputType) -> int:
     return part1((tuple(floors), materials))
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str):
     """Parse the input data."""
     state = [[] for _ in range(4)]
     floor_names = ["first", "second", "third", "fourth"]

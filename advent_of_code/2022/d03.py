@@ -14,8 +14,6 @@ wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
 """]
-InputType = list[str]
-
 SCORING = " " + string.ascii_letters
 
 
@@ -27,7 +25,7 @@ class Day03(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=70),
     ]
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[str]) -> int:
         """Find the common element across the first and second half of each line."""
         score = 0
         for line in puzzle_input:
@@ -39,7 +37,7 @@ class Day03(aoc.Challenge):
 
         return score
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[str]) -> int:
         """Find the common element across groups of three lines."""
         score = 0
         for lines in more_itertools.chunked(puzzle_input, 3):

@@ -13,8 +13,6 @@ a-b-c-d-e-f-g-h-987[abcde]
 not-a-real-room-404[oarel]
 totally-real-room-200[decoy]"""
 
-InputType = list[tuple[str, int, str]]
-
 
 def is_real(name: str, checksum: str) -> bool:
     """Return if a name matches its checksum."""
@@ -23,7 +21,7 @@ def is_real(name: str, checksum: str) -> bool:
     return "".join(b for a, b in top[:5]) == checksum
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[tuple[str, int, str]], part: int) -> int:
     """Return the sector with Northpole storage."""
     real_sectors = (
         (name, sector, checksum) for name, sector, checksum in data

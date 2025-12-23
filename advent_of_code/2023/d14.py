@@ -1,7 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 14: Parabolic Reflector Dish."""
 from lib import aoc
-InputType = tuple[set[tuple[int, int]], set[tuple[int, int]]]
 STEPS_P2 = 1000000000
 
 

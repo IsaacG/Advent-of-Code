@@ -27,7 +27,6 @@ ROCKS = """
     """
 SAMPLE = '>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>'
 GRAVITY = complex(0, -1)
-InputType = str
 
 
 class Day17(aoc.Challenge):
@@ -38,7 +37,7 @@ class Day17(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=1514285714288),
     ]
 
-    def pre_run(self, puzzle_input: InputType) -> None:
+    def pre_run(self, puzzle_input: str) -> None:
         """Parse the rock shapes from ASCII art."""
         rocks = []
         parser = aoc.CoordinatesParserC()
@@ -51,7 +50,7 @@ class Day17(aoc.Challenge):
         self.rocks = rocks
         self.rock_heights = [int(max(i.imag for i in r)) for r in rocks]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
         """Compute the height of the tower after n rocks have fallen."""
         # Rounds to run, part 1 vs part 2.
         target_rock_count = 2022 if part_one else 1000000000000

@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 9: Mirage Maintenance."""
-InputType = list[list[int]]
 
 
 def get_prior_and_following(line) -> tuple[int, int]:
@@ -13,7 +12,7 @@ def get_prior_and_following(line) -> tuple[int, int]:
     return line[0] - prior, line[-1] + following
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[list[int]], part: int) -> int:
     """Compute the next value in a series using repeated first differences."""
     # Sum up the prior or following value from each line.
     return sum(

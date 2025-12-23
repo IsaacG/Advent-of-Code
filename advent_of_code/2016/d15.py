@@ -8,10 +8,9 @@ SAMPLE = """\
 Disc #1 has 5 positions; at time=0, it is at position 4.
 Disc #2 has 2 positions; at time=0, it is at position 1."""
 TESTS = [(1, SAMPLE, 5)]
-InputType = list[list[int]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[list[int]], part: int) -> int:
     """Return the correct time to press the button to get a capsule."""
     if part == 2:
         # Part two. Add an additional disk.

@@ -2,7 +2,6 @@
 """Advent of Code, Day 21: Fractal Art."""
 SHIFT = complex(1, 1)
 SUBPIXELS = {i: {complex(x, y) for x in range(i) for y in range(i)} for i in [2, 3]}
-InputType = dict[int, dict[frozenset[complex], set[complex]]]
 
 
 def to_complex_set(pattern: str) -> set[complex]:
@@ -42,7 +41,7 @@ def permutations(pixels: frozenset[complex], block_size: int) -> list[frozenset[
     return [frozenset(i) for i in matches]
 
 
-def solve(data: InputType, part: int, testing: bool) -> int:
+def solve(data: dict[int, dict[frozenset[complex], set[complex]]], part: int, testing: bool) -> int:
     """Return the number of pixels which are on after repeating the image enhancement."""
     pixels = START
     replacements = data
@@ -74,7 +73,7 @@ def solve(data: InputType, part: int, testing: bool) -> int:
     return len(pixels)
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> dict[int, dict[frozenset[complex], set[complex]]]:
     """Parse the input data."""
     rules: InputType = {2: {}, 3: {}}
     for line in data.splitlines():

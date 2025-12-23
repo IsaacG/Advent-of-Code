@@ -12,8 +12,6 @@ SAMPLE = """\
 [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
 [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"""
 
-InputType = list[tuple[int, list[int], list[list[int]], list[int]]]
-
 
 class Day10(aoc.Challenge):
     """Day 10: Factory."""
@@ -23,7 +21,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(part=2, inputs=SAMPLE, want=33),
     ]
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[tuple[int, list[int], list[list[int]], list[int]]]) -> int:
         """Return the min number of buttons that need to be pressed to light up the needed lights."""
 
         def get_steps(target: int, buttons: list[int]) -> int:
@@ -39,7 +37,7 @@ class Day10(aoc.Challenge):
 
         return sum(get_steps(target, buttons) for target, buttons, *_ in puzzle_input)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[tuple[int, list[int], list[list[int]], list[int]]]) -> int:
         """Return the min number of buttons that need to be pressed to get the target joltage."""
         total = 0
         for *_, buttons, joltage in puzzle_input:
@@ -61,7 +59,7 @@ class Day10(aoc.Challenge):
 
         return total
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> list[tuple[int, list[int], list[list[int]], list[int]]]:
         """Parse the input data."""
         lines = []
         for line in puzzle_input.splitlines():

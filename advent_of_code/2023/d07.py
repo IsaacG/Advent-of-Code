@@ -1,12 +1,8 @@
 #!/bin/python
 """Advent of Code, Day 7: Camel Cards. Rank poker card hands."""
-
-
 import collections
-
 from lib import aoc
 
-InputType = list[list[str]]
 
 # The value of J changes from part 1 to part 2.
 ORDERS = ("AKQJT98765432"[::-1], "AKQT98765432J"[::-1])
@@ -49,7 +45,7 @@ def sort(part_two: int, line: list[str]) -> tuple[int, int]:
     return (primary, secondary)
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[list[str]], part: int) -> int:
     """Sort hands then return the bid returns."""
     data.sort(key=lambda x: sort(0 if part == 1 else 1, x))
     return sum(idx * int(bid) for idx, (_, bid) in enumerate(data, start=1))

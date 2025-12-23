@@ -15,8 +15,6 @@ Step B must be finished before step E can begin.
 Step D must be finished before step E can begin.
 Step F must be finished before step E can begin."""
 
-InputType = tuple[set[str], dict[str, set[str]]]
-
 
 class Day07(aoc.Challenge):
     """Day 7: The Sum of Its Parts."""
@@ -26,7 +24,7 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=15),
     ]
 
-    def part1(self, puzzle_input: InputType) -> str:
+    def part1(self, puzzle_input: tuple[set[str], dict[str, set[str]]]) -> str:
         """Return the order to work on jobs per a dependency graph."""
         nodes, blocked = puzzle_input
         order = []
@@ -45,7 +43,7 @@ class Day07(aoc.Challenge):
                         del blocked[n]
         return "".join(order)
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: tuple[set[str], dict[str, set[str]]]) -> int:
         """Return the time to complete tasks given dependencies and N workers."""
         nodes, blocked = puzzle_input
         if self.testing:
@@ -84,7 +82,7 @@ class Day07(aoc.Challenge):
 
         return clock
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> tuple[set[str], dict[str, set[str]]]:
         """Parse the input data."""
         patt = re.compile(r"Step (.) must be finished before step (.*) can begin\.")
         dependencies = collections.defaultdict(set)

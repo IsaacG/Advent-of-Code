@@ -63,8 +63,6 @@ class Monkey:
     inspected: int
 
 
-InputType = list[Monkey]
-
 
 class Day11(aoc.Challenge):
     """Day 11: Monkey in the Middle."""
@@ -98,7 +96,7 @@ class Day11(aoc.Challenge):
         inspected = sorted(monkey.inspected for monkey in monkeys)
         return math.prod(inspected[-2:])
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> list[Monkey]:
         """Parse the input data."""
         monkeys = []
         for block in puzzle_input.split("\n\n"):

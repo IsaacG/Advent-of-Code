@@ -2,10 +2,9 @@
 """Advent of Code, Day 25: The Halting Problem."""
 
 import re
-InputType = tuple[str, int, dict[str, list[tuple[bool, int, str]]]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[str, int, dict[str, list[tuple[bool, int, str]]]], part: int) -> int:
     """Return the checksum of the program."""
     del part
     cursor = 0
@@ -21,7 +20,7 @@ def solve(data: InputType, part: int) -> int:
     return len(tape)
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[str, int, dict[str, list[tuple[bool, int, str]]]]:
     """Parse the input data."""
     preamble, *rules = data.split("\n\n")
     patt = re.compile(r"Begin in state (.)\.\nPerform a diagnostic checksum after (\d+) steps.")

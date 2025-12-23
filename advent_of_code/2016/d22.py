@@ -5,10 +5,8 @@ import logging
 from lib import aoc
 log = logging.info
 
-InputType = dict[tuple[int, int], tuple[int, int]]
 
-
-def solve(data: InputType, part: int) -> int:
+def solve(data: dict[tuple[int, int], tuple[int, int]], part: int) -> int:
     """Move the goal data into the 0, 0 position.
 
     This is an "8-puzzle" where there is one "hole" we can slide around
@@ -109,7 +107,7 @@ def solve(data: InputType, part: int) -> int:
     return step_counter
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> dict[tuple[int, int], tuple[int, int]]:
     """Parse the input data."""
     parsed = {}
     for line in data.splitlines()[2:]:

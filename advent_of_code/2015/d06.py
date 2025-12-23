@@ -4,11 +4,8 @@
 import re
 from lib import aoc
 
-LineType = tuple[str, int, int, int, int]
-InputType = list[LineType]
 
-
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[tuple[str, int, int, int, int]], part: int) -> int:
     """Return how many lights are on or the levels after toggling them."""
     grid = []
     for i in range(1000):

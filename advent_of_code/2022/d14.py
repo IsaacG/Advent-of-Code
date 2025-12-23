@@ -9,9 +9,6 @@ SAMPLE = """\
 498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9"""
 
-LineType = list[complex]
-InputType = list[LineType]
-
 
 class Day14(aoc.Challenge):
     """Day 14: Regolith Reservoir."""
@@ -22,7 +19,7 @@ class Day14(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_points
 
-    def solver(self, rocks: InputType, part_one: bool) -> int:
+    def solver(self, rocks: list[list[complex]], part_one: bool) -> int:
         """Simulate sand filling a reservoir. Return which grain passes the floor or stops falling."""
         # Sand moves in these directions, in this order of preference.
         movement_directions = ((0, 1), (-1, 1), (1, 1))

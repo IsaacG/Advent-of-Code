@@ -24,9 +24,6 @@ L 25
 U 20""",
 ]
 
-LineType = tuple[str, int]
-InputType = list[LineType]
-
 
 class Day09(aoc.Challenge):
     """Day 9: Rope Bridge."""

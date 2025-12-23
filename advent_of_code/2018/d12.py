@@ -23,8 +23,6 @@ initial state: #..#.#..##......###...###
 ####. => #""",  # 23
 ]
 
-InputType = tuple[list[list[bool]], list[list[bool]]]
-
 
 class Day12(aoc.Challenge):
     """Day 12: Subterranean Sustainability."""
@@ -37,7 +35,7 @@ class Day12(aoc.Challenge):
         [aoc.BaseParseReFindall(r"[.#]", lambda line: [i == "#" for i in line])] * 2
     )
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: tuple[list[list[bool]], list[list[bool]]], part_one: bool) -> int:
         """Simulate N generations of plant growth."""
         # How many generations to simulate.
         target_gen = 20 if part_one else 50000000000

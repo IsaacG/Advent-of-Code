@@ -4,7 +4,6 @@
 import operator
 import collections.abc
 
-InputType = list[dict[str, int]]
 WANT_NUM = {
     "children": 3,
     "cats": 7,
@@ -28,7 +27,7 @@ def matches(ops: dict[str, collections.abc.Callable], aunts: list[dict[str, int]
     raise RuntimeError("Not found.")
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[dict[str, int]], part: int) -> int:
     """Find the aunt who matches optionally with fuzzy rules."""
     ops = OPS
     if part == 2:
@@ -41,7 +40,7 @@ def solve(data: InputType, part: int) -> int:
     return matches(ops, data)
 
 
-def input_parser(puzzle_input: str) -> InputType:
+def input_parser(puzzle_input: str) -> list[dict[str, int]]:
     """Parse the input data."""
     return [
         dict(

@@ -11,7 +11,6 @@ Comparison: typing.TypeAlias = typing.Callable[[float, float], bool]
 CompareRule: typing.TypeAlias = tuple[str, Comparison, int, RuleName]
 DefaultRule: typing.TypeAlias = tuple[None, None, None, RuleName]
 RuleSet: typing.TypeAlias = dict[RuleName, list[CompareRule | DefaultRule]]
-InputType = tuple[RuleSet, list[dict[str, int]]]
 
 RULE_RE = re.compile(r"(\w+){((?:.*,)*)(\w+)}")
 TEST_RE = re.compile(r"(\w+)([><])(\d+):(\w+)")
@@ -56,12 +55,12 @@ def accepted_contraints(rules: RuleSet) -> list[dict[str, tuple[int, int]]]:
     return accepted
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[RuleSet, list[dict[str, int]]], part: int) -> int:
     """Solve the parts."""
     return (part1 if part == 1 else part2)(data)
 
 
-def part1(data: InputType) -> int:
+def part1(data: tuple[RuleSet, list[dict[str, int]]]) -> int:
     """Return the sum points of the accepted items."""
     rules, items = data
     result = 0
@@ -80,7 +79,7 @@ def part1(data: InputType) -> int:
     return result
 
 
-def part2(data: InputType) -> int:
+def part2(data: tuple[RuleSet, list[dict[str, int]]]) -> int:
     """Return the number of possible accepted items."""
     rules, _ = data
 
@@ -104,7 +103,7 @@ def part2(data: InputType) -> int:
     return possibilities
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[RuleSet, list[dict[str, int]]]:
     """Parse the input data."""
     rule_lines, part_lines = data.split("\n\n")
 

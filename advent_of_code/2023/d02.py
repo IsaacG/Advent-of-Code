@@ -3,11 +3,10 @@
 import collections
 import math
 
-InputType = dict[int, list[dict[str, int]]]
 P1_LIMITS = {"red": 12, "green": 13, "blue": 14}
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: dict[int, list[dict[str, int]]], part: int) -> int:
     """Find valid games based on colors."""
     # Return which games are valid based on a per-color limit.
     if part == 1:
@@ -31,7 +30,7 @@ def solve(data: InputType, part: int) -> int:
     )
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> dict[int, list[dict[str, int]]]:
     """Parse the input data."""
     games = collections.defaultdict(list)
     for line in data.splitlines():

@@ -38,7 +38,6 @@ SAMPLE = """\
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2"""
 
-InputType = tuple[list[set[complex]], tuple[int, int, list[int]]]
 
 class Day12(aoc.Challenge):
     """Day 12: Christmas Tree Farm."""
@@ -49,7 +48,7 @@ class Day12(aoc.Challenge):
         # aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: tuple[list[set[complex]], tuple[int, int, list[int]]], part_one: bool) -> int:
         shapes, areas = puzzle_input
         sizes = [len(i) for i in shapes]
 
@@ -64,7 +63,7 @@ class Day12(aoc.Challenge):
 
         return sum(can_fit(*area) for area in areas)
 
-    def input_parser(self, puzzle_input: str) -> InputType:
+    def input_parser(self, puzzle_input: str) -> tuple[list[set[complex]], tuple[int, int, list[int]]]:
         """Parse the input data."""
         *shapes_, areas_ = puzzle_input.split("\n\n")
         shapes = [

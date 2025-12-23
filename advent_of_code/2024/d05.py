@@ -3,12 +3,10 @@
 
 import collections
 from lib import aoc
-
-InputType = list[list[list[int]]]
 PARSER = aoc.ParseBlocks([aoc.parse_ints])
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[list[list[int]]], part: int) -> int:
     """Return the sum of the middle number of reports."""
     pairs, reports = data
     prereq_tree = collections.defaultdict(set)

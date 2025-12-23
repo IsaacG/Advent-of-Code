@@ -1,11 +1,8 @@
 #!/bin/python
 """Advent of Code: Day 25. Emulate two herds of sea cucumbers moving across the sea floor."""
 
-# Set of RIGHT cucumbers, DOWN cucumbers and width, height.
-InputType = tuple[set[tuple[int, int]], set[tuple[int, int]], int, int]
 
-
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[set[tuple[int, int]], set[tuple[int, int]], int, int], part: int) -> int:
     """Count the steps until the herds lock up and cease moving."""
     del part
     right, down, width, height = data
@@ -33,7 +30,7 @@ def solve(data: InputType, part: int) -> int:
     raise RuntimeError("max steps reached")
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[set[tuple[int, int]], set[tuple[int, int]], int, int]:
     """Parse the input data."""
     lines = data.splitlines()
     right = {

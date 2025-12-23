@@ -33,7 +33,6 @@ SAMPLE = """\
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]"""
 
-InputType = list[list[Any]]
 
 # cmp for integers.
 int_cmp = aoc.cmp
@@ -71,7 +70,7 @@ class Day13(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.ParseOneWordPerLine(json.loads)])
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[list[Any]]) -> int:
         """Return the number of pairs which are in order."""
         pairs = puzzle_input
         return sum(
@@ -80,7 +79,7 @@ class Day13(aoc.Challenge):
             if cmp(fst, snd) == -1
         )
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[list[Any]]) -> int:
         """Return the position of two markers when added and sorted."""
         pairs = puzzle_input
         dividers = ([[2]], [[6]])

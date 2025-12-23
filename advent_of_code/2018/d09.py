@@ -12,9 +12,6 @@ SAMPLE = [
     "30 players; last marble is worth 5807 points",
 ]
 
-LineType = list[int]
-InputType = list[LineType]
-
 
 class Day09(aoc.Challenge):
     """Day 9: Marble Mania."""
@@ -29,7 +26,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         players, last = puzzle_input[0]
         # Multiple last value by 1 or 100 for parts 1, 2.
         last *= 1 if part_one else 100

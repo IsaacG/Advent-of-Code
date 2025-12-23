@@ -4,7 +4,7 @@
 from lib import aoc
 
 SAMPLE = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"
-InputType = list[int]
+
 
 
 class Day08(aoc.Challenge):
@@ -15,7 +15,7 @@ class Day08(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=66),
     ]
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[int]) -> int:
         """Return the sum of all nodes."""
         reader = iter(puzzle_input)
 
@@ -28,7 +28,7 @@ class Day08(aoc.Challenge):
 
         return parser()
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[int]) -> int:
         """Return the value of the root node."""
         reader = iter(puzzle_input)
 

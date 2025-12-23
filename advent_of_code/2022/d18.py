@@ -21,9 +21,6 @@ SAMPLE = [
 2,3,5""",
 ]
 
-LineType = tuple[int, int, int]
-InputType = set[LineType]
-
 
 class Day18(aoc.Challenge):
     """Day 18: Boiling Boulders."""
@@ -38,7 +35,7 @@ class Day18(aoc.Challenge):
         aoc.ParseOneWord(set),
     ])
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: set[tuple[int, int, int]]) -> int:
         """Return the number of lava surfaces which are not touching another lava."""
         points = puzzle_input
         directions = aoc.n_dim_directions(3)
@@ -48,7 +45,7 @@ class Day18(aoc.Challenge):
             for a, b, c in directions
         )
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: set[tuple[int, int, int]]) -> int:
         """Return the number of exterior lava surfaces. Flood fill everything."""
         points = puzzle_input
         directions = aoc.n_dim_directions(3)

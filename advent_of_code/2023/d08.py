@@ -6,7 +6,6 @@ import math
 
 from lib import aoc
 
-InputType = tuple[str, dict[str, tuple[str, str]]]
 INDEX = {"L": 0, "R": 1}
 
 
@@ -24,7 +23,7 @@ def steps(
     raise RuntimeError("Unreachable")
 
 
-def solve(data: InputType, part: int, testing: bool) -> int:
+def solve(data: tuple[str, dict[str, tuple[str, str]]], part: int, testing: bool) -> int:
     """Compute the number of steps to get through the maze."""
     pre_run(data, testing)
     instructions, mapping = data
@@ -40,7 +39,7 @@ def solve(data: InputType, part: int, testing: bool) -> int:
     return math.lcm(*factors)
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[str, dict[str, tuple[str, str]]]:
     """Parse the input data."""
     parser = aoc.ParseBlocks(
         [
@@ -56,7 +55,7 @@ def input_parser(data: str) -> InputType:
     return instructions, mapping
 
 
-def pre_run(data: InputType, testing: bool) -> None:
+def pre_run(data: tuple[str, dict[str, tuple[str, str]]], testing: bool) -> None:
     """Verify assumptions.
 
     The part two solution using LCM assumes that:

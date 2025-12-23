@@ -18,7 +18,6 @@ SAMPLE = """\
 9000
 
 10000"""
-InputType = list[list[int]]
 
 
 class Day01(aoc.Challenge):
@@ -29,10 +28,10 @@ class Day01(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=45000),
     ]
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the sum calories held by the elf with the most calories."""
         return max(sum(i) for i in puzzle_input)
 
-    def part2(self, puzzle_input: InputType, top_n: int = 3) -> int:
+    def part2(self, puzzle_input: list[list[int]], top_n: int = 3) -> int:
         """Return the sum calories held by the top three elves with the most calories."""
         return sum(sorted(sum(i) for i in puzzle_input)[-top_n:])

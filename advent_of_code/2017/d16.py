@@ -4,14 +4,12 @@
 import collections
 import string
 
-InputType = list[tuple[int, str | int, str | int]]
-
 SPIN = 0
 EXCHANGE = 1
 PARTNER = 2
 
 
-def solve(data: InputType, part: int, testing: bool) -> str:
+def solve(data: list[tuple[int, str | int, str | int]], part: int, testing: bool) -> str:
     """Do the dance shuffle on a lineup."""
 
     size = 5 if testing else 16
@@ -47,9 +45,9 @@ def solve(data: InputType, part: int, testing: bool) -> str:
     return "".join(dance_line)
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> list[tuple[int, str | int, str | int]]:
     """Parse the input data."""
-    cmds: InputType = []
+    cmds = list[tuple[int, str | int, str | int]]()
     for word in data.split(","):
         match word[0], word[1:].split("/"):
             case "s", [step]:

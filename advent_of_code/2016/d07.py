@@ -4,8 +4,6 @@
 import re
 import more_itertools
 
-LineType = tuple[list[str], list[str]]
-InputType = list[LineType]
 
 
 def tls(string: str) -> bool:
@@ -25,7 +23,7 @@ def ssl(outer: list[str], inner: list[str]) -> bool:
     return any(pattern in chunk for chunk in outer for pattern in patterns)
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[tuple[list[str], list[str]]], part: int) -> int:
     """Return the number of lines with TLS/SSL patterns."""
     if part == 1:
         return sum(
@@ -36,7 +34,7 @@ def solve(data: InputType, part: int) -> int:
     return sum(ssl(*line) for line in data)
 
 
-def input_parser(puzzle_input: str) -> InputType:
+def input_parser(puzzle_input: str) -> list[tuple[list[str], list[str]]]:
     """Parse the input data."""
     lines = []
     for line in puzzle_input.splitlines():

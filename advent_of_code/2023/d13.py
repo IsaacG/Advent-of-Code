@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 13: Point of Incidence."""
-InputType = list[set[tuple[int, int]]]
 
 
 def find_mirror(points: set[tuple[int, int]], point: tuple[int, int] | None) -> int | None:
@@ -51,7 +50,7 @@ def find_with_change(points: set[tuple[int, int]], _: None) -> int:
     raise RuntimeError("Unsolved")
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[set[tuple[int, int]]], part: int) -> int:
     func = find_mirror if part == 1 else find_with_change
     return sum(func(points.coords["#"], None) for points in data)  # type: ignore
 

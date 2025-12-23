@@ -1,9 +1,8 @@
 #!/bin/python
 """Advent of Code, Day 4: Scratchcards. Count up scorecard points."""
-InputType = list[tuple[set[int], set[int]]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: list[tuple[set[int], set[int]]], part: int) -> int:
     """Find scorecards that win."""
     if part == 1:
         return sum(
@@ -25,7 +24,7 @@ def solve(data: InputType, part: int) -> int:
     return sum(card_count.values())
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> list[tuple[set[int], set[int]]]:
     """Parse the input data."""
     out = []
     for line in data.splitlines():

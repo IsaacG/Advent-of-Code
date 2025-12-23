@@ -11,7 +11,6 @@ SAMPLE = """\
 6-6,4-6
 2-6,4-8
 """
-InputType = list[list[int]]
 
 
 class Day04(aoc.Challenge):
@@ -23,7 +22,7 @@ class Day04(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.parse_re_findall_int(r"\d+")
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[list[int]]) -> int:
         """Return the number of fully contained overlaps."""
         return sum(
             True
@@ -31,7 +30,7 @@ class Day04(aoc.Challenge):
             if (a1 >= b1 and a2 <= b2) or (b1 >= a1 and b2 <= a2)
         )
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: list[list[int]]) -> int:
         """Return the number of partial overlaps."""
         return sum(
             True

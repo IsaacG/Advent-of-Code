@@ -3,16 +3,14 @@
 
 Return the shortest path through a maze which hits certain points.
 """
-
 import collections
 import itertools
 import string
 
 from lib import aoc
-InputType = tuple[set[complex], dict[complex, int]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[set[complex], dict[complex, int]], part: int) -> int:
     """Return the shortest path through a maze which hits certain points."""
     floor, wires = data
 
@@ -60,7 +58,7 @@ def solve(data: InputType, part: int) -> int:
     return shortest
 
 
-def input_parser(puzzle_input: str) -> InputType:
+def input_parser(puzzle_input: str) -> tuple[set[complex], dict[complex, int]]:
     """Parse the input data."""
     floor = {
         complex(x, y)

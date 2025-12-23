@@ -3,10 +3,8 @@
 import collections
 import random
 
-InputType = dict[int, set[int]]
 
-
-def solve(data: InputType, part: int) -> int:
+def solve(data: dict[int, set[int]], part: int) -> int:
     del part
     graph = data
     graph_list = {src: list(dsts) for src, dsts in graph.items()}
@@ -49,7 +47,7 @@ def solve(data: InputType, part: int) -> int:
     raise RuntimeError("Not solved.")
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> dict[int, set[int]]:
     """Parse the input data."""
     connected = collections.defaultdict(set)
     for line in data.splitlines():

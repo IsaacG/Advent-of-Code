@@ -1,19 +1,14 @@
 #!/bin/python
 """Advent of Code, Day 5: Alchemical Reduction. Compute the length of a polymer after reactions."""
-from __future__ import annotations
-
 from lib import aoc
-
-SAMPLE = "dabAcCaCBAcCcaDA"
-InputType = str
 
 
 class Day05(aoc.Challenge):
     """Day 5: Alchemical Reduction."""
 
     TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=10),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=4),
+        aoc.TestCase(inputs="dabAcCaCBAcCcaDA", part=1, want=10),
+        aoc.TestCase(inputs="dabAcCaCBAcCcaDA", part=2, want=4),
     ]
 
     DELTA = abs(ord("A") - ord("a"))
@@ -30,12 +25,12 @@ class Day05(aoc.Challenge):
                 unreacted.append(codepoint)
         return unreacted
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: str) -> int:
         """Return the polymer length after reactions."""
         codepoints = [ord(i) for i in puzzle_input]
         return len(self.reduce(codepoints, set()))
 
-    def part2(self, puzzle_input: InputType) -> int:
+    def part2(self, puzzle_input: str) -> int:
         """Return the polymer length after reactions with one element removed."""
         codepoints = [ord(i) for i in puzzle_input]
         # Pre-reduce once to avoid repeated work.

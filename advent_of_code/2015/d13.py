@@ -4,8 +4,6 @@
 import itertools
 import re
 
-InputType = tuple[dict[tuple[str, str], int], set[str]]
-
 
 def max_happiness(data: dict[tuple[str, str], int], people: set[str]) -> int:
     """Return the max happiness which can be achieved through any seating arrangement."""
@@ -18,7 +16,7 @@ def max_happiness(data: dict[tuple[str, str], int], people: set[str]) -> int:
     )
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[dict[tuple[str, str], int], set[str]], part: int) -> int:
     """Return the max happiness for the guests (and yourself)."""
     data, people = data
     if part == 2:
@@ -26,7 +24,7 @@ def solve(data: InputType, part: int) -> int:
     return max_happiness(data, people)
 
 
-def input_parser(puzzle_input: str) -> InputType:
+def input_parser(puzzle_input: str) -> tuple[dict[tuple[str, str], int], set[str]]:
     """Return happiness data and the guest list from the input."""
     data = {}
     people = set()

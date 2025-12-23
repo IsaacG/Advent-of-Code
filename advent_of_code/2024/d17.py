@@ -4,7 +4,6 @@
 import itertools
 from lib import aoc
 
-InputType = tuple[list[int], list[int]]
 PARSER = aoc.ParseBlocks([aoc.ParseIntergers()])
 
 
@@ -42,7 +41,7 @@ def simulate(reg: dict[str, int], instructions: list[int]) -> list[int]:
     return out
 
 
-def solve(data: InputType, part: int, testing: bool) -> int | str:
+def solve(data: tuple[list[int], list[int]], part: int, testing: bool) -> int | str:
     """Compute the initial A value to make a program a quine."""
     reg_vals, instructions = data
     registers = {char: reg_vals[i] for i, char in enumerate("ABC")}

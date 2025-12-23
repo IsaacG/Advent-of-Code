@@ -256,8 +256,6 @@ class Day16(aoc.Challenge):
             t2 = time.perf_counter()
             print(answer, "dfs", (t2 - t1) * 1000000)
         
-        
-        assert answer == 3015
         return answer
 
     def part1(self, puzzle_input: InputType) -> int:
@@ -304,7 +302,6 @@ class Day16(aoc.Challenge):
             assert answer > 1976
         return answer
 
-
         @functools.cache
         def solve(cur, opened, released, moves):
             if moves == 0:
@@ -316,7 +313,5 @@ class Day16(aoc.Challenge):
             for loc in rooms[cur][1]:
                 options.append(solve(loc, opened, released, moves - 1))
             return max(options)
-
-
 
         return max(solve("AA", tuple(), 0, 29))

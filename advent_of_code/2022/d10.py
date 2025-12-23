@@ -154,8 +154,6 @@ noop
 noop
 noop"""
 
-InputType = list[tuple[int | str, ...]]
-
 
 class Day10(aoc.Challenge):
     """Day 10: Cathode-Ray Tube."""
@@ -165,7 +163,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
     ]
 
-    def run_program(self, lines: InputType) -> list[int]:
+    def run_program(self, lines: list[tuple[int | str, ...]]) -> list[int]:
         """Run the program and store the `X` register value for each cycle."""
         regx = 1
         regx_values = []
@@ -177,7 +175,7 @@ class Day10(aoc.Challenge):
                 regx += int(parts[1])
         return regx_values
 
-    def part1(self, puzzle_input: InputType) -> int:
+    def part1(self, puzzle_input: list[tuple[int | str, ...]]) -> int:
         """Return the X value at various cycles."""
         regx_values = self.run_program(puzzle_input)
         out = 0
@@ -185,7 +183,7 @@ class Day10(aoc.Challenge):
             out += regx_values[cycle - 1] * cycle
         return out
 
-    def part2(self, puzzle_input: InputType) -> str:
+    def part2(self, puzzle_input: list[tuple[int | str, ...]]) -> str:
         """Return the word drawn on the screen."""
         regx_values = self.run_program(puzzle_input)
 

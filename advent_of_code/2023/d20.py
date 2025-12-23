@@ -6,10 +6,9 @@ import math
 
 CONJUNCTION = "&"
 FLIP_FLIP = "%"
-InputType = tuple[dict[str, str], dict[str, list[str]]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[dict[str, str], dict[str, list[str]]], part: int) -> int:
     """Simulate the circuit."""
     module_types, outputs = data
 
@@ -93,7 +92,7 @@ def solve(data: InputType, part: int) -> int:
     raise RuntimeError("Not solved.")
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[dict[str, str], dict[str, list[str]]]:
     """Parse the input data."""
     outputs = {}
     module_types = {}

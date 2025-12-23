@@ -4,10 +4,9 @@
 Work a set of seeds through a number of range-translations."""
 import collections
 from lib import aoc
-InputType = tuple[list[int], list[list[list[int]]]]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[list[int], list[list[list[int]]]], part: int) -> int:
     """Map ranges of seeds to a final value and return the min."""
     seeds, translation_layers = data
 
@@ -53,7 +52,7 @@ def solve(data: InputType, part: int) -> int:
     return min(values)[0]
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[list[int], list[list[list[int]]]]:
     """Parse the input data."""
     parser = aoc.ParseBlocks([aoc.parse_re_findall_int(r"\d+")])
     (seeds,), *translation_layers = parser.parse(data)

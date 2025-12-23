@@ -11,8 +11,6 @@ SAMPLE = [
     "mjqjpqmgbljsphdztnvjfqwrcgsmlb",
 ]
 
-InputType = str
-
 
 class Day06(aoc.Challenge):
     """Day 6: Tuning Trouble. Parse data streams to find the start of messages."""

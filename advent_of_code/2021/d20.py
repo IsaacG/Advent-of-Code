@@ -4,8 +4,6 @@
 import functools
 import input_data
 
-InputType = tuple[dict[str, bool], set[complex]]
-
 
 @functools.cache  # 2x faster
 def point_to_area(point: complex):
@@ -13,7 +11,7 @@ def point_to_area(point: complex):
     return [point + complex(x, y) for y in range(-1, 2) for x in range(-1, 2)]
 
 
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[dict[str, bool], set[complex]], part: int) -> int:
     """Enhance the image N times.
 
     For every iteration, expand the area of interest by expanding outwards
@@ -69,7 +67,7 @@ def solve(data: InputType, part: int) -> int:
     return len(image)
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[dict[str, bool], set[complex]]:
     """Parse the input data."""
     first, second = data.split("\n\n")
     algo = {f"{i:09b}": char == "#" for i, char in enumerate(first)}

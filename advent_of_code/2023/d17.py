@@ -2,10 +2,8 @@
 """Advent of Code, Day 17: Clumsy Crucible."""
 import queue
 
-InputType = tuple[dict[tuple[int, int], int], tuple[int, int]]
 
-
-def solve(data: InputType, part: int) -> int:
+def solve(data: tuple[dict[tuple[int, int], int], tuple[int, int]], part: int) -> int:
     """Return the minimum heat loss from start to end."""
     board, end = data
     max_distance = 3 if part == 1 else 10
@@ -50,7 +48,7 @@ def solve(data: InputType, part: int) -> int:
     raise RuntimeError("Failed to solve")
 
 
-def input_parser(data: str) -> InputType:
+def input_parser(data: str) -> tuple[dict[tuple[int, int], int], tuple[int, int]]:
     """Parse the input data."""
     board = {
         (idx_x, idx_y): int(val)

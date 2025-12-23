@@ -37,9 +37,6 @@ position=< 5,  9> velocity=< 1, -2>
 position=<14,  7> velocity=<-2,  0>
 position=<-3,  6> velocity=< 2, -1>"""
 
-LineType = Sequence[int]
-InputType = list[LineType]
-
 
 class Day10(aoc.Challenge):
     """Day 10: The Stars Align."""
@@ -49,7 +46,7 @@ class Day10(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=2, want=3),
     ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int | str:
+    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int | str:
         """Return the message in the moving stars."""
         height = 8 if self.testing else 10
         points = puzzle_input

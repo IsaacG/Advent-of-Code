@@ -23,7 +23,6 @@ SAMPLE = """\
 
 10R5L5R10L4R5L5"""
 
-InputType = tuple[dict[complex, str], str]
 OPEN = "."
 WALL = "#"
 EMPTY = " "
@@ -250,7 +249,7 @@ class Day22(aoc.Challenge):
     ]
     INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC(), aoc.parse_re_findall_str(r"(L|R|\d+)")])
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
+    def solver(self, puzzle_input: tuple[dict[complex, str], str], part_one: bool) -> int:
         """Return the final location after wandering the map."""
         points, instructions = puzzle_input
         map_class = FlatMap if part_one else CubeMap
