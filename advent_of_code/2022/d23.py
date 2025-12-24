@@ -31,6 +31,7 @@ class Day23(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE, part=1, want=110),
         aoc.TestCase(inputs=SAMPLE, part=2, want=20),
     ]
+    INPUT_PARSER = aoc.CoordinatesParserC()
 
     def simulate(self, positions: set[complex], step: int) -> set[complex]:
         """Simulate cycles of elves spreading out."""
