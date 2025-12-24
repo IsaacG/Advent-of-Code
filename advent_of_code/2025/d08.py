@@ -25,7 +25,7 @@ def solve(data: list[list[int]], part: int, testing: bool) -> int:
     if part == 1:
         for _ in range(10 if testing else 1000):
             _, i, j = heapq.heappop(distances)
-            add_connection({a, b})
+            add_connection({i, j})
         sizes = sorted(len(i) for i in circuits)[-3:]
         return math.prod(sizes)
 
