@@ -4,6 +4,7 @@
 import functools
 from lib import aoc
 
+
 def solve(data: aoc.Map, part: int) -> int:
     """Return how many beams get split or how many paths are taken."""
     start = data.coords["S"].pop()

@@ -21,6 +21,7 @@ def solve(data: list[list[int]], part: int) -> int:
         [points[i][0], *sorted([points[i][1], points[i+1][1]])]
         for i in range(1, lines + 1, 2)
     ]
+    white_tiles: dict[tuple[int, int], list[tuple[int, int]]]
 
     def accurate_valid(rect_x1: int, rect_y1: int, rect_x2: int, rect_y2: int) -> bool:
         """Check if a rectangle is fully enclosed by the border.
@@ -62,7 +63,7 @@ def solve(data: list[list[int]], part: int) -> int:
     if True:
         valid = valid_with_assumptions
     else:
-        white_tiles = white_tiles(points, vertical_walls, horizontal_walls)
+        white_tiles = get_white_tiles(points, vertical_walls, horizontal_walls)
         valid = accurate_valid
 
     for (x1, y1), (x2, y2) in itertools.combinations(data, 2):
@@ -70,6 +71,7 @@ def solve(data: list[list[int]], part: int) -> int:
         if size > best and (part == 1 or valid(x1, y1, x2, y2)):
             best = size
     return best
+
 
 def condensed_slower_code(data: list[list[int]], part: int) -> int:
     """A more compact version of the solution."""
@@ -93,11 +95,12 @@ def condensed_slower_code(data: list[list[int]], part: int) -> int:
         if part == 1 or valid(x1, y1, x2, y2)
     )
 
-def white_tiles(
+
+def get_white_tiles(
     points: list[list[int]],
     vertical_walls: list[list[int]],
     horizontal_walls: list[list[int]],
-) -> list[tuple[int, int, int, int]]:
+) -> dict[tuple[int, int], list[tuple[int, int]]]:
     """Return a list of rectangles that composes all the white tiles.
 
     Use line scanning to walk the board, splitting it into horizontal segments separated

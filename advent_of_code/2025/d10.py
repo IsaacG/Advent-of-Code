@@ -4,7 +4,7 @@ import itertools
 import z3  # type: ignore
 
 
-def solve(data: str, part: int) -> int:
+def solve(data: list[tuple[int, list[int], list[list[int]], list[int]]], part: int) -> int:
     """Solve the parts."""
     return (part1 if part == 1 else part2)(data)
 
@@ -24,6 +24,7 @@ def part1(data: list[tuple[int, list[int], list[list[int]], list[int]]]) -> int:
         raise RuntimeError("No solution found.")
 
     return sum(get_steps(target, buttons) for target, buttons, *_ in data)
+
 
 def part2(data: list[tuple[int, list[int], list[list[int]], list[int]]]) -> int:
     """Return the min number of buttons that need to be pressed to get the target joltage."""
@@ -46,6 +47,7 @@ def part2(data: list[tuple[int, list[int], list[list[int]], list[int]]]) -> int:
         total += optimizer.model()[ans].as_long()  # pylint: disable=E1101
 
     return total
+
 
 def input_parser(data: str) -> list[tuple[int, list[int], list[list[int]], list[int]]]:
     """Parse the input data."""

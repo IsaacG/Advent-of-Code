@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 8: Playground."""
-import collections
 import heapq
 import itertools
 import math
@@ -9,9 +8,9 @@ import math
 def solve(data: list[list[int]], part: int, testing: bool) -> int:
     """Return stats from connecting junction boxes into circuits using minimum distances."""
     boxes = [tuple(i) for i in data]
-    distances = [(math.dist(a, b), a, b) for a, b in itertools.combinations(boxes, 2)]
+    distances: list[tuple[int, int, int]] = [(math.dist(a, b), a, b) for a, b in itertools.combinations(boxes, 2)]
     heapq.heapify(distances)
-    circuits = []
+    circuits = list[set[int]]()
 
     def add_connection(new: set[int]) -> set[int]:
         """Add a new connection to the collection of circuits. Simplified Disjoint Set Union."""
@@ -25,7 +24,7 @@ def solve(data: list[list[int]], part: int, testing: bool) -> int:
 
     if part == 1:
         for _ in range(10 if testing else 1000):
-            _, a, b = heapq.heappop(distances)
+            _, i, j = heapq.heappop(distances)
             add_connection({a, b})
         sizes = sorted(len(i) for i in circuits)[-3:]
         return math.prod(sizes)

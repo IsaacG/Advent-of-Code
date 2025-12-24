@@ -5,6 +5,7 @@ from lib import aoc
 
 
 def solve(data: tuple[list[set[complex]], tuple[int, int, list[int]]], part: int) -> int:
+    del part
     shapes, areas = data
     sizes = [len(i) for i in shapes]
 
@@ -73,7 +74,7 @@ SAMPLE = """\
 4x4: 0 0 0 0 2 0
 12x5: 1 0 1 0 2 2
 12x5: 1 0 1 0 3 2"""
-TESTS = [
+TESTS: list[tuple[int, int, int]] = [
     # Only one part. The "trick" with the actual input doesn't apply to the example.
     # aoc.TestCase(part=1, inputs=SAMPLE, want=2),
     # aoc.TestCase(part=2, inputs=SAMPLE, want=aoc.TEST_SKIP),

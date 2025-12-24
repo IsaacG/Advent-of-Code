@@ -1,9 +1,8 @@
 #!/bin/python
 """Advent of Code, Day 5: Cafeteria."""
-from lib import aoc
 
 
-def solve(data: list[list[list[int]]], part: int) -> int:
+def solve(data: tuple[list[list[int]], list[int]], part: int) -> int:
     """Return how many fresh ingredients there are."""
     fresh, available = data
     fresh.sort()

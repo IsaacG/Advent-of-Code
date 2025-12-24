@@ -1,7 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 4: Printing Department."""
-
 from lib import aoc
+
 
 def solve(data: aoc.Map, part: int) -> int:
     papers = data.coords["@"]

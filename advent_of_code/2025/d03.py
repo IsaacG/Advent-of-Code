@@ -2,6 +2,7 @@
 """Advent of Code, Day 3: Lobby."""
 PARSER = str.splitlines
 
+
 def solve(data: list[str], part: int) -> int:
     total = 0
     size = 2 if part == 1 else 12
