@@ -80,25 +80,6 @@ class CachedIterator(Iterator[T]):
         return result
 
 
-def bounding_coords(points: Iterable[complex]) -> tuple[int, int, int, int]:
-    """Return bounding min (x, y), max (x, y) for coordinates."""
-    min_x = int(min(p.real for p in points))
-    max_x = int(max(p.real for p in points))
-    min_y = int(min(p.imag for p in points))
-    max_y = int(max(p.imag for p in points))
-    return min_x, min_y, max_x, max_y
-
-
-def point_set_to_lists(points: set[complex]) -> list[list[bool]]:
-    """Convert a set of complex points to a 2D list of bools."""
-    min_x, min_y, max_x, max_y = bounding_coords(points)
-    rows = []
-    for y in range(min_y, max_y + 1):
-        row = [x + y * 1j in points for x in range(min_x, max_x + 1)]
-        rows.append(row)
-    return rows
-
-
 def n_dim_directions(dims: int, diagonal=False):
     """Return all the directions of a point for an n-dimensional point."""
     if diagonal:

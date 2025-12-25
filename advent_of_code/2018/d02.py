@@ -28,6 +28,7 @@ def hamming_distance(a, b):
 class Day02(aoc.Challenge):
 
     TESTS = (aoc.TestCase(inputs=SAMPLE[0], part=2, want='fgij'),)
+    INPUT_PARSER = aoc.parse_one_str_per_line
 
     def part1(self, puzzle_input: List[str]) -> int:
         """Return the number of IDs that contain exactly 2|3 repeat letters."""

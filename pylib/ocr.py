@@ -1,3 +1,6 @@
+from .helpers import *
+
+
 OCR_MAP = {
     # 2022/10: 6x5
     # From https://github.com/SizableShrimp/AdventOfCode2022/blob/main/src/util/java/me/sizableshrimp/adventofcode2022/helper/LetterParser.java

@@ -1,6 +1,7 @@
 #!/bin/python
 """Advent of Code, Day 9: Marble Mania. Simulate a marble game."""
-
+from __future__ import annotations
+import dataclasses
 from lib import aoc
 
 SAMPLE = [
@@ -11,6 +12,21 @@ SAMPLE = [
     "21 players; last marble is worth 6111 points",
     "30 players; last marble is worth 5807 points",
 ]
+
+
+@dataclasses.dataclass
+class Node:
+    """Node in a double linked list."""
+    val: int
+    prev: Node | None = None
+    next: Node | None = None
+
+    def __post_init__(self):
+        """Update any neighboring nodes."""
+        if self.next:
+            self.next.prev = self
+        if self.prev:
+            self.prev.next = self
 
 
 class Day09(aoc.Challenge):
@@ -25,6 +41,7 @@ class Day09(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[5], part=1, want=37305),
         aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
     ]
+    INPUT_PARSER = aoc.parse_ints
 
     def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
         players, last = puzzle_input[0]
@@ -32,12 +49,12 @@ class Day09(aoc.Challenge):
         last *= 1 if part_one else 100
 
         score = [0] * players
-        cur = aoc.Node(0)
+        cur = Node(0)
         cur.next = cur.prev = cur
 
         for marble in range(1, last + 1):
             if marble % 23:
-                cur = aoc.Node(marble, prev=cur.next, next=cur.next.next)
+                cur = Node(marble, prev=cur.next, next=cur.next.next)
             else:
                 for _ in range(6):
                     cur = cur.prev
