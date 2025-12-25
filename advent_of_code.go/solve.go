@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"isaacgood.com/aoc/helpers"
 	_ "isaacgood.com/aoc/y2017"
+	_ "isaacgood.com/aoc/y2019"
 	_ "isaacgood.com/aoc/y2020"
 	_ "isaacgood.com/aoc/y2024"
 	_ "isaacgood.com/aoc/y2025"
