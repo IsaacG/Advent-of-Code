@@ -29,6 +29,7 @@ class Day07(aoc.Challenge):
         aoc.TestCase(inputs=SAMPLE[3], part=2, want=139629729),  # phases = 1,0,4,3,2
         aoc.TestCase(inputs=SAMPLE[4], part=2, want=18216),      # phases = 1,0,4,3,2
     )
+    INPUT_PARSER = aoc.parse_one_str
 
     def solver(self, puzzle_input: str, part_one: bool) -> int:
         largest = 0

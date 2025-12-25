@@ -22,7 +22,7 @@ class Day09(aoc.Challenge):
     )
 
     def part1(self, puzzle_input: str) -> int:
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         if self.testing:
             computer.run()
             return ",".join(str(i) for i in computer.output)
@@ -35,7 +35,7 @@ class Day09(aoc.Challenge):
         return output
 
     def part2(self, puzzle_input: str) -> int:
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         computer.input.append(2)
         computer.run()
         return computer.output.popleft()

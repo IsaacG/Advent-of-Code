@@ -16,7 +16,7 @@ class Day11(aoc.Challenge):
     ]
 
     def solver(self, program: str, part_one: bool) -> int | str:
-        computer = intcode.Computer(program, debug=self.DEBUG)
+        computer = intcode.Computer(program)
         position = complex()
         direction = complex(0, -1)
         painted: set[complex] = set()

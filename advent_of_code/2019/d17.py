@@ -12,18 +12,6 @@ import intcode
 from lib import aoc
 
 SAMPLE = [
-    '35',  # 0
-    '#',  # 1
-    '46',  # 2
-    '.',  # 3
-    '10',  # 4
-    '#',  # 5
-    '.',  # 6
-    '^',  # 7
-    'v',  # 8
-    '<',  # 9
-    '>',  # 10
-    'X',  # 11
     """\
 ..#..........
 ..#..........
@@ -31,25 +19,7 @@ SAMPLE = [
 #.#...#...#.#
 #############
 ..#...#...#..
-..#####...^..""",  # 12
-    '^',  # 13
-    'O',  # 14
-    """\
-..#..........
-..#..........
-##O####...###
-#.#...#...#.#
-##O###O###O##
-..#...#...#..
-..#####...^..""",  # 15
-    '2',  # 16
-    '2',  # 17
-    '2 * 2 =',  # 18
-    '2',  # 19
-    '4',  # 20
-    '2 * 4 =',  # 21
-    '6',  # 22
-    '4',  # 23
+..#####...^..""",
 ]
 
 LineType = int
@@ -73,7 +43,7 @@ class Day17(aoc.Challenge):
         computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
         computer.run()
         data = [chr(i) for i in computer.output]
-        scaffolding = aoc.AsciiBoolMapParser("#<>^v").parse("".join(data))
+        scaffolding = aoc.CoordinatesParserC(chars="#<>^v").parse("".join(data))
         return sum(
             pos.real * pos.imag
             for pos in scaffolding

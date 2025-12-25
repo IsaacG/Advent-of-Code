@@ -27,7 +27,7 @@ class Day13(aoc.Challenge):
 
     def part1(self, puzzle_input: str) -> int:
         """Count how many block tiles are printed."""
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         computer.run()
         blocks = set()
         while computer.output:
@@ -39,7 +39,7 @@ class Day13(aoc.Challenge):
 
     def part2(self, puzzle_input: str) -> int:
         """Play the game by moving the paddle to follow the ball."""
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         computer.memory[0] = 2  # start the game without tokens
 
         paddle, ball, score = 0, 0, 0

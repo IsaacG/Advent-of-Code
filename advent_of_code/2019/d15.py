@@ -53,7 +53,7 @@ class Day15(aoc.Challenge):
                 assert oxygen is not None
                 return hall, wall, oxygen
 
-            computer = intcode.Computer(program, debug=self.DEBUG)
+            computer = intcode.Computer(program)
 
             def move(direction: complex) -> int:
                 computer.input.append(DIRECTIONS[direction])

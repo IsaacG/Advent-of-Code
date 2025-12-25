@@ -23,7 +23,7 @@ class Day19(aoc.Challenge):
         return computer.output.pop() == 1
 
     def part1(self, puzzle_input: str) -> int:
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         total = 0
         left, right, last_y = 0, 0, 0
         for y in range(50):
@@ -53,7 +53,7 @@ class Day19(aoc.Challenge):
         return total
 
     def part2(self, puzzle_input: str) -> int:
-        computer = intcode.Computer(puzzle_input, debug=self.DEBUG)
+        computer = intcode.Computer(puzzle_input)
         left, right = 10, 10
         prior: collections.deque[tuple[int, int]] = collections.deque()
         for y in range(10, 100000):

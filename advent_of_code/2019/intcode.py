@@ -64,7 +64,7 @@ class Computer:
 
         self.input = input_q
         self.output = output_q
-        self.program = dict(enumerate(int(num) for num in program.split(",")))
+        self.program = dict(enumerate(int(i) for i in program.split(",")))
         self.reset()
         self.debug = debug
 

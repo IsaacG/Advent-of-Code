@@ -123,7 +123,7 @@ class Day14(aoc.Challenge):
 
     def ore_per_fuel(self, reactions: Dict[str, Reaction], fuel: int) -> int:
         """Calculate how much ore is required to produce `fuel` units of fuel."""
-        _dependencies = {'ORE': set()  # type: Dict[str, Set[str]]
+        _dependencies = {'ORE': set()}  # type: Dict[str, Set[str]]
 
         def dependencies(product: str) -> Set[str]:
             """Compute *all* reactants (recursively) involved in producing `product`."""
@@ -154,7 +154,7 @@ class Day14(aoc.Challenge):
 
     def input_parser(self, puzzle_input: str) -> Dict[str, Reaction]:
         """Build a dictionary of material produced to Reaction."""
-        reactions = {  # type: Dict[str, Reaction]
+        reactions = {}  # type: Dict[str, Reaction]
 
         def to_tuple(pair: str) -> Tuple[int, str]:
             a, b = pair.split()
