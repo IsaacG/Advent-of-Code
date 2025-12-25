@@ -1,30 +1,26 @@
 #!/bin/python
 """Advent of Code, Day 23: Experimental Emergency Teleportation."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import logging
-import math
-import re
-
+import collections.abc
+import typing
 from lib import aoc
 
-log = logging.info
+SOLVE_WITH_ASSUMPTIONS = False
 
 
-def solve(data: str, part: int) -> int:
+def solve(data: list[tuple[int, int, int, int]], part: int) -> int:
     """Determine fields of overlapping nanobot signals."""
 
     if part == 1:
+        # Sort on radius. Pick largest.
         rxyz = sorted(((r, x, y, z) for x, y, z, r in data), reverse=True)
         sr, sx, sy, sz = rxyz[0]
+        # Count bots within this radius.
         return sum(
             abs(sx - x) + abs(sy - y) + abs(sz - z) <= sr
             for r, x, y, z in rxyz
         )
 
+    # Part two: fast with assumptions.
     # Assume all bots are in a line. Line scan to count overlapping fields.
     points_of_interest = []
     for x, y, z, r in data:
@@ -41,21 +37,30 @@ def solve(data: str, part: int) -> int:
         if count > most_count:
             most_count = count
             most_distance = distance
-    return most_distance
+    if SOLVE_WITH_ASSUMPTIONS:
+        return most_distance
 
-    # Bisect the space.
-    # Map sections of space to all the bots they contain.
-    # Discard smaller sections. Bisect the remaining.
+    # Part two: slower with less assumptions. Bisect the space.
+    # Map sections of space to the bots they contain.
+    # Discard smaller sections. Bisect the remaining sections. Repeat until sections are 1 unit large.
     mins = [min(line[i] for line in data) for i in range(3)]
     maxs = [max(line[i] for line in data) for i in range(3)]
-    contains = {tuple(tuple(i) for i in zip(mins, maxs)): {(tuple(bot), r) for *bot, r in data}}
+    contains = {
+        tuple(typing.cast(tuple[int, int], tuple(i)) for i in zip(mins, maxs)): {
+            (tuple(bot), r) for *bot, r in data
+        }
+    }
 
-    def overlaps(cube, bot, r):
-        distance = 0
-        for i in range(3):
-            distance += max(cube[i][0] - bot[i], max(0, bot[i] - cube[i][1]))
+    def overlaps(cube: collections.abc.Sequence[tuple[int, int]], bot: tuple[int, ...], r: int) -> bool:
+        """Return if a nanobot signal overlaps a space segment."""
+        distance = sum(
+            max(cube[i][0] - bot[i], 0, bot[i] - cube[i][1])
+            for i in range(3)
+        )
         return distance <= r
 
+    # plane controls which plane we use to bisect. Rotate through planes.
+    # Stop when all segments are 1 unit large.
     plane = 0
     while any(a != b for cube in contains for a, b in cube):
         plane = (plane + 1) % 3
@@ -66,6 +71,7 @@ def solve(data: str, part: int) -> int:
             if cube[plane][0] == cube[plane][1]:
                 new_contains[cube] = contains[cube]
             else:
+                # Divide the segment into two parts.
                 segments = [list(cube), list(cube)]
                 mid_up = (cube[plane][1] + cube[plane][0] + 1) // 2
                 mid_down = (cube[plane][1] + cube[plane][0]) // 2
