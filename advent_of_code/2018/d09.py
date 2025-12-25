@@ -29,38 +29,35 @@ class Node:
             self.prev.next = self
 
 
-class Day09(aoc.Challenge):
-    """Day 9: Marble Mania."""
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=32),
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=8317),
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=146373),
-        aoc.TestCase(inputs=SAMPLE[3], part=1, want=2764),
-        aoc.TestCase(inputs=SAMPLE[4], part=1, want=54718),
-        aoc.TestCase(inputs=SAMPLE[5], part=1, want=37305),
-        aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
-    ]
-    INPUT_PARSER = aoc.parse_ints
+TESTS = [
+    (1, SAMPLE[0], 32),
+    (1, SAMPLE[1], 8317),
+    (1, SAMPLE[2], 146373),
+    (1, SAMPLE[3], 2764),
+    (1, SAMPLE[4], 54718),
+    (1, SAMPLE[5], 37305),
+]
+PARSER = aoc.parse_ints
 
-    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int:
-        players, last = puzzle_input[0]
-        # Multiple last value by 1 or 100 for parts 1, 2.
-        last *= 1 if part_one else 100
+def solve(data: list[list[int]], part: int) -> int:
+    players, last = data[0]
+    # Multiple last value by 1 or 100 for parts 1, 2.
+    last *= 1 if part == 1 else 100
 
-        score = [0] * players
-        cur = Node(0)
-        cur.next = cur.prev = cur
+    score = [0] * players
+    cur = Node(0)
+    cur.next = cur.prev = cur
 
-        for marble in range(1, last + 1):
-            if marble % 23:
-                cur = Node(marble, prev=cur.next, next=cur.next.next)
-            else:
-                for _ in range(6):
-                    cur = cur.prev
-                removed = cur.prev
-                score[(marble - 1) % players] += marble + removed.val
-                removed.prev.next = removed.next
-                removed.next.prev = removed.prev
+    for marble in range(1, last + 1):
+        if marble % 23:
+            cur = Node(marble, prev=cur.next, next=cur.next.next)
+        else:
+            for _ in range(6):
+                cur = cur.prev
+            removed = cur.prev
+            score[(marble - 1) % players] += marble + removed.val
+            removed.prev.next = removed.next
+            removed.next.prev = removed.prev
 
-        return max(score)
+    return max(score)

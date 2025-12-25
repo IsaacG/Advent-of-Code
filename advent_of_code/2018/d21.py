@@ -1,8 +1,6 @@
 #!/bin/python
 """Advent of Code, Day 21: Chronal Conversion."""
-
 import typing
-from lib import aoc
 
 
 def compute(bound: int, instructions: list[tuple[str, int, int, int]]) -> int:
@@ -51,39 +49,34 @@ def compute(bound: int, instructions: list[tuple[str, int, int, int]]) -> int:
     return registers[0]
 
 
-class Day21(aoc.Challenge):
-    """Day 21: Chronal Conversion."""
 
-    TESTS = [
-        aoc.TestCase(part=1, inputs="", want=aoc.TEST_SKIP),
-        aoc.TestCase(part=2, inputs="", want=aoc.TEST_SKIP),
-    ]
-
-    def part1(self, puzzle_input: list[list[str | int]]) -> int:
-        """Return the r0 value needed to make the program terminate."""
-        reg, *instructions = puzzle_input
+def solve(data: list[list[str | int]], part: int) -> int:
+    """Return the r0 value needed to make the program terminate."""
+    reg, *instructions = data
+    if part == 1:
         # Instruction 28 compares r0 and r3 and halts if they match
         # Insert an instruction that copies r3 to r0.
         # Then the compare matches and r0 is returned -- the answer we want.
         instructions.insert(28, ["setr", 3, 0, 0])
         return compute(bound=int(reg[1]), instructions=typing.cast(list[tuple[str, int, int, int]], instructions))
 
-    def part2(self, puzzle_input: list[list[str | int]]) -> int:
-        """Reverse engineer the program. Run until no new values are discovered."""
-        seen = set()
-        last_new_value = 0
-        r2, r3 = 0, 0
-        prior_states = set()
-        while (r2, r3) not in prior_states:
-            prior_states.add((r2, r3))
-            r2 = r3 | 65536
-            r3 = 832312
-            while r2 > 0:
-                r2, mod = divmod(r2, 256)
-                r3 = (((r3 + mod) & 16777215) * 65899) & 16777215
-            if r3 not in seen:
-                seen.add(r3)
-                last_new_value = r3
-        return last_new_value
+    """Reverse engineer the program. Run until no new values are discovered."""
+    seen = set()
+    last_new_value = 0
+    r2, r3 = 0, 0
+    prior_states = set()
+    while (r2, r3) not in prior_states:
+        prior_states.add((r2, r3))
+        r2 = r3 | 65536
+        r3 = 832312
+        while r2 > 0:
+            r2, mod = divmod(r2, 256)
+            r3 = (((r3 + mod) & 16777215) * 65899) & 16777215
+        if r3 not in seen:
+            seen.add(r3)
+            last_new_value = r3
+    return last_new_value
 
+
+TESTS = []
 # vim:expandtab:sw=4:ts=4

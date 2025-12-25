@@ -4,6 +4,22 @@
 from typing import Sequence
 from lib import aoc
 
+def solve(data: list[list[int]], part: int, testing: bool) -> int | str:
+    """Return the message in the moving stars."""
+    height = 8 if testing else 10
+    points = data
+    for i in range(12000):
+        points = [(x + dx, y + dy, dx, dy) for x, y, dx, dy in points]
+        ymin = min(y for _, y, _, _ in points)
+        ymax = max(y for _, y, _, _ in points)
+        if ymax - ymin + 1 != height:
+            continue
+        ocr = aoc.OCR.from_point_set({complex(x, y) for x, y, _, _ in points})
+        if ocr.is_valid():
+            return [ocr.as_string(), i + 1][0 if part == 1 else 1]
+    raise RuntimeError("Unreachable.")
+
+
 SAMPLE = """\
 position=< 9,  1> velocity=< 0,  2>
 position=< 7,  0> velocity=<-1,  0>
@@ -36,27 +52,4 @@ position=<-6,  0> velocity=< 2,  0>
 position=< 5,  9> velocity=< 1, -2>
 position=<14,  7> velocity=<-2,  0>
 position=<-3,  6> velocity=< 2, -1>"""
-
-
-class Day10(aoc.Challenge):
-    """Day 10: The Stars Align."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want="HI"),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=3),
-    ]
-
-    def solver(self, puzzle_input: list[list[int]], part_one: bool) -> int | str:
-        """Return the message in the moving stars."""
-        height = 8 if self.testing else 10
-        points = puzzle_input
-        for i in range(12000):
-            points = [(x + dx, y + dy, dx, dy) for x, y, dx, dy in points]
-            ymin = min(y for _, y, _, _ in points)
-            ymax = max(y for _, y, _, _ in points)
-            if ymax - ymin + 1 != height:
-                continue
-            ocr = aoc.OCR.from_point_set({complex(x, y) for x, y, _, _ in points})
-            if ocr.is_valid():
-                return [ocr.as_string(), i + 1][0 if part_one else 1]
-        raise RuntimeError("Unreachable.")
+TESTS = [(1, SAMPLE, "HI"), (2, SAMPLE, 3)]
