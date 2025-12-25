@@ -12,6 +12,7 @@ import dataclasses
 import inspect
 import itertools
 import re
+import warnings
 from typing import Any, Callable, Iterable, TypeVar
 
 from .helpers import *
@@ -449,7 +450,9 @@ def _guess_parser(data: str) -> BaseParser:
             lines = [l.replace(char, "\\" + char) for l in lines]
         lines = [re.sub("  +", " ", line) for line in lines]
         one_line = lines[0]
-        template = re.compile(RE_INT.sub(lambda x: RE_INT.pattern, one_line))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            template = re.compile(RE_INT.sub(lambda x: RE_INT.pattern, one_line))
         # print(template)
         if all(template.fullmatch(line) for line in lines):
             return parse_ints_per_line
