@@ -16,6 +16,7 @@ import contextlib
 import dataclasses
 import functools
 import itertools
+import logging
 import operator
 import pathlib
 import re
@@ -370,7 +371,6 @@ class Challenge:
 
     INPUT_PARSER: Optional[parsers.BaseParser] = None
     TESTS: list[TestCase] = []
-    DEBUG = False
     SUBMIT = {1: True, 2: True}
     TIMEOUT: Optional[int] = None
 
@@ -424,7 +424,7 @@ class Challenge:
         """Print some stats about the input."""
 
         def count(name: str, collection: list) -> None:
-            self.debug(f"{name}: {len(collection)} ({len(set(collection))} unique)")
+            logging.info(f"{name}: {len(collection)} ({len(set(collection))} unique)")
 
         # Line count, char count, uniq lines/chars. Min/max/count/unique ints.
         raw_data = self.raw_data(None)
@@ -437,7 +437,7 @@ class Challenge:
                 int_msg = int_msg[:50] + "...]"
             count(int_msg, ints)
         else:
-            self.debug("No numbers.")
+            logging.info("No numbers.")
 
     def part1(self, puzzle_input: Any) -> int | str:
         """Solve part 1."""
@@ -531,7 +531,6 @@ class Challenge:
         """Run a solver for one part."""
         func = {1: self.part1, 2: self.part2}
         parsed_input = self.input_parser(puzzle_input)
-        self.pre_run(parsed_input)
         try:
             return self.solver(parsed_input, part == 1)
         except NotImplementedError:
@@ -557,7 +556,7 @@ class Challenge:
                 continue
             if case.part not in self.parts_to_run:
                 continue
-            self.debug(f'Running test {i + 1} (part{case.part})')
+            logging.info(f'Running test {i + 1} (part{case.part})')
             assert isinstance(case.inputs, str), 'TestCase.inputs must be a string!'
             if len(case.inputs) <= 1:
                 print('WARNING TestCase.inputs is less than two chars.')
@@ -569,25 +568,12 @@ class Challenge:
                 break
             else:
                 print(f'{self.year}/{self.day:02d} Test {i + 1}: PASS in {format_ns(end - start)}! (part {case.part})')
-        self.debug('=====')
+        logging.info('=====')
         self.testing = False
-
-    def tprint(self, *args):
-        """Print a message but only for testing."""
-        if self.testing and self.DEBUG:
-            print(*args)
-
-    def debug(self, *args):
-        """Print a message if debug is enabled."""
-        if self.DEBUG:
-            print(*args)
-
-    def pre_run(self, puzzle_input: Any) -> None:
-        """Hook to run things prior to tests and actual."""
 
     def solve(self, input_file: Optional[str]) -> None:
         for part in self.parts_to_run:
-            self.debug(f'Running part {part}:')
+            logging.info(f'Running part {part}:')
             try:
                 start = time.perf_counter_ns()
                 got = self.run_solver(part, self.raw_data(input_file))
@@ -665,15 +651,5 @@ class Challenge:
             check=check,
         )
         f(input_file)
-
-@contextlib.contextmanager
-def context_timer(description: str) -> Generator[None, None, None]:
-    start = time.perf_counter_ns()
-    try:
-        yield
-    finally:
-        end = time.perf_counter_ns()
-        print(f"{description}: {format_ns(end - start)}")
-
 
 # vim:ts=4:sw=4:expandtab
