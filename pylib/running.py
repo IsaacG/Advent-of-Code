@@ -143,11 +143,12 @@ class Runner:
         solutions = self.solve(module, parser, formatter)
         self.submit_solution(self.year, self.day, solutions)
 
-    def check(self, module, parser: parsers.BaseParser, formatter) -> None:
+    def check(self, module, parser: parsers.BaseParser, formatter) -> bool:
         want = self.get_solutions(self.day)
         if want is None:
             print(f"No solutions found for {self.day}")
             return
+        success = True
         for part in self.parts:
             if part > len(want):
                 continue
@@ -156,15 +157,16 @@ class Runner:
             if data is None:
                 print(f"CHECK No input data found for day {self.day} part {part}")
                 continue
-            self.compare(
+            success = success and self.compare(
                 want[part - 1], parser(data),
                 f"CHECK {self.year}.{self.day:02}.{part} %s PASS",
                 f"CHECK {self.year}.{self.day:02}.{part} %s FAIL. Wanted {want[part -1]} but got %s.",
                 module.solve,
                 part=part, testing=False, test_number=None,
             )
+        return success
 
-    def run_day(self, check: bool, solve: bool, test: bool, submit: bool, formatter) -> None:
+    def run_day(self, check: bool, solve: bool, test: bool, submit: bool, formatter) -> bool:
         solution_file = pathlib.Path(f"{self.year}/{self.module_name()}.py")
         if not solution_file.exists():
             shutil.copyfile("tmpl.py", solution_file)
@@ -172,16 +174,20 @@ class Runner:
         module = importlib.reload(module)
         parser_override = getattr(module, "PARSER", None) or getattr(module, "input_parser", None)
         parser = parsers.get_parser(self.input_data(1), parser_override)
+        success = True
         for want, func in [(test, self.test), (solve, self.solve), (check, self.check), (submit, self.submit)]:
             if want:
-                func(module, parser, formatter)
+                got = func(module, parser, formatter)
+                if isinstance(got, bool):
+                    success = success and got
+        return success
 
-    def run(self, check: bool, solve: bool, test: bool, submit: bool, live: bool) -> None:
+    def run(self, check: bool, solve: bool, test: bool, submit: bool, live: bool) -> bool:
         formatter = helpers.setup_logging(self.day, self.verbose)
         helpers.setup_resources()
-        self.run_day(check, solve, test, submit, formatter)
+        got = self.run_day(check, solve, test, submit, formatter)
         if not live:
-            return
+            return got
         inotify = inotify_simple.INotify()
         inotify.add_watch(pathlib.Path(__file__).parent, inotify_simple.flags.CLOSE_WRITE)
         count = 0

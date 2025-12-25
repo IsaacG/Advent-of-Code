@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+import sys
 
 import click
 import requests
@@ -73,9 +74,11 @@ def main(day: int, year: int, check: bool, solve: bool, test: bool, submit: bool
         year, day = divmod(day, 100)
     if year < 2000:
         year += 2000
-    Runner(
+    got = Runner(
         year=year, day=day, data=None, parts=parts, verbose=verbose,
     ).run(check, solve, test, submit, live)
+    if not got:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
