@@ -7,25 +7,10 @@ from typing import Type
 
 from lib import aoc
 
-SAMPLE = """\
-        ...#
-        .#..
-        #...
-        ....
-...#.......#
-........#...
-..#....#....
-..........#.
-        ...#....
-        .....#..
-        .#......
-        ......#.
-
-10R5L5R10L4R5L5"""
-
 OPEN = "."
 WALL = "#"
 EMPTY = " "
+PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC(), aoc.parse_re_findall_str(r"(L|R|\d+)")])
 
 
 class Mapper:
@@ -240,35 +225,44 @@ class CubeMap(Mapper):
         return next_position, next_dir
 
 
-class Day22(aoc.Challenge):
-    """Day 22: Monkey Map."""
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=6032),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=5031),
-    ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.CoordinatesParserC(), aoc.parse_re_findall_str(r"(L|R|\d+)")])
+def solve(data: tuple[dict[complex, str], str], part: int) -> int:
+    """Return the final location after wandering the map."""
+    points, instructions = data
+    map_class = FlatMap if part == 1 else CubeMap
+    mapper = map_class(points.chars)
 
-    def solver(self, puzzle_input: tuple[dict[complex, str], str], part_one: bool) -> int:
-        """Return the final location after wandering the map."""
-        points, instructions = puzzle_input
-        map_class = FlatMap if part_one else CubeMap
-        mapper = map_class(points.chars)
+    pos = mapper.start
+    direction = complex(1, 0)
+    for instruction in instructions[0]:
+        match instruction:
+            case "R":
+                direction *= 1j
+            case "L":
+                direction *= -1j
+            case _:
+                for i in range(int(instruction)):
+                    pos, direction = mapper.get_next(pos, direction)
 
-        pos = mapper.start
-        direction = complex(1, 0)
-        for instruction in instructions[0]:
-            match instruction:
-                case "R":
-                    direction *= 1j
-                case "L":
-                    direction *= -1j
-                case _:
-                    for i in range(int(instruction)):
-                        pos, direction = mapper.get_next(pos, direction)
+    final_x = int(pos.real) + 1
+    final_y = int(pos.imag) + 1
+    final_d = {1j ** i: i for i in range(4)}[direction]
+    score = 1000 * final_y + 4 * final_x + final_d
+    return score
 
-        final_x = int(pos.real) + 1
-        final_y = int(pos.imag) + 1
-        final_d = {1j ** i: i for i in range(4)}[direction]
-        score = 1000 * final_y + 4 * final_x + final_d
-        return score
+SAMPLE = """\
+        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+
+10R5L5R10L4R5L5"""
+TESTS = [(1, SAMPLE, 6032), (2, SAMPLE, 5031)]

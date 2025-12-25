@@ -7,14 +7,6 @@ from typing import Iterable, Optional
 
 from lib import aoc
 
-SAMPLE = """\
-1
-2
--3
-3
--2
-0
-4"""
 
 
 @dataclasses.dataclass(slots=True)
@@ -113,24 +105,19 @@ class LinkedList:
             self.move_after(node, insert_after)
 
 
-class Day20(aoc.Challenge):
-    """Day 20: Grove Positioning System."""
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=3),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=1623178306),
-    ]
+def solve(data: list[int], part: int) -> int:
+    """Return the 1000th, 2000th, 3000th digit after mixing the list."""
+    decryption_key = 1 if part == 1 else 811589153
+    nodelist = LinkedList.circular_list(i * decryption_key for i in data)
 
-    def solver(self, puzzle_input: list[int], part_one: bool) -> int:
-        """Return the 1000th, 2000th, 3000th digit after mixing the list."""
-        decryption_key = 1 if part_one else 811589153
-        nodelist = LinkedList.circular_list(i * decryption_key for i in puzzle_input)
+    for _ in range(1 if part == 1 else 10):
+        nodelist.mix_nodes()
 
-        self.debug(f"Node count: {len(nodelist.nodes)} == {nodelist.len}")
-        for _ in range(1 if part_one else 10):
-            nodelist.mix_nodes()
+    out = nodelist.find_thousandths()
+    res = sum(out)
+    return res
 
-        out = nodelist.find_thousandths()
-        res = sum(out)
-        self.debug(f"Got {out} => {res}")
-        return res
+
+SAMPLE = "1 2 -3 3 -2 0 4".replace(" ", "\n")
+TESTS = [(1, SAMPLE, 3), (2, SAMPLE, 1623178306)]

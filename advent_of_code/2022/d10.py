@@ -6,6 +6,39 @@ Emulate a simple CPU and program with a cycle counter.
 
 from lib import aoc
 
+def run_program(lines: list[tuple[int | str, ...]]) -> list[int]:
+    """Run the program and store the `X` register value for each cycle."""
+    regx = 1
+    regx_values = []
+    size = {"addx": 2, "noop": 1}
+    for parts in lines:
+        for _ in range(size[str(parts[0])]):
+            regx_values.append(regx)
+        if parts[0] == "addx":
+            regx += int(parts[1])
+    return regx_values
+
+
+def solve(data: list[tuple[int | str, ...]], part: int) -> int:
+    """Run a program."""
+    regx_values = run_program(data)
+    if part == 1:
+        return sum(
+            regx_values[cycle - 1] * cycle
+            for cycle in range(20, 240, 40)
+        )
+
+    # Return the word drawn on the screen.
+    pixels = []
+    for cycle, regx in enumerate(regx_values):
+        horizontal_position = cycle % 40
+        pixels.append(abs(horizontal_position - regx) <= 1)
+
+    # Split the output into 6 rows of 40 pixels each.
+    rows = [pixels[i*40:(i+1)*40] for i in range(6)]
+    return aoc.OCR(rows).as_string()
+
+
 SAMPLE = """\
 addx 15
 addx -11
@@ -153,45 +186,4 @@ addx -11
 noop
 noop
 noop"""
-
-
-class Day10(aoc.Challenge):
-    """Day 10: Cathode-Ray Tube."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=13140),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=aoc.TEST_SKIP),
-    ]
-
-    def run_program(self, lines: list[tuple[int | str, ...]]) -> list[int]:
-        """Run the program and store the `X` register value for each cycle."""
-        regx = 1
-        regx_values = []
-        size = {"addx": 2, "noop": 1}
-        for parts in lines:
-            for _ in range(size[str(parts[0])]):
-                regx_values.append(regx)
-            if parts[0] == "addx":
-                regx += int(parts[1])
-        return regx_values
-
-    def part1(self, puzzle_input: list[tuple[int | str, ...]]) -> int:
-        """Return the X value at various cycles."""
-        regx_values = self.run_program(puzzle_input)
-        out = 0
-        for cycle in range(20, 240, 40):
-            out += regx_values[cycle - 1] * cycle
-        return out
-
-    def part2(self, puzzle_input: list[tuple[int | str, ...]]) -> str:
-        """Return the word drawn on the screen."""
-        regx_values = self.run_program(puzzle_input)
-
-        pixels = []
-        for cycle, regx in enumerate(regx_values):
-            horizontal_position = cycle % 40
-            pixels.append(abs(horizontal_position - regx) <= 1)
-
-        # Split the output into 6 rows of 40 pixels each.
-        rows = [pixels[i*40:(i+1)*40] for i in range(6)]
-        return aoc.OCR(rows).as_string()
+TESTS = [(1, SAMPLE, 13140)]

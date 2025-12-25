@@ -9,6 +9,79 @@ from typing import Any, Callable, Optional
 
 from lib import aoc
 
+# Regex to parse the inputs
+MONKEY_RE = re.compile(r"""
+Monkey (?P<id>\d):
+  Starting items: (?P<items>(?:\d+, )*\d+)
+  Operation: new = old (?P<operator>[+*]) (?P<operand>\d+|old)
+  Test: divisible by (?P<test_num>\d+)
+    If true: throw to monkey (?P<true>\d+)
+    If false: throw to monkey (?P<false>\d+)
+""".strip())
+
+
+@dataclasses.dataclass(slots=True)
+class Monkey:
+    """Details about each monkey."""
+
+    id: int
+    items: list[int]
+    operator: Callable[[int, int], int]
+    operand: Optional[int]
+    test: int
+    true: int
+    false: int
+    inspected: int
+
+
+
+
+def solve(data: list[Monkey], part: int) -> int:
+    """Simulate rounds of monkeys inspecting and throwing items."""
+    rounds = 20 if part == 1 else 10000
+    # Use the LCM to keep the item size low.
+    lcm = math.lcm(*[m.test for m in data])
+
+    # Cycle through rounds and monkeys.
+    for _ in range(rounds):
+        for monkey in data:
+            # Track how many items the monkey inspected.
+            monkey.inspected += len(monkey.items)
+            # For each item, update values and throw it to another monkey.
+            for item in monkey.items:
+                item = monkey.operator(item, monkey.operand or item)
+                if part == 1:
+                    item = item // 3
+                item %= lcm
+                # Throw the item to the next monkey.
+                next_monkey = monkey.true if (item % monkey.test == 0) else monkey.false
+                data[next_monkey].items.append(item)
+            monkey.items = []
+    inspected = sorted(monkey.inspected for monkey in data)
+    return math.prod(inspected[-2:])
+
+
+def input_parser(puzzle_input: str) -> list[Monkey]:
+    """Parse the input data."""
+    monkeys = []
+    for block in puzzle_input.split("\n\n"):
+        match = MONKEY_RE.match(block)
+        if not match:
+            raise ValueError(f"Block did not match regex. {block}")
+        numbers = {k: int(v) for k, v in match.groupdict().items() if v.isdigit()}
+        monkeys.append(Monkey(
+            id=numbers["id"],
+            items=[int(i) for i in match.group("items").split(", ")],
+            operator={"+": operator.add, "*": operator.mul}[match.group("operator")],
+            operand=None if match.group("operand") == "old" else numbers["operand"],
+            test=numbers["test_num"],
+            true=numbers["true"],
+            false=numbers["false"],
+            inspected=0,
+        ))
+
+    return monkeys
+
 SAMPLE = """\
 Monkey 0:
   Starting items: 79, 98
@@ -37,82 +110,4 @@ Monkey 3:
   Test: divisible by 17
     If true: throw to monkey 0
     If false: throw to monkey 1"""
-
-# Regex to parse the inputs
-MONKEY_RE = re.compile(r"""
-Monkey (?P<id>\d):
-  Starting items: (?P<items>(?:\d+, )*\d+)
-  Operation: new = old (?P<operator>[+*]) (?P<operand>\d+|old)
-  Test: divisible by (?P<test_num>\d+)
-    If true: throw to monkey (?P<true>\d+)
-    If false: throw to monkey (?P<false>\d+)
-""".strip())
-
-
-@dataclasses.dataclass(slots=True)
-class Monkey:
-    """Details about each monkey."""
-
-    id: int
-    items: list[int]
-    operator: Callable[[int, int], int]
-    operand: Optional[int]
-    test: int
-    true: int
-    false: int
-    inspected: int
-
-
-
-class Day11(aoc.Challenge):
-    """Day 11: Monkey in the Middle."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=10605),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=2713310158),
-    ]
-
-    def solver(self, monkeys: list[Monkey], part_one: bool) -> int:
-        """Simulate rounds of monkeys inspecting and throwing items."""
-        rounds = 20 if part_one else 10000
-        # Use the LCM to keep the item size low.
-        lcm = math.lcm(*[m.test for m in monkeys])
-
-        # Cycle through rounds and monkeys.
-        for _ in range(rounds):
-            for monkey in monkeys:
-                # Track how many items the monkey inspected.
-                monkey.inspected += len(monkey.items)
-                # For each item, update values and throw it to another monkey.
-                for item in monkey.items:
-                    item = monkey.operator(item, monkey.operand or item)
-                    if part_one:
-                        item = item // 3
-                    item %= lcm
-                    # Throw the item to the next monkey.
-                    next_monkey = monkey.true if (item % monkey.test == 0) else monkey.false
-                    monkeys[next_monkey].items.append(item)
-                monkey.items = []
-        inspected = sorted(monkey.inspected for monkey in monkeys)
-        return math.prod(inspected[-2:])
-
-    def input_parser(self, puzzle_input: str) -> list[Monkey]:
-        """Parse the input data."""
-        monkeys = []
-        for block in puzzle_input.split("\n\n"):
-            match = MONKEY_RE.match(block)
-            if not match:
-                raise ValueError(f"Block did not match regex. {block}")
-            numbers = {k: int(v) for k, v in match.groupdict().items() if v.isdigit()}
-            monkeys.append(Monkey(
-                id=numbers["id"],
-                items=[int(i) for i in match.group("items").split(", ")],
-                operator={"+": operator.add, "*": operator.mul}[match.group("operator")],
-                operand=None if match.group("operand") == "old" else numbers["operand"],
-                test=numbers["test_num"],
-                true=numbers["true"],
-                false=numbers["false"],
-                inspected=0,
-            ))
-
-        return monkeys
+TESTS = [(1, SAMPLE, 10605), (2, SAMPLE, 2713310158)]

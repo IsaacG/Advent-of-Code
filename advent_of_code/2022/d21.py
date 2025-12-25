@@ -10,23 +10,6 @@ USE_SYMPY = False
 if USE_SYMPY:
     import sympy
 
-SAMPLE = """\
-root: pppw + sjmn
-dbpl: 5
-cczh: sllz + lgvd
-zczc: 2
-ptdq: humn - dvpt
-dvpt: 3
-lfqf: 4
-humn: 5
-ljgn: 2
-sjmn: drzm * dbpl
-sllz: 4
-pppw: cczh / lfqf
-lgvd: ljgn * ptdq
-drzm: hmdt - zczc
-hmdt: 32"""
-
 LineType = Any
 InputType = list[LineType]
 DIV = operator.truediv if USE_SYMPY else operator.floordiv
@@ -82,51 +65,64 @@ class BinaryOp(Symbol):
         raise ValueError
 
 
-class Day21(aoc.Challenge):
-    """Day 21: Monkey Math."""
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=152),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=301),
-    ]
 
-    def solver(self, puzzle_input: InputType, part_one: bool) -> int:
-        """Solve for the root value of an equation."""
-        monkeys = puzzle_input
-        solved = {}
+def solve(data: InputType, part: int) -> int:
+    """Solve for the root value of an equation."""
+    monkeys = data
+    solved = {}
 
-        # Resolve the integer literals.
-        for monkey, job in monkeys.items():
-            if len(job) == 1:
-                solved[monkey] = job[0]
+    # Resolve the integer literals.
+    for monkey, job in monkeys.items():
+        if len(job) == 1:
+            solved[monkey] = job[0]
 
-        if not part_one:
-            solved["humn"] = sympy.symbols("humn") if USE_SYMPY else Variable("humn")
+    if part == 2:
+        solved["humn"] = sympy.symbols("humn") if USE_SYMPY else Variable("humn")
 
-        # Resolve until "root" is solved.
-        unsolved = set(monkeys) - set(solved)
-        while "root" not in solved:
-            for monkey in list(unsolved):
-                left, operation, right = monkeys[monkey]
-                if left not in solved or right not in solved:
-                    continue
-                if USE_SYMPY or isinstance(solved[left], int) and isinstance(solved[right], int):
-                    solved[monkey] = OPS[operation](solved[left], solved[right])
-                else:
-                    solved[monkey] = BinaryOp(solved[left], operation, solved[right])
-                unsolved.remove(monkey)
+    # Resolve until "root" is solved.
+    unsolved = set(monkeys) - set(solved)
+    while "root" not in solved:
+        for monkey in list(unsolved):
+            left, operation, right = monkeys[monkey]
+            if left not in solved or right not in solved:
+                continue
+            if USE_SYMPY or isinstance(solved[left], int) and isinstance(solved[right], int):
+                solved[monkey] = OPS[operation](solved[left], solved[right])
+            else:
+                solved[monkey] = BinaryOp(solved[left], operation, solved[right])
+            unsolved.remove(monkey)
 
-        if part_one:
-            return int(solved["root"])
-        # Part 2: Isolate humn
-        left, right = solved[monkeys["root"][0]], solved[monkeys["root"][2]]
-        if USE_SYMPY:
-            return int(sympy.solve(left - right)[0].round())
-        # Unwind operators to isolate humn.
-        if isinstance(left, int):
-            left, right = right, left
-        while isinstance(left, BinaryOp):
-            assert isinstance(right, int)
-            left, right = left.reverse(right)
-        assert left == Variable("humn")
-        return right
+    if part == 1:
+        return int(solved["root"])
+    # Part 2: Isolate humn
+    left, right = solved[monkeys["root"][0]], solved[monkeys["root"][2]]
+    if USE_SYMPY:
+        return int(sympy.solve(left - right)[0].round())
+    # Unwind operators to isolate humn.
+    if isinstance(left, int):
+        left, right = right, left
+    while isinstance(left, BinaryOp):
+        assert isinstance(right, int)
+        left, right = left.reverse(right)
+    assert left == Variable("humn")
+    return right
+
+
+SAMPLE = """\
+root: pppw + sjmn
+dbpl: 5
+cczh: sllz + lgvd
+zczc: 2
+ptdq: humn - dvpt
+dvpt: 3
+lfqf: 4
+humn: 5
+ljgn: 2
+sjmn: drzm * dbpl
+sllz: 4
+pppw: cczh / lfqf
+lgvd: ljgn * ptdq
+drzm: hmdt - zczc
+hmdt: 32"""
+TESTS = [(1, SAMPLE, 152), (2, SAMPLE, 301)]

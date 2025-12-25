@@ -6,14 +6,6 @@ import dataclasses
 import queue
 
 from lib import aoc
-
-SAMPLE = """\
-#.######
-#>>.<^<#
-#.<..<<#
-#>v.><>#
-#<^v^^>#
-######.#"""
 MAX_STEPS = 1000
 
 
@@ -79,54 +71,54 @@ class Basin:
         )
 
 
-class Day24(aoc.Challenge):
-    """Day 24: Blizzard Basin."""
+def navigate(basin: Basin, reverse: bool, init_steps: int) -> int:
+    """Return move count after navigating from one side of the basin to the other."""
+    blocked = basin.blocked
+    start, end = basin.entrance, basin.exit_pos
+    if reverse:
+        start, end = end, start
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=18),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=54),
-    ]
-    DEBUG = False
-    INPUT_PARSER = aoc.ParseOneWord(Basin.input_parser)
+    to_explore: queue.Queue[tuple[float, int, float, float]] = queue.PriorityQueue()
+    to_explore.put((0, init_steps, start.real, start.imag))
+    cur = start
+    seen = set()
+    # A-star exploration.
+    # Heuristic: moves taken + Manhattan distance to the end.
+    while cur != end:
+        _, moves, cur_x, cur_y = to_explore.get()
+        # complex values cannot be compared so store them by component.
+        cur = complex(cur_x, cur_y)
+        for direction in aoc.FOUR_DIRECTIONS + [0]:
+            next_pos = cur + direction
+            # Do not allow moving outside the basin.
+            if next_pos.imag < 0 or next_pos.imag >= basin.height:
+                continue
+            if next_pos in blocked[moves]:
+                continue
+            if (moves + 1, next_pos) in seen:
+                continue
+            seen.add((moves + 1, next_pos))
+            distance_to_end = abs(next_pos.real - end.real) + abs(next_pos.imag - end.imag)
+            to_explore.put(
+                (moves + distance_to_end, moves + 1, next_pos.real, next_pos.imag)
+            )
+    return moves
 
-    def navigate(self, basin: Basin, reverse: bool, init_steps: int) -> int:
-        """Return move count after navigating from one side of the basin to the other."""
-        blocked = basin.blocked
-        start, end = basin.entrance, basin.exit_pos
-        if reverse:
-            start, end = end, start
 
-        to_explore: queue.Queue[tuple[float, int, float, float]] = queue.PriorityQueue()
-        to_explore.put((0, init_steps, start.real, start.imag))
-        cur = start
-        seen = set()
-        with self.context_timer("Compute path"):
-            # A-star exploration.
-            # Heuristic: moves taken + Manhattan distance to the end.
-            while cur != end:
-                _, moves, cur_x, cur_y = to_explore.get()
-                # complex values cannot be compared so store them by component.
-                cur = complex(cur_x, cur_y)
-                for direction in aoc.FOUR_DIRECTIONS + [0]:
-                    next_pos = cur + direction
-                    # Do not allow moving outside the basin.
-                    if next_pos.imag < 0 or next_pos.imag >= basin.height:
-                        continue
-                    if next_pos in blocked[moves]:
-                        continue
-                    if (moves + 1, next_pos) in seen:
-                        continue
-                    seen.add((moves + 1, next_pos))
-                    distance_to_end = abs(next_pos.real - end.real) + abs(next_pos.imag - end.imag)
-                    to_explore.put(
-                        (moves + distance_to_end, moves + 1, next_pos.real, next_pos.imag)
-                    )
-        return moves
+def solve(data: Basin, part: int) -> int:
+    """Solve for n trips across the basin."""
+    moves = 0
+    for i in range(1 if part == 1 else 3):
+        moves = navigate(data, bool(i % 2), moves)
+    return moves
 
-    def solver(self, puzzle_input: Basin, part_one: bool) -> int:
-        """Solve for n trips across the basin."""
-        moves = 0
-        for i in range(1 if part_one else 3):
-            moves = self.navigate(puzzle_input, bool(i % 2), moves)
-            self.debug(f"{i}: {moves=}")
-        return moves
+
+PARSER = aoc.ParseOneWord(Basin.input_parser)
+SAMPLE = """\
+#.######
+#>>.<^<#
+#.<..<<#
+#>v.><>#
+#<^v^^>#
+######.#"""
+TESTS = [(1, SAMPLE, 18), (2, SAMPLE, 54)]

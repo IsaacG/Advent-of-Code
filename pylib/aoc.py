@@ -666,14 +666,14 @@ class Challenge:
         )
         f(input_file)
 
-    @contextlib.contextmanager
-    def context_timer(self, description: str) -> Generator[None, None, None]:
-        start = time.perf_counter_ns()
-        try:
-            yield
-        finally:
-            end = time.perf_counter_ns()
-            self.debug(f"{description}: {format_ns(end - start)}")
+@contextlib.contextmanager
+def context_timer(description: str) -> Generator[None, None, None]:
+    start = time.perf_counter_ns()
+    try:
+        yield
+    finally:
+        end = time.perf_counter_ns()
+        print(f"{description}: {format_ns(end - start)}")
 
 
 # vim:ts=4:sw=4:expandtab

@@ -1,7 +1,12 @@
 #!/bin/python
-"""Advent of Code: Day 01."""
+"""Advent of Code: Day 01. Count how many calories the elves have."""
 
-from lib import aoc
+
+def solve(data: list[list[int]], part: int) -> int:
+    """Return the sum calories held by the elf(s) with the most calories."""
+    calories = sorted((sum(i) for i in data), reverse=True)
+    return sum(calories[:1 if part == 1 else 3])
+
 
 SAMPLE = """\
 1000
@@ -18,20 +23,4 @@ SAMPLE = """\
 9000
 
 10000"""
-
-
-class Day01(aoc.Challenge):
-    """Day 1: Calorie Counting. Count how many calories the elves have."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=24000),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=45000),
-    ]
-
-    def part1(self, puzzle_input: list[list[int]]) -> int:
-        """Return the sum calories held by the elf with the most calories."""
-        return max(sum(i) for i in puzzle_input)
-
-    def part2(self, puzzle_input: list[list[int]], top_n: int = 3) -> int:
-        """Return the sum calories held by the top three elves with the most calories."""
-        return sum(sorted(sum(i) for i in puzzle_input)[-top_n:])
+TESTS = [(1, SAMPLE, 24000), (2, SAMPLE, 45000)]

@@ -1,7 +1,25 @@
 #!/bin/python
 """Advent of Code, Day 9: Rope Bridge. Track the movement of knots."""
-
 from lib import aoc
+
+
+def solve(data: list[tuple[str, int]], part: int) -> int:
+    """Track the movement of knots on a rope. Return the number of positions the tail visits."""
+    points: set[complex] = set([0])
+    knots: list[complex] = [0] * (2 if part == 1 else 10)
+    movement = aoc.LETTER_DIRECTIONS
+    for direction, unit in data:
+        for _ in range(unit):
+            knots[0] += movement[direction]
+            for i, (a, b) in enumerate(zip(knots, knots[1:])):
+                if a - b in aoc.EIGHT_DIRECTIONS:
+                    continue
+                x = aoc.cmp(a.real, b.real)
+                y = aoc.cmp(a.imag, b.imag)
+                knots[i + 1] += complex(x, y)
+            points.add(knots[-1])
+    return len(points)
+
 
 SAMPLE = [
     """\
@@ -23,29 +41,4 @@ D 10
 L 25
 U 20""",
 ]
-
-
-class Day09(aoc.Challenge):
-    """Day 9: Rope Bridge."""
-
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=13),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=36),
-    ]
-
-    def solver(self, lines: list[tuple[str, int]], part_one: bool) -> int:
-        """Track the movement of knots on a rope. Return the number of positions the tail visits."""
-        points: set[complex] = set([0])
-        knots: list[complex] = [0] * (2 if part_one else 10)
-        movement = aoc.LETTER_DIRECTIONS
-        for direction, unit in lines:
-            for _ in range(unit):
-                knots[0] += movement[direction]
-                for i, (a, b) in enumerate(zip(knots, knots[1:])):
-                    if a - b in aoc.EIGHT_DIRECTIONS:
-                        continue
-                    x = aoc.cmp(a.real, b.real)
-                    y = aoc.cmp(a.imag, b.imag)
-                    knots[i + 1] += complex(x, y)
-                points.add(knots[-1])
-        return len(points)
+TESTS = [(1, SAMPLE[0], 13), (2, SAMPLE[1], 36)]

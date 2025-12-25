@@ -42,7 +42,6 @@ def complete_graph(direct: dict[str, list[str]], rates: dict[str, int]) -> dict[
     for src in distance:
         del distance[src][src]
     end = time.perf_counter_ns()
-    # print(f"Floyd Warshall: {(end - start) / 1_000_000}ms")
     # Add one second each to account for opening the valve.
     return {
         src: {dst: dist + 1 for dst, dist in sorted(distance[src].items()) if rates[dst] > 0}
@@ -54,9 +53,6 @@ def complete_graph(direct: dict[str, list[str]], rates: dict[str, int]) -> dict[
 def solve(data: tuple[dict[str, int], dict[str, list[str]]], part: int) -> int:
     rates, direct = data
     distance = complete_graph(direct, rates)
-    # print(rates)
-    # print(direct)
-    # print(distance)
     max_time = 30 if part == 1 else 26
 
     @functools.cache
@@ -86,7 +82,6 @@ def solve(data: tuple[dict[str, int], dict[str, list[str]]], part: int) -> int:
             combined = dp("AA", max_time, g) + dp("AA", max_time, frozenset(all_valves - g))
             most = max(most, combined)
         end = time.perf_counter_ns()
-        print(f"{r=}, {most=}, {(end - start) / 1_000_000_000}s")
     return most
 
 

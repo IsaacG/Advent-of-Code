@@ -8,31 +8,6 @@ from typing import Any
 
 from lib import aoc
 
-SAMPLE = """\
-[1,1,3,1,1]
-[1,1,5,1,1]
-
-[[1],[2,3,4]]
-[[1],4]
-
-[9]
-[[8,7,6]]
-
-[[4,4],4,4]
-[[4,4],4,4,4]
-
-[7,7,7,7]
-[7,7,7]
-
-[]
-[3]
-
-[[[]]]
-[[]]
-
-[1,[2,[3,[4,[5,6,7]]]],8,9]
-[1,[2,[3,[4,[5,6,0]]]],8,9]"""
-
 
 # cmp for integers.
 int_cmp = aoc.cmp
@@ -61,30 +36,49 @@ def cmp(first: Any, second: Any) -> int:
     raise ValueError(f"Umatched {first} {second}")
 
 
-class Day13(aoc.Challenge):
-    """Day 13: Distress Signal."""
+PARSER = aoc.ParseBlocks([aoc.ParseOneWordPerLine(json.loads)])
 
-    TESTS = [
-        aoc.TestCase(inputs=SAMPLE, part=1, want=13),
-        aoc.TestCase(inputs=SAMPLE, part=2, want=140),
-    ]
-    INPUT_PARSER = aoc.ParseBlocks([aoc.ParseOneWordPerLine(json.loads)])
-
-    def part1(self, puzzle_input: list[list[Any]]) -> int:
-        """Return the number of pairs which are in order."""
-        pairs = puzzle_input
+def solve(data: list[list[Any]], part: int) -> int:
+    """Return the number of pairs which are in order."""
+    pairs = data
+    if part == 1:
         return sum(
             idx
             for idx, (fst, snd) in enumerate(pairs, start=1)
             if cmp(fst, snd) == -1
         )
 
-    def part2(self, puzzle_input: list[list[Any]]) -> int:
-        """Return the position of two markers when added and sorted."""
-        pairs = puzzle_input
-        dividers = ([[2]], [[6]])
-        vals = list(dividers)
-        for pair in pairs:
-            vals.extend(pair)
-        vals.sort(key=functools.cmp_to_key(cmp))
-        return math.prod(vals.index(divider) + 1 for divider in dividers)
+    pairs = data
+    dividers = ([[2]], [[6]])
+    vals = list(dividers)
+    for pair in pairs:
+        vals.extend(pair)
+    vals.sort(key=functools.cmp_to_key(cmp))
+    return math.prod(vals.index(divider) + 1 for divider in dividers)
+
+
+SAMPLE = """\
+[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]"""
+TESTS = [(1, SAMPLE, 13), (2, SAMPLE, 140)]
