@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"isaacgood.com/aoc/helpers"
 	"strings"
+	"time"
 )
 
 const (
@@ -62,6 +63,24 @@ type IntCode struct {
 	debug        bool
 	state        int
 	relativeBase int
+}
+
+func read(c <-chan int, wait time.Duration) (int, bool) {
+	select {
+	case v := <- c:
+		return v, true
+	case <- time.After(wait):
+		return 0, false
+	}
+}
+
+func write(c chan<- int, val int, wait time.Duration) bool {
+	select {
+	case c <- val:
+		return true
+	case <- time.After(wait):
+		return false
+	}
 }
 
 func (ic *IntCode) nextPc() int {
