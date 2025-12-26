@@ -1,84 +1,67 @@
 #!/bin/python
 """Advent of Code, Day 16: Flawed Frequency Transmission."""
-from __future__ import annotations
-
-import collections
-import functools
-import itertools
-import math
-import re
-
 from lib import aoc
-
-BASE_PATTERN = [0, 1, 0, -1]
 
 
 class Day16(aoc.Challenge):
     """Day 16: Flawed Frequency Transmission."""
 
-    DEBUG = True
-    # Default is True. On live solve, submit one tests pass.
-    # SUBMIT = {1: False, 2: False}
-
     TESTS = [
         aoc.TestCase(inputs="80871224585914546619083218645595", part=1, want=24176176),
-        # aoc.TestCase(inputs="19617804207202209144916044189917", part=1, want=73745418),
-        # aoc.TestCase(inputs="69317163492948606335995924319873", part=1, want=52432133),
-        aoc.TestCase(inputs="", part=2, want=0),
-        # aoc.TestCase(inputs=SAMPLE[0], part=2, want=aoc.TEST_SKIP),
+        aoc.TestCase(inputs="19617804207202209144916044189917", part=1, want=73745418),
+        aoc.TestCase(inputs="69317163492948606335995924319873", part=1, want=52432133),
+        aoc.TestCase(inputs="03036732577212944063491565474664", part=2, want=84462026),
+        aoc.TestCase(inputs="02935109699940807407585447034323", part=2, want=78725270),
+        aoc.TestCase(inputs="03081770884921959731165446850517", part=2, want=53553731),
     ]
-    INPUT_PARSER = aoc.parse_one_str
+    INPUT_PARSER = str
+    TIMEOUT = 90
 
-    @functools.cache
-    def pattern(self, position: int) -> list[int]:
-        pattern = [i for b in BASE_PATTERN for i in [b] * (position + 1)]
-        return pattern
+    def fft(self, signal: list[int], offset: int) -> list[int]:
+        """Compute the FFT.
 
-    def part1(self, puzzle_input: str) -> int:
+        This technique leverages two tricks.
+        1. When repeatedly summing up sub-ranges, we can be more efficient by computing
+           a cumulative/running sum of the numbers. Taking the difference between the
+           start and end of the range gives the sum of the range.
+        2. The pattern [0, 1, 0, -1] with a shift of 1 means the n'th element is unaffected
+           by elements prior to n (they get zeroed out). We can rewrite the pattern as
+           [1, 0, -1, 0] starting at element n, no skipping needed.
+           If we only care about elements after index n with a large n, we can truncate
+           the pattern to start at n. This is the `offset`.
+        """
+        # Add a -1 element so we can access the pre-range value for the first element.
+        cumulative_sums = [0]
+        accumulator = 0
+        for i in signal:
+            accumulator += i
+            cumulative_sums.append(accumulator)
+
+        fft_signal = []
+        signal_len = len(signal)
+        for idx in range(signal_len):
+            # Toggle between 1 and -1 on every other range.
+            multiplier = 1
+            element = 0
+            range_len = idx + 1 + offset
+            for current_range in range(idx, signal_len, 2 * range_len):
+                element += multiplier * (
+                    cumulative_sums[min(current_range + range_len, signal_len)] - cumulative_sums[current_range]
+                )
+                multiplier *= -1
+            fft_signal.append(abs(element) % 10)
+        return fft_signal
+
+    def solver(self, puzzle_input: str, part_one: bool) -> int:
+        """Return a sub-signal after applying FFT to a signal."""
+        if part_one:
+            offset = 0
+        else:
+            offset = int(puzzle_input[:7])
+            puzzle_input = (puzzle_input * 10000)[offset:]
         signal = [int(i) for i in puzzle_input]
-        length = len(signal)
-        for _ in range(100):
-            signal = [
-                abs(
-                    sum(
-                        a * b
-                        for a, b in zip([0] + signal, itertools.cycle(self.pattern(position)))
-                    )
-                ) % 10
-                for position in range(length)
-            ]
+        for i in range(100):
+            signal = self.fft(signal, offset)
         return int(str("".join(str(i) for i in signal[:8])))
-
-    def part2(self, puzzle_input: str) -> int:
-        raise NotImplementedError
-
-    def solver(self, puzzle_input: str, param: bool) -> int | str:
-        raise NotImplementedError
-
-    def input_parser(self, puzzle_input: str) -> str:
-        """Parse the input data."""
-        return super().input_parser(puzzle_input)
-        return puzzle_input.splitlines()
-        return puzzle_input
-        return [int(i) for i in puzzle_input.splitlines()]
-        mutate = lambda x: (x[0], int(x[1])) 
-        return [mutate(line.split()) for line in puzzle_input.splitlines()]
-        # Words: mixed str and int
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in line.split()
-            )
-            for line in puzzle_input.splitlines()
-        ]
-        # Regex splitting
-        patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
-        return [
-            tuple(
-                int(i) if i.isdigit() else i
-                for i in patt.match(line).groups()
-            )
-            for line in puzzle_input.splitlines()
-        ]
 
 # vim:expandtab:sw=4:ts=4
