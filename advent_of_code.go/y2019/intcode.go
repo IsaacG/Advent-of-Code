@@ -11,9 +11,11 @@ const (
 	StateRun
 	StateIOBlock
 	StateHalt
-)
 
-const (
+	ParamModePosition  = 0
+	ParamModeImmediate = 1
+	ParamModeRelative  = 2
+
 	OpAdd    = 1
 	OpMult   = 2
 	OpInput  = 3
@@ -22,16 +24,42 @@ const (
 	OpJumpF  = 6
 	OpLT     = 7
 	OpEQ     = 8
+	OpRelBase = 9
 	OpHalt   = 99
 )
 
+var OpName = map[int]string{
+	OpAdd:    "ADD",
+	OpMult:   "MULT",
+	OpInput:  "INPUT",
+	OpOutput: "OUTPUT",
+	OpJumpT:  "JUMPT",
+	OpJumpF:  "JUMPF",
+	OpLT:     "LT",
+	OpEQ:     "EQ",
+	OpHalt:   "HALT",
+}
+
+var OperandCount = map[int][2]int{
+	OpAdd:    {2, 1},
+	OpMult:   {2, 1},
+	OpInput:  {0, 1},
+	OpOutput: {1, 0},
+	OpJumpT:  {2, 0},
+	OpJumpF:  {2, 0},
+	OpLT:     {2, 1},
+	OpEQ:     {2, 1},
+	OpHalt:   {0, 0},
+}
+
 type IntCode struct {
-	mem    map[int]int
-	pc     int
-	input  <-chan int
-	output chan<- int
-	debug  bool
-	state  int
+	mem          map[int]int
+	pc           int
+	input        <-chan int
+	output       chan<- int
+	debug        bool
+	state        int
+	relativeBase int
 }
 
 func (ic *IntCode) nextPc() int {
@@ -40,91 +68,79 @@ func (ic *IntCode) nextPc() int {
 	return v
 }
 
-func (ic *IntCode) getVal(mode int) int {
-	pc := ic.nextPc()
-	// Position mode 0
-	if mode == 0 {
-		return ic.mem[pc]
+func (ic *IntCode) operands(op int) []int {
+	count := OperandCount[op%100]
+	out := make([]int, count[0]+count[1])
+	op /= 10
+	for i := range count[0] {
+		op /= 10
+		num := ic.nextPc()
+		switch op%10 {
+		case ParamModePosition:
+			out[i] = ic.mem[num]
+		case ParamModeImmediate:
+			out[i] = num
+		case ParamModeRelative:
+			out[i] = ic.mem[num+ic.relativeBase]
+		}
 	}
-	// Immediate mode 1
-	if mode == 1 {
-		return pc
+	if count[1] == 1 {
+		out[count[0]] = ic.nextPc()
 	}
-	return 0
+	return out
 }
 
 func (ic *IntCode) run() {
 	ic.state = StateRun
 	for {
-		op := ic.mem[ic.pc]
-		ic.pc++
-		switch op % 100 {
+		op := ic.nextPc()
+		instruction := op % 100
+		var bareParams []int
+		if ic.debug {
+			count := OperandCount[instruction]
+			for i := range count[0] + count[1] {
+				bareParams = append(bareParams, ic.mem[ic.pc+i])
+			}
+		}
+		params := ic.operands(op)
+		if ic.debug {
+			fmt.Printf("%5d %-6s %18s=%28s\n", op, OpName[instruction], fmt.Sprintf("%4v", bareParams), fmt.Sprintf("%8v", params))
+		}
+		switch instruction {
 		case OpAdd:
-			if ic.debug {
-				fmt.Printf("ADD  %4d %4d -> %4d\n", ic.mem[ic.pc+0], ic.mem[ic.pc+1], ic.mem[ic.pc+2])
-			}
-			r := ic.getVal((op/100)%10) + ic.getVal((op/1000)%10)
-			ic.mem[ic.nextPc()] = r
+			ic.mem[params[2]] = params[0] + params[1]
 		case OpMult:
-			if ic.debug {
-				fmt.Printf("MULT %4d %4d -> %4d\n", ic.mem[ic.pc+0], ic.mem[ic.pc+1], ic.mem[ic.pc+2])
-			}
-			r := ic.getVal((op/100)%10) * ic.getVal((op/1000)%10)
-			ic.mem[ic.nextPc()] = r
+			ic.mem[params[2]] = params[0] * params[1]
 		case OpInput:
 			v := <-ic.input
-			if ic.debug {
-				fmt.Printf("INPT %d -> %4d\n", v, ic.mem[ic.pc+0])
-			}
-			ic.mem[ic.nextPc()] = v
+			ic.mem[params[0]] = v
 		case OpOutput:
-			v := ic.getVal(op / 100 % 10)
-			if ic.debug {
-				fmt.Printf("OUTP %d\n", v)
-			}
-			ic.output <- v
+			ic.output <- params[0]
 		case OpJumpT:
-			cmp, dst := ic.getVal(op/100%10), ic.getVal(op/1000%10)
-			if ic.debug {
-				fmt.Printf("JMPT %d %d\n", cmp, dst)
-			}
-			if cmp != 0 {
-				ic.pc = dst
+			if params[0] != 0 {
+				ic.pc = params[1]
 			}
 		case OpJumpF:
-			cmp, dst := ic.getVal(op/100%10), ic.getVal(op/1000%10)
-			if ic.debug {
-				fmt.Printf("JMPF %d %d\n", cmp, dst)
-			}
-			if cmp == 0 {
-				ic.pc = dst
+			if params[0] == 0 {
+				ic.pc = params[1]
 			}
 		case OpLT:
-			a, b, dst := ic.getVal(op/100%10), ic.getVal(op/1000%10), ic.nextPc()
-			if ic.debug {
-				fmt.Printf("LT %d %s -> %d\n", a, b, dst)
-			}
-			if a < b {
-				ic.mem[dst] = 1
+			if params[0] < params[1] {
+				ic.mem[params[2]] = 1
 			} else {
-				ic.mem[dst] = 0
+				ic.mem[params[2]] = 0
 			}
 		case OpEQ:
-			a, b, dst := ic.getVal(op/100%10), ic.getVal(op/1000%10), ic.nextPc()
-			if ic.debug {
-				fmt.Printf("EQ %d %s -> %d\n", a, b, dst)
-			}
-			if a == b {
-				ic.mem[dst] = 1
+			if params[0] == params[1] {
+				ic.mem[params[2]] = 1
 			} else {
-				ic.mem[dst] = 0
+				ic.mem[params[2]] = 0
 			}
 		case OpHalt:
-			if ic.debug {
-				fmt.Println("HALT")
-			}
 			ic.state = StateHalt
 			return
+		default:
+			panic(fmt.Sprintf("Unhandled op %d", op))
 		}
 	}
 }

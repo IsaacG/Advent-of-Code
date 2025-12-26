@@ -35,7 +35,7 @@ func CheckAocPuzzles(args []string) {
 		nums = append(nums, Atoi(arg))
 	}
 	var filter func(id AocID) bool
-	if len(nums) == 2 {
+	if len(nums) >= 2 {
 		filter = func(id AocID) bool { return id.year == nums[0] && id.day == nums[1] }
 	} else if len(nums) == 1 {
 		filter = func(id AocID) bool { return id.year == nums[0] }
@@ -53,7 +53,11 @@ func CheckAocPuzzles(args []string) {
 		},
 	) {
 		if filter(id) {
-			GetAocPuzzle(id).Check()
+			puzzle := GetAocPuzzle(id)
+			if len(nums) > 2 {
+				puzzle.parts = nums[2]
+			}
+			puzzle.Check()
 		}
 	}
 }
