@@ -11,26 +11,26 @@ type Day05 struct {
 
 // Solve returns the solution for one part.
 func (q *Day05) Solve(data string, part int) string {
-	input, output := make(chan int, 1), make(chan int, 1)
-	ic := NewIntCode(data, false, input, output)
+	i, o:= make(chan int, 1), make(chan int, 1)
+	ic := NewIntCode(data, IO(i, o))
 	go ic.run()
 	if part == 1 {
-		input <- 1
+		i <- 1
 	} else {
-		input <- 5
+		i <- 5
 	}
-	var i int
+	var output int
 	for {
 		select {
-		case v := <-output:
-			i = v
+		case v := <-o:
+			output = v
 		case <-time.After(100 * time.Millisecond):
 			if ic.state == StateHalt {
-				return helpers.Itoa(i)
+				return helpers.Itoa(output)
 			}
 		}
 	}
-	return helpers.Itoa(i)
+	return helpers.Itoa(output)
 }
 
 func init() {

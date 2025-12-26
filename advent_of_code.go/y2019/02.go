@@ -9,7 +9,7 @@ type Day02 struct {
 }
 
 func (q *Day02) run(data string, a, b int) int {
-	ic := NewIntCode(data, false, nil, nil)
+	ic := NewIntCode(data)
 	ic.mem[1] = a
 	ic.mem[2] = b
 	ic.run()

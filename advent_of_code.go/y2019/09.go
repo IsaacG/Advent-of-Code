@@ -12,7 +12,7 @@ type Day09 struct {
 func (q *Day09) Solve(data string, part int) string {
 	i, o := make(chan int, 1), make(chan int)
 	i <- part
-	ic := NewIntCode(data, false, i, o)
+	ic := NewIntCode(data, IO(i, o))
 	go ic.run()
 	return helpers.Itoa(<-o)
 }

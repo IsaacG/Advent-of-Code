@@ -26,7 +26,7 @@ func (q *Day07) Solve(data string, part int) string {
 		var ics []*IntCode
 		var wg sync.WaitGroup
 		for i := 0; i < 5; i++ {
-			ics = append(ics, NewIntCode(data, false, channels[i], channels[(i+1)%5]))
+			ics = append(ics, NewIntCode(data, IO(channels[i], channels[(i+1)%5])))
 		}
 		for i, v := range gen.Permutation(nil) {
 			channels[i] <- v + offset

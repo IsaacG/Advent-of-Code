@@ -10,7 +10,8 @@ import (
 const (
 	StateReady = iota
 	StateRun
-	StateIOBlock
+	StateBlockInput
+	StateBlockOutput
 	StateHalt
 
 	ParamModePosition  = 0
@@ -63,6 +64,7 @@ type IntCode struct {
 	debug        bool
 	state        int
 	relativeBase int
+	synchronous  bool
 }
 
 func read(c <-chan int, wait time.Duration) (int, bool) {
@@ -142,10 +144,31 @@ func (ic *IntCode) run() {
 		case OpMult:
 			ic.mem[params[2]] = params[0] * params[1]
 		case OpInput:
-			v := <-ic.input
-			ic.mem[params[0]] = v
+			if ic.synchronous {
+				select {
+				case v := <-ic.input:
+					ic.mem[params[0]] = v
+				default:
+					ic.pc -= 2
+					ic.state = StateBlockInput
+					return
+				}
+			} else {
+				v := <-ic.input
+				ic.mem[params[0]] = v
+			}
 		case OpOutput:
-			ic.output <- params[0]
+			if ic.synchronous {
+				select {
+				case ic.output <- params[0]:
+				default:
+					ic.pc -= 2
+					ic.state = StateBlockOutput
+					return
+				}
+			} else {
+				ic.output <- params[0]
+			}
 		case OpJumpT:
 			if params[0] != 0 {
 				ic.pc = params[1]
@@ -175,12 +198,38 @@ func (ic *IntCode) run() {
 			panic(fmt.Sprintf("Unhandled op %d", op))
 		}
 	}
+	panic("Not good")
 }
 
-func NewIntCode(program string, debug bool, input <-chan int, output chan<- int) *IntCode {
+type Option func(*IntCode)
+
+func Synchronous() Option {
+	return func(i *IntCode) {
+		i.synchronous = true
+	}
+}
+
+func IO(input <-chan int, output chan<- int) Option {
+	return func(i *IntCode) {
+		i.input = input
+		i.output = output
+	}
+}
+
+func Debug() Option {
+	return func(i *IntCode) {
+		i.debug = true
+	}
+}
+
+func NewIntCode(program string, opts ...Option) *IntCode {
 	mem := make(map[int]int)
 	for i, v := range strings.Split(program, ",") {
 		mem[i] = helpers.Atoi(v)
 	}
-	return &IntCode{mem: mem, input: input, output: output, debug: debug, state: StateReady}
+	i := &IntCode{mem: mem}
+	for _, opt := range opts {
+		opt(i)
+	}
+	return i
 }
