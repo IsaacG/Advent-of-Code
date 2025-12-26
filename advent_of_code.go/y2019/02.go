@@ -9,11 +9,11 @@ type Day02 struct {
 }
 
 func (q *Day02) run(data string, a, b int) int {
-	ic := NewIntCode(data)
-	ic.memory[1] = a
-	ic.memory[2] = b
+	ic := NewIntCode(data, false, nil, nil)
+	ic.mem[1] = a
+	ic.mem[2] = b
 	ic.run()
-	return ic.memory[0]
+	return ic.mem[0]
 }
 
 // Solve returns the solution for one part.
