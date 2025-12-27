@@ -52,7 +52,8 @@ class Runner(running.Runner):
             return None
 
         level = levels[0]
-        resp = session.post(f'{self.uri_day}/answer', data={'answer': answer, 'level': level})
+        part = int(str(level)) - 1
+        resp = session.post(f'https://adventofcode.com/{self.year}/day/{self.day}/answer', data={'answer': solutions[part], 'level': level})
         resp.raise_for_status()
         et = etree.HTML(resp.content)
         output = ''.join(et.xpath('//main/article//text()'))
