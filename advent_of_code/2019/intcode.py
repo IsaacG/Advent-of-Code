@@ -105,6 +105,10 @@ class Computer:
         if self.debug:
             print(msg)
 
+    def input_line(self, line: str) -> None:
+        """Write a line of ASCII to the input."""
+        self.input.extend(ord(i) for i in line + "\n")
+
     def get_input(self) -> int | None:
         """Read input or change state to blocked."""
         if self.input:
