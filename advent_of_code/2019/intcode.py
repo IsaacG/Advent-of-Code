@@ -105,6 +105,11 @@ class Computer:
         if self.debug:
             print(msg)
 
+    def get_output(self) -> str:
+        s = "".join(chr(i) for i in self.output)
+        self.output.clear()
+        return s
+
     def input_line(self, line: str) -> None:
         """Write a line of ASCII to the input."""
         self.input.extend(ord(i) for i in line + "\n")
