@@ -36,30 +36,30 @@ DEBUG = True
 # max_x, max_y = width - 1, height - 1
 
 
-def solve(puzzle_input: InputType, part: int) -> int:
+def solve(data: InputType, part: int) -> int:
     print("\n".join(["==="] + [f"{k}={v!r}" for k, v in locals().items()] + ["==="]))
     # return (part1 if part == 1 else part2)(data)
     return None
 
 
-# def part1(puzzle_input: InputType) -> int:
-# def part2(puzzle_input: InputType) -> int:
+# def part1(data: InputType) -> int:
+# def part2(data: InputType) -> int:
 
 
-def xinput_parser(self, puzzle_input: str) -> InputType:
+def xinput_parser(self, data: str) -> InputType:
     """Parse the input data."""
-    return puzzle_input.splitlines()
-    return puzzle_input
-    return [int(i) for i in puzzle_input.splitlines()]
+    return data.splitlines()
+    return data
+    return [int(i) for i in data.splitlines()]
     mutate = lambda x: (x[0], int(x[1])) 
-    return [mutate(line.split()) for line in puzzle_input.splitlines()]
+    return [mutate(line.split()) for line in data.splitlines()]
     # Words: mixed str and int
     return [
         tuple(
             int(i) if i.isdigit() else i
             for i in line.split()
         )
-        for line in puzzle_input.splitlines()
+        for line in data.splitlines()
     ]
     # Regex splitting
     patt = re.compile(r"(.*) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.")
@@ -68,10 +68,11 @@ def xinput_parser(self, puzzle_input: str) -> InputType:
             int(i) if i.isdigit() else i
             for i in patt.match(line).groups()
         )
-        for line in puzzle_input.splitlines()
+        for line in data.splitlines()
     ]
 
-SAMPLE = ${sample}
+SAMPLE = """\
+"""
 TESTS = [
     (1, SAMPLE[0], None),
     (2, SAMPLE[0], None),

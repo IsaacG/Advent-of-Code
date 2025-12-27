@@ -56,7 +56,7 @@ class Runner(running.Runner):
         resp.raise_for_status()
         et = etree.HTML(resp.content)
         output = ''.join(et.xpath('//main/article//text()'))
-        return f"Submitted solution {solutions[-1]} for level {level}\n\n. Response:\n" + output
+        return f"Submitted solution {solutions[-1]} for level {level}.\n\nResponse:\n" + output
 
 
 @click.command()

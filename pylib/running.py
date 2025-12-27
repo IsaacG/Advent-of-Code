@@ -189,13 +189,13 @@ class Runner:
         if not live:
             return got
         inotify = inotify_simple.INotify()
-        inotify.add_watch(pathlib.Path(__file__).parent, inotify_simple.flags.CLOSE_WRITE)
+        solution_file = os.getcwd() + f"/{self.year}"
+        print(solution_file)
+        inotify.add_watch(solution_file, inotify_simple.flags.CLOSE_WRITE)
         count = 0
-        while events := inotify.read():
-            if not any(i.name == self.module_name() + ".py" for i in events):
-                continue
+        for events in inotify.read():
             count += 1
-            print(datetime.datetime.now().strftime(f"== {count:02}: %H:%M:%S =="))
+            print(datetime.datetime.now().strftime(f"== {count:02} == %H:%M:%S =="))
             self.run_day(check, solve, test, submit, formatter)
 
 # vim:ts=4:sw=4:expandtab
