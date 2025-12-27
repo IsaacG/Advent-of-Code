@@ -141,7 +141,7 @@ class Runner:
             print("Tests failed; skip submit.")
             return
         solutions = self.solve(module, parser, formatter)
-        self.submit_solution(self.year, self.day, solutions)
+        print(self.submit_solution(self.year, self.day, solutions))
 
     def check(self, module, parser: parsers.BaseParser, formatter) -> bool:
         want = self.get_solutions(self.day)

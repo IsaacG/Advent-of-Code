@@ -52,12 +52,11 @@ class Runner(running.Runner):
             return None
 
         level = levels[0]
-        part = int(str(level)) - 1
-        resp = session.post(f'https://adventofcode.com/{self.year}/day/{self.day}/answer', data={'answer': solutions[part], 'level': level})
+        resp = session.post(f'https://adventofcode.com/{self.year}/day/{self.day}/answer', data={'answer': solutions[-1], 'level': str(level)})
         resp.raise_for_status()
         et = etree.HTML(resp.content)
         output = ''.join(et.xpath('//main/article//text()'))
-        return output
+        return f"Submitted solution {solutions[-1]} for level {level}\n\n. Response:\n" + output
 
 
 @click.command()
@@ -67,7 +66,7 @@ class Runner(running.Runner):
 @click.option("--solve", "-s", is_flag=True)
 @click.option("--test", "-t", is_flag=True)
 @click.option("--submit", "-x", is_flag=True)
-@click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
+@click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2))
 @click.option("--live", "-l", is_flag=True)
 @click.option("--verbose", "-v", count=True)
 def main(day: int, year: int, check: bool, solve: bool, test: bool, submit: bool, live: bool, parts: tuple[int], verbose: int) -> None:
