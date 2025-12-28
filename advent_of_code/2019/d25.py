@@ -3,137 +3,138 @@
 
 import collections
 import itertools
+import logging
 import re
 
 import intcode
-from lib import aoc
 
 PARSER = str
+log = logging.info
 OFFSETS = {"north": (0, 1), "south": (0, -1), "east": (1, 0), "west": (-1, 0)}
 REV_DIR = {"north": "south", "south": "north", "east": "west", "west": "east"}
 DO_NOT_TAKE = {"infinite loop", "giant electromagnet", "molten lava", "photons", "escape pod"}
 CHECKPOINT = "Security Checkpoint"
 
-def solve(data: str, part: int) -> int:
-    c = intcode.Computer(data)
-    prior_room = None
 
-    connections = collections.defaultdict(dict)
-    doors = {}
-    description = {}
-    position = {}
-    inventory = set()
+class Explorer:
+    """Explorer is a droid used to explore the spaceship."""
 
-    def steps(src, dst):
-        assert src in connections
-        assert dst in connections
-        q = collections.deque()
-        seen = set()
-        q.append((src, []))
-        while q:
-            r, path = q.popleft()
-            if r == dst:
-                return path
-            for d, n in connections[r].items():
-                q.append((n, path + [d]))
-        print(f"Did not find a route, {src} -> {dst}")
+    def __init__(self, program: str):
+        self.c = intcode.Computer(program)
 
-    queued_commands = collections.deque()
-    for _ in range(80):
-        c.run()
-        output = c.get_output().strip()
+        self.connections = collections.defaultdict[str, dict[str, str]](dict)
+        self.doors = dict[str, list[str]]()
+        self.description = dict[str, str]()
+        self.inventory = set[str]()
+        self.current_room = ""
+
+    @property
+    def unopened(self) -> dict[str, set[str]]:
+        """Return doors which have not yet been opened."""
+        return {
+            room: set(self.doors[room]) - set(self.connections[room])
+            for room in self.doors
+            if room != CHECKPOINT and set(self.doors[room]) - set(self.connections[room])
+        }
+
+    def run(self, cmd: str | None = None) -> str:
+        """Run a droid command and return the output."""
+        if cmd:
+            self.c.input_line(cmd)
+        self.c.run()
+        return self.c.get_output().strip()
+
+    def explore_room(self, cmd: str | None = None):
+        """Enter a room, look around, and parse the output."""
         extra_output = []
-        for block in output.strip().split("\n\n"):
-            lines = block.strip().splitlines()
+        for block in self.run(cmd).split("\n\n"):
+            lines = block.splitlines()
             if not lines:
                 continue
             if lines[0].startswith("== "):
                 room = lines[0].strip("= ")
-                if room not in connections:
-                    if prior_room:
-                        connections[prior_room][cmd] = room
-                        connections[room][REV_DIR[cmd]] = prior_room
-                    description[room] = lines[1]
+                if room not in self.connections:
+                    if self.current_room != "" and cmd:
+                        self.connections[self.current_room][cmd] = room
+                        self.connections[room][REV_DIR[cmd]] = self.current_room
+                    self.description[room] = lines[1]
             elif lines[0] == "Doors here lead:":
-                doors[room] = [i.removeprefix("- ") for i in lines[1:]]
+                self.doors[room] = [i.removeprefix("- ") for i in lines[1:]]
             elif lines[0] == "Items here:":
                 for item in {i.removeprefix("- ") for i in lines[1:]} - DO_NOT_TAKE:
-                    inventory.add(item)
-                    queued_commands.appendleft(f"take {item}")
+                    self.inventory.add(item)
+                    self.run(f"take {item}")
             elif lines[0] == "Command?":
                 pass
             else:
                 extra_output.append(f"==> {block}")
-        # print(f"> {room} || {description[room]}")
-        if extra_output:
-            # print("\n".join(extra_output))
-            pass
-        if "You can't go that way." in extra_output:
-            print("Invalid. Breaking.\n\n")
-            break
-        unopened = {r: set(doors[r]) - set(connections[r]) for r in doors if set(doors[r]) - set(connections[r])}
-        if "Security Checkpoint" in unopened:
-            del unopened["Security Checkpoint"]
-        if False:
-            if unopened.get(room):
-                print(f"Unopened doors: {unopened[room] or "N/A"}")
-            if connections[room]:
-                print(f"Connections: {connections[room]}")
-        prior_room = room
-        cmd = ""
-        if queued_commands:
-            cmd = queued_commands.popleft()
-            # print(f"Popped queued command, {cmd}")
-        elif unopened.get(room):
-            cmd = unopened[room].copy().pop()
-            # print(f"Room {room} has an unopened door, {cmd}. Exploring.")
-        else:
-            goto_room = None
-            for dst, unopened_door in unopened.items():
-                if dst != "Security Checkpoint" and unopened_door:
-                    goto_room = dst
-                    break
-            if goto_room:
-                cmd, *rest = steps(room, dst)
-                # print(f"Navigating from {room} to {dst} to explore unopened doors. {cmd=}, {rest=}")
-                queued_commands.extend(rest)
-        if cmd == "":
-            if room == "Security Checkpoint":
-                c.input_line("inv")
-                c.run()
-                output = c.get_output().strip()
-                # print(output)
-                break
-            cmd, *rest = steps(room, "Security Checkpoint")
-            queued_commands.extend(rest)
-        # print("cmd =", cmd)
-        c.input_line(cmd)
+        self.current_room = room
 
-    # print(inventory)
-    door = (set(doors["Security Checkpoint"]) - set(connections["Security Checkpoint"])).pop()
-    for item in inventory:
-        c.input_line(f"drop {item}")
-        c.run()
-        c.get_output()
+    def steps(self, target_room: str | None) -> list[str]:
+        """Return the steps needed to get through an unopened door or to a target room."""
+        q = collections.deque[tuple[str, list[str]]]()
+        seen = {self.current_room, }
+        q.append((self.current_room, []))
+        while q:
+            room, path = q.popleft()
+            if room == target_room:
+                return path
+            for direction in self.doors[room]:
+                if (next_room := self.connections[room].get(direction)) is None:
+                    if room == CHECKPOINT:
+                        continue
+                    return path + [direction]
+                if next_room not in seen:
+                    q.append((next_room, path + [direction]))
+                    seen.add(next_room)
+        raise ValueError("Did not find an unopened door.")
 
-    for i in range(len(inventory) + 1):
-        for items in itertools.combinations(inventory, r=i):
-            cmds = []
-            for item in items:
-                cmds.append(f"take {item}")
-            cmds.append(door)
-            for item in items:
-                cmds.append(f"drop {item}")
-            for cmd in cmds:
-                c.input_line(cmd)
-                c.run()
-                got = c.get_output().strip()
-                if cmd == door and "Alert!" not in got:
+    def explore_ship(self) -> None:
+        """Wander the ship until all doors are open."""
+        self.explore_room(None)
+        while self.unopened:
+            *steps, final_step = self.steps(None)
+            for step in steps:
+                self.run(step)
+                self.current_room = self.connections[self.current_room][step]
+            self.explore_room(final_step)
+        assert 'Pressure-Sensitive Floor' not in self.connections[CHECKPOINT].values()
+
+    def pass_checkpoint(self):
+        """Brute force our way through the checkpoint."""
+        for item in self.inventory:
+            self.run(f"drop {item}")
+
+        door = (set(self.doors[CHECKPOINT]) - set(self.connections[CHECKPOINT])).pop()
+        holding = set()
+        for r in range(4, 5):
+            for items in itertools.combinations(self.inventory, r=r):
+                for item in holding - set(items):
+                    self.run(f"drop {item}")
+                for item in set(items) - holding:
+                    self.run(f"take {item}")
+                holding = set(items)
+                got = self.run(door)
+                if "Alert!" not in got:
                     m = re.search(r"get in by typing (\d+) on the keypad", got)
-                    assert m
                     return m.group(1)
-    raise RuntimeError("Not solved.")
+        raise RuntimeError("Not solved.")
 
 
-TESTS = []
+def solve(data: str, part: int) -> int:
+    """Find the code to open the ship."""
+    del part
+    e = Explorer(data)
+    log("Start solver.")
+    e.explore_ship()
+    log("Ship mapped out.")
+    for step in e.steps(CHECKPOINT):
+        e.explore_room(step)
+    log("Moved to checkpoint.")
+    got = e.pass_checkpoint()
+    log(f"Passed the checkpoint: {got}")
+    return got
+
+
+TESTS = list[tuple[int, int, int]]()
 # vim:expandtab:sw=4:ts=4
