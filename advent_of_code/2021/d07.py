@@ -1,5 +1,6 @@
 #!/bin/python
 """Advent of Code: Day 07. Solve the optimal positioning for crab-submarine blasting."""
+from lib import parsers
 
 
 def solve(data: list[int], part: int) -> int:
@@ -14,5 +15,6 @@ def solve(data: list[int], part: int) -> int:
     return min(costs)
 
 
+PARSER = parsers.parse_ints_one_line
 SAMPLE = "16,1,2,0,4,2,7,1,2,14"
 TESTS = [(1, SAMPLE, 37), (2, SAMPLE, 168)]
