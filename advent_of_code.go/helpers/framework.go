@@ -138,6 +138,7 @@ func (id AocID) loadSolutions() ([]string, error) {
 	if err != nil {
 		panic("Failed to read file")
 	}
+	var solutions []string
 	for _, line := range strings.Split(strings.TrimRight(string(data), "\n"), "\n") {
 		if line == "" {
 			continue
@@ -145,7 +146,14 @@ func (id AocID) loadSolutions() ([]string, error) {
 		words := strings.Split(line, " ")
 		if words[0] == day {
 			return words[1:], nil
+		} else if words[0] == day + ".1" {
+			solutions = append(solutions, words[1])
+		} else if words[0] == day + ".2" {
+			solutions = append(solutions, words[1])
 		}
+	}
+	if len(solutions) > 0 {
+		return solutions, nil
 	}
 	return nil, fmt.Errorf("Failed to load solutions")
 }
