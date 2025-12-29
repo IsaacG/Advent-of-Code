@@ -52,5 +52,4 @@ def solve(data: str, part: int) -> int:
     return got
 
 
-PARSER = str
 TESTS = list[tuple[int, int, int]]()

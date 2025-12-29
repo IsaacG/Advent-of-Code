@@ -39,6 +39,4 @@ def solve(data: str, part: int) -> int:
             c.run()
 
 
-
-PARSER = str
 TESTS = list[tuple[int, int, int]]()

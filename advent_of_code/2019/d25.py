@@ -3,13 +3,9 @@
 
 import collections
 import itertools
-import logging
 import re
-
 import intcode
 
-PARSER = str
-log = logging.info
 OFFSETS = {"north": (0, 1), "south": (0, -1), "east": (1, 0), "west": (-1, 0)}
 REV_DIR = {"north": "south", "south": "north", "east": "west", "west": "east"}
 DO_NOT_TAKE = {"infinite loop", "giant electromagnet", "molten lava", "photons", "escape pod"}
@@ -125,14 +121,10 @@ def solve(data: str, part: int) -> int:
     """Find the code to open the ship."""
     del part
     e = Explorer(data)
-    log("Start solver.")
     e.explore_ship()
-    log("Ship mapped out.")
     for step in e.steps(CHECKPOINT):
         e.explore_room(step)
-    log("Moved to checkpoint.")
     got = e.pass_checkpoint()
-    log(f"Passed the checkpoint: {got}")
     return got
 
 

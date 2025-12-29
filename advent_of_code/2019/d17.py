@@ -75,44 +75,39 @@ def compute_program(steps: list[str], subroutines: dict[str, list[str]]) -> list
     return program
 
 
-class Day17(aoc.Challenge):
-    """Day 17: Set and Forget."""
 
-    TESTS = [
-        aoc.TestCase(inputs="", part=1, want=aoc.TEST_SKIP),
-        aoc.TestCase(inputs="", part=2, want=aoc.TEST_SKIP),
-    ]
-    INPUT_PARSER = aoc.parse_one_str
+TESTS = []
+INPUT_PARSER = aoc.parse_one_str
 
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
-        computer = intcode.Computer(puzzle_input)
-        # Run the computer, read the output map, parse it.
-        computer.run()
-        data = [chr(i) for i in computer.output]
-        display = aoc.CoordinatesParserC(chars="#<>^v").parse("".join(data))
-        scaffolding = display.coords["#"]
-        if part_one:
-            return sum(
-                int(pos.real * pos.imag)
-                for pos in scaffolding
-                if all(pos + direction in scaffolding for direction in aoc.FOUR_DIRECTIONS)
-            )
-        # Convert the path to a series of L|R turns and steps forward.
-        steps = trace_path(typing.cast(dict[str, set[complex]], display.coords))
-        # Find repeating patterns/subroutines in the data.
-        subroutines = compute_subroutines(steps)
-        # Translate the steps into a series of subroutines.
-        program = compute_program(steps, subroutines)
+def solve(data: str, part: int) -> int:
+    computer = intcode.Computer(data)
+    # Run the computer, read the output map, parse it.
+    computer.run()
+    map_data = [chr(i) for i in computer.output]
+    display = aoc.CoordinatesParserC(chars="#<>^v").parse("".join(map_data))
+    scaffolding = display.coords["#"]
+    if part == 1:
+        return sum(
+            int(pos.real * pos.imag)
+            for pos in scaffolding
+            if all(pos + direction in scaffolding for direction in aoc.FOUR_DIRECTIONS)
+        )
+    # Convert the path to a series of L|R turns and steps forward.
+    steps = trace_path(typing.cast(dict[str, set[complex]], display.coords))
+    # Find repeating patterns/subroutines in the data.
+    subroutines = compute_subroutines(steps)
+    # Translate the steps into a series of subroutines.
+    program = compute_program(steps, subroutines)
 
-        # Write the ASCII program and subroutines into the computer and run it.
-        computer.reset()
-        computer.memory[0] = 2
-        computer.input_line(",".join(program))
-        for name in "ABC":
-            computer.input_line(",".join(subroutines[name]))
-        computer.input_line("n")
-        computer.run()
-        # Read the result.
-        return computer.output.pop()
+    # Write the ASCII program and subroutines into the computer and run it.
+    computer.reset()
+    computer.memory[0] = 2
+    computer.input_line(",".join(program))
+    for name in "ABC":
+        computer.input_line(",".join(subroutines[name]))
+    computer.input_line("n")
+    computer.run()
+    # Read the result.
+    return computer.output.pop()
 
 # vim:expandtab:sw=4:ts=4

@@ -3,9 +3,35 @@
 
 import collections
 import itertools
-
-from lib import aoc
 import intcode
+
+
+def solve(data: str, part: int) -> int:
+    largest = 0
+    input_shift = 0 if part == 1 else 5
+    # Try all permutations of initial inputs.
+    for values in itertools.permutations(range(5)):
+        queues = [collections.deque() for _ in range(5)]
+        # Chain five programs in serial.
+        computers = [
+            intcode.Computer(data, input_q=queues[i], output_q=queues[(i + 1) % 5])
+            for i in range(5)
+        ]
+        for computer, value in zip(computers, values, strict=True):
+            computer.input.append(value + input_shift)
+        computers[0].input.append(0)  # Initial input: 0
+        # Run all the programs until the last one is stopped.
+        while not computers[-1].stopped:
+            for computer in computers:
+                computer.run()
+        # print([c.state for c in computers])
+        # print([len(q) for q in queues])
+        assert len(queues[0]) == 1
+        assert all(len(q) == 0 for q in queues[1:])
+        largest = max(largest, computers[-1].output.pop())
+
+    return largest
+
 
 SAMPLE = [
   "3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0",
@@ -17,38 +43,10 @@ SAMPLE = [
     "1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10"
   ),
 ]
-
-
-class Day07(aoc.Challenge):
-    """Day 7: Amplification Circuit."""
-
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=43210),      # phases = 4,3,2,1,0
-        aoc.TestCase(inputs=SAMPLE[1], part=1, want=54321),      # phases = 0,1,2,3,4
-        aoc.TestCase(inputs=SAMPLE[2], part=1, want=65210),      # phases = 1,0,4,3,2
-        aoc.TestCase(inputs=SAMPLE[3], part=2, want=139629729),  # phases = 1,0,4,3,2
-        aoc.TestCase(inputs=SAMPLE[4], part=2, want=18216),      # phases = 1,0,4,3,2
-    )
-    INPUT_PARSER = aoc.parse_one_str
-
-    def solver(self, puzzle_input: str, part_one: bool) -> int:
-        largest = 0
-        input_shift = 0 if part_one else 5
-        # Try all permutations of initial inputs.
-        for values in itertools.permutations(range(input_shift, 5 + input_shift)):
-            queues = [collections.deque([i]) for i in values]
-            queues[0].append(0)  # Initial input: 0
-            # Chain five programs in serial.
-            computers = [
-                intcode.Computer(puzzle_input, input_q=i, output_q=o)
-                for i, o in zip(queues, queues[1:] + queues[:1])
-            ]
-            # Run all the programs until the last one is stopped.
-            while not computers[-1].stopped:
-                for computer in computers:
-                    computer.run()
-            largest = max(largest, queues[0].popleft())
-
-        return largest
-
-# vim:expandtab:sw=4:ts=4
+TESTS = [
+    (1, SAMPLE[0], 43210),      # phases = 4,3,2,1,0
+    (1, SAMPLE[1], 54321),      # phases = 0,1,2,3,4
+    (1, SAMPLE[2], 65210),      # phases = 1,0,4,3,2
+    (2, SAMPLE[3], 139629729),  # phases = 1,0,4,3,2
+    (2, SAMPLE[4], 18216),      # phases = 1,0,4,3,2
+]

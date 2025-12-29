@@ -51,7 +51,7 @@ class Computer:
 
     def __init__(
         self,
-        program: str,
+        program: str | list[int],
         input_q: collections.deque | None = None,
         output_q: collections.deque | None = None,
         debug: bool = False,
@@ -64,7 +64,8 @@ class Computer:
 
         self.input = input_q
         self.output = output_q
-        self.program = dict(enumerate(int(i) for i in program.split(",")))
+        nums = program if isinstance(program, list) else program.split(",")
+        self.program = dict(enumerate(int(i) for i in nums))
         self.reset()
         self.debug = debug
 

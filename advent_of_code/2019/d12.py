@@ -8,26 +8,6 @@ Determine how long a complete cycle takes.
 import itertools
 import math
 
-from lib import aoc
-
-
-SAMPLE = ["""\
-<x=-8, y=-10, z=0>
-<x=5, y=5, z=10>
-<x=2, y=-7, z=3>
-<x=9, y=-8, z=-3>
-""", """
-<x=-1, y=0, z=2>
-<x=2, y=-10, z=-7>
-<x=4, y=-8, z=8>
-<x=3, y=5, z=-1>
-""", """
-<x=-8, y=-10, z=0>
-<x=5, y=5, z=10>
-<x=2, y=-7, z=3>
-<x=9, y=-8, z=-3>
-"""]
-
 
 class Moon:
     """Data wrapper around a "body"."""
@@ -64,54 +44,74 @@ class Moon:
         return sum(abs(x) for x in self.pos) * sum(abs(x) for x in self.vel)
 
 
-class Day12(aoc.Challenge):
-    """Day 12."""
+def solve(data: list[tuple[int]], part: int, testing: bool) -> int:
+    """Solve the parts."""
+    return (part1 if part == 1 else part2)(data, testing)
 
-    TESTS = (
-        aoc.TestCase(inputs=SAMPLE[0], part=1, want=1940),
-        aoc.TestCase(inputs=SAMPLE[1], part=2, want=2772),
-        aoc.TestCase(inputs=SAMPLE[2], part=2, want=4686774924),
-    )
 
-    def part1(self, puzzle_input: list[tuple[int]]) -> int:
-        """Run the similation for N cycles and return total energy at the end."""
-        moons = [Moon(position) for position in puzzle_input]
-        lim = 100 if self.testing else 1000
-        for _ in range(lim):
-            for a, b in itertools.permutations(moons, 2):
+def part1(data: list[tuple[int]], testing: bool) -> int:
+    """Run the similation for N cycles and return total energy at the end."""
+    moons = [Moon(position) for position in data]
+    lim = 100 if testing else 1000
+    for _ in range(lim):
+        for a, b in itertools.permutations(moons, 2):
+            a.apply_gravity(b)
+        for a in moons:
+            a.apply_velocity()
+    return sum(m.energy() for m in moons)
+
+
+def part2(data: list[tuple[int]], testing: bool) -> int:
+    """Calculate how many cycles before looping back to the begining."""
+
+    def fp(moons):
+        """Fingerprint function used to convert the moons to a suitable `seen` object."""
+        vals = []
+        for m in moons:
+            vals.extend(m.pos + m.vel)
+        return tuple(vals)
+
+    cycles = []
+    # For each axis, count how many cycles until a repeat.
+    for axis in range(len(data[0])):
+        seen = set()
+        steps = 0
+        moons = [Moon(position[axis:axis + 1]) for position in data]
+        fingerprint = fp(moons)
+        perms = list(itertools.permutations(moons, 2))
+
+        while fingerprint not in seen:
+            seen.add(fingerprint)
+            steps += 1
+            for a, b in perms:
                 a.apply_gravity(b)
             for a in moons:
                 a.apply_velocity()
-        return sum(m.energy() for m in moons)
-
-    def part2(self, puzzle_input: list[tuple[int]]) -> int:
-        """Calculate how many cycles before looping back to the begining."""
-
-        def fp(moons):
-            """Fingerprint function used to convert the moons to a suitable `seen` object."""
-            vals = []
-            for m in moons:
-                vals.extend(m.pos + m.vel)
-            return tuple(vals)
-
-        cycles = []
-        # For each axis, count how many cycles until a repeat.
-        for axis in range(len(puzzle_input[0])):
-            seen = set()
-            steps = 0
-            moons = [Moon(position[axis:axis + 1]) for position in puzzle_input]
             fingerprint = fp(moons)
-            perms = list(itertools.permutations(moons, 2))
 
-            while fingerprint not in seen:
-                seen.add(fingerprint)
-                steps += 1
-                for a, b in perms:
-                    a.apply_gravity(b)
-                for a in moons:
-                    a.apply_velocity()
-                fingerprint = fp(moons)
+        cycles.append(steps)
 
-            cycles.append(steps)
+    return math.lcm(*cycles)
 
-        return math.lcm(*cycles)
+
+SAMPLE = ["""\
+<x=-8, y=-10, z=0>
+<x=5, y=5, z=10>
+<x=2, y=-7, z=3>
+<x=9, y=-8, z=-3>
+""", """
+<x=-1, y=0, z=2>
+<x=2, y=-10, z=-7>
+<x=4, y=-8, z=8>
+<x=3, y=5, z=-1>
+""", """
+<x=-8, y=-10, z=0>
+<x=5, y=5, z=10>
+<x=2, y=-7, z=3>
+<x=9, y=-8, z=-3>
+"""]
+TESTS = [
+    (1, SAMPLE[0], 1940),
+    (2, SAMPLE[1], 2772),
+    (2, SAMPLE[2], 4686774924),
+]
