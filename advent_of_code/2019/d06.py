@@ -5,13 +5,11 @@ Count orbits and steps from one orbit to another.
 """
 import collections
 import itertools
-from lib import aoc
 
 
-def solve(data: str, part: int) -> int:
+def solve(data: list[list[str]], part: int) -> int:
     """Solve the parts."""
     return (part1 if part == 1 else part2)(data)
-
 
 
 def part1(data: list[list[str]]) -> int:
@@ -34,11 +32,12 @@ def part1(data: list[list[str]]) -> int:
 
     return answer
 
+
 def part2(data: list[list[str]]) -> int:
     """Count steps from YOU to SANta."""
     # Build a forward and reverse map between orbits.
     forward = collections.defaultdict(set)
-    reverse = dict()
+    reverse = {}
     for a, b in data:
         forward[a].add(b)
         reverse[b] = a
@@ -73,6 +72,7 @@ def part2(data: list[list[str]]) -> int:
 
 
 def input_parser(data: str) -> list[tuple[str, ...]]:
+    """Parse the input."""
     return [tuple(line.split(')')) for line in data.split('\n')]
 
 

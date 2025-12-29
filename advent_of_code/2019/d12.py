@@ -63,6 +63,7 @@ def part1(data: list[tuple[int]], testing: bool) -> int:
 
 def part2(data: list[tuple[int]], testing: bool) -> int:
     """Calculate how many cycles before looping back to the begining."""
+    del testing
 
     def fp(moons):
         """Fingerprint function used to convert the moons to a suitable `seen` object."""

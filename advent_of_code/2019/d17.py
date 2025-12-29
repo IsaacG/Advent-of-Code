@@ -75,11 +75,8 @@ def compute_program(steps: list[str], subroutines: dict[str, list[str]]) -> list
     return program
 
 
-
-TESTS = []
-INPUT_PARSER = aoc.parse_one_str
-
 def solve(data: str, part: int) -> int:
+    """Walk the scaffolding via a compact ASCII program."""
     computer = intcode.Computer(data)
     # Run the computer, read the output map, parse it.
     computer.run()
@@ -110,4 +107,6 @@ def solve(data: str, part: int) -> int:
     # Read the result.
     return computer.output.pop()
 
-# vim:expandtab:sw=4:ts=4
+
+TESTS = list[tuple[int, int, int]]()
+INPUT_PARSER = str

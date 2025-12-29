@@ -4,7 +4,7 @@
 import intcode
 
 
-def solve(data: str, part: int, testing: bool) -> int:
+def solve(data: str, part: int) -> int:
     """Solve the parts."""
     computer = intcode.Computer(data)
     computer.input.append(1 if part == 1 else 5)

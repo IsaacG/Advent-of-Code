@@ -18,6 +18,7 @@ def simple_fuel(mass):
 
 
 def solve(data: list[int], part: int) -> int:
+    """Compute the fuel needed."""
     func = simple_fuel if part == 1 else fuel
     return sum(func(i) for i in data)
 

@@ -6,7 +6,7 @@ from lib import aoc
 PARSER = aoc.CoordinatesParserC()
 
 
-def get_portals(data: aoc.Map, part: int) -> dict[str, list[tuple[complex, int]]]:
+def get_portals(data: aoc.MapC, part: int) -> dict[str, list[tuple[complex, int]]]:
     """Return a map of all the portals (their positions and in/out direction)."""
     real, imag = (lambda x: x.real), (lambda x: x.imag)
     # Outer edges
@@ -62,8 +62,9 @@ def get_portals(data: aoc.Map, part: int) -> dict[str, list[tuple[complex, int]]
             portals_pos[key].append((coord, depth))
     return portals_pos
 
+
 def build_map(
-        data: aoc.Map, part: int
+        data: aoc.MapC, part: int,
     ) -> tuple[complex, complex, dict[complex, tuple[complex, int]]]:
     """Return the start, end, portal map: coordinate to coordinate with depth change."""
     portal_adjacent = lambda pos: next(
@@ -86,7 +87,7 @@ def build_map(
     return start, end, portal
 
 
-def solve(data: aoc.Map, part: int) -> int:
+def solve(data: aoc.MapC, part: int) -> int:
     """Return the number of steps required to solve the maze."""
     start, end, portal = build_map(data, part)
 
@@ -216,4 +217,3 @@ TESTS = [
     (1, SAMPLE[1], 58),
     (2, SAMPLE[2], 396),
 ]
-# vim:expandtab:sw=4:ts=4

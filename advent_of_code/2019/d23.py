@@ -1,5 +1,6 @@
 #!/bin/python
 """Advent of Code, Category Six."""
+import typing
 import intcode
 
 
@@ -22,7 +23,7 @@ def solve(data: str, part: int) -> int:
                 if dst == 255:
                     if part == 1:
                         return packet[1]
-                    nat = packet
+                    nat = typing.cast(tuple[int, int], packet)
                 else:
                     # Route the output packets to the dest input
                     computers[dst].input.extend(packet)

@@ -7,11 +7,12 @@ import intcode
 
 
 def solve(data: str, part: int) -> int:
+    """Find the max output for any given input."""
     largest = 0
     input_shift = 0 if part == 1 else 5
     # Try all permutations of initial inputs.
     for values in itertools.permutations(range(5)):
-        queues = [collections.deque() for _ in range(5)]
+        queues = [collections.deque[int]() for _ in range(5)]
         # Chain five programs in serial.
         computers = [
             intcode.Computer(data, input_q=queues[i], output_q=queues[(i + 1) % 5])

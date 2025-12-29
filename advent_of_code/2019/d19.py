@@ -2,10 +2,7 @@
 """Advent of Code, Day 19: Tractor Beam."""
 
 import collections
-
 import intcode
-from lib import aoc
-
 
 
 def solve(data: str, part: int) -> int:
@@ -22,6 +19,7 @@ def is_on(computer, x: int, y: int) -> bool:
 
 
 def part1(data: str) -> int:
+    """Return the size of the beam."""
     computer = intcode.Computer(data)
     total = 0
     left, right, last_y = 0, 0, 0
@@ -53,6 +51,7 @@ def part1(data: str) -> int:
 
 
 def part2(data: str) -> int:
+    """Find where a 100x100 fits in the beam."""
     computer = intcode.Computer(data)
     left, right = 10, 10
     prior: collections.deque[tuple[int, int]] = collections.deque()

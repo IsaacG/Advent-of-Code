@@ -6,9 +6,8 @@ Handle chemical reactions, converting ORE to FUEL.
 
 import collections
 import math
-import data
+import data as input_data
 
-SAMPLE = data.D14
 TRILLION = int(1e12)
 
 
@@ -44,7 +43,7 @@ def solve(data: dict[str, Reaction], part: int) -> int:
         if ore == TRILLION:
             # Unlikely to occur but it doesn't hurt to be safe.
             return mid
-        elif ore > TRILLION:
+        if ore > TRILLION:
             high = mid
         else:
             low = mid
@@ -94,7 +93,7 @@ def part2_via_reactions(reactions: dict[str, Reaction]) -> int:
 
     # Try to produce fuel in large quantities at first.
     # Reduce reaction size as they fail.
-    volume = TRILLION // part1(reactions)
+    volume = TRILLION // solve(reactions, 1)
     while True:
         # Since failed reactions mutate the inventory, first see if they will work
         # on a copy. Then actually update the inventory.
@@ -158,11 +157,11 @@ def input_parser(data: str) -> dict[str, Reaction]:
 
 
 TESTS = [
-    (1, SAMPLE[0], 165),
-    (1, SAMPLE[1], 13312),
-    (1, SAMPLE[2], 180697),
-    (1, SAMPLE[3], 2210736),
-    (2, SAMPLE[1], 82892753),
-    (2, SAMPLE[2], 5586022),
-    (2, SAMPLE[3], 460664),
+    (1, input_data.D14[0], 165),
+    (1, input_data.D14[1], 13312),
+    (1, input_data.D14[2], 180697),
+    (1, input_data.D14[3], 2210736),
+    (2, input_data.D14[1], 82892753),
+    (2, input_data.D14[2], 5586022),
+    (2, input_data.D14[3], 460664),
 ]

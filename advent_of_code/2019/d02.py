@@ -5,6 +5,7 @@ import intcode
 
 
 def run_with_inputs(program: str, noun: int, verb: int, testing: int) -> int:
+    """Run a computer with specific inputs."""
     computer = intcode.Computer(program)
     if not testing:
         computer.memory[1] = noun
@@ -14,11 +15,13 @@ def run_with_inputs(program: str, noun: int, verb: int, testing: int) -> int:
 
 
 def solve(data: str, part: int, testing: bool) -> int:
+    """Test the IntCode."""
     if part == 1:
         return run_with_inputs(data, 12, 2, testing)
     for noun, verb in itertools.product(range(100), repeat=2):
         if run_with_inputs(data, noun, verb, testing) == 19690720:
             return 100 * noun + verb
+    raise RuntimeError("Not solved.")
 
 
 TESTS = [(1, "1,9,10,3,2,3,11,0,99,30,40,50", 3500)]

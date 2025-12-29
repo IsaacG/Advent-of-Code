@@ -6,6 +6,7 @@ from lib import aoc
 
 
 def solve(data: str, part: int) -> int | str:
+    """Draw a call sign on the ship."""
     computer = intcode.Computer(data)
     position = complex()
     direction = complex(0, -1)
@@ -29,4 +30,4 @@ def solve(data: str, part: int) -> int | str:
     return aoc.OCR.from_point_set(white).as_string()
 
 
-TESTS = []
+TESTS = list[tuple[int, int, int]]()

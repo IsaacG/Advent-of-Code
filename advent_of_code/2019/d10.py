@@ -7,30 +7,27 @@ astroid is #200 to get evaporated by laser beam.
 
 import collections
 import math
-from typing import Dict, Set
-
-import data
-from lib import aoc
+import data as input_data
 
 
-
-def angle(c: complex) -> complex:
+def compute_angle(c: complex) -> complex:
     """Return the angle given by a complex number."""
     return c / math.gcd(int(c.real), int(c.imag))
 
 
-def count_by_angle(locations: Set[complex]) -> Dict[complex, int]:
+def count_by_angle(locations: set[complex]) -> dict[complex, int]:
     """Count the unique angles at which astroids can be seen for all astroids."""
     return {
         location: len(set(
-            angle(location - x)
+            compute_angle(location - x)
             for x in locations
             if x != location
         ))
         for location in locations
     }
 
-def solve(data: Set[complex], part: int) -> int:
+
+def solve(data: set[complex], part: int) -> int:
     """Simulation blasting astroids with a laser and find which astroid is #200."""
     if part == 1:
         # Count the number of angles at which other astroids are seen from any given astroid.
@@ -64,7 +61,8 @@ def solve(data: Set[complex], part: int) -> int:
                 return int(100 * astroid.real + astroid.imag)
     raise ValueError
 
-def input_parser(data: str) -> Set[complex]:
+
+def input_parser(data: str) -> set[complex]:
     """Convert the input lines to a set of astroid coordinates."""
     locations = set()
     for row, line in enumerate(data.split('\n')):
@@ -74,7 +72,7 @@ def input_parser(data: str) -> Set[complex]:
     return locations
 
 
-SAMPLE = data.D10
+SAMPLE = input_data.D10
 TESTS = [
     (1, SAMPLE[0], 8),
     (1, SAMPLE[1], 33),

@@ -1,11 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 13: Care Package. Play paddle ball."""
-
-import collections
-import functools
-import itertools
-import math
-import re
 import intcode
 
 # Tiles

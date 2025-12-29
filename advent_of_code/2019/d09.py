@@ -4,7 +4,7 @@
 import intcode
 
 
-def solve(data: str, part: int, testing: bool) -> int:
+def solve(data: str, part: int, testing: bool) -> int | str:
     """Solve the parts."""
     computer = intcode.Computer(data)
     if testing:

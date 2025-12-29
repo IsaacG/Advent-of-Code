@@ -1,6 +1,5 @@
 #!/bin/python
 """Advent of Code, Day 16: Flawed Frequency Transmission."""
-from lib import aoc
 PARSER = str
 
 

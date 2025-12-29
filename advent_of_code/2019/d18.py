@@ -1,5 +1,8 @@
 #!/bin/python
-"""Advent of Code, Day 18: Many-Worlds Interpretation. Collect all keys in a maze, unlocking doors to explore farther."""
+"""Advent of Code, Day 18: Many-Worlds Interpretation.
+
+Collect all keys in a maze, unlocking doors to explore farther.
+"""
 import collections
 import string
 import typing
@@ -7,7 +10,7 @@ import typing
 from lib import aoc
 
 
-def build_edges(data: aoc.Map, nodes: dict[str, complex]) -> dict[str, dict[str, tuple[int, int]]]:
+def build_edges(data: aoc.MapC, nodes: dict[str, complex]) -> dict[str, dict[str, tuple[int, int]]]:
     """Return a map of all {start|key}-key pairs with the min distance and blocking doors."""
     edges: dict[str, dict[str, tuple[int, int]]] = {node: {} for node in nodes}
     # For each starting point, explore depth first to discover paths to keys.
@@ -79,6 +82,7 @@ def solve_for(starts: list[str], edges: dict[str, dict[str, tuple[int, int]]]) -
 
 
 def solve(data: str, part: int) -> int:
+    """Solve the maze."""
     if part == 2:
         board = aoc.CoordinatesParserC(ignore=None, origin_top_left=True).parse(data)
 

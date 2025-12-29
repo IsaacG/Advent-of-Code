@@ -2,10 +2,10 @@
 """2019 Day 3: Crossed Wires. Compute where wires cross and find the min cost of a crossing."""
 
 from lib import aoc
-
 DIRS = aoc.LETTER_DIRECTIONS
 
-def solve(data: list[str], part: int) -> int:
+
+def solve(data: list[list[str]], part: int) -> int:
     """Walk the two wires.
 
     For wire one, save locations visited and steps.
@@ -47,8 +47,11 @@ def solve(data: list[str], part: int) -> int:
     walk_wire(data[1], save_cost)
     return min(intersections)
 
-def input_parser(data: str):
-    return [line.split(',') for line in data.split('\n')]
+
+def input_parser(data: str) -> list[list[str]]:
+    """Parse the input."""
+    return [line.split(',') for line in data.splitlines()]
+
 
 SAMPLES = [
     'R8,U5,L5,D3\nU7,R6,D4,L4',
