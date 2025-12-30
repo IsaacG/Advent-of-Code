@@ -38,31 +38,96 @@ def solve(part: int, data: str, testing: bool) -> int:
         return p1(maps)
     if part == 2:
         return p2(maps, testing)
+    if part == 3:
+        return p3(data)
 
+
+def compute_loop(best):
+    choice = {}
+    for start, nexts in best.items():
+        gliders = {start: 0}
+        opts = {}
+        for n in range(1, len(best) * 8):
+            next_pos = {}
+            for src, drop in gliders.items():
+                for dst, moredrop in nexts.items():
+                    combined = drop + moredrop
+                    if dst not in next_pos or next_pos[dst] < combined:
+                        next_pos[dst] = combined
+            opts[n] = next_pos[start]
+        choice[start] = max(((steps, elevation) for steps, elevation in opts.items()), key=lambda x: x[1] / x[0])
+    return choice
+
+
+def compute_drops(width, height, delta):
+    starts = {(x, 0) for x in range(width) if (x, 0) in delta and (x, height - 1) in delta}
+    ends = {(x, height - 1) for x, _ in starts}
+    routes = {}
+    next_dir = {
+        (0, +1): [(0, +1), (+1, 0), (-1, 0)],
+        (0, -1): [(0, -1), (+1, 0), (-1, 0)],
+        (+1, 0): [(0, +1), (0, -1), (+1, 0)],
+        (-1, 0): [(0, +1), (0, -1), (-1, 0)],
+    }
+
+    def candidates(pos, direction):
+        x, y = pos
+        for dx, dy in next_dir[direction]:
+            n = x + dx, y + dy
+            if n in delta:
+                yield n, (dx, dy)
+
+    for start in starts:
+        q = collections.deque([(start, (0, 1), 0)])
+        best = {(start, (0, 1)): 0}
+        while q:
+            pos, direction, elevation = q.popleft()
+            for n_pos, d_dir in candidates(pos, direction):
+                n_elev = elevation + delta[n_pos]
+                if (n_pos, d_dir) in best and best[n_pos, d_dir] >= n_elev:
+                    continue
+                best[n_pos, d_dir] = n_elev
+                q.append((n_pos, d_dir, n_elev))
+        frame = {}
+        for end in ends:
+            pick = max(best[end, direction] for direction in [(0, +1), (+1, 0), (-1, 0)] if (end, direction) in best)
+            next_pos = end[0], 0
+            frame[end[0]] = pick + delta[end[0], 0]
+        routes[start[0]] = frame
+    return routes
+
+
+def p3(data: str):
+    delta = {}
+    start = (0, 0)
+    for y, line in enumerate(data.splitlines()):
+        height = y
+        for x, char in enumerate(line):
+            if char == "+":
+                delta[x, y] = +1
+            elif char == "-":
+                delta[x, y] = -2
+            elif char == ".":
+                delta[x, y] = -1
+            elif char == "S":
+                delta[x, y] = -1
+                start = (x, y)
+    width = len(data.splitlines()[0])
+    height = len(data.splitlines())
+
+    cycle_drops = compute_drops(width, height, delta)
+    loop = compute_loop(cycle_drops)
+    print(cycle_drops)
+    print(loop)
 
 def p2(maps, testing):
     deltas = {p: -1 for p in maps["."]}
     deltas |= {p: -2 for p in maps["-"]} | {p: 1 for p in maps["+"]}
 
-    def distance(a, b):
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-    board = set().union(*[m for m in maps.values()])
-    checkpoint_pos = {char: maps[char].copy().pop() for char in "ABCS"}
-    start = checkpoint_pos["S"]
-    deltas[start] = -1
-    checkpoint_numbers = {pos: "ABCS".index(char) for char, pos in checkpoint_pos.items()}
-    seen_pos = {v: k for k, v in checkpoint_numbers.items()} | {4: start}
-    next_checkpoint = ["A", "B", "C", "S"]
-    additional_steps = {}
-    additional_steps[4] = 0
-    additional_steps[3] = 0
-    additional_steps[2] = distance(checkpoint_pos["C"], checkpoint_pos["S"]) + additional_steps[3]
-    additional_steps[1] = distance(checkpoint_pos["B"], checkpoint_pos["C"]) + additional_steps[2]
-    additional_steps[0] = distance(checkpoint_pos["A"], checkpoint_pos["B"]) + additional_steps[1]
-
-    def h(pos, seen):
-        return distance(pos, seen_pos[seen]) + additional_steps[seen]
+    checkpoints = {maps[char].copy().pop(): char for char in "ABCS"}
+    start = maps["S"].copy().pop()
+    goals = {"A": "B", "B": "C", "C": "S"}
+    board = set(deltas)
 
     def candidates(pos, direction):
         x, y = pos
@@ -71,46 +136,28 @@ def p2(maps, testing):
             if n in board:
                 yield n, (dx, dy)
 
-    max_rank = 210 if testing else 750
-
-    for bound in range(100, 101):
-        lower, upper = 10000 - bound, 10000 + bound
-        # A*: score, elapsed time, elevation, 
-        q = queue.PriorityQueue()
-        q.put((0, 0, 10000, start, (0, 1), 0))
-        # Map position/direction/checkpoints to (time, elevation) to help prune
-        seen = collections.defaultdict(set)
-        while not q.empty():
-            rank, elapsed, elevation, pos, direction, checkpoints_checked = q.get()
-
-            if q.qsize() > 9_000_000:
-                log(f"too much q w/ {bound=}")
-                break
-
-            if checkpoints_checked == 4:
-                if elevation >= 10000:
-                    return elapsed
-                continue
-            elapsed += 1
-
-            if rank > max_rank:
-                continue
-
-            for next_pos, next_dir in candidates(pos, direction):
-                next_elevation = elevation + deltas[next_pos]
-                next_checkpoints_collected = checkpoints_checked
-                if next_pos in checkpoint_numbers and checkpoint_numbers[next_pos] == checkpoints_checked:
-                    next_checkpoints_collected += 1
-
-                fp = (next_pos, next_dir, next_checkpoints_collected)
-                if fp in seen:
-                    if any(elapsed > i[0] and next_elevation < i[1] for i in seen[fp]):
+    bound = 125
+    lower, upper = 10000 - bound, 10000 + bound
+    possibilities = {(start, (0, 1), "A"): 10000}
+    for step in range(1, 800):
+        next_possibilities = {}
+        # log(f"{step=}, {len(possibilities)=}")
+        for (position, direction, goal), elevation in possibilities.items():
+            for next_pos, next_dir in candidates(position, direction):
+                next_elev = elevation + deltas[next_pos]
+                if not lower <= next_elev <= upper:
+                    continue
+                next_goal = goal
+                if checkpoints.get(next_pos) == next_goal:
+                    if next_goal == "S":
+                        if next_elev >= 10000:
+                            return step
                         continue
-
-                if not lower < next_elevation < upper: continue
-
-                seen[fp].add((elapsed, next_elevation))
-                q.put((elapsed + h(next_pos, next_checkpoints_collected), elapsed, next_elevation, next_pos, next_dir, next_checkpoints_collected))
+                    else:
+                        next_goal = goals[next_goal]
+                fp = (next_pos, next_dir, next_goal)
+                next_possibilities[fp] = max(next_possibilities.get(fp, 0), next_elev)
+        possibilities = next_possibilities
 
 
 def p1(maps):
@@ -218,14 +265,23 @@ TEST_DATA = [
 #--------------B--------------#
 #-----------------------------#
 #-----------------------------#
-###############################"""
+###############################""",
+    """\
+#......S......#
+#-...+...-...+#
+#.............#
+#..+...-...+..#
+#.............#
+#-...-...+...-#
+#.............#
+#..#...+...+..#""",
 ]
 TESTS = [
     # (1, TEST_DATA[0], 1045),
     (2, TEST_DATA[1],  24),
     (2, TEST_DATA[2],  78),
     (2, TEST_DATA[3], 206),
-    # (3, TEST_DATA[2], None),
+    (3, TEST_DATA[4], 768790),
 ]
 
 if __name__ == "__main__":
@@ -236,12 +292,12 @@ if __name__ == "__main__":
 
     for i, (p, _data, expected) in enumerate(test_data):
         if p == _part:
-            print("Test", i)
+            log("Test", i)
             assert solve(_part, _data, testing=True) == expected
-    print("Tests pass.")
+    log("Tests pass.")
     with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
         _input = parser(f.read())  # type: str
         start = time.perf_counter_ns()
-        got = solver(_part, _input, testing=False)
+        got = solve(_part, _input, testing=False)
         end = time.perf_counter_ns()
-        print(f"{day:02}.{_part} {got:15} {helpers.format_ns(end - start):8}")
+        print(f"{day:02}.{_part} {got:15} {(end - start)//1000000:8}")
