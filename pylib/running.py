@@ -182,7 +182,7 @@ class Runner:
                     success = success and got
         return success
 
-    def run(self, check: bool, solve: bool, test: bool, submit: bool, live: bool) -> bool:
+    def run(self, check: bool = False, solve: bool = False, test: bool = False, submit: bool = False, live: bool = False) -> bool:
         formatter = helpers.setup_logging(self.day, self.verbose)
         helpers.setup_resources()
         got = self.run_day(check, solve, test, submit, formatter)
