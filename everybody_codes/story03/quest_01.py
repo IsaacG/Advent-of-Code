@@ -5,47 +5,50 @@ import logging
 from lib import helpers
 from lib import parsers
 
-log = logging.info
 TR = str.maketrans({c: "0" for c in "srgb"} | {c: "1" for c in "SRGB"})
 
 
-def to_val(color):
-    return int(color.translate(TR), 2)
-    
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    out = 0
-    numbers = []
-    for line in data.splitlines():
+    scales = []
+    for line in data:
         if ":" not in line:
             print(line)
-        lid, rest = line.split(":")
-        colors = [to_val(i) for i in rest.split()]
-        numbers.append([int(lid)] + colors)
+        scale_id, raw_colors = line.split(":")
+        colors = [int(color.translate(TR), 2) for color in raw_colors.split()]
+        scales.append([int(scale_id)] + colors)
+
     if part == 1:
         return sum(
-            lid
-            for lid, *colors in numbers
-            if colors[1] > colors[0] and colors[1] > colors[2]
+            scale_id
+            for scale_id, red, green, blue in scales
+            if green > red and green > blue
         )
+
     if part == 2:
-        want_shine = max(n[4] for n in numbers)
-        color = min(sum(n[1:4]) for n in numbers if n[4] == want_shine)
-        return sum(n[0] for n in numbers if sum(n[1:4]) == color and n[4] == want_shine)
+        want_shine = max(shine for *_, shine in scales)
+        color = min(
+            sum(colors)
+            for _, *colors, shine in scales
+            if shine == want_shine
+        )
+        return sum(
+            scale_id
+            for scale_id, *colors, shine in scales
+            if sum(colors) == color
+            and shine == want_shine
+        )
 
     groups = collections.defaultdict(set)
-    for lid, *colors, shine in numbers:
+    for scale_id, *colors, shine in scales:
         highest = max(colors)
-        if 30 < shine < 33 or colors.count(highest) != 1:
-            continue
-        groups[shine < 33, colors.index(highest)].add(lid)
+        if colors.count(highest) == 1 and (shine <= 30 or shine >= 33):
+            groups[shine < 33, colors.index(highest)].add(scale_id)
     largest_group = max(groups, key=lambda x: len(groups[x]))
     return sum(groups[largest_group])
 
-        
 
-
-PARSER = parsers.parse_one_str
+PARSER = parsers.parse_one_str_per_line
 TEST_DATA = [
     """\
 2456:rrrrrr ggGgGG bbbbBB
