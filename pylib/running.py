@@ -53,6 +53,10 @@ class Runner:
         """Download the input."""
         raise NotImplemented
 
+    def write_solutions(self, year: int, day: int) -> str:
+        """Write the solutions to file."""
+        raise NotImplemented
+
     def submit_solution(self, year: int, day: int, solutions: list[int | str]) -> str:
         """Submit the solution."""
         raise NotImplemented
@@ -61,19 +65,7 @@ class Runner:
         solutions_path = self.solutions_path()
         want_raw = [line for line in solutions_path.read_text().splitlines() if line.startswith(f"{day:02}.")]
         if not want_raw:
-            session = requests.Session()
-            cookie_file = pathlib.Path(os.getenv("XDG_DATA_HOME")) / "everyone.codes.cookie"
-            cookie = cookie_file.read_text().strip()
-            session.cookies.set("everybody-codes", cookie)
-            data = session.get(f"https://everybody.codes/api/event/2024/quest/{day}").json()
-            want = [f"answer{i}" for i in range(1, 4)]
-            if not set(want).issubset(set(data)):
-                return None
-            new_line = "\t".join([f"{day:02}"] + [data[i] for i in want])
-            solutions = [line for line in solutions_path.read_text().splitlines() if line.split("\t")[0] != f"{day:02}"]
-            solutions.append(new_line)
-            solutions_path.write_text("\n".join(solutions) + "\n")
-            want_raw = new_line
+            want_raw = self.write_solutions(self.year, day)
         if not want_raw:
             return None
         return [line.split(maxsplit=1)[1] for line in want_raw]

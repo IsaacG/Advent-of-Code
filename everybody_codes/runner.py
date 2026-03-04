@@ -1,11 +1,14 @@
-#!/bin/python
+#!/usr/bin/python
 
 import os
 import pathlib
 
 import click
-import ecd
+import requests
 from lib import running
+
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 
 
 class Runner(running.Runner):
@@ -13,6 +16,24 @@ class Runner(running.Runner):
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
         return pathlib.Path(f"{self.year}/solutions.txt")
+
+    def write_solutions(self, year: int, day: int) -> str:
+        """Write the solutions to file."""
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/ec").read_text().strip()
+        session = requests.Session()
+        session.cookies.set("everybody-codes", cookie)
+
+        year = year.removeprefix("event").removeprefix("story").removeprefix("0")
+        data = session.get(f"https://api.everybody.codes/event/{year}/quest/{day}").json()
+        want = [f"answer{i}" for i in range(1, 4)]
+        if not set(want).issubset(set(data)):
+            return None
+        solutions = [line for line in self.solutions_path().read_text().splitlines() if not line.split(maxsplit=1)[0].startswith(f"{day:02}")]
+        answers = []
+        for part in range(1, 4):
+            answers.append(f"{day:02}.{part} {data[f"answer{part}"]}")
+        self.solutions_path().write_text("\n".join(solutions + answers) + "\n")
+        return answers
 
     def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
@@ -28,11 +49,22 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str | None:
         """Download the input."""
-        event = int(year.replace("event", ""))
-        data = ecd.get_inputs(quest=day, event=event)
-        if str(part) not in data:
-            return None
-        return data[str(part)]
+        # Hard coded per account, see https://api.everybody.codes/user/me
+        seed = 49
+        year = year.removeprefix("event").removeprefix("story").removeprefix("0")
+
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/ec").read_text().strip()
+
+        session = requests.Session()
+        session.cookies.set("everybody-codes", cookie)
+
+        data = session.get(f"https://everybody.codes/assets/{year}/{day}/input/{seed}.json").json()
+        metadata = session.get(f"https://api.everybody.codes/event/{year}/quest/{day}").json()
+
+        aes_key = metadata[f"key{part}"].encode()
+        cipher = AES.new(aes_key, AES.MODE_CBC, iv=aes_key[:AES.block_size])
+        plaintext = cipher.decrypt(bytes.fromhex(data[str(part)]))
+        return unpad(plaintext, AES.block_size).decode()
 
 
 @click.command()
