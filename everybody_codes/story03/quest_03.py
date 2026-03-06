@@ -8,120 +8,98 @@ from lib import parsers
 
 log = logging.info
 
+
 @dataclasses.dataclass
-class Node:
-    id: str
-    plug: str
-    leftSocket: str
-    rightSocket: str
-    data: str
-    left: Node | None = None
-    right: Node | None = None
-    leftStrong: bool | None = None
-    rightStrong: bool | None = None
+class Socket:
+    description: str
+    node: Node | None = None
+    strong: bool = False
 
     def __post_init__(self) -> None:
-        self.plugParts = set(self.plug.split())
-        self.leftParts = set(self.leftSocket.split())
-        self.rightParts = set(self.rightSocket.split())
-
-    def add(self, n: Node | None, part: int) -> Node | None:
-        if part == 1:
-            if self.left is None:
-                if n.plug == self.leftSocket:
-                    self.left = n
-                    return None
-            elif self.left.add(n, part) is None:
-                return None
-            if self.right is None:
-                if n.plug == self.rightSocket:
-                    self.right = n
-                    return None
-            elif self.right.add(n, part) is None:
-                return None
-            return n
-        if part == 2:
-            if self.left is None:
-                if n.plugParts & self.leftParts:
-                    self.left = n
-                    self.leftStrong = n.plug == self.leftSocket
-                    return None
-            elif self.left.add(n, part) is None:
-                return None
-            if self.right is None:
-                if n.plugParts & self.rightParts:
-                    self.right = n
-                    self.rightStrong = n.plug == self.rightSocket
-                    return None
-            elif self.right.add(n, part) is None:
-                return None
-            return n
-        if part == 3:
-            log(f"Trying to connect {n.id} to {self.id}")
-            if self.left is None and n.plugParts & self.leftParts:
-                self.left = n
-                self.leftStrong = n.plug == self.leftSocket
-                return None
-            if self.leftStrong is False and n.plug == self.leftSocket:
-                old = self.left
-                self.left = n
-                self.leftStrong = True
-                n = old
-            elif self.left is not None:
-                n = self.left.add(n, part)
-                if n is None:
-                    return None
-
-            if self.right is None and n.plugParts & self.rightParts:
-                self.right = n
-                self.rightStrong = n.plug == self.rightSocket
-                return None
-            if self.rightStrong is False and n.plug == self.rightSocket:
-                old = self.right
-                self.right = n
-                self.rightStrong = True
-                return old
-            elif self.right is not None:
-                n = self.right.add(n, part)
-
-            return n
+        self.parts = set(self.description.split())
 
     def ids(self) -> list[int]:
-        got = []
-        if self.left is not None:
-            got.extend(self.left.ids())
-        got.append(int(self.id))
-        if self.right is not None:
-            got.extend(self.right.ids())
-        return got
+        if self.node is None:
+            return []
+        return self.node.ids()
 
-    def datas(self) -> list[str]:
-        got = []
-        if self.left is not None:
-            got.extend(self.left.datas())
-        got.append(self.data)
-        if self.right is not None:
-            got.extend(self.right.datas())
-        return got
+    def plug(self, node: Node) -> Node | None:
+        old = self.node
+        self.node = node
+        self.strong = self.strong_match(node)
+        return old
+
+    def strong_match(self, node: Node) -> bool:
+        return self.description == node.plug
+
+    def weak_match(self, node: Node) -> bool:
+        return bool(self.parts & node.plug_parts)
 
 
-def solve(part: int, data: str) -> int:
+class Node:
+
+    def __init__(self, id_: str, plug: str, *sockets: str):
+        self.id = id_
+        self.plug = plug
+        self.plug_parts = set(self.plug.split())
+        self.sockets = [Socket(s) for s in sockets]
+
+    def add_socket(self, n: Node | None, part: int, side: int) -> Node | None:
+        """Try to connect a node to a given (left/right) socket."""
+        if n is None:
+            return n
+
+        socket = self.sockets[side]
+        if part < 3:
+            if socket.node:
+                # If the socket is occupied, traverse it.
+                n = socket.node.add(n, part)
+            elif socket.strong_match(n) or part == 2 and socket.weak_match(n):
+                # If the socket is empty and there is a (strong/weak) match, connect.
+                n = socket.plug(n)
+            return n
+
+        log(f"Trying to connect {n.id} to {self.id}")
+        if not socket.node and socket.weak_match(n):
+            # If the socket is empty and there is a (weak) match, plug in.
+            n = socket.plug(n)
+        elif not socket.strong and socket.strong_match(n):
+            # If the socket is weakly matched and this node is a strong match, plug in.
+            n = socket.plug(n)
+        elif socket.node:
+            # If we cannot plug in here, traverse down.
+            n = socket.node.add(n, part)
+        return n
+
+    def add(self, n: Node | None, part: int) -> Node | None:
+        # Try attaching left then right.
+        for i in range(2):
+            n = self.add_socket(n, part, i)
+        return n
+
+    def ids(self) -> list[int]:
+        return self.sockets[0].ids() + [int(self.id)] + self.sockets[1].ids()
+
+
+def solve(part: int, data: list[str]) -> int:
     """Solve the parts."""
-    parts = [
-        Node(**dict(i.split("=", maxsplit=1) for i in line.split(", ")))
-        for line in data
-    ]
+    # Parse input into Nodes.
+    details = [dict(i.split("=", maxsplit=1) for i in line.split(", ")) for line in data]
+    parts = [Node(d["id"], d["plug"], d["leftSocket"], d["rightSocket"]) for d in details]
+    # Take the first node as the root.
     root = parts[0]
+    # Attach all other nodes.
     for i, node in enumerate(parts[1:], start=2):
         start_id = node.id
+        # Loop around as needed.
         while node is not None:
             start = node.id
             node = root.add(node, part)
             if node is not None and start == node.id:
-                raise RuntimeError(f"No solution!! Tried to attach {start_id} and ended pup with {start} unable to connect.")
-    # print("\n".join(root.datas()))
+                raise RuntimeError(
+                    f"No solution!! Tried to attach {start_id} and ended up with {start} unable to connect."
+                )
     return sum(i * j for i, j in enumerate(root.ids(), start=1))
-
 
 
 PARSER = parsers.parse_one_str_per_line
