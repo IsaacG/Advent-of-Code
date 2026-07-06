@@ -247,13 +247,13 @@ class ParseMultiple(BaseMultiParser):
         return [parser.parse(puzzle_input) for parser in self.parsers]
 
 
-class ParseCustom[T](BaseParser):
+class ParseCustom(BaseParser):
     """Parse an input via a custom function."""
 
-    def __init__(self, func: collections.abc.Callable[[str], T]):
+    def __init__(self, func: collections.abc.Callable[[str], U]):
         self.func = func
 
-    def parse(self, puzzle_input: str) -> T:
+    def parse(self, puzzle_input: str) -> U:
         return self.func(puzzle_input)
 
 
