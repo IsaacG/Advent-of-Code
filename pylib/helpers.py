@@ -413,8 +413,9 @@ def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
     return finalized
 
 
-def run_solution(data) -> None:
-    day = int(data["__file__"].split("_", maxsplit=-1)[-1].split(".")[0])
+def run_solution(data, parts = None) -> None:
+    parts = parts or [1, 2, 3]
+    day = int(data["__file__"].split("/", maxsplit=-1)[-1].split(".")[0].strip("d"))
     solver = data["solve"]
     test_data = data["TESTS"]
     parser = data["PARSER"].parse if "PARSER" in data else str
@@ -428,8 +429,9 @@ def run_solution(data) -> None:
     print("Tests pass.")
     if "testing" in params:
         kwargs = {"testing": False}
-    for _part in range(1, 4):
-        with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
+    for _part in parts:
+        # with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
+        with open(f"../inputs/2025.{day:02}.txt", encoding="utf-8") as f:
             _input = parser(f.read())  # type: str
             start = time.perf_counter_ns()
             got = solver(_part, _input, **kwargs)
