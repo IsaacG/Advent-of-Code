@@ -23,6 +23,11 @@ class Socket:
             return []
         return self.node.ids()
 
+    def data(self) -> list[int]:
+        if self.node is None:
+            return []
+        return self.node.data()
+
     def plug(self, node: Node) -> Node | None:
         old = self.node
         self.node = node
@@ -38,8 +43,9 @@ class Socket:
 
 class Node:
 
-    def __init__(self, id_: str, plug: str, *sockets: str):
+    def __init__(self, id_: str, plug: str, datum: str, *sockets: str):
         self.id = id_
+        self.datum = datum
         self.plug = plug
         self.plug_parts = set(self.plug.split())
         self.sockets = [Socket(s) for s in sockets]
@@ -77,6 +83,9 @@ class Node:
             n = self.add_socket(n, part, i)
         return n
 
+    def data(self) -> list[str]:
+        return self.sockets[0].data() + [self.datum] + self.sockets[1].data()
+
     def ids(self) -> list[int]:
         return self.sockets[0].ids() + [int(self.id)] + self.sockets[1].ids()
 
@@ -85,7 +94,7 @@ def solve(part: int, data: list[str]) -> int:
     """Solve the parts."""
     # Parse input into Nodes.
     details = [dict(i.split("=", maxsplit=1) for i in line.split(", ")) for line in data]
-    parts = [Node(d["id"], d["plug"], d["leftSocket"], d["rightSocket"]) for d in details]
+    parts = [Node(d["id"], d["plug"], d["data"], d["leftSocket"], d["rightSocket"]) for d in details]
     # Take the first node as the root.
     root = parts[0]
     # Attach all other nodes.
@@ -99,6 +108,7 @@ def solve(part: int, data: list[str]) -> int:
                 raise RuntimeError(
                     f"No solution!! Tried to attach {start_id} and ended up with {start} unable to connect."
                 )
+    print("\n".join(root.data()))
     return sum(i * j for i, j in enumerate(root.ids(), start=1))
 
 
