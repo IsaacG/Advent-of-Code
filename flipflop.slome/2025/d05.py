@@ -34,7 +34,6 @@ def solve(part: int, data: str) -> int | str:
     return "".join(out)
 
 
-PARSER = parsers.parse_one_str
 TESTS = [
     (1, "ABccksiPiBAksP", 38),
     (2, "ABccksiPiBAksP", "Bc"),

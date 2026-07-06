@@ -4,16 +4,16 @@ from lib import parsers
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    lines = data.splitlines()
+    if part == 1:
+        lines = data
     if part == 2:
-        lines = [line for line in lines if len(line) % 4 == 0]
+        lines = [line for line in data if len(line) % 4 == 0]
     if part == 3:
-        lines = [line for line in lines if "ne" not in line]
+        lines = [line for line in data if "ne" not in line]
 
     return sum(len(line) // 2 for line in lines)
 
 
-PARSER = parsers.parse_one_str
 TEST_DATA = """\
 banana
 banenanana

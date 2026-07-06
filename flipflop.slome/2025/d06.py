@@ -23,7 +23,6 @@ def solve(part: int, data: list[list[int]]) -> int:
     return sum(counts_at(interval * i) for i in range(1, times + 1))
 
 
-PARSER = parsers.parse_ints
 # TEST_DATA = []
 # TESTS = [
     # (1, TEST_DATA[0], None),

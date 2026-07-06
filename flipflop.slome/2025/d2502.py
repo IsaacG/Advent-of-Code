@@ -11,7 +11,7 @@ def solve(part: int, data: str) -> int:
     pass
 
 
-# PARSER = parsers.parse_one_str
+PARSER = parsers.parse_one_str
 TEST_DATA = [
 ]
 TESTS = [

@@ -31,7 +31,6 @@ def solve(part: int, data: list[list[int]]) -> int:
     return total
 
 
-PARSER = parsers.parse_ints
 TEST_DATA = """\
 2 2
 3 3

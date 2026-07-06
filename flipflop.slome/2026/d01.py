@@ -19,7 +19,6 @@ def solve(part: int, data: str) -> int:
     )
 
 
-PARSER = parsers.parse_one_int_per_line
 TEST_DATA = "41 87 93 104 46 102 65 105 81 36 66 46 60 65 64 64 61 73 55 69".replace(" ", "\n")
 TESTS = [
     (1, TEST_DATA, 76),

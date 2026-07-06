@@ -23,7 +23,6 @@ def solve(part: int, data: str) -> int:
     return highest
 
 
-PARSER = parsers.parse_one_str
 TESTS = [
     (1, "^^^v^^^^vvvvvvv", 6),
     (2, "^^^v^^^^vvvvvvv", 15),
