@@ -1,0 +1,57 @@
+#!/bin/python
+
+import os
+import pathlib
+import string
+from lxml import etree
+
+import click
+import requests
+from lib import running
+
+
+class Runner(running.Runner):
+
+    def solutions_path(self) -> pathlib.Path:
+        """Return the solution file."""
+        return pathlib.Path(f"solutions.txt")
+
+    def input_path(self, part: int) -> pathlib.Path:
+        """Return the input file."""
+        return pathlib.Path(f"inputs/{self.day:02}.txt")
+
+    def module_path(self) -> str:
+        return "."
+
+    def module_name(self) -> str:
+        """Return the module name."""
+        return f"problem{self.day:02}"
+
+    def download_input(self, year: int, day: int, part: int) -> str:
+        """Download the input."""
+        # cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/codyssi").read_text()
+        # cookie = cookie.strip().removeprefix("session=")
+        session = requests.Session()
+        session.cookies.set("ph_phc_Fd4F3R7LHmYcF8bPUT1kOltRN5EQNwvSQBjhvsbO3iq_posthog", "%7B%22distinct_id%22%3A%2271464189-25e0-41ca-bf44-64aa58fa1868%22%2C%22%24sesid%22%3A%5B1757114146490%2C%2201991c2a-1c32-795b-9fcf-7e0514735cef%22%2C1757114145842%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fwww.eldarverse.com%2F%22%7D%7D")
+        letter = string.ascii_uppercase[day - 1]
+        response = session.get(f"https://www.eldarverse.com/api/problems/sep-25-long-{letter}/input")
+        return response.text
+
+
+@click.command()
+@click.option("--day", "-d", type=int, required=True)
+@click.option("--check", "-c", is_flag=True)
+@click.option("--solve", "-s", is_flag=True)
+@click.option("--test", "-t", is_flag=True)
+@click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
+@click.option("--live", "-l", is_flag=True)
+@click.option("--verbose", "-v", count=True)
+@click.option("--data", "--file", "data", type=str, required=False)
+def main(day: int, check: bool, solve: bool, test: bool, live: bool, parts: tuple[int], verbose: int, data: str | None) -> None:
+    Runner(year=2025, day=day, data=data, parts=parts, verbose=verbose).run(check, solve, test, live)
+
+
+if __name__ == "__main__":
+    main()
+
+# vim:ts=4:sw=4:expandtab
