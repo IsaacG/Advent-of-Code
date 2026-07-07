@@ -1,0 +1,90 @@
+package y2017
+
+import (
+	"slices"
+	"strings"
+)
+
+type virusState int
+
+// Day22 solves 2017/22.
+type Day22 struct {
+	nodes     map[Location]virusState
+	center    int
+	steps     []int
+	nextState []map[virusState]virusState
+}
+
+const (
+	clean    virusState = 0
+	weakened virusState = 1
+	infected virusState = 2
+	flagged  virusState = 3
+)
+
+type simulation struct {
+	*Robot
+	nodes     [][]virusState
+	infected  int
+	nextState map[virusState]virusState
+}
+
+func (s *simulation) run(steps int, states map[virusState]virusState) {
+	rotations := map[virusState]Rotation{clean: RotateLeft, weakened: RotateStraight, infected: RotateRight, flagged: RotateReverse}
+	for range steps {
+		state := s.nodes[s.Location.y][s.Location.x]
+		state = clean
+		s.Direction.Rotate(rotations[state])
+		s.nodes[s.Location.y][s.Location.x] = states[state]
+		if s.nodes[s.Location.y][s.Location.x] == infected {
+			s.infected++
+		}
+		s.Robot.Advance()
+	}
+}
+
+// New22 returns a new solver for 2017/22.
+func New22() *Day22 {
+	return &Day22{
+		steps: []int{10000, 10000000},
+		nextState: []map[virusState]virusState{
+			{clean: infected, infected: clean},
+			{clean: weakened, weakened: infected, infected: flagged, flagged: clean},
+		},
+	}
+}
+
+// SetInput handles input for this solver.
+func (p *Day22) SetInput(data string) {
+	lines := strings.Split(data, "\n")
+	slices.Reverse(lines)
+	p.nodes = make(map[Location]virusState)
+	for y, line := range lines {
+		for x, char := range line {
+			if char == '#' {
+				p.nodes[Location{x+500, y+500}] = infected
+			}
+		}
+	}
+	p.center = (len(lines) - 1) / 2
+}
+
+// Solve returns the solution for one part.
+func (p *Day22) Solve(part int) string {
+	nodes := make([][]virusState , 1000)
+	for y := 0; y < 1000; y++ {
+		nodes[y] = make([]virusState, 1000)
+		for x := 0; x < 1000; x++ {
+			if _, ok := p.nodes[Location{x, y}]; ok {
+				nodes[y][x] = infected
+			}
+		}
+	}
+	s := simulation{
+		Robot:    &Robot{Location{p.center+500, p.center+500}, Direction{0, 1}},
+		nodes:    nodes,
+		infected: 0,
+	}
+	s.run(p.steps[part], p.nextState[part])
+	return Itoa(s.infected)
+}
