@@ -1,53 +1,35 @@
-"""FlipFlop Codes: N."""
+"""FlipFlop Codes, Puzzle 2: Lasering Walls."""
 
-import logging
 from lib import helpers
 from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    if part == 1:
-        p = 0
+    shift = {">": +1, "<": -1}
 
-        t = [0] * 100
-        for i in data:
-            p += 1 if i == ">" else -1
-            p %= 100
-            t[p] += 1
-        m = max(t)
-        return m * (t.index(m) + 1)
+    robot = 0
+    temps = [0] * 100
+    for direction, revDirection in zip(data, reversed(data)):
+        robot += shift[direction]
+        if part > 1:
+            # Parts 2, 3: the wall(s) move. Or, the robot moves in reverse. It's all relative.
+            robot -= shift[revDirection]
+        robot %= 100
+        temps[robot] += 1
+    # Part 2: check a specific wall segment.
     if part == 2:
-        r = 0
-        w = 0
-        heat = 0
-        for a, b in zip(data, reversed(data)):
-            r += 1 if a == ">" else -1
-            w += 1 if b == ">" else -1
-            if r == w:
-                heat += 1
-        return heat
-    if part == 3:
-        r = 0
-        t = [0] * 100
-        for a, b in zip(data, reversed(data)):
-            r += 1 if a == ">" else -1
-            r -= 1 if b == ">" else -1
-            r %= 100
-            t[r] += 1
-        m = max(t)
-        return m * (t.index(m) + 1)
+        return temps[0]
+    # Parts 1, 3: return max temp * (min) position of the wall with that temp.
+    hottest = max(temps)
+    return hottest * (temps.index(hottest) + 1)
 
 
-# PARSER = parsers.parse_one_str
-TEST_DATA = [
-    "><>><<>><<<>>>>><><><><><>>>>>"
-]
+TEST_DATA = "><>><<>><<<>>>>><><><><><>>>>>"
 TESTS = [
-    (1, TEST_DATA[0], 12),
-    (2, TEST_DATA[0], 3),
-    (3, TEST_DATA[0], 1358),
+    (1, TEST_DATA, 12),
+    (2, TEST_DATA, 3),
+    (3, TEST_DATA, 1358),
 ]
 
 if __name__ == "__main__":
