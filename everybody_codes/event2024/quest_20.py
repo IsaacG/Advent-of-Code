@@ -1,11 +1,4 @@
-"""Everyone Codes Day N."""
-
-import collections
-import functools
-import itertools
-import logging
-import queue
-import time
+"""Everyone Codes Day 20."""
 
 DIRECTIONS = {(0, 1), (0, -1), (1, 0), (-1, 0)}
 NEXT_DIR = {
@@ -15,7 +8,6 @@ NEXT_DIR = {
     (-1, 0): [(0, +1), (0, -1), (-1, 0)],
 }
 
-log = logging.info
 
 def solve(part: int, data: str, testing: bool) -> int:
     """Solve the parts."""
@@ -42,60 +34,6 @@ def solve(part: int, data: str, testing: bool) -> int:
         return p3(data)
 
 
-def compute_loop(best):
-    choice = {}
-    for start, nexts in best.items():
-        gliders = {start: 0}
-        opts = {}
-        for n in range(1, len(best) * 8):
-            next_pos = {}
-            for src, drop in gliders.items():
-                for dst, moredrop in nexts.items():
-                    combined = drop + moredrop
-                    if dst not in next_pos or next_pos[dst] < combined:
-                        next_pos[dst] = combined
-            opts[n] = next_pos[start]
-        choice[start] = max(((steps, elevation) for steps, elevation in opts.items()), key=lambda x: x[1] / x[0])
-    return choice
-
-
-def compute_drops(width, height, delta):
-    starts = {(x, 0) for x in range(width) if (x, 0) in delta and (x, height - 1) in delta}
-    ends = {(x, height - 1) for x, _ in starts}
-    routes = {}
-    next_dir = {
-        (0, +1): [(0, +1), (+1, 0), (-1, 0)],
-        (0, -1): [(0, -1), (+1, 0), (-1, 0)],
-        (+1, 0): [(0, +1), (0, -1), (+1, 0)],
-        (-1, 0): [(0, +1), (0, -1), (-1, 0)],
-    }
-
-    def candidates(pos, direction):
-        x, y = pos
-        for dx, dy in next_dir[direction]:
-            n = x + dx, y + dy
-            if n in delta:
-                yield n, (dx, dy)
-
-    for start in starts:
-        q = collections.deque([(start, (0, 1), 0)])
-        best = {(start, (0, 1)): 0}
-        while q:
-            pos, direction, elevation = q.popleft()
-            for n_pos, d_dir in candidates(pos, direction):
-                n_elev = elevation + delta[n_pos]
-                if (n_pos, d_dir) in best and best[n_pos, d_dir] >= n_elev:
-                    continue
-                best[n_pos, d_dir] = n_elev
-                q.append((n_pos, d_dir, n_elev))
-        frame = {}
-        for end in ends:
-            pick = max(best[end, direction] for direction in [(0, +1), (+1, 0), (-1, 0)] if (end, direction) in best)
-            next_pos = end[0], 0
-            frame[end[0]] = pick + delta[end[0], 0]
-        routes[start[0]] = frame
-    return routes
-
 
 def p3(data: str):
     delta = {}
@@ -111,14 +49,24 @@ def p3(data: str):
                 delta[x, y] = -1
             elif char == "S":
                 delta[x, y] = -1
-                start = (x, y)
+                start = x
     width = len(data.splitlines()[0])
     height = len(data.splitlines())
+    clear_cols = {x for x in range(width) if all((x, y) in delta for y in range(height))}
+    drops_per_column = {x: sum(delta[x, y] for y in range(height)) for x in clear_cols}
+    best = max(drops_per_column.values())
+    best_cols = [k for k, v in drops_per_column.items() if v == best]
+    distance, x = min((abs(start - x), x) for x in best_cols)
+    altitude = 384400 - distance
+    cycles, altitude = divmod(altitude, -best)
+    distance = cycles * height
+    pos = (x, 0)
+    while altitude:
+        pos = (x, pos[1] + 1)
+        altitude += delta[pos]
+        distance += 1
+    return distance
 
-    cycle_drops = compute_drops(width, height, delta)
-    loop = compute_loop(cycle_drops)
-    print(cycle_drops)
-    print(loop)
 
 def p2(maps, testing):
     deltas = {p: -1 for p in maps["."]}
@@ -141,7 +89,6 @@ def p2(maps, testing):
     possibilities = {(start, (0, 1), "A"): 10000}
     for step in range(1, 800):
         next_possibilities = {}
-        # log(f"{step=}, {len(possibilities)=}")
         for (position, direction, goal), elevation in possibilities.items():
             for next_pos, next_dir in candidates(position, direction):
                 next_elev = elevation + deltas[next_pos]
@@ -180,9 +127,7 @@ def p1(maps):
                 todo.add((next_pos, (x, y)))
         return False
 
-    logging.debug("Build clusters")
     clusters = {i for i in maps["+"] if is_cluster(i)}
-    logging.debug("Done building clusters. Found %d positions.", len(clusters))
 
     deltas = {p: -1 for p in maps["."]} | {p: -2 for p in maps["-"]} | {p: 1 for p in maps["+"]}
     altitude = 1000
@@ -283,21 +228,3 @@ TESTS = [
     (2, TEST_DATA[3], 206),
     (3, TEST_DATA[4], 768790),
 ]
-
-if __name__ == "__main__":
-    day = int(__file__.split("_", maxsplit=-1)[-1].split(".")[0])
-    test_data = TESTS
-    _part = 2
-    parser = str
-
-    for i, (p, _data, expected) in enumerate(test_data):
-        if p == _part:
-            log("Test", i)
-            assert solve(_part, _data, testing=True) == expected
-    log("Tests pass.")
-    with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-        _input = parser(f.read())  # type: str
-        start = time.perf_counter_ns()
-        got = solve(_part, _input, testing=False)
-        end = time.perf_counter_ns()
-        print(f"{day:02}.{_part} {got:15} {(end - start)//1000000:8}")
