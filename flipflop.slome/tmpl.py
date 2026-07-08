@@ -1,8 +1,7 @@
 """FlipFlop Codes: N."""
 
 import logging
-from lib import helpers
-from lib import parsers
+from lib import helpers, parsers
 
 log = logging.info
 
