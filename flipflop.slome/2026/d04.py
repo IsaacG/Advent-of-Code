@@ -5,53 +5,40 @@ from lib import helpers, parsers
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    size = len(data) - 1
+    # Remove the head and soil. Convert to L, R or empty.
+    stalk = ["L" if "o-|" in line else "R" if "|-o" in line else "" for line in  data[3:-1]]
+
     if part == 1:
-        cut = 8 if size == 19 else 400
-        keep = data[3: -cut - 1]
-        return sum("o" in line for line in keep)
-    if part == 2:
-        side = None
-        swaps = 0
-        for line in data[3:-1]:
-            if "o" not in line:
-                continue
-            for i in ["-o", "o-"]:
-                if i in line and side is not None and side != i:
-                    swaps += 1
-                if i in line:
-                    side = i
-        return swaps
-    if part == 3:
-        count = 0
-        while count == 0 or side is not None:
-            side = None
-            for idx, line in enumerate(list(data[3:-1]), start=3):
-                if "o" not in line:
-                    continue
-                for i in ["-o", "o-"]:
-                    if i not in line:
-                        continue
-                    if side is None:
-                        data[idx] = ""
-                        side = i
-                    elif side == i:
-                        pass
-                    else:
-                        side = i
-                        data[idx] = ""
-            if side:
-                count += 1
+        # We only consider until 8/400 from the bottom.
+        cut = 8 if len(stalk) == 16 else 400
+        # Count leaves.
+        return sum(leaf != "" for leaf in stalk[:-cut])
 
-        return count
+    # Compress the stalk, dropping empty segments.
+    stalk = [i for i in stalk if i]
+    worker_passes = 0
+
+    # Part three: keep climbing the stalk while there are leaves.
+    while stalk:
+        current_side = ""
+        side_switches = 0
+        for idx, leaf in enumerate(stalk.copy()):
+            # On the first leaf or when switching sides...
+            if not current_side or current_side != leaf:
+                current_side = leaf
+                stalk[idx] = ""
+                side_switches += 1
+        # Part two: stop after one pass and report switches, not including the first one.
+        if part == 2:
+            return side_switches - 1
+        worker_passes += 1
+        stalk = [i for i in stalk if i]
+
+    return worker_passes
 
 
-    
-
-
-PARSER = parsers.parse_one_str_per_line
 TEST_DATA = """\
- \|/
+ \\|/
  -@-
  /|\\
   |-o
