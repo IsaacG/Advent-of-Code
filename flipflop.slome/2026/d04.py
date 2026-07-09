@@ -1,5 +1,6 @@
 """FlipFlop Codes, Puzzle 4: Magic Flowerstalk."""
 
+import itertools
 from lib import helpers, parsers
 
 
@@ -16,25 +17,25 @@ def solve(part: int, data: str) -> int:
 
     # Compress the stalk, dropping empty segments.
     stalk = [i for i in stalk if i]
-    worker_passes = 0
 
     # Part three: keep climbing the stalk while there are leaves.
-    while stalk:
+    for worker_passes in itertools.count(start=1):
         current_side = ""
         side_switches = 0
-        for idx, leaf in enumerate(stalk.copy()):
+        remaining = []
+        for idx, leaf in enumerate(stalk):
             # On the first leaf or when switching sides...
             if not current_side or current_side != leaf:
                 current_side = leaf
-                stalk[idx] = ""
                 side_switches += 1
+            else:
+                remaining.append(leaf)
         # Part two: stop after one pass and report switches, not including the first one.
         if part == 2:
             return side_switches - 1
-        worker_passes += 1
-        stalk = [i for i in stalk if i]
-
-    return worker_passes
+        stalk = remaining
+        if not stalk:
+            return worker_passes
 
 
 TEST_DATA = """\
