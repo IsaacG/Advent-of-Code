@@ -7,18 +7,11 @@ log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    board = {
-        (x, y): helpers.ARROW_DIRECTIONS_T[char]
-        for y, line in enumerate(data)
-        for x, char in enumerate(line)
-    }
+    board = {pos: helpers.ARROW_DIRECTIONS_T[char] for pos, char in data.chars.items()}
 
     directions = set(helpers.FOUR_DIRECTIONS_T)
     rotate = helpers.rotate_counterclockwise
-    # rotate = helpers.rotate_clockwise
-    max_y = len(data) - 1
-    max_x = len(data[0]) - 1
-    edges = {i for i in board if i[0] in {0, max_x} or i[1] in {0, max_y}}
+    edges = {i for i in board if i[0] in {0, data.max_x} or i[1] in {0, data.max_y}}
     non_edge = set(board) - edges
 
     # Drive the city.
@@ -38,32 +31,34 @@ def solve(part: int, data: str) -> int:
         non_edge &= seen
 
     best = 0
+    # Try to modify every non-edge street.
     for street in non_edge:
         modified_streets = board.copy()
-        for d in directions - {board[street]}:
-            modified_streets[street] = d
-            turns = 3 if part == 3 else 0
+        # Try every direction excluding the current one.
+        for direction in directions - {board[street]}:
+            modified_streets[street] = direction
 
+            # Drive the map.
             pos = (0, 0)
             seen = set()
+            turns = 3 if part == 3 else 0
 
-            while pos not in seen or turns > 0:
+            while pos not in seen or turns:
+                direction = modified_streets[pos]
                 if pos in seen:
                     if pos in edges:
                         break
                     turns -= 1
-                    direction = rotate(*modified_streets[pos])
+                    direction = rotate(*direction)
                 else:
                     seen.add(pos)
-                    direction = modified_streets[pos]
                 pos = (pos[0] + direction[0], pos[1] + direction[1])
 
-
             best = max(best, len(seen))
+
     return best
 
 
-PARSER = parsers.parse_one_str_per_line
 TEST_DATA = """\
 >>>>vvv>vv
 >^>>>>>>>v
@@ -78,9 +73,7 @@ TEST_DATA = """\
 TESTS = [
     (1, TEST_DATA, 45),
     (2, TEST_DATA, 49),
-    (3, TEST_DATA, 61),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
+    (3, TEST_DATA, 66),
 ]
 
 if __name__ == "__main__":
