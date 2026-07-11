@@ -1,116 +1,66 @@
 """FlipFlop Codes, Puzzle 6: Gears And Lights."""
 
-import logging
 import string
 from lib import helpers, parsers
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: parsers.CoordinatesParser) -> int:
     """Solve the parts."""
-    if part == 1:
-        start = data.coords["S"].copy().pop()
-        gears = data.coords["#"]
-        rotations = {start: False}
-        todo = [(start, False)]  # False = CCW = Left = low
-        seen = {start}
-        log("Start loop")
-        while todo:
-            pos, rot = todo.pop()
-            for i in helpers.neighbors_t(*pos):
-                if i in seen or i not in gears:
-                    continue
-                seen.add(i)
-                rotations[i] = not rot
-                todo.append((i, not rot))
-        log("End loop")
+    # Parse the input, setting up the data we will use.
+    start = data.coords["S"].copy().pop()
+    gears = data.coords["#"]
+    if part > 1:
+        # Parts two, three: "3" is also a gear.
+        gears |= data.coords["3"]
+    # Bluetooth inputs are lowercase letters.
+    bt_inputs = {pos for pos, char in data.chars.items() if char in string.ascii_lowercase}
 
-        bits = []
-        for light in sorted(data.coords["*"], key=lambda x: (x[1], x[0])):
-            adjacent = next((i for i in helpers.neighbors_t(*light) if i in rotations), None)
-            if not adjacent:
-                continue
-            bits.append("1" if rotations[adjacent] else "0")
-        return int("".join(bits), 2)
-
-    if part == 2:
-        start = data.coords["S"].copy().pop()
-        gears = data.coords["#"] | data.coords["3"]
-        receivers = {pos for pos, char in data.chars.items() if char in string.ascii_lowercase}
-        rotations = {start: False}
-        todo = [(start, False)]  # False = CCW = Left = low
-        seen = {start}
-        log("Start loop")
-        while todo:
-            pos, rot = todo.pop()
-            for i in helpers.neighbors_t(*pos):
-                if i in seen:
-                    continue
-                if i in gears:
-                    seen.add(i)
-                    rotations[i] = not rot
-                    todo.append((i, not rot))
-                if i in receivers:
-                    seen.add(i)
-                    output = data.coords[data.chars[i].upper()].copy().pop()
-                    todo.append((output, rot))
-        log("End loop")
-
-        bits = []
-        for light in sorted(data.coords["*"], key=lambda x: (x[1], x[0])):
-            adjacent = next((i for i in helpers.neighbors_t(*light) if i in rotations), None)
-            if not adjacent:
-                continue
-            bits.append("1" if rotations[adjacent] else "0")
-        return int("".join(bits), 2)
-
-    def non_prime_group(pos):
+    def is_non_prime_group(pos: tuple[int, int]) -> bool:
+        """Return if a group of gears contains a non-prime number of gears."""
         todo = [pos]
         seen = {pos}
         while todo:
             pos = todo.pop()
-            for i in helpers.neighbors_t(*pos):
-                if i in seen or i not in gears:
-                    continue
-                seen.add(i)
-                todo.append(i)
-        n = len(seen)
-        return not (n > 1 and all(n % i != 0 for i in range(2, int(n**0.5) + 1)))
+            for neighbor in helpers.neighbors_t(*pos):
+                if neighbor not in seen and neighbor in gears:
+                    seen.add(neighbor)
+                    todo.append(neighbor)
+        size = len(seen)
+        return any(size % neighbor == 0 for neighbor in range(2, int(size**0.5) + 1))  # or size == 1
 
-    if part == 3:
-        start = data.coords["S"].copy().pop()
-        gears = data.coords["#"] | data.coords["3"]
-        receivers = {pos for pos, char in data.chars.items() if char in string.ascii_lowercase}
-        rotations = {start: False}
-        todo = [(start, False)]  # False = CCW = Left = low
-        seen = {start}
-        log("Start loop")
-        while todo:
-            pos, rot = todo.pop()
-            for i in helpers.neighbors_t(*pos):
-                if i in seen:
-                    continue
-                if i in gears:
-                    seen.add(i)
-                    rotations[i] = not rot
-                    todo.append((i, not rot))
-                if i in receivers:
-                    seen.add(i)
-                    output = data.coords[data.chars[i].upper()].copy().pop()
-                    for i in helpers.neighbors_t(*output):
-                        if i in seen or i not in gears:
-                            continue
-                        if non_prime_group(i):
-                            todo.append((i, not rot))
-        log("End loop")
+    # Use Dijksta's to compute all gear rotations.
+    rotations = {start: False}  # False = CCW = Left = low
+    todo = list(rotations.items())
+    seen = {start}
 
-        bits = []
-        for light in sorted(data.coords["*"], key=lambda x: (x[1], x[0])):
-            adjacent = next((i for i in helpers.neighbors_t(*light) if i in rotations), None)
-            if not adjacent:
+    while todo:
+        pos, rotation = todo.pop()
+        rotation = not rotation  # Alternate rotation
+        for neighbor in helpers.neighbors_t(*pos):
+            if neighbor in seen:
                 continue
-            bits.append("1" if rotations[adjacent] else "0")
-        return int("".join(bits), 2)
+            if neighbor in gears:
+                seen.add(neighbor)
+                rotations[neighbor] = rotation
+                todo.append((neighbor, rotation))
+            elif part > 1 and neighbor in bt_inputs:
+                seen.add(neighbor)
+                # Map the BT input to a BT output and check BT output neighbors.
+                output = data.coords[data.chars[neighbor].upper()].copy().pop()
+                for neighbor in helpers.neighbors_t(*output):
+                    if neighbor in seen or neighbor not in gears:
+                        continue
+                    if part == 2 or is_non_prime_group(neighbor):
+                        todo.append((neighbor, rotation))
+
+    # Determine which lights are high, low or off.
+    bits = []
+    for light in sorted(data.coords["*"], key=lambda x: (x[1], x[0])):
+        adjacent = next((neighbor for neighbor in helpers.neighbors_t(*light) if neighbor in rotations), None)
+        if not adjacent:
+            continue
+        bits.append("1" if rotations[adjacent] else "0")
+    return int("".join(bits), 2)
 
 
 # PARSER = parsers.parse_one_str

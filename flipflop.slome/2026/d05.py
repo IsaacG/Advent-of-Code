@@ -1,4 +1,4 @@
-"""FlipFlop Codes: N."""
+"""FlipFlop Codes, Puzzle 5: One Way City."""
 
 import logging
 from lib import helpers, parsers
