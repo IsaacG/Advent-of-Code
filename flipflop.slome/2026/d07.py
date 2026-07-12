@@ -1,69 +1,53 @@
 """FlipFlop Codes, Puzzle 7: Ross's Pet Snake."""
 
 import collections
-import logging
 from lib import helpers, parsers
 
-log = logging.info
+DIRECTIONS = {">": (1, 0), "<": (-1, 0), "^": (0, 1), "v": (0, -1)}
+
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    moves, sushis = data
-    sushis = iter(sushis)
-    sushi = tuple(next(sushis))
-    ate = 0
-    x, y = 0, 0
-
+    # Set up input data
+    moves, sushi_data = data
     if part == 1:
-        for move in moves[:len(moves) // 2]:
-            dx, dy = {">": (1, 0), "<": (-1, 0), "^": (0, 1), "v": (0, -1)}[move]
-            x += dx
-            y += dy
-            while (x, y) == sushi:
-                ate += 1
-                sushi = tuple(next(sushis))
-        return ate
+        moves = moves[:len(moves) // 2]
+    sushis = iter(sushi_data)
 
-    size = 1
+    # Set up board state and counters
+    sushi = tuple(next(sushis))
+    x, y = 0, 0
+    autophagy = 0
+    sushi_ate = 0
+
+    # Track the body
     body = collections.deque()
     body.append((x, y))
 
-    if part == 2:
-        for move in moves:
-            dx, dy = {">": (1, 0), "<": (-1, 0), "^": (0, 1), "v": (0, -1)}[move]
-            x += dx
-            y += dy
-            dropped = body.popleft()
+    for move in moves:
+        dx, dy = DIRECTIONS[move]
+        x += dx
+        y += dy
+        if (x, y) == sushi:
+            # Eat sushi, do not shrink the tail
+            sushi = tuple(next(sushis, (-1, -1)))
+            sushi_ate += 1
+        else:
+            # No sushi, tail shrinks, check for collision.
+            body.popleft()
             if (x, y) in body:
-                return size
-            body.append((x, y))
-            if (x, y) == sushi:
-                size += 1
-                sushi = tuple(next(sushis))
-                body.appendleft(dropped)
-        raise ValueError("Not found")
-
-    eat_self = 0
-    if part == 3:
-        for move in moves:
-            dx, dy = {">": (1, 0), "<": (-1, 0), "^": (0, 1), "v": (0, -1)}[move]
-            x += dx
-            y += dy
-            dropped = body.popleft()
-            if (x, y) in body:
-                eat_self += 1
+                if part == 2:
+                    return len(body) + 1
+                autophagy += 1
                 for _ in range(body.index((x, y)) + 2):
                     body.popleft()
-            body.append((x, y))
-            if (x, y) == sushi:
-                size += 1
-                sushi = tuple(next(sushis, (-1, -1)))
-                body.appendleft(dropped)
-        return len(body) * eat_self
+        body.append((x, y))
+
+    if part == 1:
+        return sushi_ate
+    return len(body) * autophagy
 
 
-
-# PARSER = parsers.parse_one_str
 TEST_DATA = """\
 >>>^>>v<^<^>>>>v<^^>vv>^<^^^^^<^<vv>^^^>
 
