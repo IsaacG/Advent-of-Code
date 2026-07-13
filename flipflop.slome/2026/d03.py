@@ -44,11 +44,8 @@ o3klll
 8ebluered
 DkoGreenD7
 green037"""
-TESTS = [
-    (1, TEST_DATA, "DkoGreenD7"),
-    (2, TEST_DATA, "de333333"),
-    (3, TEST_DATA, 1453),
-]
+WANT = ["DkoGreenD7", "de333333", 1453]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

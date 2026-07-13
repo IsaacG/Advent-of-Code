@@ -26,11 +26,8 @@ def solve(part: int, data: str) -> int:
 
 
 TEST_DATA = "><>><<>><<<>>>>><><><><><>>>>>"
-TESTS = [
-    (1, TEST_DATA, 12),
-    (2, TEST_DATA, 3),
-    (3, TEST_DATA, 1358),
-]
+WANT = [12, 3, 1358]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

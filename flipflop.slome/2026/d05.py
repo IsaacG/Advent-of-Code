@@ -70,11 +70,11 @@ TEST_DATA = """\
 ^^^<^v<<>v
 ^v<^<<vvvv
 ^<^<<<<<<<"""
-TESTS = [
-    (1, TEST_DATA, 45),
-    (2, TEST_DATA, 49),
-    (3, TEST_DATA, 66),
-]
+WANT = [45, 49, 66]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
+
+if __name__ == "__main__":
+    helpers.run_solution(globals())
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

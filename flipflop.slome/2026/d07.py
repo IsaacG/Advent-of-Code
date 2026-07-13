@@ -64,11 +64,8 @@ TEST_DATA = """\
 5,7
 6,6
 7,9"""
-TESTS = [
-    (1, TEST_DATA, 7),
-    (2, TEST_DATA, 7),
-    (3, TEST_DATA, 18),
-]
+WANT = [7, 7, 18]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

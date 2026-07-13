@@ -63,7 +63,6 @@ def solve(part: int, data: parsers.CoordinatesParser) -> int:
     return int("".join(bits), 2)
 
 
-# PARSER = parsers.parse_one_str
 TEST_DATA = """\
 ;&%,&/<.%~&|-!-;-+`.
 =#######:@#=*3333,%!
@@ -75,12 +74,8 @@ S##########*@/!`-|`-
 %3@&/#*:`~#^|/+3<!&=
 |33*><:b###<<c333*~|
 <&&@/:!|``:/:&:&&`,&"""
-
-TESTS = [
-    (1, TEST_DATA, 4),
-    (2, TEST_DATA, 1195),
-    (3, TEST_DATA, 148),
-]
+WANT = [4, 1195, 148]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

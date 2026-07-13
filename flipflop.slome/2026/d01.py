@@ -20,11 +20,8 @@ def solve(part: int, data: str) -> int:
 
 
 TEST_DATA = "41 87 93 104 46 102 65 105 81 36 66 46 60 65 64 64 61 73 55 69".replace(" ", "\n")
-TESTS = [
-    (1, TEST_DATA, 76),
-    (2, TEST_DATA, 1371),
-    (3, TEST_DATA, 1141),
-]
+WANT = [76, 1371, 1141]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())

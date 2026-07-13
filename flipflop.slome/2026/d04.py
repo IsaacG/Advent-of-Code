@@ -59,11 +59,8 @@ o-|
 o-|
   |-o
 #####"""
-TESTS = [
-    (1, TEST_DATA, 7),
-    (2, TEST_DATA, 6),
-    (3, TEST_DATA, 5),
-]
+WANT = [7, 6, 5]
+TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
