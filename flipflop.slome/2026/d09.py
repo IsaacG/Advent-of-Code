@@ -1,40 +1,18 @@
 """FlipFlop Codes: N."""
 
 import collections
-import curses
 import queue
-import logging
 from lib import helpers, parsers
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
     spaces = data.coords["S"] | data.coords["E"] | data.coords["."]
-    walls = data.coords["#"]
     start = data.coords["S"].copy().pop()
     end = data.coords["E"].copy().pop()
     
-    seen = {end}
-    distance = {}
-    todo = collections.deque()
-    todo.append((0, end))
-    while todo:
-        steps, pos = todo.popleft()
-        distance[pos] = steps
-        steps += 1
-
-        for n in helpers.neighbors_t(*pos):
-            if n not in seen and n in spaces:
-                seen.add(n)
-                todo.append((steps, n))
-
-    seen = {start}
-
-    if part == 1:
-        return distance[start]
-
-    if part == 2:
+    if part != 3:
+        seen = {start}
         todo = queue.PriorityQueue()
         todo.put((0, start))
         while not todo.empty():
@@ -47,6 +25,10 @@ def solve(part: int, data: str) -> int:
                 if n not in seen and n in spaces:
                     seen.add(n)
                     todo.put((steps, n))
+
+            if part == 1:
+                continue
+
             x, y = pos
             for dx, dy in helpers.FOUR_DIRECTIONS_T:
                 n = pos
@@ -58,49 +40,42 @@ def solve(part: int, data: str) -> int:
                     seen.add(n)
                     todo.put((steps, n))
 
-    if part == 3:
-        # stdscr = curses.initscr()
+    default = 10000
+    seen = {}
+    todo = queue.PriorityQueue()
+    todo.put((0, start, False, None, tuple()))
 
-        counter = 0
-        default = 10000
-        todo = queue.PriorityQueue()
+    while todo:
+        steps, pos, on_portal, far_portal, path = todo.get()
+        if pos == end:
+            # print(path)
+            return steps
 
-        seen = {}
-        todo.put((0, start, False, tuple()))
+        # Option one: no portals.
+        for n in helpers.neighbors_t(*pos):
+            state = (n, False)
+            if n in spaces and seen.get(state, default) > steps + 1:
+                seen[state] = steps + 1
+                todo.put((steps + 1, *state, None, path + tuple(("W", n))))
 
-        while todo:
-            counter += 1
-            steps, pos, on_portal, path = todo.get()
-            if not counter % 50000:
-                log("Count %d: Q %d, steps %d, dist %d", counter, todo.qsize(), steps, distance[pos])
-            if pos == end:
-                # print(path)
-                return steps
 
-            # Option one: no portals.
-            for n in helpers.neighbors_t(*pos):
-                state = (n, False)
-                if n in spaces and seen.get(state, default) > steps + 1:
-                    seen[state] = steps + 1
-                    todo.put((steps + 1, *state, path + tuple(("W", n))))
+        # No adjacent wall to open a portal
+        if all(n in spaces for n in helpers.neighbors_t(*pos)):
+            continue
 
-            # No adjacent wall to open a portal
-            if all(n in spaces for n in helpers.neighbors_t(*pos)):
+        # Option two: use a portal.
+        # Consider where to open the other end.
+        for dx, dy in helpers.FOUR_DIRECTIONS_T:
+            n = pos
+            while (n2 := (n[0] + dx, n[1] + dy)) in spaces:
+                n = n2
+            if n == pos:
                 continue
-
-            # Option two: use a portal.
-            # Consider where to open the other end.
-            for dx, dy in helpers.FOUR_DIRECTIONS_T:
-                n = pos
-                while (n2 := (n[0] + dx, n[1] + dy)) not in walls:
-                    n = n2
-                if n == pos:
-                    continue
-                moves = 2 if on_portal else 3
-                state = (n, True)
-                if seen.get(state, default) > steps + moves:
-                    seen[state] = steps + moves
-                    todo.put((steps + moves, *state, path + tuple(("T", n))))
+            moves = 2 if on_portal else 3
+            state = (n, True)
+            if seen.get(state, default) > steps + moves:
+                seen[state] = steps + moves
+                todo.put((steps + moves, *state, None, path + tuple(("T", n))))
 
 
 # PARSER = parsers.parse_one_str
