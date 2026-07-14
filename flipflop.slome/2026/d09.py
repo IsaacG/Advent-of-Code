@@ -1,6 +1,7 @@
 """FlipFlop Codes: N."""
 
 import collections
+import curses
 import queue
 import logging
 from lib import helpers, parsers
@@ -58,59 +59,48 @@ def solve(part: int, data: str) -> int:
                     todo.put((steps, n))
 
     if part == 3:
+        # stdscr = curses.initscr()
+
         counter = 0
+        default = 10000
         todo = queue.PriorityQueue()
-        # Start with portals outside the map
-        blue, orange = ((-100000, -1000000), (-100000, -100000)), ((-200000, -200000), (-200000, -200000))
-        seen = {(start, blue, orange)}
-        for portal in blue, orange:
-            distance[portal[0]] = 1000000
 
-        def add(steps, pos, p1, p2):
-            if pos not in spaces:
-                return
-            if p1[0] == p2[0]:
-                return
-            if p1 > p2:
-                p1, p2 = p2, p1
-            if (pos, p1, p2) in seen:
-                return
-            seen.add((pos, p1, p2))
-            todo.put((0, steps, pos, p1, p2))
-
-        add(0, start, blue, orange)
+        seen = {}
+        todo.put((0, start, False, tuple()))
 
         while todo:
             counter += 1
-            _, steps, pos, blue, orange = todo.get()
-            if steps >= 1380:  # >500 <1380
-                continue
+            steps, pos, on_portal, path = todo.get()
             if not counter % 50000:
                 log("Count %d: Q %d, steps %d, dist %d", counter, todo.qsize(), steps, distance[pos])
             if pos == end:
+                # print(path)
                 return steps
-            steps += 1
 
+            # Option one: no portals.
             for n in helpers.neighbors_t(*pos):
-                for portal_a, portal_b in [(blue, orange), (orange, blue)]:
-                    if (pos, n) == portal_a:
-                        n2 = portal_b[0]
-                        if distance[n2] < distance[pos]:
-                            add(steps, n2, blue, orange)
-                add(steps, n, blue, orange)
+                state = (n, False)
+                if n in spaces and seen.get(state, default) > steps + 1:
+                    seen[state] = steps + 1
+                    todo.put((steps + 1, *state, path + tuple(("W", n))))
 
-            x, y = pos
+            # No adjacent wall to open a portal
+            if all(n in spaces for n in helpers.neighbors_t(*pos)):
+                continue
+
+            # Option two: use a portal.
+            # Consider where to open the other end.
             for dx, dy in helpers.FOUR_DIRECTIONS_T:
                 n = pos
-                n2 = (n[0] + dx, n[1] + dy)
-                while n2 in spaces:
+                while (n2 := (n[0] + dx, n[1] + dy)) not in walls:
                     n = n2
-                    n2 = (n[0] + dx, n[1] + dy)
-                m = (n, n2)
-                if distance[n] <= distance[pos]:
-                    add(steps, pos, m, orange)
-                if distance[n] <= distance[pos]:
-                    add(steps, pos, m, blue)
+                if n == pos:
+                    continue
+                moves = 2 if on_portal else 3
+                state = (n, True)
+                if seen.get(state, default) > steps + moves:
+                    seen[state] = steps + moves
+                    todo.put((steps + moves, *state, path + tuple(("T", n))))
 
 
 # PARSER = parsers.parse_one_str
