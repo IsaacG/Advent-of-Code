@@ -7,7 +7,7 @@ import logging
 from lib import helpers, parsers
 
 
-def final_mass(blocks: list[str]) -> int:
+def final_mass(blocks: list[str], loops=1) -> int:
     all_rules = []
     for data in blocks:
         above, main = data.replace("XX", "-1").splitlines()
@@ -16,76 +16,99 @@ def final_mass(blocks: list[str]) -> int:
             rule[int(src)] = {complex(-1, 0): int(left), complex(0, 1): int(above), complex(1, 0): int(right)}
         all_rules.append(rule)
 
-    all_stems = [set() for _ in all_rules]
-    all_sprouts = [{complex(i * 10, 0): 0} for i in range(len(all_rules))]
-    alive = [True] * len(all_rules)
+    alive = [
+        {
+            "name": str(i),
+            "rules": rules,
+            "stems": set(),
+            "sprouts": {complex(i * 10, 0): 0},
+            "age": 0,
+        } for i, rules in enumerate(all_rules)
+    ]
+    dead = []
+    dead_stems = set()
+    dead_sprouts = set()
 
-    for age in range(100):
-        combined_stems = set().union(*all_stems)
-        for idx in range(len(all_rules)):
-            if not alive[idx]:
-                continue
-            stems = all_stems[idx]
-            sprouts = all_sprouts[idx]
-            rules = all_rules[idx]
-            exists = stems | set(sprouts)
-            if age >= 5:
-                needed_energy = 3 * len(exists)
-                harvested = 0
-                for stem in stems:
-                    height = min(10, int(stem.imag) + 1)
-                    above = 0
-                    for i in range(1, 110):
-                        if stem + i * 1j in combined_stems:
-                            above += 1
-                            if above == 3:
-                                break
-                    mult = 3 - above
-                    harvested += height * mult
-                if needed_energy > harvested:
-                    # print(f"Tree {idx + 1} runs out of energy at age {age}, mass={len(exists)}")
-                    alive[idx] = False
+    for loop in range(loops):
+        while alive:
+            combined_stems = dead_stems.union(*[a["stems"] for a in alive])
+            next_alive = []
+            for tree in alive:
+                tree["age"] += 1
+                if tree["age"] > 5:
+                    rules, stems, sprouts = (tree[i] for i in ["rules", "stems", "sprouts"])
+                    exists = stems | set(sprouts)
+                    needed_energy = 3 * len(exists)
+                    harvested = 0
+                    for stem in stems:
+                        height = min(10, int(stem.imag) + 1)
+                        above = 0
+                        for i in range(1, 110):
+                            if stem + i * 1j in combined_stems:
+                                above += 1
+                                if above == 3:
+                                    break
+                        mult = 3 - above
+                        harvested += height * mult
+                    if needed_energy <= harvested and tree["age"] <= 100:
+                        next_alive.append(tree)
+                    else:
+                        # print(f"Tree {tree["name"]} runs out of energy at age {age}, mass={len(exists)}")
+                        dead.append(tree)
+                        dead_sprouts.update(tree["sprouts"])
+                        dead_stems.update(tree["stems"])
+                else:
+                    next_alive.append(tree)
+            alive = next_alive
 
-        for idx in range(len(all_rules)):
-            combined_stems = set().union(*all_stems)
-            combined_sprouts = set().union(*[set(i) for i in all_sprouts])
-            combined_mass = combined_stems | combined_sprouts
-            if not alive[idx]:
-                continue
-            stems = all_stems[idx]
-            sprouts = all_sprouts[idx]
-            rules = all_rules[idx]
-            exists = stems | set(sprouts)
+            for tree in alive:
+                rules, stems, sprouts = (tree[i] for i in ["rules", "stems", "sprouts"])
+                combined_stems = dead_stems.union(*[a["stems"] for a in alive])
+                combined_sprouts = dead_sprouts.union(*[set(a["sprouts"]) for a in alive])
+                combined_mass = combined_stems | combined_sprouts
+                exists = stems | set(sprouts)
 
-            new_growths = {}
-            for pos, val in sprouts.items():
-                for direction in {1, -1, 1j}:
-                    neighbor = pos + direction
-                    if neighbor in combined_mass:
-                        continue
-                    new_growths[neighbor] = max(new_growths.get(neighbor, -1), rules[val][direction])
-            stems |= set(sprouts)
-            sprouts = {pos: val for pos, val in new_growths.items() if val != -1}
-            all_stems[idx] = stems
-            all_sprouts[idx] = sprouts
+                new_growths = {}
+                for pos, val in sprouts.items():
+                    for direction in {1, -1, 1j}:
+                        neighbor = pos + direction
+                        if neighbor in combined_mass:
+                            continue
+                        new_growths[neighbor] = max(new_growths.get(neighbor, -1), rules[val][direction])
+                tree["stems"] |= set(sprouts)
+                tree["sprouts"] = {pos: val for pos, val in new_growths.items() if val != -1}
 
-        if age <= 12 and False:
-            combined_stems = set().union(*all_stems)
-            combined_sprouts = set().union(*[set(i) for i in all_sprouts])
-            combined_mass = combined_stems | combined_sprouts
-            min_x = int(min(i.real for i in combined_mass))
-            max_x = int(max(i.real for i in combined_mass))
-            print("Year: ", age)
-            for y in range(age + 1, -1, -1):
-                print("".join("@" if complex(x, y) in combined_sprouts else "#" if complex(x, y) in combined_stems else " " for x in range(min_x, max_x + 1)))
-            print()
+        # Reset for the next loop
+        if loop + 1 == loops:
+            break
+
+        new_sprouts = collections.defaultdict(list)
+        for tree in dead:
+            for sprout in tree["sprouts"]:
+                new_sprouts[int(sprout.real)].append(
+                    (
+                        sprout.imag,
+                        {
+                            "name": tree["name"],
+                            "rules": tree["rules"],
+                            "stems": set(),
+                            "sprouts": {complex(sprout.real, 0): 0},
+                            "age": 0,
+                        },
+                    )
+                )
+        new_sprouts = {x: max(trees) for x, trees in new_sprouts.items()}
+        alive = [tree for x, (y, tree) in sorted(new_sprouts.items())]
+        dead = []
+        dead_stems = set()
+        dead_sprouts = set()
 
 
-    mass = set()
-    for stems in all_stems:
-        mass |= stems
-    for sprouts in all_sprouts:
-        mass |= set(sprouts)
+
+    mass = dead_stems | dead_sprouts
+    for tree in alive:
+        mass |= tree["stems"]
+        mass |= set(tree["sprouts"])
     return len(mass)
 
 
@@ -96,9 +119,10 @@ def solve(part: int, data: str) -> int:
         return sum(final_mass([block]) for block in blocks)
     if part == 2:
         return final_mass(blocks)
+    if part == 3:
+        return final_mass(blocks, loops=3)
 
 
-WANT = [1224, 1431]
 PARSER = parsers.parse_one_str
 TEST_DATA = ["""\
     02          XX          00
@@ -110,12 +134,11 @@ TEST_DATA = ["""\
     02          XX          00
 01  00  XX  01  01  02  XX  02  XX""",
 ]
-TESTS = [(i + 1, TEST_DATA[i], want) for i, want in enumerate(WANT)]
-# TESTS = [
-#     (1, TEST_DATA[0], None),
-#     (2, TEST_DATA[1], None),
-#     (3, TEST_DATA[2], None),
-# ]
+TESTS = [
+    (1, TEST_DATA[0], 1224),
+    (2, TEST_DATA[1], 1431),
+    (3, TEST_DATA[1], 4122),
+]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
