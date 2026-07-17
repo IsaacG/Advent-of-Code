@@ -1,12 +1,10 @@
 """FlipFlop Codes: N."""
 
-import logging
 from lib import helpers, parsers
 
-log = logging.info
 
 class Computer:
-    def __init__(self, data):
+    def __init__(self, data: list[str]):
         instructions = []
         label = {}
         for idx, line in enumerate(data):
@@ -19,8 +17,9 @@ class Computer:
                 instructions.append((instr, *args))
         self.instructions = instructions
         self.label = label
+        self.data = data
 
-    def run(self, reg):
+    def run(self, reg: list[int]) -> tuple[list[int], bool]:
         ptr = 0
         instructions = self.instructions
         label = self.label
@@ -60,13 +59,111 @@ class Computer:
                     ptr = label[args[1]]
         return reg, counter <= 5000000
 
+    def as_go_code(self):
+        """Print out the Banenalang code translated to Go."""
+        count_check = "\tif count > 5000000 { return false }"
+        out = []
+        for idx, line in enumerate(self.data):
+            if line.startswith("be"):
+                label = len(line.removeprefix("be")) // 2
+                out.append(f"LABEL_{label}:")
+                out.append(count_check)
+            elif line.startswith("ba"):
+                line = line.removeprefix("ba")
+                instr, *args = [len(part) // 2 for part in  line.split("ne")]
+                if instr == 0:
+                    out.append(f"\treg[{args[1]}] = {args[0]}")
+                elif instr == 1:
+                    out.append(f"\treg[{args[1]}] = reg[{args[0]}]")
+                elif instr == 2:
+                    out.append(f"\treg[{args[2]}] = mod(reg[{args[0]}] + reg[{args[1]}])")
+                elif instr == 3:
+                    out.append(f"\treg[{args[2]}] = mod(reg[{args[0]}] - reg[{args[1]}])")
+                elif instr == 4:
+                    out.append(f"\treg[{args[2]}] = mod(reg[{args[0]}] * reg[{args[1]}])")
+                elif instr == 5:
+                    out.append(f"\tif reg[{args[1]}] == 0 {{ reg[{args[2]}] = 0 }} else {{ reg[{args[2]}] = reg[{args[0]}] % reg[{args[1]}] }}")
+                elif instr == 6:
+                    out.append(f"\treg[{args[0]}] = mod(reg[{args[0]}] + 1)")
+                elif instr == 7:
+                    out.append(f"\treg[{args[0]}] = mod(reg[{args[0]}] - 1)")
+                elif instr == 8:
+                    out.append(f"\tgoto LABEL_{args[0]}")
+                elif instr == 9:
+                    out.append(f"\tif reg[{args[0]}] == 0 {{ goto LABEL_{args[1]} }}")
+                elif instr == 10:
+                    out.append(f"\tif reg[{args[0]}] != 0 {{ goto LABEL_{args[1]} }}")
+                out.append("\tcount++")
+        pre = """\
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func mod(i int) int {
+	for i < 0 {
+		i += 65536
+	}
+	return i % 65536
+}
+
+func check(reg []int) bool {
+	var count int"""
+
+	post = """\
+	if count > 5000000 { return false }
+	return true
+}
+
+func main() {
+	start := time.Now()
+	mem := make([]int, 16)
+	check(mem)
+	fmt.Printf("Part 1 (%s): %d\n", time.Since(start), mem[0])
+
+	start = time.Now()
+	p2Count := 0
+	for i := range 100 {
+		mem := make([]int, 16)
+		mem[0] = i
+		if !check(mem) {
+			p2Count++
+		}
+	}
+	fmt.Printf("Part 2 (%s): %d\n", time.Since(start), p2Count)
+
+	var wg sync.WaitGroup
+	p3Counts := make([]int, 16)
+	for j := range 16 {
+		k := j
+		wg.Go(func() {
+			count := 0
+			for i := range 65536 {
+				mem := make([]int, 16)
+				mem[0] = i
+				mem[1] = k
+				if !check(mem) {
+					count++
+				}
+			}
+			p3Counts[k] = count
+		})
+	}
+	wg.Wait()
+	p3Count := 0
+	for _, c := range p3Counts {
+		p3Count += c
+	}
+	fmt.Printf("Part 3 (%s): %d\n", time.Since(start), p3Count)
+}"""
+        print(pre + "\n" + "\n".join(out) + "\n" + post)
+
+
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    label = {}
-    for idx, line in enumerate(data):
-        if line.startswith("be"):
-            label[len(line.removeprefix("be")) // 2] = idx + 1
-
     if part == 1:
         reg = [0] * 16
         reg, _ = Computer(data).run(reg)
