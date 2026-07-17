@@ -1,14 +1,30 @@
-"""FlipFlop Codes: N."""
+"""FlipFlop Codes, Puzzle 12: Bingo Bango Bongo.
+
+Multi dimensional Bingo.
+"""
 
 import more_itertools
 import itertools
 from lib import helpers, parsers
 
+# 0..4 and 4..0
 NUMS = [str(i) for i in range(5)]
 RNUMS = NUMS[::-1]
 
 
-def build_pattern(direction):
+def build_pattern(direction: list[int]) -> list[list[str]]:
+    """Given a line direction, eg [0, 1] or [1, 1], compute all lines (sets of points) in this direction.
+
+    The line [1, 1] in a 2D card is a single set of 5 points.
+    The line [0, 1] in a 2D card is 5 sets of 5 points.
+    The line [0, 0, 1] in a 3D card is 25 sets of 5 points.
+
+    If the direction is 1 then update the existing points with [0..4]. For -1, use [4..0].
+    This draws a line along a dimension.
+
+    If the direction is 0, then make 5 copies of the points, updating each copy with a [0..4].
+    This projects the line across a dimension.
+    """
     if not direction:
         return [[""] * 5]
     d, *rest = direction
@@ -22,6 +38,7 @@ def build_pattern(direction):
 
 
 def compute_patterns(n: int) -> list[set[int]]:
+    """Compute all the win patterns for a Bingo card of n dimensions."""
     patterns = []
     for direction in itertools.product([0, 1, -1], repeat=n):
         if 1 not in direction:
