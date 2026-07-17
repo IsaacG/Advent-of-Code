@@ -2,12 +2,10 @@
 
 import more_itertools
 import itertools
-import sys
-import logging
 from lib import helpers, parsers
 
-nums = [str(i) for i in range(5)]
-rnums = nums[::-1]
+NUMS = [str(i) for i in range(5)]
+RNUMS = NUMS[::-1]
 
 
 def build_pattern(direction):
@@ -16,11 +14,11 @@ def build_pattern(direction):
     d, *rest = direction
     patterns = build_pattern(rest)
     if d == 1:
-        return [[a + b for a, b in zip(nums, p)] for p in patterns]
+        return [[a + b for a, b in zip(NUMS, p)] for p in patterns]
     if d == -1:
-        return [[a + b for a, b in zip(rnums, p)] for p in patterns]
+        return [[a + b for a, b in zip(RNUMS, p)] for p in patterns]
     if d == 0:
-        return [[a + b for b in p] for p in patterns for a in nums]
+        return [[a + b for b in p] for p in patterns for a in NUMS]
 
 
 def compute_patterns(n: int) -> list[set[int]]:
@@ -44,8 +42,6 @@ def solve(part: int, data: str) -> int:
     cards = list(more_itertools.chunked(itertools.chain(*card_lines), 5**dimensions))
     patterns = compute_patterns(dimensions)
     print(f"{dimensions=}")
-    print(f"{len(cards)=}, {set(len(c) for c in cards)}")
-    print(f"{len(patterns)=}, {set(len(p) for p in patterns)}")
 
     got = [set() for card in cards]
     i = 0
@@ -62,162 +58,7 @@ def solve(part: int, data: str) -> int:
             return ball
 
 
-def solvep1(data: str) -> int:
-    patterns = [set(range(i, i + 5)) for i in [0, 5, 10, 15, 20]]
-    patterns += [set(range(i, i + 25, 5)) for i in range(5)]
-    patterns += [set(range(0, 26, 6)), set(range(4, 24, 4))]
-    calls, cards = data
-    got = [set() for card in cards]
-    i = 0
-    for group in calls:
-        for call in group:
-            bingos = 0
-            i += 1
-            for hit, card in zip(got, cards):
-                if call in card:
-                    hit.add(card.index(call))
-                for pattern in patterns:
-                    if pattern.issubset(hit):
-                        bingos += 1
-                    
-            if bingos >= 5:
-                print(i, call)
-                return call
-
-def solvep2(data: str) -> int:
-    pattern_x = [set(range(i, i + 5, 1)) for i in range(0, 25*5, 5)]     # x
-    pattern_y = [set(range(i, i + 25, 5)) for c in range(5) for i in range(c*25, c*25+5)]   # y
-    pattern_z = [set(range(i, i + 125, 25)) for i in range(25)]   # z
-    patterns = pattern_x + pattern_y + pattern_z
-    assert len(pattern_x) == len(pattern_y) == len(pattern_z) == 25
-    assert len(patterns) == 3 * 5 ** 2
-
-    diag = []
-    for c in range(5):
-        tl = c * 25
-        patterns.append(set(range(tl, tl + 26, 6)))
-        patterns.append(set(range(tl + 4, tl + 24, 4)))
-    for x in range(5):
-        patterns.append(set(range(x, 125, 30)))
-        patterns.append(set(range(20+x, 120, 20)))
-    for y in range(5):
-        patterns.append(set(range(5*y, 125, 26)))
-        patterns.append(set(range(5*y+4, 121, 24)))
-    assert len(patterns) == 3 * 5**2 + 3 * 2 * 5
-
-    patterns.append(set(range(0, 125, 31)))
-    patterns.append(set(range(4, 125, 25+5-1)))
-    patterns.append(set(range(20, 125, 25-5+1)))
-    patterns.append(set(range(24, 110, 25-5-1)))
-    assert len(patterns) == 3 * 25 + 3 * 2 * 5 + 2 * 2
-    print(len(patterns))
-
-    # print(max(len(p) for p in patterns))
-    # print(min(len(p) for p in patterns))
-    assert all(len(p) == 5 for p in patterns)
-
-    calls, cards = data
-    got = set()
-    i = 0
-
-    all_cards = []
-    for c in cards:
-        all_cards.extend(c)
-    cards = list(more_itertools.chunked(all_cards, 125))
-    assert all(len(c) == 125 for c in cards)
-    # assert len(all_cards) == 5
-
-    print(f"{len(cards)=}")
-
-    got = [set() for card in cards]
-    i = 0
-    for group in calls:
-        for call in group:
-            bingos = 0
-            i += 1
-            for hit, card in zip(got, cards):
-                if call in card:
-                    hit.add(card.index(call))
-                for pattern in patterns:
-                    if pattern.issubset(hit):
-                        bingos += 1
-                    
-            if bingos >= 5:
-                return call
-
-def solvep3(data: str) -> int:
-    pattern_x = [set(range(s + i, s + i + 5, 1)) for i in range(0, 25*5, 5) for s in range(0, 625, 125)]     # x
-    pattern_y = [set(range(s + i, s + i + 25, 5)) for c in range(5) for i in range(c*25, c*25+5) for s in range(0, 625, 125)]   # y
-    pattern_z = [set(range(s + i, s + i + 125, 25)) for i in range(25) for s in range(0, 625, 125)]   # z
-    pattern_w = [set(range(i, i + 625, 125)) for i in range(125)]   # w
-    assert len(pattern_x) == len(pattern_y) == len(pattern_z) == len(pattern_w) == 125
-    patterns = pattern_x + pattern_y + pattern_z + pattern_w
-    assert len(patterns) == 4 * 5 ** 3
-
-    diag = []
-    for s in range(0, 625, 125):
-        for c in range(5):
-            patterns.append(set(range(s + c * 25, s + c * 25 + 26, 6)))
-            patterns.append(set(range(s + c * 25 + 4, s + c * 25 + 24, 4)))
-        for c in range(5):
-            patterns.append(set(range(s + c, s + 125, 30)))
-            patterns.append(set(range(s + 20+c, s + 120, 20)))
-        for c in range(5):
-            patterns.append(set(range(s + 5*c, s + 125, 26)))
-            patterns.append(set(range(s + 5*c+4, s + 121, 24)))
-        patterns.append(set(range(s + 0, s + 125, 31)))
-        patterns.append(set(range(s + 4, s + 125, 25+5-1)))
-        patterns.append(set(range(s + 20, s + 125, 25-5+1)))
-        patterns.append(set(range(s + 24, s + 110, 25-5-1)))
-    assert len(patterns) == 4 * 5**3 + 4 * 3 * 5, f"{len(patterns)} != {4 * 5**3 + 4 * 3 * 2* 5}"
-    # 8 diags
-    patterns.append(set(range(  0, 625, 125+25+5+1)))
-    patterns.append(set(range(  4, 625, 125+25+5-1)))
-    patterns.append(set(range( 20, 625, 125+25-5+1)))
-    patterns.append(set(range( 24, 610, 125+25-5-1)))
-    patterns.append(set(range(100, 625, 125-25+5+1)))
-    patterns.append(set(range(104, 620, 125-25+5-1)))
-    patterns.append(set(range(120, 600, 125-25-5+1)))
-    patterns.append(set(range(124, 589, 125-25-5-1)))
-    assert len(patterns) == 888, len(patterns)
-
-    print(max(len(p) for p in patterns))
-    print(min(len(p) for p in patterns))
-    assert all(len(p) == 5 for p in patterns)
-
-    calls, cards = data
-    got = set()
-    i = 0
-
-    all_cards = []
-    for c in cards:
-        all_cards.extend(c)
-    cards = list(more_itertools.chunked(all_cards, 625))
-    assert all(len(c) == 625 for c in cards)
-    # assert len(all_cards) == 5
-
-    print(f"{len(cards)=}")
-
-    got = [set() for card in cards]
-    i = 0
-    for group in calls:
-        for call in group:
-            bingos = 0
-            i += 1
-            for hit, card in zip(got, cards):
-                if call in card:
-                    hit.add(card.index(call))
-                for pattern in patterns:
-                    if pattern.issubset(hit):
-                        bingos += 1
-                    
-            if bingos >= 5:
-                return call
-
-
-
 WANT = [49, 63]
-# PARSER = parsers.parse_one_str
 TEST_DATA = """\
 62 121 64 51 86 85 36 31 8 113 71 72 75 101 115 44 52 78 26 80 116 98 79 17 77
 110 91 10 9 55 74 107 67 93 54 81 25 58 82 56 5 89 32 14 119 48 35 109 47 21
@@ -232,11 +73,7 @@ TEST_DATA = """\
 10 97 21 83 70 48 90 7 125 15 52 22 51 101 99 19 68 110 114 123 27 65 95 98 59
 """
 TESTS = [(i, TEST_DATA, want) for i, want in enumerate(WANT, start=1)]
-# TESTS = [
-#     (1, TEST_DATA[0], None),
-#     (2, TEST_DATA[1], None),
-#     (3, TEST_DATA[2], None),
-# ]
+
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
