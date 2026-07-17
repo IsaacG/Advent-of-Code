@@ -5,6 +5,7 @@ import itertools
 import more_itertools
 import sys
 import logging
+
 from lib import helpers, parsers
 
 DIRECTIONS = [complex(-1), complex(0, 1), complex(1)]
@@ -22,31 +23,36 @@ def parse_rules(data: list[str]) -> list[dict[int, dict[complex, int]]]:
     return rules
 
 
-def survives(age, tree, all_stems):
+def survives(age, tree, producing):
     if age < 5:
         return True
 
-    rules, stems, sprouts = (tree[i] for i in ["rules", "stems", "sprouts"])
-    exists = stems | set(sprouts)
-    needed_energy = 3 * len(exists)
+    needed_energy = 3 * (len(tree["stems"]) + len(tree["sprouts"]))
     harvested = 0
-    for stem in stems:
+    for stem in tree["stems"]:
         height = min(10, int(stem.imag) + 1)
-        above = min(3, sum(1 for i in all_stems[stem.real] if i > stem.imag))
-        mult = 3 - above
+        mult = producing[stem.real].get(stem.imag, 0)
         harvested += height * mult
-    return needed_energy <= harvested
+        if harvested >= needed_energy:
+            return True
+    return False
 
 
 def simulate_generation(alive):
     dead = []
-    all_stems = collections.defaultdict(set)
+    all_stems = collections.defaultdict(list)
     all_matter = {sprout for tree in alive for sprout in tree["sprouts"]}
 
     for age in range(100):
         next_alive = []
+
+        producing = {}
+        for x, i in all_stems.items():
+            i.sort(reverse=True)
+            producing[x] = {y: 3 - idx for idx, y in enumerate(i[:3])}
+
         for tree in alive:
-            if survives(age, tree, all_stems):
+            if survives(age, tree, producing):
                 next_alive.append(tree)
             else:
                 dead.append(tree)
@@ -63,7 +69,7 @@ def simulate_generation(alive):
             new_stems = tree["sprouts"]
             tree["stems"].update(new_stems)
             for stem in new_stems:
-                all_stems[stem.real].add(stem.imag)
+                all_stems[stem.real].append(stem.imag)
 
             tree["sprouts"] = new_growths
             all_matter.update(new_growths)
