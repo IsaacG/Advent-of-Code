@@ -2,19 +2,65 @@
 
 import more_itertools
 import itertools
+import sys
 import logging
 from lib import helpers, parsers
 
-log = logging.info
+nums = [str(i) for i in range(5)]
+rnums = nums[::-1]
+
+
+def build_pattern(direction):
+    if not direction:
+        return [[""] * 5]
+    d, *rest = direction
+    patterns = build_pattern(rest)
+    if d == 1:
+        return [[a + b for a, b in zip(nums, p)] for p in patterns]
+    if d == -1:
+        return [[a + b for a, b in zip(rnums, p)] for p in patterns]
+    if d == 0:
+        return [[a + b for b in p] for p in patterns for a in nums]
+
+
+def compute_patterns(n: int) -> list[set[int]]:
+    patterns = []
+    for direction in itertools.product([0, 1, -1], repeat=n):
+        if 1 not in direction:
+            continue
+        if next(d for d in direction if d != 0) == -1:
+            continue
+        patterns.extend(build_pattern(direction))
+
+    return [{int(a, 5) for a in p} for p in patterns]
+
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    if part == 1:
-        return solvep1(data)
-    if part == 2:
-        return solvep2(data)
-    if part == 3:
-        return solvep3(data)
+    ball_lines, card_lines = data
+    balls = itertools.chain(*ball_lines)
+    dimensions = part + 1
+
+    cards = list(more_itertools.chunked(itertools.chain(*card_lines), 5**dimensions))
+    patterns = compute_patterns(dimensions)
+    print(f"{dimensions=}")
+    print(f"{len(cards)=}, {set(len(c) for c in cards)}")
+    print(f"{len(patterns)=}, {set(len(p) for p in patterns)}")
+
+    got = [set() for card in cards]
+    i = 0
+    for ball in balls:
+        i += 1
+        bingos = 0
+
+        for hit, card in zip(got, cards):
+            if ball in card:
+                hit.add(card.index(ball))
+            bingos += sum(pattern.issubset(hit) for pattern in patterns)
+                
+        if bingos >= 5:
+            return ball
+
 
 def solvep1(data: str) -> int:
     patterns = [set(range(i, i + 5)) for i in [0, 5, 10, 15, 20]]
