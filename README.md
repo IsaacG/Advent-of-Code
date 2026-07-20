@@ -13,6 +13,7 @@ These are mostly in Python with a handful of Golang.
 | [Tom's Data Onion][data-onion]     | A message wrapped in layers of puzzles. Unwrap layers to find the next layer. | [Code][c_onion] |
 | [aquaq][aquaq]                     | | [Code][c_aquaq] |
 | [Pi Coding Quest][pi-coding]       | | [Code][c_pi]    |
+| [dailyprog.club][dailyprog.club]   | Short, simpler daily challenges with a streak | [Code][c_dailyprod] |
 
 The `lib/` contains a number of helpers and base runner code.
 
@@ -26,6 +27,7 @@ The `lib/` contains a number of helpers and base runner code.
 [aquaq]: https://challenges.aquaq.co.uk/
 [flipflop]: https://flipflop.slome.org/
 [data-onion]: https://www.tomdalling.com/toms-data-onion/
+[dailyprog.club]: https://beta.dailyprog.club/
 
 [c_aoc_py]: http://github.com/isaacG/advent-of-Code/tree/main/advent_of_code/
 [c_aoc_go]: http://github.com/isaacG/advent-of-Code/tree/main/advent_of_code.go/
@@ -38,3 +40,4 @@ The `lib/` contains a number of helpers and base runner code.
 [c_aquaq]: https://github.com/IsaacG/Advent-of-Code/tree/main/aquaq
 [c_flip]: https://github.com/IsaacG/Advent-of-Code/tree/main/flipflop.slome
 [c_onion]: https://github.com/IsaacG/Advent-of-Code/tree/main/other/data_onion
+[c_dailyprod]: https://github.com/IsaacG/Advent-of-Code/tree/main/other/dailyprog.club
