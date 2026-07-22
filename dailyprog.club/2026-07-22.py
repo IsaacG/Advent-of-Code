@@ -36,63 +36,62 @@ Return an object with three arrays: rows, cols, and dirs.
 The arrays have the same length; element i gives the beam's position and direction at step i.
 """
 
-DIRS = {"right": (1, 0), "up": (0, -1), "left": (-1, 0), "down": (0, 1)}
-VECTORS = list(DIRS.values()) * 2
+DIRS = {"right": complex(1, 0), "up": complex(0, -1), "left": complex(-1, 0), "down": complex(0, 1)}
+SIDEWAYS = {DIRS[i] for i in {"right", "left"}}
 SRID = {v: k for k, v in DIRS.items()}
-ROT = {
-    "L": dict(zip(VECTORS, VECTORS[1:])),
-    "R": dict(zip(VECTORS[1:], VECTORS)),
-}
-
 
 def photonPath(n, x, y, d, grid):
     "Return a dict with keys 'rows', 'cols', 'dirs'."
-    o_rows = []
-    o_cols = []
-    o_dirs = []
-
     board = {
-        (bx, by): v
+        complex(bx, by): v
         for by, row in enumerate(grid[i:i+n] for i in range(0, n*n, n))
         for bx, v in enumerate(row)
     }
-    dx, dy = DIRS[d]
+    d = DIRS[d]
+    pos = complex(x, y)
     seen = set()
+    states = []
 
     while True:
-        o_rows.append(y)
-        o_cols.append(x)
-        o_dirs.append(SRID[dx, dy])
-        x += dx
-        y += dy
-        if (x, y) not in board:
+        states.append((pos, d))
+        pos += d
+        if pos not in board or (pos, d) in seen:
             break
-        if (x, y, dx, dy) in seen:
-            break
-        seen.add((x, y, dx, dy))
-        v = board[x, y]
+        seen.add((pos, d))
+        v = board[pos]
         if v == 0:
             continue
-        if (v == 1 and dy == 0) or (v == 2 and dy != 0):
-            dx, dy = ROT["L"][dx, dy]
+        sideways = d in SIDEWAYS
+        if v == 1 and sideways or v == 2 and not sideways:
+            d *= -1j
         else:
-            dx, dy = ROT["R"][dx, dy]
+            d *= 1j
 
-    return {"rows": o_rows, "cols": o_cols, "dirs": o_dirs}
+    return {
+        "rows": [int(state[0].imag) for state in states],
+        "cols": [int(state[0].real) for state in states],
+        "dirs": [SRID[state[1]] for state in states],
+    }
+
+
+def check(got, want):
+    if got == want:
+        return
+    print("G", got)
+    print("W", want)
+    assert False
+
+check(photonPath(4, 0, 0, "right", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), {"rows": [0, 0, 0, 0], "cols": [0, 1, 2, 3], "dirs": ["right", "right", "right", "right"]})
+check(photonPath(4, 1, 1, "right", [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]), {"rows": [1, 1, 0], "cols": [1, 2, 2], "dirs": ["right", "up", "up"]})
+check(photonPath(4, 0, 0, "right", [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]), {"rows": [0, 0, 0, 1, 2, 2, 2], "cols": [0, 1, 2, 2, 2, 1, 0], "dirs": ["right", "right", "down", "down", "left", "left", "left"]})
+check(photonPath(2, 0, 0, "right", [1, 2, 2, 1]), {"rows": [0, 0, 1, 1, 0], "cols": [0, 1, 1, 0, 0], "dirs": ["right", "down", "left", "up", "right"]})
+check(photonPath(3, 0, 0, "right", [1, 2, 0, 2, 0, 2, 0, 2, 1]), {"rows": [0, 0, 1, 2, 2, 1, 1, 1, 0], "cols": [0, 1, 1, 1, 2, 2, 1, 0, 0], "dirs": ["right", "down", "down", "right", "up", "left", "left", "up", "right"]})
+
+
 
 assert photonPath(4, 0, 0, "right", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) == {"rows": [0, 0, 0, 0], "cols": [0, 1, 2, 3], "dirs": ["right", "right", "right", "right"]}
 assert photonPath(4, 1, 1, "right", [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]) == {"rows": [1, 1, 0], "cols": [1, 2, 2], "dirs": ["right", "up", "up"]}
 assert photonPath(4, 0, 0, "right", [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]) == {"rows": [0, 0, 0, 1, 2, 2, 2], "cols": [0, 1, 2, 2, 2, 1, 0], "dirs": ["right", "right", "down", "down", "left", "left", "left"]}
-assert photonPath(
-        2, 0, 0, "right", [1, 2, 2, 1]
-        ) == {
-        "rows": [0, 0, 1, 1, 0], "cols": [0, 1, 1, 0, 0],
-        "dirs": ["right", "down", "left", "up", "right"]}
-assert photonPath(
-        3, 0, 0, "right", [1, 2, 0, 2, 0, 2, 0, 2, 1]
-        ) == {
-        "rows": [0, 0, 1, 2, 2, 1, 1, 1, 0],
-        "cols": [0, 1, 1, 1, 2, 2, 1, 0, 0],
-        "dirs": ["right", "down", "down", "right", "up",
-                 "left", "left", "up", "right"]}
+assert photonPath(2, 0, 0, "right", [1, 2, 2, 1]) == {"rows": [0, 0, 1, 1, 0], "cols": [0, 1, 1, 0, 0], "dirs": ["right", "down", "left", "up", "right"]}
+assert photonPath(3, 0, 0, "right", [1, 2, 0, 2, 0, 2, 0, 2, 1]) == {"rows": [0, 0, 1, 2, 2, 1, 1, 1, 0], "cols": [0, 1, 1, 1, 2, 2, 1, 0, 0], "dirs": ["right", "down", "down", "right", "up", "left", "left", "up", "right"]}
 
