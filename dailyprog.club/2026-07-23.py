@@ -13,37 +13,15 @@ deadlines[i] ≥ 1
 rewards[i] ≥ 1
 """
 
-import collections
-import functools
+import heapq
 
 def maxBounty(deadlines, rewards):
-    # return maximum total reward
-    days = collections.defaultdict(list)
-    for day, rewards in zip(deadlines, rewards):
-        days[day].append(rewards)
-
-    @functools.cache
-    def getBest(day):
-        if day > max(days, default=0):
-            return 0, []
-        bestTomorrow, skipped = getBest(day + 1)
-        withToday = 0, []
-
-        if days[day]:
-            withToday = days[day][-1] + bestTomorrow, skipped + days[day][:-1]
-        if skipped:
-            withoutToday = skipped[-1] + bestTomorrow, skipped[:-1] + days[day]
-        else:
-            withoutToday = bestTomorrow, days[day]
-        if withToday[0] > withoutToday[0]:
-            selection = withToday
-        else:
-            selection = withoutToday
-        return selection
-
-
-    best, _ = getBest(1)
-    return best
+    selected = []
+    for deadline, reward in sorted(zip(deadlines, rewards)):
+        heapq.heappush(selected, reward)
+        if len(selected) > deadline:
+            heapq.heappop(selected)
+    return sum(selected)
 
 
 assert maxBounty([2, 1, 2, 1], [10, 5, 20, 15]) == 35
