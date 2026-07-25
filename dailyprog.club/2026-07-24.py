@@ -16,6 +16,18 @@ def divisibleBounty(pouches, k):
         if sum(pouches[n:m]) % k == 0
     ) 
 
+def optimized(pouches, k):
+	"""Return the length of the longest stretch where the total is divisible by k."""
+	num_pouches = len(pouches)
+	for n in range(num_pouches, -1, -1):
+		if any(
+			sum(pouches[a:b + 1]) % k == 0
+			for a in range(num_pouches - n + 1)
+			for b in range(a, num_pouches)
+		):
+			return n
+	return 0
+
 
 assert divisibleBounty([2, 3, 5, 1, 4], 5) == 5
 assert divisibleBounty([1, 2], 3) == 2
