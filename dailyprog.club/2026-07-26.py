@@ -6,33 +6,35 @@ The parade marshal wants to maximize the number of boats that can be scheduled w
 Given an array intervals where each interval is a pair [start, end), return the maximum number of boats that can be scheduled.
 """
 
-import collections
-import itertools
-
-def canDo(intervals):
-    starts = collections.deque(sorted(s for s, e in intervals))
-    ends = collections.deque(sorted(e for s, e in intervals))
-    most = 0
-    cur = 0
-    while starts:
-        t = starts[0]
-        while ends and ends[0] <= t:
-            cur -= 1
-            ends.popleft()
-        while starts and starts[0] == t:
-            cur += 1
-            if cur > 1:
-                return False
-            starts.popleft()
-    return True
-
-
 def maxBoats(intervals):
     """Return the maximum number of non-overlapping intervals."""
-    for i in range(len(intervals), -1, -1):
-        if any(canDo(subset) for subset in itertools.combinations(intervals, r=i)):
-            return i
+    if not intervals:
+        return 0
+    (s, e), *rest = intervals
+    filtered = [[a, b] for a, b in rest if b <= s or a >= e]
+    withBoat = 1 + maxBoats(filtered)
+    if len(filtered) == len(rest):
+        return withBoat
+    return max(withBoat, maxBoats(rest))
+
+"""
+// Javascript
+
+function maxBoats(intervals) {
+  if (intervals.length === 0) {
     return 0
+  }
+  const [first, ...rest] = intervals
+  const [start, end] = first
+  const filtered = rest.filter(other => other[0] >= end || other[1] <= start)
+  const withFirst = 1 + maxBoats(filtered)
+  if (filtered.length === rest.length) {
+    return withFirst
+  }
+  const withoutFirst = maxBoats(rest)
+  return Math.max(withFirst, withoutFirst)
+}
+"""
 
 
 assert maxBoats([[1,3],[3,5]]) == 2
