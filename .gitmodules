@@ -1,0 +1,3 @@
+[submodule "dailyprog.club"]
+	path = dailyprog.club
+	url = git@github.com:IsaacG/dailyprog.club.git
