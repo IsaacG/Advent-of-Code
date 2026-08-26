@@ -1,46 +1,43 @@
-"""Everyone Codes Day N."""
+"""Everyone Codes: Quest 4, Day 2."""
 
-import logging
+import itertools
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[str]) -> int:
     """Solve the parts."""
-    d = {}
+    # Parse the input
+    parsed = {}
     for line in data:
-        k, v = line.split("=")
-        if v.startswith("[") and v.endswith("]"):
-            v = eval(v)
-        d[k] = v
-    pos = tuple(d["START"])
-    seen = {pos}
-    if part < 3:
-        for target in d["MOVES"]:
-            ax, ay = pos
-            bx, by = d[target]
-            pos = (ax + bx) // 2, (ay + by) // 2
-            seen.add(pos)
-        if part == 1:
-            return len(seen)
-        ff = {(x + dx, y + dy) for dx, dy in [(0,1),(0,-1),(1,0),(-1,0)] for x, y in seen}
-        return len(ff - seen)
+        key, val = line.split("=")
+        if val.startswith("[") and val.endswith("]"):
+            val = tuple(eval(val))
+        parsed[key] = val
 
+    pos = parsed["START"]
+    seen = {pos}
     todo = [pos]
-    while todo:
+    # Parts 1, 2: follow the MOVES. Part 3: try all possible moves.
+    targets_generator = itertools.repeat("ABC") if part == 3 else parsed["MOVES"]
+
+    for targets in targets_generator:
         ax, ay = todo.pop()
-        for target in "ABC":
-            bx, by = d[target]
+        for target in targets:
+            bx, by = parsed[target]
             pos = (ax + bx) // 2, (ay + by) // 2
-            if pos not in seen:
+            # Part 1, 2: position can move to a repeated location.
+            # Part 3: do not queue a repeat.
+            if part < 3 or pos not in seen:
                 seen.add(pos)
                 todo.append(pos)
-    ff = {(x + dx, y + dy) for dx, dy in [(0,1),(0,-1),(1,0),(-1,0)] for x, y in seen}
-    return len(ff - seen)
+        if not todo:
+            break
+    if part == 1:
+        return len(seen)
+    fireflies = {(x + dx, y + dy) for dx, dy in helpers.FOUR_DIRECTIONS_T for x, y in seen}
+    return len(fireflies - seen)
 
 
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 START=[5,0]
@@ -64,8 +61,6 @@ START=[0,0]
 A=[0,0]
 B=[80,15]
 C=[5,30]""",
-    """\
-""",
 ]
 TESTS = [
     (1, TEST_DATA[0], 8),
