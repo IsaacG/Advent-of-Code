@@ -8,11 +8,13 @@ log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    pass
+    print(data)
 
 
-PARSER = parsers.parse_one_str
+# PARSER = parsers.parse_one_str
 TEST_DATA = [
+    """\
+"""
 ]
 TESTS = [
     # (1, TEST_DATA[0], None),
