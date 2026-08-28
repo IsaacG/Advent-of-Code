@@ -2,90 +2,64 @@
 
 import logging
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[str]) -> int:
     """Solve the parts."""
-    parsed = {}
-    for line in data:
-        k, v = line.split("=")
-        parsed[k] = v
+    parsed = dict(line.split("=", 1) for line in data)
     height, width = int(parsed["height"]), int(parsed["width"])
-    lhoff = len(parsed["horizontal-offsets"])
-    lvoff = len(parsed["vertical-offsets"])
-    size = lhoff * lvoff * 2
-    hrep, hrem = divmod(width, size)
-    vrep, vrem = divmod(height, size)
-    # logging.debug(f"{height=}, {width=}, {lhoff=}, {lvoff=}, {vrep, vrem=}, {hrep, hrem=}, {size=}")
+    horiz_offsets = [int(i) for i in parsed["horizontal-offsets"]]
+    vert_offsets = [int(i) for i in parsed["vertical-offsets"]]
+    len_x_offsets = len(horiz_offsets)
+    len_y_offsets = len(vert_offsets)
 
-    last_row_start = True
-    count = {True: 0, False: 0}
-    perc = max(1, size // 100)
-    for y in range(size):
-        if y % perc == 0:
-            log("%d%%", y // perc)
-        if y == vrem:
-            ycopy = count.copy()
-        x = 0
-        t = x % 2 == int(parsed["horizontal-offsets"][y % len(parsed["horizontal-offsets"])]) or y == 0
-        cur = last_row_start if not t else not last_row_start
-        last_row_start = cur
+    # Patterns repeat after x_offsets * y_offsets
+    # Only check up to x_offsets * y_offsets (or width/height) in each direction.
+    # Except ... double that in case the pattern alternates.
+    size_x = min(width, len_x_offsets * len_y_offsets * 2)
+    repeated_x, remainder_x = divmod(width, size_x)
+
+    size_y = min(height, len_x_offsets * len_y_offsets * 2)
+    repeated_y, remainder_y = divmod(height, size_y)
+
+    prior_row_color = True  # Arbitrary color for the first cell.
+    ycount = {True: 0, False: 0}
+    status_step = max(1, size_y // 100)  # for status output printing
+    for y in range(size_y):
+        if y % status_step == 0:
+            logging.info("%d%%", y // status_step)
+        # This section is repeated after the last full block.
+        if y == remainder_y:
+            count = ycount.copy()
+        top = 0 == horiz_offsets[y % len_x_offsets]
+        # The start color of each row can be determined by the start color of the prior row.
+        # Flip colors if we cross a line.
+        cur = prior_row_color = prior_row_color != top
         xcount = {True: 0, False: 0}
-        for x in range(size):
-            if x == hrem:
-                count[True] += xcount[True]
-                count[False] += xcount[False]
-            l = y % 2 == int(parsed["vertical-offsets"][x % len(parsed["vertical-offsets"])])
-            r = y % 2 == int(parsed["vertical-offsets"][(x + 1) % len(parsed["vertical-offsets"])])
-            t = x % 2 == int(parsed["horizontal-offsets"][y % len(parsed["horizontal-offsets"])])
-            b = x % 2 == int(parsed["horizontal-offsets"][(y + 1) % len(parsed["horizontal-offsets"])])
-            if l and r and t and b:
+        for x in range(size_x):
+            # This section is repeated after the last full block.
+            if x == remainder_x:
+                for color, num in xcount.items():
+                    ycount[color] += num
+            # Check for a border on all four sides.
+            left = y % 2 == vert_offsets[x % len_y_offsets]
+            right = y % 2 == vert_offsets[(x + 1) % len_y_offsets]
+            top = x % 2 == horiz_offsets[y % len_x_offsets]
+            bottom = x % 2 == horiz_offsets[(y + 1) % len_x_offsets]
+            # If there is a border on all four sides, this cell is isolated.
+            if left and right and top and bottom:
                 xcount[cur] += 1
-            if r:
-                cur = not cur
-        count[True] += hrep * xcount[True]
-        count[False] += hrep * xcount[False]
-    ycopy[True] += vrep * count[True]
-    ycopy[False] += vrep * count[False]
-    if part == 1:
-        return sum(ycopy.values())
-    return max(ycopy.values())
+            cur = cur != right  # Change colors when crossing a line.
+        # This section is repeated fully x times.
+        for color, num in xcount.items():
+            ycount[color] += repeated_x * num
+    # This section is repeated fully y times.
+    for color, num in ycount.items():
+        count[color] += repeated_y * num
 
-    isolated = set()
-    for x in range(width):
-        for y in range(height):
-            l = y % 2 == int(parsed["vertical-offsets"][x % len(parsed["vertical-offsets"])])
-            r = y % 2 == int(parsed["vertical-offsets"][(x + 1) % len(parsed["vertical-offsets"])])
-            t = x % 2 == int(parsed["horizontal-offsets"][y % len(parsed["horizontal-offsets"])])
-            b = x % 2 == int(parsed["horizontal-offsets"][(y + 1) % len(parsed["horizontal-offsets"])])
-            if l and r and t and b:
-                isolated.add((x, y))
-    if part == 1:
-        return len(isolated)
-
-    color = {(0, 0): True}
-    for x in range(width - 1):
-        for y in range(height - 1):
-            r = y % 2 == int(parsed["vertical-offsets"][(x + 1) % len(parsed["vertical-offsets"])])
-            b = x % 2 == int(parsed["horizontal-offsets"][(y + 1) % len(parsed["horizontal-offsets"])])
-            cur = color[x, y]
-            color[x + 1, y] = cur if not r else not cur
-            color[x, y + 1] = cur if not b else not cur
-
-    x, y = width - 2, height - 1
-    r = y % 2 == int(parsed["vertical-offsets"][(x + 1) % len(parsed["vertical-offsets"])])
-    cur = color[x, y]
-    color[x + 1, y] = cur if not r else not cur
-
-    count = {True: 0, False: 0}
-    for i in isolated:
-        count[color[i]] += 1
-    return max(count.values())
+    return (sum if part == 1 else max)(count.values())
 
 
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 width=30
