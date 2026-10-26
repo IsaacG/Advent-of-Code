@@ -17,12 +17,14 @@ class Runner(running.Runner):
         """Return the solution file."""
         return pathlib.Path(f"{self.year}/solutions.txt")
 
-    def write_solutions(self, year: int, day: int) -> str:
-        """Write the solutions to file."""
-        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/ec").read_text().strip()
+    def session(self) -> requests.Session:
+        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/everybody.codes").read_text().strip()
         session = requests.Session()
         session.cookies.set("everybody-codes", cookie)
 
+    def write_solutions(self, year: int, day: int) -> str:
+        """Write the solutions to file."""
+        session = self.session()
         year = year.removeprefix("event").removeprefix("story").removeprefix("0")
         data = session.get(f"https://api.everybody.codes/event/{year}/quest/{day}").json()
         want = [f"answer{i}" for i in range(1, 4)]
@@ -53,11 +55,7 @@ class Runner(running.Runner):
         seed = 49
         year = year.removeprefix("event").removeprefix("story").removeprefix("0")
 
-        cookie = (pathlib.Path(os.getenv("XDG_DATA_HOME")) / "cookies/ec").read_text().strip()
-
-        session = requests.Session()
-        session.cookies.set("everybody-codes", cookie)
-
+        session = self.session()
         data = session.get(f"https://everybody.codes/assets/{year}/{day}/input/{seed}.json").json()
         metadata = session.get(f"https://api.everybody.codes/event/{year}/quest/{day}").json()
 
