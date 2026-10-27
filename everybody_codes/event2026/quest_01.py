@@ -4,14 +4,14 @@ import itertools
 from lib import helpers
 
 
-class GetNext:
+class CachedGetNextOverLimit:
 
     def __init__(self, gen):
         self.gen = gen
         self.seen = []
         self.max = 0
 
-    def __next__(self, limit):
+    def needed(self, limit):
         if limit <= self.max:
             return next(i for i in self.seen if limit <= i)
         while (i := next(self.gen)) < limit:
@@ -23,14 +23,12 @@ class GetNext:
 def solve(part: int, data: list[int]) -> int:
     """Solve the parts."""
     need = 0
-    for have in data:
-        gen = [
-            (i * i for i in itertools.count(1) if i * i >= have),
-            (4 * i for i in itertools.count(2) if 4 * i >= have),
-            (i * i - 1 for i in itertools.count(3, 2) if i * i - 1 >= have),
-        ][part - 1]
-        need += next(gen) - have
-    return need
+    gen = CachedGetNextOverLimit([
+        (i * i for i in itertools.count(1)),
+        (4 * i for i in itertools.count(2)),
+        (i * i - 1 for i in itertools.count(3, 2)),
+    ][part - 1])
+    return sum(gen.needed(have) - have for have in data)
 
 
 TEST_DATA = "3,11,12,16,24,25"
