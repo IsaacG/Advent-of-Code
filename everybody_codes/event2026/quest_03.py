@@ -1,18 +1,14 @@
 """Everyone Codes Event 2026 Day 3."""
 
 import itertools
-import logging
+
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
-def compute(iso, number):
-    iso = str(abs(iso))[::-1]
-    number = str(number)[::-1]
+def compute(iso: int, number: int) -> int:
     return sum(
         int(b) * int(a) ** idx
-        for idx, (a, b) in enumerate(zip(itertools.cycle(iso), number))
+        for idx, (a, b) in enumerate(zip(itertools.cycle(str(abs(iso))[::-1]), str(number)[::-1]))
     )
 
 
@@ -23,22 +19,13 @@ def solve(part: int, data: str, testing) -> int:
 
     total = 0
     for _, iso, number in data:
-        iso = abs(iso)
-        print(iso, number)
-        t = compute(iso, number)
-        if not any(
-            compute(iso, i) == t
-            for i in range(number)
-        ):
-            print(iso, number)
-            total += t
+        value = compute(iso, number)
+        if not any(compute(iso, i) == value for i in range(number)):
+            total += value
                 
-    if part == 3:
-        assert testing or len(str(total)) == len(str(728387)) and total // 100000 not in {6, 7}
     return total
 
 
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 ISO-3210 7654

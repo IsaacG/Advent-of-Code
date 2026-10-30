@@ -1,6 +1,7 @@
 """Everyone Codes Event 2026 Day 1."""
 
 import itertools
+
 from lib import helpers
 
 
@@ -20,9 +21,9 @@ class CachedGetNextOverLimit:
         self.max = i
         return i
 
+
 def solve(part: int, data: list[int]) -> int:
     """Solve the parts."""
-    need = 0
     gen = CachedGetNextOverLimit([
         (i * i for i in itertools.count(1)),
         (4 * i for i in itertools.count(2)),

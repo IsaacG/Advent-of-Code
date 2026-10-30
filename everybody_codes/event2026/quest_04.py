@@ -1,61 +1,62 @@
 """Everyone Codes Event 2026 Day 4."""
 
 import collections
-import logging
+
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[int]) -> int:
     """Solve the parts."""
+    # id, quest, part, time => data
     if part < 3:
-        total = collections.defaultdict(int)
+        cumulative_time = collections.defaultdict(int)
         counts = collections.defaultdict(int)
 
-        for id_, quest, part, time in data:
-            total[id_] += time
+        for id_, _, _, time in data:
+            cumulative_time[id_] += time
             counts[id_] += 1
-        places = sorted(total, key=lambda x: (-counts[x], total[x]))
-        return sum(idx * total[person] for idx, person in enumerate(places, 1))
+        places = sorted(cumulative_time, key=lambda x: (-counts[x], cumulative_time[x]))
+        return sum(idx * cumulative_time[person] for idx, person in enumerate(places, 1))
     
-    quests = sorted({quest for id_, quest, part, time in data})
+    quests = sorted({quest for _, quest, _, _ in data})
     points = collections.defaultdict(int)
     for q in quests:
-        total = collections.defaultdict(int)
+        cumulative_time = collections.defaultdict(int)
         parts = sorted({part for i, quest, part, time in data if quest == q})
         for p in parts:
+            # Compute who completed the part and in how long.
             completed = set()
-            for id_, quest, part, time in data:
-                if quest == q and part == p:
-                    total[id_] += time
+            for id_, quest, quest_part, time in data:
+                if quest == q and quest_part == p:
+                    cumulative_time[id_] += time
                     completed.add(id_)
+
+            # Group by time to handle ties.
             times = collections.defaultdict(set)
             for i in completed:
-                times[total[i]].add(i)
+                times[cumulative_time[i]].add(i)
+
+            # Distribute the points based on rank.
             pot = p * 50
-            for t, ids in sorted(times.items()):
+            for _, ids in sorted(times.items()):
                 for i in ids:
                     points[i] += pot
                 pot = max(0, pot - len(ids))
 
-    cum = collections.defaultdict(int)
+    # Group by points to sort and handle ties.
+    by_points = collections.defaultdict(int)
     for i in points.values():
-        cum[i] += 1
+        by_points[i] += 1
+
+    # Compute ranks and checksum.
     checksum = 0
     rank = 1
-    for i in sorted(cum, reverse=True):
-        checksum += rank * i * cum[i]
-        rank += cum[i]
+    for i in sorted(by_points, reverse=True):
+        checksum += rank * i * by_points[i]
+        rank += by_points[i]
     return checksum
-    for idx, p in enumerate(sorted(points.values(), reverse=True), 1):
-        print(f"{idx}. points={p}")
-    return sum(idx * p for idx, p in enumerate(sorted(points.values(), reverse=True), 1))
 
 
-
-
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 id=1 quest=1 part=1 time=187
@@ -5206,8 +5207,8 @@ id=230 quest=19 part=1 time=143""",
 TESTS = [
     (1, TEST_DATA[0], 27598),
     (2, TEST_DATA[1], 6470),
-    # (3, TEST_DATA[2], 2998),
-    # (3, TEST_DATA[3], 3004),
+    (3, TEST_DATA[2], 2998),
+    (3, TEST_DATA[3], 3004),
     (3, TEST_DATA[4], 6232480),
 ]
 

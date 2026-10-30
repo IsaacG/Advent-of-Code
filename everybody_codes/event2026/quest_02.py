@@ -2,11 +2,9 @@
 
 import functools
 import itertools
-import logging
-from lib import helpers
-from lib import parsers
 
-log = logging.info
+from lib import helpers
+
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
@@ -29,12 +27,9 @@ def solve(part: int, data: str) -> int:
                 cmp[a, b] = cmp[a, c]
                 cmp[b, a] = cmp[c, a]
         total += int("".join(str(i) for i in sorted(nums, key=functools.cmp_to_key(lambda a, b: cmp[a, b]))))
-        print(len(nums), len(cmp) // 2)
     return total
 
 
-
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 4<3 2<5 3>1 1>2 1<5 4<1 3>2 4<2 3>5 4<5
