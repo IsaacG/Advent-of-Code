@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 import pathlib
+import time
 
 import click
 import requests
@@ -21,9 +22,12 @@ class CachedSession:
         self.session = requests.Session()
         self.session.cookies.set("everybody-codes", cookie)
 
-    def get(self, url: str) -> str:
-        cache = pathlib.Path(os.getenv("XDG_CACHE_HOME")) / "http" / "everybody.codes" / url.replace("/", "_")
-        if cache.exists():
+    def cachefile(self, url: str) -> pathlib.Path():
+        return pathlib.Path(os.getenv("XDG_CACHE_HOME")) / "http" / "everybody.codes" / url.replace("/", "_")
+
+    def get(self, url: str, *, force: bool = False) -> str:
+        cache = self.cachefile(url)
+        if not force and cache.exists():
             return cache.read_text()
         resp = self.session.get(url)
         resp.raise_for_status()
@@ -78,7 +82,10 @@ class Runner(running.Runner):
 
     def decrypt(self, year: int, day: int, part: int, url: str) -> str | None:
         data = self.session.getjson(url)[f"{part}"]
-        metadata = self.session.getjson(f"https://api.everybody.codes/event/{year}/quest/{day}")
+        url = f"https://api.everybody.codes/event/{year}/quest/{day}"
+        metadata = self.session.getjson(url)
+        if f"key{part}" not in metadata:
+            metadata = self.session.getjson(url, force=True)
 
         aes_key = metadata[f"key{part}"].encode()
         cipher = AES.new(aes_key, AES.MODE_CBC, iv=aes_key[:AES.block_size])
@@ -106,12 +113,19 @@ class Runner(running.Runner):
 
     def submit_solution(self, year: int, day: int, solutions: list[int | str]) -> str:
         """Submit the solution."""
+        if len(self.parts) != 1:
+            raise ValueError("Must specify exactly one part to submit.")
         year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
-        part = len(solutions)
-        solution = str(solutions[-1])
+        part = self.parts[0]
+        solution = str(solutions[0])
         resp = self.session.post(f"https://api.everybody.codes/event/{year}/quest/{day}/part/{part}/answer", json={"answer": solution})
         resp.raise_for_status()
-        print(rest.text)
+        got = resp.json()
+        if "penaltyLeftMs" in got:
+            print(got)
+            print(f"Sleeping for {got["penaltyLeftMs"]}ms")
+            time.sleep(got["penaltyLeftMs"] / 1000)
+        return got
 
 
 @click.command()
