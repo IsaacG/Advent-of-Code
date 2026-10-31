@@ -1,4 +1,4 @@
-"""Everyone Codes Day N."""
+"""Everyone Codes Event 2026 Day N."""
 
 import logging
 from lib import helpers
@@ -14,7 +14,15 @@ def solve(part: int, data: str) -> int:
 # PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
-"""
+""",
+    """\
+""",
+    """\
+""",
+    """\
+""",
+    """\
+""",
 ]
 TESTS = [
     # (1, TEST_DATA[0], None),
