@@ -12,6 +12,7 @@ import resource
 import shutil
 import sys
 import time
+import types
 import typing
 
 import inotify_simple  # type: ignore
@@ -99,13 +100,15 @@ class Runner:
                 msg += f" Too high by {-delta}."
         print(msg)
 
+    def get_tests(self, part: int, module: types.Module) -> list[tuple]:
+        return [(p, data, want) for p, data, want in module.TESTS if part == p]
+
     def test(self, module, parser: parsers.BaseParser, formatter) -> bool:
         success = True
         for part in self.parts:
+            tests = self.get_tests(part, module)
             formatter.set_part(part)
-            for test_number, (test_part, test_data, test_want) in enumerate(module.TESTS, 1):
-                if test_part != part:
-                    continue
+            for test_number, (test_part, test_data, test_want) in enumerate(tests, 1):
                 success = success and self.compare(
                     test_want, parser(test_data.rstrip("\n")),
                     f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
