@@ -40,27 +40,27 @@ class Runner:
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def input_path(self, part: int) -> pathlib.Path:
         """Return the input file."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def module_name(self, year: int, day: int) -> str:
         """Return the module name."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def download_input(self, year: int, day: int, part: int) -> str:
         """Download the input."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def write_solutions(self, year: int, day: int) -> str:
         """Write the solutions to file."""
-        raise NotImplemented
+        raise NotImplementedError
 
-    def submit_solution(self, year: int, day: int, solutions: list[int | str]) -> str:
+    def submit_solution(self, year: int, day: int, part: int, solutions: int | str) -> tuple[typing.Any, float | None]:
         """Submit the solution."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_solutions(self, day: int) -> list[int] | None:
         solutions_path = self.solutions_path()
@@ -103,40 +103,47 @@ class Runner:
     def get_tests(self, part: int, module: types.Module) -> list[tuple]:
         return [(p, data, want) for p, data, want in module.TESTS if part == p]
 
-    def test(self, module, parser: parsers.BaseParser, formatter) -> bool:
+    def test_part(self, module, parser: parsers.BaseParser, formatter, part: int) -> bool:
         success = True
-        for part in self.parts:
-            tests = self.get_tests(part, module)
-            formatter.set_part(part)
-            for test_number, (test_part, test_data, test_want) in enumerate(tests, 1):
-                success = success and self.compare(
-                    test_want, parser(test_data.rstrip("\n")),
-                    f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
-                    f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
-                    module.solve,
-                    part=part, testing=True, test_number=test_number,
-                )
+        tests = self.get_tests(part, module)
+        formatter.set_part(part)
+        for test_number, (test_part, test_data, test_want) in enumerate(tests, 1):
+            success = success and self.compare(
+                test_want, parser(test_data.rstrip("\n")),
+                f"TEST  {self.year}.{self.day:02}.{part} %s PASS (test {test_number})",
+                f"TEST  {self.year}.{self.day:02}.{part} %s FAIL (test {test_number}). Got %r but wants {test_want!r}.",
+                module.solve,
+                part=part, testing=True, test_number=test_number,
+            )
         return success
 
+    def test(self, module, parser: parsers.BaseParser, formatter) -> bool:
+        return all(self.test_part(module, parser, formatter, part) for part in self.parts)
+
+    def solve_part(self, module, parser: parsers.BaseParser, formatter, part: int) -> str | int:
+        formatter.set_part(part)
+        data = self.input_data(part)
+        if data is None:
+            print(f"SOLVE No input data found for day {self.day} part {part}")
+            return
+        time_s, got = helpers.timed(module.solve, part=part, data=parser(data), testing=False, test_number=None)
+        print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
+        return got
+
     def solve(self, module, parser: parsers.BaseParser, formatter) -> list[str | int]:
-        solutions = []
-        for part in self.parts:
-            formatter.set_part(part)
-            data = self.input_data(part)
-            if data is None:
-                print(f"SOLVE No input data found for day {self.day} part {part}")
-                continue
-            time_s, got = helpers.timed(module.solve, part=part, data=parser(data), testing=False, test_number=None)
-            solutions.append(got)
-            print(f"SOLVE {self.day:02}.{part} {time_s} ---> {got}")
-        return solutions
+        return [self.solve_part(module, parser, formatter, part) for part in self.parts]
 
     def submit(self, module, parser: parsers.BaseParser, formatter) -> None:
-        if not self.test(module, parser, formatter):
-            print("Tests failed; skip submit.")
+        part = max(part for part in self.parts if self.get_tests(part, module))
+        if not self.test_part(module, parser, formatter, part):
+            print(f"Tests for {part=} failed; not submitting.")
             return
-        solutions = self.solve(module, parser, formatter)
-        print(self.submit_solution(self.year, self.day, solutions))
+        solution = self.solve_part(module, parser, formatter, part)
+        result, sleep = self.submit_solution(self.year, self.day, part, solution)
+        print(result)
+        if sleep:
+            print(f"Wait for {sleep}s")
+            time.sleep(sleep)
 
     def check(self, module, parser: parsers.BaseParser, formatter) -> bool:
         want = self.get_solutions(self.day)

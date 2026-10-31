@@ -5,6 +5,7 @@ import json
 import os
 import pathlib
 import time
+import typing
 
 import click
 import requests
@@ -111,21 +112,14 @@ class Runner(running.Runner):
         solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div[last()]/pre/b/text()')]
         return list(zip(itertools.cycle([part]), examples, solutions))
 
-    def submit_solution(self, year: int, day: int, solutions: list[int | str]) -> str:
+    def submit_solution(self, year: int, day: int, part: int, solution: int | str) -> tuple[typing.Any, float | None]:
         """Submit the solution."""
-        if len(self.parts) != 1:
-            raise ValueError("Must specify exactly one part to submit.")
         year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
-        part = self.parts[0]
-        solution = str(solutions[0])
+        solution = str(solution)
         resp = self.session.post(f"https://api.everybody.codes/event/{year}/quest/{day}/part/{part}/answer", json={"answer": solution})
         resp.raise_for_status()
         got = resp.json()
-        if "penaltyLeftMs" in got:
-            print(got)
-            print(f"Sleeping for {got["penaltyLeftMs"]}ms")
-            time.sleep(got["penaltyLeftMs"] / 1000)
-        return got
+        return got, got.get("penaltyLeftMs", 0) / 1000
 
 
 @click.command()
