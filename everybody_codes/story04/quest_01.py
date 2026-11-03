@@ -1,77 +1,59 @@
-"""Everyone Codes Day N."""
+"""Everyone Codes Story 4 Quest 1."""
 
-import logging
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    if part == 3:
-        return s3(data)
-
     total = 0
     for jumps in data:
-        pos = 0
-        seen = {0}
-        for jump in jumps:
-            if pos >= jump and pos - jump not in seen:
-                jump = -jump
-            pos += jump
-            while part == 2 and pos in seen:
-                pos += 1
-            seen.add(pos)
-        total += pos
-    return total
-
-def s3(data: str) -> int:
-    """Solve the parts."""
-    total = 0
-    for jumps in data:
-        log(jumps)
         pos = 0
         seen = {0}
         pairs = {True: [], False: []}
-
         top = False
 
-        def crosses(t):
-            a, b = pos, t
-            if a > b:
-                a, b = b, a
-            for i, j in pairs[top]:
-                if (i < a < j) != (i < b < j):
-                    return True
-            return False
-
         for jump in jumps:
-            if pos >= jump and pos - jump not in seen and not crosses(pos - jump):
-                t = pos - jump
+            if (
+                # Jump backwards if it won't be a repeat.
+                pos >= jump
+                and pos - jump not in seen
+                and (
+                    part < 3 or all(  # Part 3: avoid crossings
+                        (i < pos - jump < j) == (i < pos < j)
+                        for i, j in pairs[top]
+                    )
+                )
+            ):
+                next_pos = pos - jump
             else:
-                a, b = pos, pos + jump
-                for i, j in pairs[top]:
-                    while b in seen:
-                        b += 1
-                    if a < i and i < b < j:
-                        b = j + 1
-                    while b in seen:
-                        b += 1
-                if crosses(b):
-                    continue
-                t = b
+                # Jump forward, avoid repeats
+                next_pos = pos + jump
+                while part > 1 and next_pos in seen:
+                    next_pos += 1
+                # Part 3: avoid crossing
+                if part == 3:
+                    discard = False
+                    for i, j in pairs[top]:
+                        # Discard if we can't avoid crossing by incrementing.
+                        if i < pos < j < next_pos:
+                            discard = True
+                            break
+                        if pos < i < next_pos < j:
+                            next_pos = j + 1
+                        while next_pos in seen:
+                            next_pos += 1
+                    if discard:
+                        continue
 
-            pairs[top].append(tuple(sorted([pos, t])))
+            pairs[top].append(tuple(sorted([pos, next_pos])))
             pairs[top].sort(key=lambda x: x[1])
-            pos = t
+            pos = next_pos
             seen.add(pos)
             top = not top
-        log(pos)
         total += pos
     return total
 
 
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 1,2,3,4,5,6,7,8,9
