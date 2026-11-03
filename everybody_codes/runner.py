@@ -35,8 +35,8 @@ class CachedSession:
         cache.write_text(resp.text)
         return resp.text
 
-    def getjson(self, url: str) -> dict:
-        return json.loads(self.get(url))
+    def getjson(self, url: str, *args, **kwargs) -> dict:
+        return json.loads(self.get(url, *args, **kwargs))
 
     def post(self, *args, **kwargs):
         return self.session.post(*args, **kwargs)
@@ -47,6 +47,11 @@ class Runner(running.Runner):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.session = CachedSession()
+
+        year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
+        url = f"https://api.everybody.codes/event/{year}/quest/{self.day}"
+        metadata = self.session.getjson(url)
+        self.parts = [part for part in self.parts if f"key{part}" in metadata]
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
@@ -78,7 +83,7 @@ class Runner(running.Runner):
         """Return the module name."""
         return f"quest_{self.day:02}"
 
-    def seed(self, year: int, day: int) -> int:
+    def seed(self) -> int:
         return self.session.getjson("https://api.everybody.codes/user/me")["seed"]
 
     def decrypt(self, year: int, day: int, part: int, url: str) -> str | None:
@@ -96,7 +101,7 @@ class Runner(running.Runner):
     def download_input(self, year: int, day: int, part: int) -> str | None:
         """Download the input."""
         year = year.removeprefix("event").removeprefix("story").removeprefix("0")
-        url = f"https://everybody.codes/assets/{year}/{day}/input/{self.seed(year, day)}.json"
+        url = f"https://everybody.codes/assets/{year}/{day}/input/{self.seed()}.json"
         return self.decrypt(year, day, part, url)
 
     def get_tests(self, part: int, module: types.Module) -> list[tuple]:
@@ -119,6 +124,9 @@ class Runner(running.Runner):
         resp = self.session.post(f"https://api.everybody.codes/event/{year}/quest/{day}/part/{part}/answer", json={"answer": solution})
         resp.raise_for_status()
         got = resp.json()
+        if got["correct"]:
+            url = f"https://api.everybody.codes/event/{year}/quest/{day}"
+            metadata = self.session.getjson(url, force=True)
         return got, got.get("penaltyLeftMs", 0) / 1000
 
 
