@@ -44,14 +44,14 @@ class CachedSession:
 
 class Runner(running.Runner):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, seed: int | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.session = CachedSession()
 
-        year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
-        url = f"https://api.everybody.codes/event/{year}/quest/{self.day}"
+        url = f"https://api.everybody.codes/event/{self.year}/quest/{self.day}"
         metadata = self.session.getjson(url)
         self.parts = [part for part in self.parts if f"key{part}" in metadata]
+        self._seed = seed
 
     def solutions_path(self) -> pathlib.Path:
         """Return the solution file."""
@@ -59,7 +59,6 @@ class Runner(running.Runner):
 
     def write_solutions(self, year: int, day: int) -> str:
         """Write the solutions to file."""
-        year = year.removeprefix("event").removeprefix("story").removeprefix("0")
         data = self.session.getjson(f"https://api.everybody.codes/event/{year}/quest/{day}")
         want = [f"answer{i}" for i in range(1, 4)]
         if not set(want).issubset(set(data)):
@@ -84,7 +83,7 @@ class Runner(running.Runner):
         return f"quest_{self.day:02}"
 
     def seed(self) -> int:
-        return self.session.getjson("https://api.everybody.codes/user/me")["seed"]
+        return self._seed or self.session.getjson("https://api.everybody.codes/user/me")["seed"]
 
     def decrypt(self, year: int, day: int, part: int, url: str) -> str | None:
         data = self.session.getjson(url)[f"{part}"]
@@ -100,7 +99,6 @@ class Runner(running.Runner):
 
     def download_input(self, year: int, day: int, part: int) -> str | None:
         """Download the input."""
-        year = year.removeprefix("event").removeprefix("story").removeprefix("0")
         url = f"https://everybody.codes/assets/{year}/{day}/input/{self.seed()}.json"
         return self.decrypt(year, day, part, url)
 
@@ -108,8 +106,7 @@ class Runner(running.Runner):
         got = super().get_tests(part, module)
         if got:
             return got
-        year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
-        day = self.day
+        year, day = self.year, self.day
 
         url = f"https://everybody.codes/assets/{year}/{day}/description.json"
         plaintext = self.decrypt(year, day, part, url)
@@ -119,7 +116,6 @@ class Runner(running.Runner):
 
     def submit_solution(self, year: int, day: int, part: int, solution: int | str) -> tuple[typing.Any, float | None]:
         """Submit the solution."""
-        year = self.year.removeprefix("event").removeprefix("story").removeprefix("0")
         solution = str(solution)
         resp = self.session.post(f"https://api.everybody.codes/event/{year}/quest/{day}/part/{part}/answer", json={"answer": solution})
         resp.raise_for_status()
@@ -133,6 +129,7 @@ class Runner(running.Runner):
 @click.command()
 @click.option("--day", "-d", type=int, required=True)
 @click.option("--event", "-e", type=str, default="story01")
+@click.option("--seed", type=int, required=False)
 @click.option("--check", "-c", is_flag=True)
 @click.option("--solve", "-s", is_flag=True)
 @click.option("--submit", "-S", is_flag=True)
@@ -140,9 +137,20 @@ class Runner(running.Runner):
 @click.option("--part", "-p", "parts", type=int, multiple=True, default=(1, 2, 3))
 @click.option("--live", "-l", is_flag=True)
 @click.option("--verbose", "-v", count=True)
-def main(day: int, event: str, check: bool, solve: bool, submit: bool, test: bool, live: bool, parts: tuple[int], verbose: int) -> None:
+def main(
+    day: int,
+    event: str,
+    check: bool,
+    solve: bool,
+    submit: bool,
+    test: bool,
+    live: bool,
+    seed: int,
+    parts: tuple[int],
+    verbose: int,
+) -> None:
     Runner(
-        year=event, day=day, data=None, parts=parts, verbose=verbose
+        year=event, day=day, data=None, parts=parts, verbose=verbose, seed=seed
     ).run(check=check, solve=solve, test=test, live=live, submit=submit)
 
 
