@@ -1,61 +1,48 @@
-"""Everyone Codes Event 2026 Day N."""
+"""Everyone Codes Event 2026 Day 6."""
 
-import logging
 from lib import helpers
-from lib import parsers
+import collections
 
-log = logging.info
 
-def solve(part: int, data: str) -> int:
+def solve(part: int, data: list[str]) -> int:
     """Solve the parts."""
     components = {}
+    used_by = collections.defaultdict(set)
     for line in data:
         a, b = line.split(":")
         components[a] = b.split(",")
+        for i in components[a]:
+            used_by[i].add(a)
 
-    def uses(target):
-        todo = {target}
+    if part == 1:
+        todo = {"NULL"}
         used = set()
         seen = set()
         while todo:
-            component = todo.pop()
-            used.add(component)
-            if component in components:
-                for i in components[component]:
-                    if i not in seen:
-                        seen.add(i)
-                        todo.add(i)
-        return used
+            for component in components.get(todo.pop(), []):
+                if component not in seen:
+                    seen.add(component)
+                    todo.add(component)
+        return len(seen - {"NULL"})
 
-    if part == 1:
-        return len(uses("NULL") - {"NULL"})
+    contains = {}
+    for ingredient in {"NULL", "NULLv1", "NULLv2", "NULLv3"}:
+        todo = {ingredient}
+        seen = set()
+        while todo:
+            for component in used_by.get(todo.pop(), []):
+                if component not in seen:
+                    seen.add(component)
+                    todo.add(component)
+        contains[ingredient] = seen
+
     if part == 2:
-        return sum("NULL" in uses(i) for i in components if i != "NULL")
+        return len(contains["NULL"] - {"NULL"})
 
     return sum(
-        sum(n in uses(i) for n in ["NULLv1", "NULLv2", "NULLv3"]) > 1
-        for i in components if i != "NULL"
+        v > 1 for v in collections.Counter(i for j in {"NULLv1", "NULLv2", "NULLv3"} for i in contains[j]).values()
     )
 
-
-# PARSER = parsers.parse_one_str
-TEST_DATA = [
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-]
-TESTS = [
-    # (1, TEST_DATA[0], None),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
-]
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
