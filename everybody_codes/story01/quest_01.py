@@ -53,8 +53,8 @@ def verify_eni(a: int, b: int, c: int, x: int, y: int, z: int, m: int, part: int
 def solve(part: int, data: str) -> int:
     """Solve the line which yields the highest ENI sum."""
     return max(
-        verify_eni(*[int(i) for i in re.findall(r"[0-9]+", line)], part=part)
-        for line in data.splitlines()
+        verify_eni(*[int(i) for i in line], part=part)
+        for line in data
     )
 
 
