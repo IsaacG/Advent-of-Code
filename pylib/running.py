@@ -101,7 +101,7 @@ class Runner:
         print(msg)
 
     def get_tests(self, part: int, module: types.Module) -> list[tuple]:
-        return [(p, data, want) for p, data, want in module.TESTS if part == p]
+        return [(p, data, want) for p, data, want in getattr(module, "TESTS", []) if part == p]
 
     def test_part(self, module, parser: parsers.BaseParser, formatter, part: int) -> bool:
         success = True
