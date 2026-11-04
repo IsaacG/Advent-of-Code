@@ -1,11 +1,9 @@
 """Everyone Codes Event 2026 Day 7."""
 
 import collections
-import logging
 from lib import helpers
 from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: str, testing: bool) -> int:
     """Solve the parts."""
@@ -18,7 +16,7 @@ def solve(part: int, data: str, testing: bool) -> int:
         connections[cloud] = _conns
         energy[cloud] = _energy
 
-    def compute_energy(start, energy):
+    def compute_energy(start: int, energy: dict[int, int]) -> int:
         pulses = {start: {start_strength: 1}}
         exploded = set()
 
@@ -32,19 +30,22 @@ def solve(part: int, data: str, testing: bool) -> int:
                     if strength:
                         for next_cloud in connections[cloud]:
                             next_pulses[next_cloud][strength - 1] += pulse_count
-            pulses = next_pulses
+
             if part == 3:
                 explodes = {cloud for cloud, e in energy.items() if e >= limit and cloud not in exploded}
                 exploded.update(explodes)
                 for cloud in explodes:
                     for next_cloud in connections[cloud]:
-                        pulses[next_cloud][10] += 1
+                        next_pulses[next_cloud][10] += 1
+
+            pulses = next_pulses
 
         return sum(e for c, e in energy.items() if c not in exploded)
 
     if part < 3:
         start = max(connections, key=lambda x: len(connections[x]))
         return compute_energy(start, energy.copy())
+
     return max(compute_energy(start, energy.copy()) for start in connections)
 
 

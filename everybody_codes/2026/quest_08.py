@@ -1,45 +1,20 @@
-"""Everyone Codes Event 2026 Day N."""
+"""Everyone Codes Event 2026 Day 8."""
 
 import collections
 import itertools
-import logging
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
     DIRS = [(1, 1), (-1, 1), (-2, 0), (-1, -1), (1, -1), (2, 0)]
-    if part == 1:
-        DIRS = [(1, 1)]
-    t = 0
-
-    if part != 3:
-        for dx, dy in DIRS:
-            shadows = collections.defaultdict(int)
-            for pos, char in data.chars.items():
-                if char == ".":
-                    continue
-                x, y = pos
-                for i, h in enumerate(range(int(char) - 1, 0, -1), 1):
-                    shadows[(x + i * dx, y + i * dy)] = max(shadows[(x + i * dx, y + i * dy)], h)
-
-            energy = sum(
-                int(char) > shadows[pos]
-                for pos, char in data.chars.items()
-                if char != "."
-            )
-            t += energy
-        return t
-
+    energy = 0
     need = 100000
 
     field = {pos: int(char) for pos, char in data.chars.items() if char != "."}
     for rnd, (dx, dy) in enumerate(itertools.cycle(DIRS), 1):
         shadows = collections.defaultdict(int)
-        for pos, char in field.items():
-            x, y = pos
+        for (x, y), char in field.items():
             for i, h in enumerate(range(char - 1, 0, -1), 1):
                 shadows[(x + i * dx, y + i * dy)] = max(shadows[(x + i * dx, y + i * dy)], h)
 
@@ -50,40 +25,35 @@ def solve(part: int, data: str) -> int:
             elif char <= shadows[pos]:
                 new[pos] = char
             else:
-                t += 1
+                energy += 1
                 new[pos] = char + 1
                 if new[pos] == 10:
                     new[pos] = -2
                     need -= 1
-        field = new
+
+        if part == 1 or part == 2 and rnd == 6:
+            return energy
+        if part == 3:
+            field = new
 
         if need <= 0:
-            return t
-    return t
-                
-
-                
+            return energy
 
 
-
-
-# PARSER = parsers.parse_one_str
-TEST_DATA = [
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-]
+TEST_DATA = """\
+....1.9.6.1.7....
+...9.2.3.3.8.1...
+..7.8.3.5.1.4.3..
+.4.6.7.4.1.1.8.9.
+4.5.3.6.5.8.9.4.9
+.9.5.1.5.6.2.8.9.
+..7.7.6.4.6.2.4..
+...9.3.8.3.8.4...
+....1.6.6.2.8...."""
 TESTS = [
-    # (1, TEST_DATA[0], None),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
+    (1, TEST_DATA, 32),
+    (2, TEST_DATA, 187),
+    (3, TEST_DATA, 899889),
 ]
 
 if __name__ == "__main__":
