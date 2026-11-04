@@ -111,7 +111,7 @@ class Runner(running.Runner):
         url = f"https://everybody.codes/assets/{year}/{day}/description.json"
         plaintext = self.decrypt(year, day, part, url)
         examples = [i.strip() for i in etree.HTML(plaintext).xpath('//pre[@class="note"]/text()')]
-        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div[last()]/pre/b/text()')]
+        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre/b/text()')]
         return list(zip(itertools.cycle([part]), examples, solutions))
 
     def submit_solution(self, year: int, day: int, part: int, solution: int | str) -> tuple[typing.Any, float | None]:
