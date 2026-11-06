@@ -1,7 +1,6 @@
 """Everyone Codes Event 2026 Day N."""
 
 import collections
-import functools
 import math
 import logging
 from lib import helpers
@@ -9,7 +8,6 @@ from lib import parsers
 
 log = logging.info
 
-@functools.cache
 def seconds(growth, limit):
     t = 1
     branches = {1: 1}
@@ -29,17 +27,18 @@ def seconds(growth, limit):
     return t
 
 
-@functools.cache
 def seconds2(growth, limit):
     t = 1
     branches = {1: 1}
     bp = 0
     seen = {}
+    jump = True
     while bp + 1 < limit:
-        t += 1
+        gf = growth - max(branches)
+        t += gf
         n = collections.defaultdict(int)
         for size, num in branches.items():
-            size += 1
+            size += gf
             if size < growth:
                 n[size] += num
             else:
@@ -63,6 +62,10 @@ def solve(part: int, data: str, testing) -> int:
     # p1 != 230
     if not testing and part == 1:
         assert t not in {230}
+    if not testing and part == 3:
+        assert len(str(t)) == len(str(817947616167071))
+        assert str(t)[0] == "8"
+        assert t not in {817947616167071}
     return t
 
 
