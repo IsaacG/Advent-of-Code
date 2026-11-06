@@ -1,92 +1,43 @@
-"""Everyone Codes Event 2026 Day N."""
+"""Everyone Codes Event 2026 Day 9."""
 
 import collections
-import math
-import logging
 from lib import helpers
-from lib import parsers
-
-log = logging.info
-
-def seconds(growth, limit):
-    t = 1
-    branches = {1: 1}
-    bp = 0
-    while (total := bp + sum(size * num for size, num in branches.items())) < limit:
-        t += 1
-        n = collections.defaultdict(int)
-        for size, num in branches.items():
-            size += 1
-            if size < growth:
-                n[size] += num
-            else:
-                n[1] += num
-                n[size // 2] += 2 * num
-                bp += num
-        branches = n
-    return t
 
 
-def seconds2(growth, limit):
-    t = 1
-    branches = {1: 1}
-    bp = 0
-    seen = {}
-    jump = True
-    while bp + 1 < limit:
-        gf = growth - max(branches)
-        t += gf
-        n = collections.defaultdict(int)
-        for size, num in branches.items():
-            size += gf
-            if size < growth:
-                n[size] += num
-            else:
-                n[1] += num
-                n[size // 2] += 2 * num
-                bp += num
-
-        branches = n
-    return t
-
-
-def solve(part: int, data: str, testing) -> int:
+def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    t = 0
-    for plant, growth, limit in data:
+    result = 0
+    for _, growth, limit in data:
+        branches = {1: 1}  # size, number of occurances
+        seconds = 1
+        forks = 0
+
         if part == 1:
-            s = seconds(growth, limit)
+            tree_size = lambda: forks + sum(size * num for size, num in branches.items())
         else:
-            s = seconds2(growth, limit)
-        t += s
-    # p1 != 230
-    if not testing and part == 1:
-        assert t not in {230}
-    if not testing and part == 3:
-        assert len(str(t)) == len(str(817947616167071))
-        assert str(t)[0] == "8"
-        assert t not in {817947616167071}
-    return t
+            tree_size = lambda: forks + 1
 
+        while tree_size() < limit:
+            # For large growths, skip to the next fork.
+            steps = 1 if part == 1 else growth - max(branches) 
+            seconds += steps
 
-# PARSER = parsers.parse_one_str
-TEST_DATA = [
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-]
-TESTS = [
-    # (1, TEST_DATA[0], None),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
-]
+            next_branches = collections.defaultdict(int)
+            for size, occurances in branches.items():
+                size += steps
+                if size < growth:
+                    next_branches[size] += occurances
+                else:
+                    next_branches[1] += occurances
+                    next_branches[size // 2] += 2 * occurances
+                    forks += occurances
+
+            branches = next_branches
+
+        result += seconds
+
+    return result
+
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
