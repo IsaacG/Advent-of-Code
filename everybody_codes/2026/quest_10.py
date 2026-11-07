@@ -1,114 +1,84 @@
-"""Everyone Codes Event 2026 Day N."""
+"""Everyone Codes Event 2026 Day 10."""
 
 import collections
 import itertools
-import logging
 from lib import helpers
-from lib import parsers
 
-log = logging.info
+ARROW_DIRECTIONS = helpers.ARROW_DIRECTIONS_T
+rotate = helpers.rotate_counterclockwise
+
 
 def solve(part: int, data: str, testing) -> int:
     """Solve the parts."""
-    hits = 10 if testing else 10000
-    hits = 10000 if part == 2 else 1000000000000
-    spaces = data.coords.get(">", set()) | data.coords.get("<", set()) | data.coords.get("v", set()) | data.coords.get("^", set()) | data.coords["."]
-    ghosts = [(pos, direction, 0) for char, direction in helpers.ARROW_DIRECTIONS_T.items() for pos in data.coords.get(char, [])]
-    ghosts = [(idx, *d) for idx, d in enumerate(ghosts)]
-    # for pos, _ in ghosts:
-    #     assert pos in spaces
-    # print(ghosts)
-    # print(spaces)
+    spaces = {pos for pos, char in data.chars.items() if char in set(ARROW_DIRECTIONS) | {"."}}
+    ghosts = [
+        (idx, pos, ARROW_DIRECTIONS[direction], 10000 if part == 2 else 1000000000000)
+        for idx, (pos, direction) in enumerate(data.chars.items())
+        if direction in ARROW_DIRECTIONS
+    ]
     collisions = 0
     seen = {}
-    skips = 0
+    skipped_rounds = 0
 
-    for rnd in itertools.count(1):
-        s = ghosts.copy()
+    for game_round in itertools.count(1):
+        # Move ghosts one step.
         next_ghosts = []
-        wall_coll = 0
-        for gid, pos, direction, count in ghosts:
+        for gid, pos, direction, hp in ghosts:
             npos = pos[0] + direction[0], pos[1] + direction[1]
+            # Wall collision
             if npos not in spaces:
-                direction = helpers.rotate_counterclockwise(*direction)
+                direction = rotate(*direction)
                 npos = pos
-                wall_coll += 1
-                count += 1
-            if part == 1 or count < hits:
-                next_ghosts.append((gid, npos, direction, count))
+                collisions += 1
+                hp -= 1
+            if hp > 0:
+                next_ghosts.append((gid, npos, direction, hp))
         ghosts = next_ghosts
-        collisions += wall_coll
 
+        # Ghost-on-ghost collisions
         shared = collections.Counter(pos for gid, pos, _, _ in ghosts)
         next_ghosts = []
-        ghost_coll = 0
-        for gid, pos, direction, count in ghosts:
+        for gid, pos, direction, hp in ghosts:
             if shared[pos] > 1:
-                ghost_coll += 1
-                direction = (-direction[0], -direction[1])
-                count += 1
-            if part == 1 or count < hits:
-                next_ghosts.append((gid, pos, direction, count))
+                collisions += 1
+                direction = (-direction[0], -direction[1])  # double rotate
+                hp -= 1
+            if hp > 0:
+                next_ghosts.append((gid, pos, direction, hp))
         ghosts = next_ghosts
-        collisions += ghost_coll
 
-        if part == 1:
-            print(f"{rnd=}, {wall_coll=}, {ghost_coll=}")
-        if part == 1 and rnd == 10:
+        # End state check.
+        if part == 1 and game_round == 10:
             return collisions
+        if not ghosts:
+            return game_round + skipped_rounds
 
-        if False:
-            print(rnd)
-            print(f"Round: {rnd}")
-            print(f"Collisions this round: {ghost_coll + wall_coll}")
-            print(f"Disappeared: {len(s) - len(ghosts)}")
-            print()
-
-            gs = [p for p, _, _ in ghosts]
-            for y in range(data.height):
-                l = ""
-                for x in range(data.width):
-                    if (x, y) not in spaces:
-                        l += "#"
-                    elif (x, y) in shared and shared[x, y] > 1:
-                        l += str(shared[x, y])
-                    elif (x, y) in gs:
-                        d = next(d for p, d, c in ghosts if p == (x, y))
-                        l += next(c for c, direction in helpers.ARROW_DIRECTIONS_T.items() if d == direction)
-                    else:
-                        l += "."
-                print(l)
-            print()
-
-            for idx, pos, direction, count in ghosts:
-                print(f"position={pos}, direction={next(c for c, d in helpers.ARROW_DIRECTIONS_T.items() if d == direction)}, remaining collisions={10 - count}")
-            print()
-        if part > 1 and not ghosts:
-            return rnd + skips
-
-        ghosts.sort()
-        fp = tuple(i for idx, pos, direction, count in ghosts for i in (*pos, *direction))
-        counts = [count for idx, pos, direction, count in ghosts]
+        # Cycle detection
+        fp = tuple(i for idx, pos, direction, hp in ghosts for i in (*pos, *direction))
+        hitpoints = [hp for idx, pos, direction, hp in ghosts]
         if fp in seen:
-            print(rnd, seen[fp][0])
-            print(counts, seen[fp][1])
-            rnd_stride = rnd - seen[fp][0]
-            steps = min((hits - 1 - a) // (a - b) for a, b in zip(counts, seen[fp][1]) if a != b)
-            skips += rnd_stride * steps
+            prior_round, prior_hps = seen[fp]
+            # game rounds since this cycled
+            rnd_stride = game_round - prior_round
+            # number of cycles until a ghost vanishes
+            steps = min(
+                (current_hp - 1) // (prior_hp - current_hp)
+                for current_hp, prior_hp in zip(hitpoints, prior_hps)
+                if current_hp != prior_hp
+            )
+            # record a bunch of rounds skipped
+            skipped_rounds += rnd_stride * steps
+            # update ghost hp
             ghosts = [
-                (idx, pos, direction, count + (count - b) * steps)
-                for (idx, pos, direction, count), b in zip(ghosts, seen[fp][1])
+                (idx, pos, direction, hp - (prior_hp - hp) * steps)
+                for (idx, pos, direction, hp), prior_hp in zip(ghosts, prior_hps)
             ]
+            # since the number of ghosts is about to change, the prior cache values can be flushed
+            seen = {}
 
-        seen[fp] = (rnd, [count for idx, pos, direction, count in ghosts])
-
-
-
-
+        seen[fp] = (game_round, hitpoints)
 
 
-
-# PARSER = parsers.parse_one_str
 TEST_DATA = [
     """\
 ###########
@@ -158,10 +128,6 @@ TEST_DATA = [
 #######....v....#######
 ###########.###########
 #######################""",
-    """\
-""",
-    """\
-""",
 ]
 TESTS = [
     (1, TEST_DATA[0], 29),
