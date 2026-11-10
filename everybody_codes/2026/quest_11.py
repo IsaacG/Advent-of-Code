@@ -3,13 +3,24 @@
 import collections
 import copy
 import itertools
-from lib import helpers
+import platform
+
+try:
+    from lib import helpers
+except ModuleNotFoundError as e:
+    if platform.python_implementation() != "PyPy":
+        raise
 
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    meta, shortcuts = data
-    n = meta["portals"]
+    if platform.python_implementation() == "PyPy":
+        a, b = data.split("\n\n")
+        n = int(a.split()[-1])
+        shortcuts = [[int(i) for i in line.split()] for line in b.splitlines()]
+    else:
+        meta, shortcuts = data
+        n = meta["portals"]
 
     def portal_strain(portals: dict[int, set[int]]) -> int:
         """Compute the portal strain for a set of portals."""
