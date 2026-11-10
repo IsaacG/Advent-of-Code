@@ -1,121 +1,75 @@
 """Everyone Codes Event 2026 Day N."""
 
 import collections
-import logging
+import copy
 import itertools
 from lib import helpers
-from lib import parsers
 
-log = logging.info
 
 def solve(part: int, data: str) -> int:
     """Solve the parts."""
-    # print(data)
-    n = data[0]["portals"]
-    connections = collections.defaultdict(set)
-    for i in range(n):
-        for j in range(1, 2 if part == 1 else 4):
-            connections[i].add((i + j) % n)
-            connections[(i + j) % n].add(i)
+    meta, shortcuts = data
+    n = meta["portals"]
 
-    distance = {0: 0}
-    todo = [(0, 0)]
-    while todo:
-        cur, steps = todo.pop(0)
-        for p in connections[cur]:
-            if p not in distance:
-                distance[p] = steps + 1
-                todo.append((p, steps + 1))
-    strain = n * sum(distance.values())
-    # print("strain", strain)
-
-    for a, b in data[1]:
-        connections[a - 1].add(b - 1)
-        connections[b - 1].add(a - 1)
-    # print(connections)
-
-    def tot(connections):
+    def portal_strain(portals: dict[int, set[int]]) -> int:
+        """Compute the portal strain for a set of portals."""
         total = 0
         for start in range(n):
             distance = {start: 0}
             todo = [(start, 0)]
             while todo:
-                cur, steps = todo.pop(0)
-                for p in connections[cur]:
-                    if p not in distance:
-                        distance[p] = steps + 1
-                        todo.append((p, steps + 1))
-            # print(start, sum(distance.values()), distance)
+                portal, steps = todo.pop(0)
+                for other_portal in portals[portal]:
+                    if other_portal not in distance:
+                        distance[other_portal] = steps + 1
+                        todo.append((other_portal, steps + 1))
             total += sum(distance.values())
         return total
 
+    # Initial connection between adjacent portals.
+    portals = collections.defaultdict(set)
+    for i in range(n):
+        for j in [1] if part == 1 else [1, 2, 3]:
+            portals[i].add((i + j) % n)
+            portals[(i + j) % n].add(i)
+
+    initial_strain = portal_strain(portals)
+
+    for i, j in shortcuts:
+        portals[i - 1].add(j - 1)
+        portals[j - 1].add(i - 1)
+
     if part == 1:
-        total = tot(connections)
-    elif part == 2:
-        total = strain
-        for i in range(n - 1):
-            for j in range(i + 1, n):
-                if j not in connections[i]:
-                    connections[i].add(j)
-                    connections[j].add(i)
-                    total = min(total, tot(connections))
-                    connections[i].remove(j)
-                    connections[j].remove(i)
+        return initial_strain - portal_strain(portals)
+
+    if part == 2:
+        shortcut_strain = initial_strain
+        pairings = [[i] for i in itertools.combinations(range(n), 2)]
+        offsets = [0]
     else:
-        assert n % 8 == 0
-
-        conns = []
         positions = [i * n // 8 for i in range(8)]
-        for pairs in itertools.permutations(positions, 8):
-            p = list(pairs)
-            if all(a < b for a, b in itertools.batched(p, 2)):
-                conns.append(list(itertools.batched(p, 2)))
+        pairings = [
+            list(itertools.batched(pairs, 2))
+            for pairs in itertools.permutations(positions, 8)
+            if all(a < b for a, b in itertools.batched(pairs, 2))
+        ]
+        offsets = range(n // 8)
 
-        # print("Combinations:", len(conns), n // 8)
-        assert conns, positions
-        assert all(len(i) == 4 for i in conns)
-
-        total = strain
-        # print("Normal strain", tot(connections))
-        for offset in range(n // 8):
-            for pairs in conns:
-                if any(i + offset in connections[j + offset] for i, j in pairs):
-                    continue
-                for i, j in pairs:
-                    i += offset
-                    j += offset
-                    connections[i].add(j)
-                    connections[j].add(i)
-                total = min(total, tot(connections))
-                for i, j in pairs:
-                    i += offset
-                    j += offset
-                    connections[i].remove(j)
-                    connections[j].remove(i)
-
-    # print("total", total)
-
-    return strain - total
+    shortcut_strain = initial_strain
+    for offset in range(n // 8):
+        for pairs in pairings:
+            configuration = copy.deepcopy(portals)
+            pairs = [(i + offset, j + offset) for i, j in pairs]
+            if any(i in portals[j] for i, j in pairs):
+                continue
+            for i, j in pairs:
+                configuration[i].add(j)
+                configuration[j].add(i)
+            shortcut_strain = min(shortcut_strain, portal_strain(configuration))
 
 
-# PARSER = parsers.parse_one_str
-TEST_DATA = [
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-    """\
-""",
-]
-TESTS = [
-    # (1, TEST_DATA[0], None),
-    # (2, TEST_DATA[1], None),
-    # (3, TEST_DATA[2], None),
-]
+    return initial_strain - shortcut_strain
+
 
 if __name__ == "__main__":
     helpers.run_solution(globals())
