@@ -50,7 +50,8 @@ class Runner(running.Runner):
 
         url = f"https://api.everybody.codes/event/{self.year}/quest/{self.day}"
         metadata = self.session.getjson(url)
-        self.parts = [part for part in self.parts if f"key{part}" in metadata]
+        available = [int(i.removeprefix("key")) for i in metadata if i.startswith("key")]
+        self.parts = [part for part in self.parts if part in available]
         self._seed = seed
 
     def solutions_path(self) -> pathlib.Path:
@@ -59,7 +60,7 @@ class Runner(running.Runner):
 
     def write_solutions(self, year: int, day: int) -> str:
         """Write the solutions to file."""
-        data = self.session.getjson(f"https://api.everybody.codes/event/{year}/quest/{day}")
+        data = self.session.getjson(f"https://api.everybody.codes/event/{year}/quest/{day}", force=True)
         want = [f"answer{i}" for i in range(1, 4)]
         if not set(want).issubset(set(data)):
             return None
@@ -111,7 +112,8 @@ class Runner(running.Runner):
         url = f"https://everybody.codes/assets/{year}/{day}/description.json"
         plaintext = self.decrypt(year, day, part, url)
         examples = [i.strip() for i in etree.HTML(plaintext).xpath('//pre[@class="note"]/text()')]
-        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre/b/text()')]
+        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre[count(*) = 1]/b/text()')]
+        solutions = solutions[-(len(examples)):]
         return list(zip(itertools.cycle([part]), examples, solutions))
 
     def submit_solution(self, year: int, day: int, part: int, solution: int | str) -> tuple[typing.Any, float | None]:
