@@ -14,90 +14,57 @@ def solve(part: int, data: str, testing) -> int:
     For every pair, use frame or reference of hand one, stationary at 0.
     Only one hand moves. If it crosses 0, it pulses.
     """
-    total_pulses = 0
+    pulses = 0
     for clock in data:
+        # Convert the data to a dict.
         vals = {}
         for a, b in clock:
             vals[a] = [1 if i == "CW" else -1 if i == "CCW" else int(i) for i in b.split(":")]
         all_hands, all_moves, current, direction = [vals[i] for i in ["hands", "move", "current", "direction"]]
-        n = len(all_hands)  # 3 hands ... hopefully.
 
-        for hand_idxs in itertools.combinations(range(n), r=2):
+        # Process hands in independent pairs.
+        for hand_idxs in itertools.combinations(range(len(all_hands)), r=2):
             hand_one, hand_two = hand_idxs
-            # Hand two should have more moves. Arbitrary choice.
+            # Hand two should have more (or same) moves. Arbitrary choice.
             if all_moves[hand_one] > all_moves[hand_two]:
                 hand_one, hand_two = hand_two, hand_one
                 hand_idxs = tuple(reversed(hand_idxs))
 
-            cycle_tracker = {}
-            pulses = 0
-            second = 0
-
-            hands_one, hands_two = [all_hands[i] for i in hand_idxs]
+            # Unpack and normalize the data for these two hands.
             hands = [all_hands[i] for i in hand_idxs]
-            # Normalize the hands/steps/positions with the LCM.
             lcm = math.lcm(*hands)
-            mult_one, mult_two = [lcm // i for i in hands]
+
             multiplier = [lcm // i for i in hands]
+            steps = [direction[i] * mult for i, mult in zip(hand_idxs, multiplier)]
+            ends = [all_moves[i] for i in hand_idxs]
             positions = [current[i] * mult for i, mult in zip(hand_idxs, multiplier)]
-            start_position = (positions[1] - positions[0]) % lcm
 
-            e1, e2 = all_moves[hand_one], all_moves[hand_two]
-            one_end, end = e1, e2
-            step_1, step_2 = direction[hand_one] * mult_one, direction[hand_two] * mult_two
-            combined_step = step_2 - step_1
+            # Fix one hand in place at 0. Get the relative position of the other hand.
+            position = (positions[1] - positions[0]) % lcm
+            # Find the relative speed of the moving hand. Flip the clock face if needed to have positive movement.
+            movement_speed = steps[1] - steps[0]
             flip = 1
-            if combined_step < 0:
-                combined_step *= -1
-                start_position = (lcm - start_position) % lcm
+            if movement_speed < 0:
+                movement_speed *= -1
+                position = (lcm - position) % lcm
                 flip = -1
-            end_position = start_position
 
+            # Compute end position after one hand stops moving.
+            # The number of cycles around the face is the number of pulses.
+            position += movement_speed * ends[0]
+            pulses += position // lcm
 
-            if combined_step == 0:
-                second = one_end
+            # One hand stopped moving. The other continues. Compute the hand speed. Flip if needed.
+            movement_speed = steps[1] * flip
+            if movement_speed < 0:
+                movement_speed *= -1
+                position = (lcm - position)
+            # Compute how far the hand travels. Completed cycles is the number of pulses.
+            position %= lcm
+            position += movement_speed * (ends[1] - ends[0])
+            pulses += position // lcm
 
-            while second < end:
-                if second == one_end:
-                    combined_step = step_2 * flip
-                    cycle_tracker = {}
-                    if combined_step == 0:
-                        break
-                    if combined_step < 0:
-                        combined_step *= -1
-                        start_position = (lcm - start_position) % lcm
-
-                mult = (lcm - start_position - 1) // combined_step
-                mult = min(end - second - 1, mult)
-                if second < one_end:
-                    mult = min(one_end - second - 1, mult)
-                mult = max(1, mult)
-                end_position = start_position + combined_step * mult
-                second += mult
-                end_position %= lcm
-
-                if start_position != 0 and (end_position == 0 or end_position < start_position):
-                    pulses += 1
-
-                start_position = end_position
-
-                fp = start_position
-
-                if fp in cycle_tracker and second != one_end and second != end:
-                    prior_second, prior_pulse = cycle_tracker[fp]
-                    stride = second - prior_second
-                    if second < one_end:
-                        local_end = one_end
-                    else:
-                        local_end = end
-                    jumps = (local_end - second) // stride
-                    second += jumps * stride
-                    pulses += jumps * (pulses - prior_pulse)
-                cycle_tracker[fp] = (second, pulses)
-
-            total_pulses += pulses
-
-    return total_pulses
+    return pulses
 
 
 PARSER = parsers.ParseBlocks([parsers.parse_multi_str_per_line])
