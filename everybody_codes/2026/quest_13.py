@@ -2,28 +2,9 @@
 
 import itertools
 import math
-import logging
-import platform
 
-try:
-    from lib import helpers
-    from lib import parsers
-except ModuleNotFoundError as e:
-    if platform.python_implementation() != "PyPy":
-        raise
-
-def overlaps(a1, a2, b1, b2, N):
-    d1 = a1 - b1
-    d2 = a2 - b2
-    low = min(d1, d2)
-    high = max(d1, d2)
-
-    # Check if any multiple of N (k * N) lies in the range [low, high]
-    # Copied from Discord. I do not understand.
-    k_min = math.ceil(low / N)
-    k_max = math.floor(high / N)
-
-    return k_min <= k_max
+from lib import helpers
+from lib import parsers
 
 
 def solve(part: int, data: str, testing) -> int:
@@ -33,98 +14,90 @@ def solve(part: int, data: str, testing) -> int:
     For every pair, use frame or reference of hand one, stationary at 0.
     Only one hand moves. If it crosses 0, it pulses.
     """
-    pulses = 0
-    clock_n = len(data)
-    for clock_idx, dataset in enumerate(data, 1):
-        # print(f"{clock_idx} / {clock_n}")
+    total_pulses = 0
+    for clock in data:
         vals = {}
-        for a, b in dataset:
+        for a, b in clock:
             vals[a] = [1 if i == "CW" else -1 if i == "CCW" else int(i) for i in b.split(":")]
-        n = len(vals["hands"])
+        all_hands, all_moves, current, direction = [vals[i] for i in ["hands", "move", "current", "direction"]]
+        n = len(all_hands)  # 3 hands ... hopefully.
 
-        for hand_one, hand_two in itertools.combinations(range(n), r=2):
-            logging.debug("Solve for clock %03d, hands %d, %d", clock_idx, hand_one + 1, hand_two + 1)
-            if vals["move"][hand_one] < vals["move"][hand_two]:
+        for hand_idxs in itertools.combinations(range(n), r=2):
+            hand_one, hand_two = hand_idxs
+            # Hand two should have more moves. Arbitrary choice.
+            if all_moves[hand_one] > all_moves[hand_two]:
                 hand_one, hand_two = hand_two, hand_one
-            seen = {}
-            pair_pulses = 0
+                hand_idxs = tuple(reversed(hand_idxs))
+
+            cycle_tracker = {}
+            pulses = 0
             second = 0
 
-            hands_one, hands_two = vals["hands"][hand_one], vals["hands"][hand_two]
-            lcm = math.lcm(hands_one, hands_two)
-            mult_one, mult_two = lcm // hands_one, lcm // hands_two
+            hands_one, hands_two = [all_hands[i] for i in hand_idxs]
+            hands = [all_hands[i] for i in hand_idxs]
+            # Normalize the hands/steps/positions with the LCM.
+            lcm = math.lcm(*hands)
+            mult_one, mult_two = [lcm // i for i in hands]
+            multiplier = [lcm // i for i in hands]
+            positions = [current[i] * mult for i, mult in zip(hand_idxs, multiplier)]
+            start_position = (positions[1] - positions[0]) % lcm
 
-            pos_init_1, pos_init_2 = vals["current"][hand_one] * mult_one, vals["current"][hand_two] * mult_two
-            pos_init_2 = (pos_init_2 - pos_init_1) % lcm
-            pos_init_1 = 0
-
-
-            pos_end_1, pos_end_2 = pos_init_1, pos_init_2
-            e1, e2 = vals["move"][hand_one], vals["move"][hand_two]
-            end, one_end = e1, e2
-            assert end >= one_end
-            step_1, step_2 = vals["direction"][hand_one] * mult_one, vals["direction"][hand_two] * mult_two
+            e1, e2 = all_moves[hand_one], all_moves[hand_two]
+            one_end, end = e1, e2
+            step_1, step_2 = direction[hand_one] * mult_one, direction[hand_two] * mult_two
             combined_step = step_2 - step_1
+            flip = 1
+            if combined_step < 0:
+                combined_step *= -1
+                start_position = (lcm - start_position) % lcm
+                flip = -1
+            end_position = start_position
 
-            logging.debug("Hands %d and %d, raw size %d, %d", hand_one + 1, hand_two + 1, hands_one, hands_two)
-            logging.debug("LCM=%d, mults %d, %d", lcm, mult_one, mult_two)
-            logging.debug("Stops at %d, %d ==> %d", e1, e2, end)
 
             if combined_step == 0:
                 second = one_end
 
             while second < end:
                 if second == one_end:
-                    combined_step = -step_1
-                    seen = {}
+                    combined_step = step_2 * flip
+                    cycle_tracker = {}
                     if combined_step == 0:
                         break
+                    if combined_step < 0:
+                        combined_step *= -1
+                        start_position = (lcm - start_position) % lcm
 
-                if False:
-                    mult = 1
-                else:
-                    if combined_step > 0:
-                        mult = (lcm - pos_init_2 - 1) // combined_step
-                    else:
-                        mult = (pos_init_2 - 1) // -combined_step
-                    mult = min(end - second - 1, mult)
-                    if second < one_end:
-                        mult = min(one_end - second - 1, mult)
-                    mult = max(1, mult)
-                pos_end_2 = pos_init_2 + combined_step * mult
+                mult = (lcm - start_position - 1) // combined_step
+                mult = min(end - second - 1, mult)
+                if second < one_end:
+                    mult = min(one_end - second - 1, mult)
+                mult = max(1, mult)
+                end_position = start_position + combined_step * mult
                 second += mult
-                pos_end_2 %= lcm
+                end_position %= lcm
 
-                if pos_init_2 != 0 and (pos_end_2 == 0 or combined_step > 0 and pos_end_2 < pos_init_2 or combined_step < 0 and pos_end_2 > pos_init_2):
-                    pair_pulses += 1
-                    logging.debug("T %d, hands %d & %d cross. (%d->%d and %d->%d)", second + 1, hand_one + 1, hand_two + 1, 0, 0, pos_init_2, pos_end_2)
+                if start_position != 0 and (end_position == 0 or end_position < start_position):
+                    pulses += 1
 
-                pos_init_2 = pos_end_2
+                start_position = end_position
 
-                fp = (pos_init_2, combined_step)
+                fp = start_position
 
-                if fp in seen and second != one_end and second != end:
-                    prior_second, prior_pulse = seen[fp]
+                if fp in cycle_tracker and second != one_end and second != end:
+                    prior_second, prior_pulse = cycle_tracker[fp]
                     stride = second - prior_second
-                    assert stride > 0
                     if second < one_end:
                         local_end = one_end
                     else:
                         local_end = end
-                    assert local_end > second
                     jumps = (local_end - second) // stride
-                    assert jumps >= 0
-                    logging.info("CYCLE @ second=%d pulse=%d, hands @ %d, %d: %s", second, pair_pulses, 0, pos_init_2, seen[fp])
-                    logging.debug("Stride = %d, pulses = %d", stride, pair_pulses - prior_pulse)
-                    logging.debug("Cycles remaining: %d = %d jumps", local_end - second, jumps)
                     second += jumps * stride
-                    pair_pulses += jumps * (pair_pulses - prior_pulse)
-                seen[fp] = (second, pair_pulses)
+                    pulses += jumps * (pulses - prior_pulse)
+                cycle_tracker[fp] = (second, pulses)
 
-            logging.info("Solve for clock %03d, hands %d, %d => pulses = %s", clock_idx, hand_one + 1, hand_two + 1, pair_pulses)
-            pulses += pair_pulses
+            total_pulses += pulses
 
-    return pulses
+    return total_pulses
 
 
 PARSER = parsers.ParseBlocks([parsers.parse_multi_str_per_line])
