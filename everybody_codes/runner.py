@@ -50,7 +50,12 @@ class Runner(running.Runner):
 
         url = f"https://api.everybody.codes/event/{self.year}/quest/{self.day}"
         metadata = self.session.getjson(url)
-        available = [int(i.removeprefix("key")) for i in metadata if i.startswith("key")]
+        available = {int(i.removeprefix("key")) for i in metadata if i.startswith("key")}
+        if set(self.parts) - available:
+            metadata = self.session.getjson(url, force=True)
+            available = {int(i.removeprefix("key")) for i in metadata if i.startswith("key")}
+        if len(self.parts) != 3 and (not_available := set(self.parts) - available):
+            raise ValueError(f"The following parts are not availble: {sorted(not_available)}")
         self.parts = [part for part in self.parts if part in available]
         self._seed = seed
 
@@ -112,7 +117,9 @@ class Runner(running.Runner):
         url = f"https://everybody.codes/assets/{year}/{day}/description.json"
         plaintext = self.decrypt(year, day, part, url)
         examples = [i.strip() for i in etree.HTML(plaintext).xpath('//pre[@class="note"]/text()')]
-        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre[count(*) = 1]/b/text()')]
+        solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="description"]/div[@class="example"]/div/pre[count(*) = 1]/b/text()')]
+        if not solutions:
+            solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre[count(*) = 1]/b/text()')]
         solutions = solutions[-(len(examples)):]
         return list(zip(itertools.cycle([part]), examples, solutions))
 
