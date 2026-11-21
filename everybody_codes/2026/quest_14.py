@@ -17,6 +17,11 @@ def solve(part: int, data: helpers.Map) -> int:
         for neighbor in helpers.neighbors_t(*pos):
             border_length[char][data.chars.get(neighbor, "FRAME")] += 1
 
+    frame = {}
+    for i, j in border_length.items():
+        if "FRAME" in j:
+            frame[i] = j["FRAME"]
+
     if part == 1:
         # Sum the border from each section to its neighbors.
         return sum(
@@ -26,11 +31,34 @@ def solve(part: int, data: helpers.Map) -> int:
             if i > j or j == "FRAME"
         )
 
-    def cost(border_length: dict[str, dict[str, int]]) -> int:
-        """Return the min cost to create a spanning graph.
+    def cost_kruskal(border_length: dict[str, dict[str, int]]) -> int:
+        """Return the min cost to create a spanning graph. Kruskal's algorithm."""
+        n = len(border_length)
+        dsu = {}
+        for i in border_length:
+            helpers.dsu_make_set(dsu, i)
+        helpers.dsu_make_set(dsu, "FRAME")
 
-        Prim's Algorithm.
-        """
+        edges = [
+            (cost, i, j)
+            for i in border_length
+            for j, cost in border_length[i].items()
+            if i > j or j == "FRAME"
+        ]
+        heapq.heapify(edges)
+
+        cost = 0
+        connections = 0
+        while connections < n:
+            edge, i, j = heapq.heappop(edges)
+            if helpers.dsu_find(dsu, i) != helpers.dsu_find(dsu, j):
+                helpers.dsu_union(dsu, i, j)
+                cost += edge
+                connections += 1
+        return cost
+
+    def cost(border_length: dict[str, dict[str, int]]) -> int:
+        """Return the min cost to create a spanning graph. Prim's Algorithm."""
         graph = {"FRAME": 0}
         q = [
             (j["FRAME"], i)
