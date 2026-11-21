@@ -55,8 +55,5 @@ def solve(part: int, data: str) -> int:
     return count
 
 
-TESTS = [(1, "RRGGBBGRRGGBBG", 3)]
-
-
 if __name__ == "__main__":
     helpers.run_solution(globals())
