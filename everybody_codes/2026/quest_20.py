@@ -6,6 +6,10 @@ import logging
 from lib import helpers
 from lib import parsers
 
+import re
+
+RE = re.compile("([0-9A]+)([+-])([0-9A]+)(=)([0-9A]+)([+-])([0-9A]+)")
+
 log = logging.info
 
 SEGMENTS = {
@@ -43,15 +47,16 @@ def solve(part: int, data: str) -> int:
     """Solve the parts."""
     
     def segments(line):
-        o = line = [str(i) for i in line]
+        parts = RE.match("".join(line).replace(" ", "")).groups()
+        o = parts
         a = []
-        for i in line:
+        for i in parts:
             if i not in "+-=":
                 a.append(str(int(i, 10 if part == 1 else 11)))
             else:
                 a.append(i)
-        line = a
-        if eval("".join(str(i) for i in line).replace("=", "==")):
+        parts = a
+        if eval("".join(str(i) for i in parts).replace("=", "==")):
             # print(o, sum(SEGMENTS[str(i)] for i in "".join(o)))
             return sum(SEGMENTS[str(i)] for i in "".join(o))
         return 0
@@ -118,12 +123,8 @@ def solve(part: int, data: str) -> int:
     # End verify
 
 
-    import re
-
-    RE = re.compile("([0-9A]+)([+-])([0-9A]+)(=)([0-9A]+)([+-])([0-9A]+)")
     def segments2(line):
-        parts = RE.match("".join(line)).groups()
-        return segments(parts)
+        return segments(line)
 
     def oneswap(line):
         for idx, char in enumerate(line):
@@ -178,7 +179,7 @@ def solve(part: int, data: str) -> int:
 
 
 
-# PARSER = parsers.parse_one_str
+PARSER = parsers.parse_one_str_per_line
 TEST_DATA = [
     """\
 """,
