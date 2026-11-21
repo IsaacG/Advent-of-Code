@@ -114,6 +114,15 @@ class Runner(running.Runner):
             return got
         year, day = self.year, self.day
 
+        # Try loading tests from tests.json
+        test_file = pathlib.Path(f"{self.year}/tests.json")
+        tests = {}
+        if test_file.exists():
+            tests = json.loads(test_file.read_text())
+            part_tests = tests.get(str(self.day), {}).get(str(part), None)
+            if part_tests:
+                return part_tests
+
         url = f"https://everybody.codes/assets/{year}/{day}/description.json"
         plaintext = self.decrypt(year, day, part, url)
         examples = [i.strip() for i in etree.HTML(plaintext).xpath('//pre[@class="note"]/text()')]
@@ -121,7 +130,13 @@ class Runner(running.Runner):
         if not solutions:
             solutions = [i.strip() for i in etree.HTML(plaintext).xpath('//div[@class="example"]/div[@class="description"]/div/pre[count(*) = 1]/b/text()')]
         solutions = solutions[-(len(examples)):]
-        return list(zip(itertools.cycle([part]), examples, solutions))
+        tests_and_solutions = list(zip(itertools.cycle([part]), examples, solutions))
+
+        # Update tests.json
+        tests.setdefault(str(self.day), {})[str(part)] = tests_and_solutions
+        test_file.write_text(json.dumps(tests, indent=2) + "\n")
+
+        return tests_and_solutions
 
     def submit_solution(self, year: int, day: int, part: int, solution: int | str) -> tuple[typing.Any, float | None]:
         """Submit the solution."""
