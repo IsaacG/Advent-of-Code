@@ -405,6 +405,14 @@ def add_to_disjoint_sets(sets: list[set[T]], new: set[T]) -> set[T]:
     return new
 
 
+def build_dsu(sets: collections.abc.Iterable[set[T]]) -> list[set[T]]:
+    """Build distinct union sets from multiple sets."""
+    dsu = []
+    for i in sets:
+        add_to_disjoint_sets(dsu, i)
+    return dsu
+
+
 def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
     """Merge disjoint sets."""
     finalized = list[set[T]]()
@@ -413,11 +421,20 @@ def merge_disjoint_sets(sets: list[set[T]]) -> list[set[T]]:
     return finalized
 
 
+def show_pointers(sequence: str, start: int, end: int, msg: str | None = None) -> None:
+    """Visually display pointers on a string sequence."""
+    print(sequence)
+    out = " " * start + "^" + " " * (end - start - 1) + "^"
+    if msg:
+        out += " " * (len(sequence) - end + 1) + msg
+    print(out, "\n")
+
+
 def run_solution(data, parts = None) -> None:
     parts = parts or [1, 2, 3]
-    day = int(data["__file__"].split("/", maxsplit=-1)[-1].split(".")[0].strip("d"))
+    day = int(data["__file__"].split("/", maxsplit=-1)[-1].split(".")[0].split("_")[-1].strip("d"))
     solver = data["solve"]
-    test_data = data["TESTS"]
+    test_data = data.get("TESTS", [])
     parser = data["PARSER"].parse if "PARSER" in data else str
     params = inspect.signature(solver).parameters
 
@@ -425,13 +442,14 @@ def run_solution(data, parts = None) -> None:
     if "testing" in params:
         kwargs = {"testing": True}
     for _part, _data, expected in test_data:
-        assert solver(_part, parser(_data), **kwargs) == expected
+        got = solver(_part, parser(_data), **kwargs)
+        assert solver(_part, parser(_data), **kwargs) == expected, f"p{_part}, {got=}, {expected=}"
     print("Tests pass.")
     if "testing" in params:
         kwargs = {"testing": False}
     for _part in parts:
-        # with open(f"inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
-        with open(f"../inputs/2025.{day:02}.txt", encoding="utf-8") as f:
+        # with open(f"../inputs/2026.{day:02}.txt", encoding="utf-8") as f:
+        with open(f"2026/inputs/{day:02}.{_part}.txt", encoding="utf-8") as f:
             _input = parser(f.read())  # type: str
             start = time.perf_counter_ns()
             got = solver(_part, _input, **kwargs)
