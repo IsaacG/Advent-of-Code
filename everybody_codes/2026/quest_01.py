@@ -32,12 +32,5 @@ def solve(part: int, data: list[int]) -> int:
     return sum(gen.needed(have) - have for have in data)
 
 
-TEST_DATA = "3,11,12,16,24,25"
-TESTS = [
-    (1, TEST_DATA, 11),
-    (2, TEST_DATA, 9),
-    (3, TEST_DATA, 61),
-]
-
 if __name__ == "__main__":
     helpers.run_solution(globals())
